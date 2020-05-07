@@ -21,8 +21,9 @@
         ],
         "env" : {
             "CARGO_HOME" : "/run/build/spot/cargo",
-            "RUST_BACKTRACE" : "1",
-            "RUST_LOG" : "spot=debug"
+            "RUST_BACKTRACE" : "full",
+            "RUST_LOG" : "spot=debug",
+            "GTK_DEBUG" : "interactive"
         }
     },
     "cleanup" : [

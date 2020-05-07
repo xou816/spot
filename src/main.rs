@@ -49,14 +49,14 @@ fn make_window(builder: &gtk::Builder) -> gtk::ApplicationWindow {
 
 fn setup() -> Sender<PlayerAction> {
 
-    let (sender, receiver) = channel::<PlayerAction>(0);
+    let (mut sender, receiver) = channel::<PlayerAction>(0);
 
     if true {
         thread::spawn(move || {
             let mut core = Core::new().unwrap();
-            core.run(SpotifyPlayer::new().start(core.handle(), receiver))
-                .map_err(|_| ())
-                .unwrap();
+            if let Err(_) = core.run(SpotifyPlayer::new().start(core.handle(), receiver)) {
+                println!("Player thread crashed");
+            }
         });
     }
 
