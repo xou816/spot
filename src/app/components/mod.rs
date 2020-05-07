@@ -5,9 +5,6 @@ use crate::app::{AppAction};
 pub mod playback;
 pub use playback::{Playback, PlaybackState};
 
-pub mod window;
-pub use window::Window;
-
 pub mod playlist;
 pub use playlist::{Playlist};
 

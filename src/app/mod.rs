@@ -25,7 +25,8 @@ pub enum AppAction {
     Play,
     Pause,
     Load(String),
-    ShowLogin
+    ShowLogin,
+    TryLogin(String, String)
 }
 
 pub struct App {
@@ -85,6 +86,9 @@ impl App {
                     None
                 }
             },
+            AppAction::TryLogin(username, password) => {
+                sender.try_send(PlayerAction::Login(username, password)).ok()
+            },
             _ => Some(())
         }
     }
@@ -100,7 +104,7 @@ impl App {
         let app = App::new(player_sender, Rc::clone(&state), vec![
             Box::new(Playback::new(&builder, Rc::clone(&state), dispatcher.clone())),
             Box::new(Playlist::new(&builder, dispatcher.clone())),
-            Box::new(Login::new(&builder))
+            Box::new(Login::new(&builder, dispatcher.clone()))
         ]);
 
         receiver.attach(None, move |msg| {
