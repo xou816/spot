@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=spot
+Exec=spot
+Terminal=false
+Type=Application
+Categories=GTK;
+StartupNotify=true
