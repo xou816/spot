@@ -10,8 +10,8 @@ pub struct SongDescription {
 }
 
 impl SongDescription {
-    pub fn new(title: &str, uri: &str) -> Self {
-        Self { title: title.to_string(), artist: "".to_string(), uri: uri.to_string() }
+    pub fn new(title: &str, artist: &str, uri: &str) -> Self {
+        Self { title: title.to_string(), artist: artist.to_string(), uri: uri.to_string() }
     }
 }
 
@@ -21,9 +21,19 @@ pub struct AppState {
     pub playlist: Vec<SongDescription>
 }
 
+impl AppState {
+    pub fn new(songs: Vec<SongDescription>) -> Self {
+        Self {
+            is_playing: false,
+            current_song_uri: None,
+            playlist: songs
+        }
+    }
+}
+
 impl PlaybackState for AppState {
     fn is_playing(&self) -> bool {
-        self.is_playing
+        self.is_playing && self.current_song_uri.is_some()
     }
 
     fn current_song(&self) -> Option<&SongDescription> {

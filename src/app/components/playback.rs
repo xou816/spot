@@ -80,7 +80,8 @@ impl<State> Playback<State> where State: PlaybackState {
     fn update_current_info(&self) {
         let state = self.state.borrow();
         if let Some(song) = state.current_song() {
-            self.current_song_info.set_label(&song.title);
+            let label = format!("<b>{}</b>\n{}", &song.title, &song.artist);
+            self.current_song_info.set_label(&label[..]);
         }
     }
 }

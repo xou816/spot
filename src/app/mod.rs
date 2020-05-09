@@ -91,10 +91,12 @@ impl App {
     pub fn start(builder: &gtk::Builder, player_sender: Sender<PlayerAction>) -> Dispatcher {
 
         let (sender, receiver) = glib::MainContext::channel::<AppAction>(glib::PRIORITY_DEFAULT);
-        let state = Rc::new(RefCell::new(AppState { is_playing: false, current_song_uri: None, playlist: vec![
-            SongDescription::new("Song 1", "spotify:track:6j67aNAPeQ31uw4qw4rpLa"),
-            SongDescription::new("Song 2", "spotify:track:1swmf4hFMJYRNA8Rq9PVaW")
-        ] }));
+
+        let state = Rc::new(RefCell::new(AppState::new(vec![
+            SongDescription::new("Sunday Morning", "The Velvet Underground", "spotify:track:11607FzqoipskTsXrwEHnJ"),
+            SongDescription::new("I'm Waiting For The Man", "The Velvet Underground", "spotify:track:3fElupNRLRJ0tbUDahPrAb"),
+            SongDescription::new("Femme Fatale", "The Velvet Underground", "spotify:track:3PG7BAJG9WkmNOJOlc4uAo")
+        ])));
 
 
         let dispatcher = Dispatcher::new(sender);

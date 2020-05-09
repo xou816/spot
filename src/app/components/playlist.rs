@@ -26,11 +26,10 @@ impl<State> Playlist<State> where State: PlaylistState {
     pub fn new(builder: &gtk::Builder, state: Rc<RefCell<State>>, dispatcher: Dispatcher) -> Self {
 
         let listbox: gtk::ListBox = builder.get_object("listbox").unwrap();
-
         let model = gio::ListStore::new(Song::static_type());
 
         for song in state.borrow().songs().iter() {
-            model.append(&Song::new(&song.title, &song.uri));
+            model.append(&Song::new(&song_name_for(song, false)[..], &song.uri));
         }
 
         let clone = dispatcher.clone();
@@ -60,14 +59,7 @@ impl<State> Playlist<State> where State: PlaylistState {
             let is_current = current_song_uri.clone().map(|uri| *uri == song.uri);
 
             if let (Some(is_current), Some(model_song)) = (is_current, self.model_song_at(i)) {
-
-                let with_format = format!("<b>{}</b>", song.title);
-
-                model_song.set_name(if is_current {
-                    &with_format[..]
-                } else {
-                    &song.title[..]
-                });
+                model_song.set_name(&song_name_for(song, is_current)[..]);
             }
         }
     }
@@ -87,12 +79,15 @@ impl<State> Component for Playlist<State> where State: PlaylistState {
 
 fn create_row_for(item: &Song, dispatcher: Dispatcher) -> gtk::ListBoxRow {
     let row = gtk::ListBoxRow::new();
-    let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 5);
+    let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+    hbox.set_margin_start(12);
+    hbox.set_margin_end(12);
 
     if let Some(item_uri) = item.uri() {
 
         let label = gtk::Label::new(None);
         label.set_use_markup(true);
+        label.set_halign(gtk::Align::Start);
 
         item.bind_property("name", &label, "label")
             .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
@@ -105,7 +100,7 @@ fn create_row_for(item: &Song, dispatcher: Dispatcher) -> gtk::ListBoxRow {
         button.add(&image);
         button.set_relief(gtk::ReliefStyle::None);
 
-        hbox.pack_start(&button, true, false, 0);
+        hbox.pack_start(&button, false, false, 0);
 
         button.connect_clicked(move |_| {
             dispatcher.send(AppAction::Load(item_uri.clone())).expect("Could not send");
@@ -114,4 +109,12 @@ fn create_row_for(item: &Song, dispatcher: Dispatcher) -> gtk::ListBoxRow {
 
     row.add(&hbox);
     row
+}
+
+fn song_name_for(song: &SongDescription, is_playing: bool) -> String {
+    if is_playing {
+        format!("<b>{} - {}</b>", song.title, song.artist)
+    } else {
+        format!("{} - {}", song.title, song.artist)
+    }
 }

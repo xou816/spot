@@ -33,7 +33,7 @@ fn main() {
         window.set_application(Some(app));
         app.add_window(&window);
         window.present();
-        //_dispatcher.send(AppAction::ShowLogin);
+        // _dispatcher.send(AppAction::ShowLogin);
     });
 
 

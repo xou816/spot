@@ -41,6 +41,7 @@
                 <property name="margin_end">12</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">...</property>
+                <property name="use_markup">True</property>
               </object>
               <packing>
                 <property name="position">0</property>
