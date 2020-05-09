@@ -5,20 +5,14 @@ use std::cell::RefCell;
 
 pub mod components;
 use components::{Component, Dispatcher};
-use components::{Playback, Playlist, PlaybackState, Login};
+use components::{Playback, Playlist, PlaybackState, PlaylistState, Login};
 
 pub mod backend;
 use backend::PlayerAction;
 
-pub struct AppState {
-    is_playing: bool
-}
+pub mod state;
+pub use state::{AppState, SongDescription};
 
-impl PlaybackState for AppState {
-    fn is_playing(&self) -> bool {
-        self.is_playing
-    }
-}
 
 #[derive(Clone, Debug)]
 pub enum AppAction {
@@ -26,7 +20,7 @@ pub enum AppAction {
     Pause,
     Load(String),
     ShowLogin,
-    TryLogin(String, String)
+    TryLogin(String, String),
 }
 
 pub struct App {
@@ -67,8 +61,9 @@ impl App {
             AppAction::Pause => {
                 state.is_playing = false
             },
-            AppAction::Load(_) => {
-                state.is_playing = true
+            AppAction::Load(uri) => {
+                state.is_playing = true;
+                state.current_song_uri = Some(uri)
             },
             _ => {}
         };
@@ -96,14 +91,17 @@ impl App {
     pub fn start(builder: &gtk::Builder, player_sender: Sender<PlayerAction>) -> Dispatcher {
 
         let (sender, receiver) = glib::MainContext::channel::<AppAction>(glib::PRIORITY_DEFAULT);
-        let state = Rc::new(RefCell::new(AppState { is_playing: false }));
+        let state = Rc::new(RefCell::new(AppState { is_playing: false, current_song_uri: None, playlist: vec![
+            SongDescription::new("Song 1", "spotify:track:6j67aNAPeQ31uw4qw4rpLa"),
+            SongDescription::new("Song 2", "spotify:track:1swmf4hFMJYRNA8Rq9PVaW")
+        ] }));
 
 
         let dispatcher = Dispatcher::new(sender);
 
         let app = App::new(player_sender, Rc::clone(&state), vec![
             Box::new(Playback::new(&builder, Rc::clone(&state), dispatcher.clone())),
-            Box::new(Playlist::new(&builder, dispatcher.clone())),
+            Box::new(Playlist::new(&builder, Rc::clone(&state), dispatcher.clone())),
             Box::new(Login::new(&builder, dispatcher.clone()))
         ]);
 

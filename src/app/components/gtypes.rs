@@ -2,6 +2,7 @@ use gio::prelude::*;
 use glib::subclass;
 use glib::subclass::prelude::*;
 use glib::translate::*;
+use glib::Value;
 use glib::{glib_wrapper, glib_object_wrapper};
 
 glib_wrapper! {
@@ -15,15 +16,19 @@ glib_wrapper! {
 // Constructor for new instances. This simply calls glib::Object::new() with
 // initial values for our two properties and then returns the new instance
 impl Song {
-    pub fn new(name: &str) -> Song {
-        glib::Object::new(Self::static_type(), &[("name", &name)])
+    pub fn new(name: &str, uri: &str) -> Song {
+        glib::Object::new(Self::static_type(), &[("name", &name), ("uri", &uri)])
             .expect("Failed to create")
             .downcast()
             .expect("Created with wrong type")
     }
 
-    pub fn name(&self) -> Option<String> {
-        self.get_property("name").unwrap().get::<&str>()
+    pub fn set_name(&self, new_value: &str) {
+        self.set_property("name", &Value::from(new_value)).expect("set 'name' failed");
+    }
+
+    pub fn uri(&self) -> Option<String> {
+        self.get_property("uri").unwrap().get::<&str>()
             .unwrap().map(|s| s.to_string())
     }
 }
@@ -37,21 +42,43 @@ mod imp {
 
 
     // Static array for defining the properties of the new type.
-    static PROPERTIES: [subclass::Property; 1] = [subclass::Property("name", |name| {
-        glib::ParamSpec::string(
-            name,
-            "Name",
-            "Name of this object",
-            None,
-            glib::ParamFlags::READWRITE,
-        )
-    })];
+    static PROPERTIES: [subclass::Property; 3] = [
+        subclass::Property("name", |name| {
+            glib::ParamSpec::string(
+                name,
+                "Name",
+                "Name",
+                None,
+                glib::ParamFlags::READWRITE,
+            )
+        }),
+        subclass::Property("uri", |uri| {
+            glib::ParamSpec::string(
+                uri,
+                "URI",
+                "URI",
+                None,
+                glib::ParamFlags::READWRITE,
+            )
+        }),
+        subclass::Property("playing", |playing| {
+            glib::ParamSpec::boolean(
+                playing,
+                "URI",
+                "URI",
+                false,
+                glib::ParamFlags::READWRITE,
+            )
+        })
+    ];
 
     // This is the struct containing all state carried with
     // the new type. Generally this has to make use of
     // interior mutability.
     pub struct Song {
         name: RefCell<Option<String>>,
+        uri: RefCell<Option<String>>,
+        playing: RefCell<bool>
     }
 
     // ObjectSubclass is the trait that defines the new type and
@@ -87,6 +114,8 @@ mod imp {
         fn new() -> Self {
             Self {
                 name: RefCell::new(None),
+                uri: RefCell::new(None),
+                playing: RefCell::new(false)
             }
         }
     }
@@ -107,6 +136,19 @@ mod imp {
                         .get()
                         .expect("type conformity checked by `Object::set_property`");
                     self.name.replace(name);
+                },
+                subclass::Property("uri", ..) => {
+                    let uri = value
+                        .get()
+                        .expect("type conformity checked by `Object::set_property`");
+                    self.uri.replace(uri);
+                },
+                subclass::Property("playing", ..) => {
+                    let playing = value
+                        .get()
+                        .expect("type conformity checked by `Object::set_property`")
+                        .unwrap();
+                    self.playing.replace(playing);
                 }
                 _ => unimplemented!(),
             }
@@ -119,6 +161,8 @@ mod imp {
 
             match *prop {
                 subclass::Property("name", ..) => Ok(self.name.borrow().to_value()),
+                subclass::Property("uri", ..) => Ok(self.uri.borrow().to_value()),
+                subclass::Property("playing", ..) => Ok(self.playing.borrow().to_value()),
                 _ => unimplemented!(),
             }
         }

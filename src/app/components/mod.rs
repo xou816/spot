@@ -6,7 +6,7 @@ pub mod playback;
 pub use playback::{Playback, PlaybackState};
 
 pub mod playlist;
-pub use playlist::{Playlist};
+pub use playlist::{Playlist, PlaylistState};
 
 pub mod login;
 pub use login::{Login};

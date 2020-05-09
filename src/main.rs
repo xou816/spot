@@ -3,11 +3,9 @@ use gtk::prelude::*;
 use gtk::SettingsExt;
 
 use tokio_core::reactor::Core;
-use librespot::core::spotify_id::SpotifyId;
 
 use std::thread;
 use futures::sync::mpsc::{Sender, channel};
-use futures::future::Future;
 
 mod config;
 mod app;
@@ -28,14 +26,14 @@ fn main() {
     let builder = gtk::Builder::new_from_resource("/dev/alextren/Spot/window.ui");
 
     let sender = setup();
-    let dispatcher = App::start(&builder, sender.clone());
+    let _dispatcher = App::start(&builder, sender.clone());
 
     let window = make_window(&builder);
     app.connect_activate(move |app| {
         window.set_application(Some(app));
         app.add_window(&window);
         window.present();
-        dispatcher.send(AppAction::ShowLogin);
+        //_dispatcher.send(AppAction::ShowLogin);
     });
 
 
@@ -49,7 +47,7 @@ fn make_window(builder: &gtk::Builder) -> gtk::ApplicationWindow {
 
 fn setup() -> Sender<PlayerAction> {
 
-    let (mut sender, receiver) = channel::<PlayerAction>(0);
+    let (sender, receiver) = channel::<PlayerAction>(0);
 
     if true {
         thread::spawn(move || {
