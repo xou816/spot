@@ -3,9 +3,10 @@ use gtk::prelude::*;
 use gtk::SettingsExt;
 
 use tokio_core::reactor::Core;
+use futures::future::{FutureExt, TryFutureExt};
 
 use std::thread;
-use futures::sync::mpsc::{Sender, channel};
+use futures::channel::mpsc::{Sender, channel};
 
 mod config;
 mod app;
@@ -33,7 +34,7 @@ fn main() {
         window.set_application(Some(app));
         app.add_window(&window);
         window.present();
-        // _dispatcher.send(AppAction::ShowLogin);
+        _dispatcher.send(AppAction::ShowLogin);
     });
 
 
@@ -52,7 +53,7 @@ fn setup() -> Sender<PlayerAction> {
     if true {
         thread::spawn(move || {
             let mut core = Core::new().unwrap();
-            if let Err(_) = core.run(SpotifyPlayer::new().start(core.handle(), receiver)) {
+            if let Err(_) = core.run(SpotifyPlayer::new().start(core.handle(), receiver).boxed_local().compat()) {
                 println!("Player thread crashed");
             }
         });

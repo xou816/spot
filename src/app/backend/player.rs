@@ -1,6 +1,8 @@
-use futures::sync::mpsc::Receiver;
-use futures::stream::Stream;
-use futures::future::{Future, result};
+use futures::channel::mpsc::Receiver;
+use futures::stream::StreamExt;
+use futures::future::{Future, FutureExt, TryFutureExt};
+use futures::compat::Future01CompatExt;
+use futures01::future::Future as OldFuture;
 
 use tokio_core::reactor::{Handle};
 
@@ -29,58 +31,56 @@ pub struct SpotifyPlayer {
 
 impl SpotifyPlayer {
 
-    pub fn create_player(&self, username: String, password: String, handle: Handle) -> Box<dyn Future<Item=(), Error=()>> {
-
-        let player_config = PlayerConfig::default();
-        let session_config = SessionConfig::default();
-
-        let credentials = Credentials::with_password(username, password);
-
-        let player_ref = Rc::clone(&self.player);
-
-        Box::new(Session::connect(session_config, credentials, None, handle).map(move |session| {
-            let backend = audio_backend::find(None).unwrap();
-            let (new_player, _) = Player::new(player_config, session, None, move || {
-                backend(None)
-            });
-            player_ref.replace(Some(new_player));
-        }).map_err(|_| () ))
-    }
-
     pub fn new() -> Self {
         Self { player: Rc::new(RefCell::new(None)) }
     }
 
-
-    fn with_player<F, R>(&self, action: F) -> Box<dyn Future<Item=(), Error=()>> where F: Fn(&Player) -> R {
-        Box::new(result(match self.player.borrow().as_ref() {
-            Some(player) => { action(player); Ok(()) },
-            None => Ok(())
-        }))
-    }
-
-    pub fn start(&mut self, handle: Handle, receiver: Receiver<PlayerAction>) -> impl Future + '_ {
-         receiver.for_each(move |action| {
-            match action {
-                PlayerAction::Play => {
-                    self.with_player(|player| player.play())
-                },
-                PlayerAction::Pause => {
-                    self.with_player(|player| player.pause())
-                },
-                PlayerAction::Load(track) => {
-                    handle.spawn(self.with_player(|player| player.load(track, true, 0)));
-                    sync_ok()
-                },
-                PlayerAction::Login(username, password) => {
-                    self.create_player(username, password, handle.clone())
-                },
-                _ => sync_ok()
+    pub async fn start(&self, handle: Handle, receiver: Receiver<PlayerAction>) -> Result<(), ()> {
+        receiver.for_each(|action| {
+            async {
+                match action {
+                    PlayerAction::Play => {
+                        self.player.borrow().as_ref().map(|p| {
+                            p.play();
+                        });
+                    },
+                    PlayerAction::Pause => {
+                        self.player.borrow().as_ref().map(|p| {
+                            p.pause();
+                        });
+                    },
+                    PlayerAction::Load(track) => {
+                        self.player.borrow().as_ref().map(|p| {
+                            handle.spawn(p.load(track, true, 0).map_err(|_| ()));
+                        });
+                    },
+                    PlayerAction::Login(username, password) => {
+                        if let Some(player) = create_player(username, password, handle.clone()).await {
+                            self.player.borrow_mut().replace(player);
+                        }
+                    }
+                }
             }
-        })
+        }).await;
+        Ok(())
     }
 }
 
-fn sync_ok() -> Box<dyn Future<Item=(), Error=()>> {
-    Box::new(result(Ok(())))
+
+async fn create_session(username: String, password: String, handle: Handle) -> Option<Session> {
+    let session_config = SessionConfig::default();
+    let credentials = Credentials::with_password(username, password);
+    let result = Session::connect(session_config, credentials, None, handle).compat().await;
+    result.ok()
+}
+
+async fn create_player(username: String, password: String, handle: Handle) -> Option<Player> {
+    if let Some(session) = create_session(username, password, handle).await {
+        let backend = audio_backend::find(None).unwrap();
+        let player_config = PlayerConfig::default();
+        let (new_player, _) = Player::new(player_config, session, None, move || backend(None));
+        Some(new_player)
+    } else {
+        None
+    }
 }

@@ -1,4 +1,4 @@
-use futures::sync::mpsc::Sender;
+use futures::channel::mpsc::Sender;
 use librespot::core::spotify_id::SpotifyId;
 use std::rc::Rc;
 use std::cell::RefCell;
