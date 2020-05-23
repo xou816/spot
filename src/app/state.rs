@@ -18,7 +18,8 @@ impl SongDescription {
 pub struct AppState {
     pub is_playing: bool,
     pub current_song_uri: Option<String>,
-    pub playlist: Vec<SongDescription>
+    pub playlist: Vec<SongDescription>,
+    pub token: Option<String>
 }
 
 impl AppState {
@@ -26,7 +27,8 @@ impl AppState {
         Self {
             is_playing: false,
             current_song_uri: None,
-            playlist: songs
+            playlist: songs,
+            token: None
         }
     }
 }

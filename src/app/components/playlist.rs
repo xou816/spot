@@ -6,8 +6,8 @@ use gio::ListModelExt;
 use std::rc::Rc;
 use std::cell::RefCell;
 
-use crate::app::{AppAction, SongDescription};
-use crate::app::components::{Component, Dispatcher};
+use crate::app::{AppAction, SongDescription, Dispatcher};
+use crate::app::components::{Component};
 
 use super::gtypes::Song;
 
@@ -103,7 +103,7 @@ fn create_row_for(item: &Song, dispatcher: Dispatcher) -> gtk::ListBoxRow {
         hbox.pack_start(&button, false, false, 0);
 
         button.connect_clicked(move |_| {
-            dispatcher.send(AppAction::Load(item_uri.clone())).expect("Could not send");
+            dispatcher.dispatch(AppAction::Load(item_uri.clone())).expect("Could not send");
         });
     }
 

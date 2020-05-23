@@ -1,8 +1,8 @@
 use gtk::prelude::*;
 use gtk::EntryExt;
 
-use crate::app::AppAction;
-use crate::app::components::{Component, Dispatcher};
+use crate::app::{AppAction, Dispatcher};
+use crate::app::components::{Component};
 
 pub struct Login {
     dialog: gtk::Dialog,
@@ -24,8 +24,8 @@ impl Login {
         login_btn.connect_clicked(move |_| {
             let username = username.get_text().unwrap().as_str().to_string();
             let password = password.get_text().unwrap().as_str().to_string();
-            dispatcher.send(AppAction::TryLogin(username, password)).unwrap();
-            dialog_clone.hide();
+            dispatcher.dispatch(AppAction::TryLogin(username, password)).unwrap();
+            //dialog_clone.hide();
         });
 
         dialog.connect_delete_event(|_, _| {
@@ -43,6 +43,8 @@ impl Component for Login {
             self.dialog.set_transient_for(Some(&self.parent));
             self.dialog.set_modal(true);
             self.dialog.show_all();
+        } else if let AppAction::LoginSuccess(_) = action {
+            self.dialog.hide();
         }
     }
 }

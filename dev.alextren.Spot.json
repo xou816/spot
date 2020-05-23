@@ -44,7 +44,7 @@
             "sources" : [
                 {
                     "type" : "git",
-                    "dir" : "."
+                    "path" : "."
                 }
             ]
         }

@@ -1,14 +1,17 @@
-use futures::channel::mpsc::Sender;
+use futures::channel::mpsc::{Sender, Receiver};
 use librespot::core::spotify_id::SpotifyId;
 use std::rc::Rc;
 use std::cell::RefCell;
 
+pub mod dispatch;
+pub use dispatch::Dispatcher;
+
 pub mod components;
-use components::{Component, Dispatcher};
-use components::{Playback, Playlist, PlaybackState, PlaylistState, Login};
+use components::{Component};
+use components::{Playback, Playlist, Login};
 
 pub mod backend;
-use backend::PlayerAction;
+use backend::Command;
 
 pub mod state;
 pub use state::{AppState, SongDescription};
@@ -21,18 +24,19 @@ pub enum AppAction {
     Load(String),
     ShowLogin,
     TryLogin(String, String),
+    LoginSuccess(String)
 }
 
 pub struct App {
     components: Vec<Box<dyn Component>>,
     state: Rc<RefCell<AppState>>,
-    sender: Sender<PlayerAction>
+    sender: Sender<Command>
 }
 
 impl App {
 
     fn new(
-        sender: Sender<PlayerAction>,
+        sender: Sender<Command>,
         state: Rc<RefCell<AppState>>,
         components: Vec<Box<dyn Component>>) -> Self {
         Self { sender, state, components }
@@ -65,6 +69,9 @@ impl App {
                 state.is_playing = true;
                 state.current_song_uri = Some(uri)
             },
+            AppAction::LoginSuccess(token) => {
+                state.token = Some(token)
+            }
             _ => {}
         };
     }
@@ -72,25 +79,23 @@ impl App {
     fn try_relay_message(&self, message: AppAction) -> Option<()> {
         let mut sender = self.sender.clone();
         match message.clone() {
-            AppAction::Play => sender.try_send(PlayerAction::Play).ok(),
-            AppAction::Pause => sender.try_send(PlayerAction::Pause).ok(),
+            AppAction::Play => sender.try_send(Command::PlayerResume).ok(),
+            AppAction::Pause => sender.try_send(Command::PlayerPause).ok(),
             AppAction::Load(track) => {
                 if let Some(id) = SpotifyId::from_uri(&track).ok() {
-                    sender.try_send(PlayerAction::Load(id)).ok()
+                    sender.try_send(Command::PlayerLoad(id)).ok()
                 } else {
                     None
                 }
             },
             AppAction::TryLogin(username, password) => {
-                sender.try_send(PlayerAction::Login(username, password)).ok()
+                sender.try_send(Command::Login(username, password)).ok()
             },
             _ => Some(())
         }
     }
 
-    pub fn start(builder: &gtk::Builder, player_sender: Sender<PlayerAction>) -> Dispatcher {
-
-        let (sender, receiver) = glib::MainContext::channel::<AppAction>(glib::PRIORITY_DEFAULT);
+    pub fn start(builder: &gtk::Builder, dispatcher: Dispatcher, receiver: glib::Receiver<AppAction>, command_sender: Sender<Command>) {
 
         let state = Rc::new(RefCell::new(AppState::new(vec![
             SongDescription::new("Sunday Morning", "The Velvet Underground", "spotify:track:11607FzqoipskTsXrwEHnJ"),
@@ -98,10 +103,7 @@ impl App {
             SongDescription::new("Femme Fatale", "The Velvet Underground", "spotify:track:3PG7BAJG9WkmNOJOlc4uAo")
         ])));
 
-
-        let dispatcher = Dispatcher::new(sender);
-
-        let app = App::new(player_sender, Rc::clone(&state), vec![
+        let app = App::new(command_sender, Rc::clone(&state), vec![
             Box::new(Playback::new(&builder, Rc::clone(&state), dispatcher.clone())),
             Box::new(Playlist::new(&builder, Rc::clone(&state), dispatcher.clone())),
             Box::new(Login::new(&builder, dispatcher.clone()))
@@ -111,8 +113,5 @@ impl App {
             app.handle(msg);
             glib::Continue(true)
         });
-
-        dispatcher.clone()
-
     }
 }

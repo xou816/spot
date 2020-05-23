@@ -3,8 +3,8 @@ use gtk::ImageExt;
 use std::rc::Rc;
 use std::cell::RefCell;
 
-use crate::app::{AppAction, SongDescription};
-use crate::app::components::{Component, Dispatcher};
+use crate::app::{AppAction, SongDescription, Dispatcher};
+use crate::app::components::{Component};
 
 pub trait PlaybackState {
     fn is_playing(&self) -> bool;
@@ -38,8 +38,7 @@ impl<State> Playback<State> where State: PlaybackState {
                 .and_then(|state| {
                     let state = state.borrow();
                     dispatcher_clone
-                        .send(if state.is_playing() { AppAction::Pause } else { AppAction::Play })
-                        .ok()
+                        .dispatch(if state.is_playing() { AppAction::Pause } else { AppAction::Play })
                 });
         });
 
@@ -48,7 +47,7 @@ impl<State> Playback<State> where State: PlaybackState {
         next.connect_clicked(move |_| {
             weak_state.upgrade()
                 .and_then(|state| state.borrow().next_song_action())
-                .and_then(|action| dispatcher_clone.send(action).ok());
+                .and_then(|action| dispatcher_clone.dispatch(action));
         });
 
         let weak_state = Rc::downgrade(&state);
@@ -56,7 +55,7 @@ impl<State> Playback<State> where State: PlaybackState {
         prev.connect_clicked(move |_| {
             weak_state.upgrade()
                 .and_then(|state| state.borrow().prev_song_action())
-                .and_then(|action| dispatcher_clone.send(action).ok());
+                .and_then(|action| dispatcher_clone.dispatch(action));
         });
 
         Self { play_button, current_song_info, state }

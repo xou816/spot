@@ -31,13 +31,15 @@ sources = files(
   'main.rs',
   'config.rs',
   'app/mod.rs',
+  'app/state.rs',
   'app/components/mod.rs',
   'app/components/playback.rs',
   'app/components/login.rs',
   'app/components/playlist.rs',
   'app/components/gtypes.rs',
   'app/backend/mod.rs',
-  'app/backend/player.rs'
+  'app/backend/player.rs',
+  'app/backend/api.rs'
 )
 
 cargo_script = find_program(join_paths(meson.source_root(), 'build-aux/cargo.sh'))

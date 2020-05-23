@@ -37,6 +37,7 @@ package = "futures"
 version = "0.3.5"
 features = ["compat"]
 
-[dependencies.rspotify]
-version = "0.9.0"
-
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+isahc = { version = "0.9", features = ["json"] }
