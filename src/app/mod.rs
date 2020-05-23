@@ -1,20 +1,19 @@
-use futures::channel::mpsc::{Sender, Receiver};
-use librespot::core::spotify_id::SpotifyId;
+use futures::channel::mpsc::{Sender};
 use std::rc::Rc;
 use std::cell::RefCell;
 
 pub mod dispatch;
-pub use dispatch::Dispatcher;
+pub use dispatch::{DispatchLoop, Dispatcher};
 
 pub mod components;
-use components::{Component};
-use components::{Playback, Playlist, Login};
+use components::{Component, Playback, Playlist, PlaybackModel, PlaylistModel, Login, Player};
 
 pub mod backend;
 use backend::Command;
+use backend::api;
 
 pub mod state;
-pub use state::{AppState, SongDescription};
+pub use state::{AppState, AppModel, SongDescription};
 
 
 #[derive(Clone, Debug)]
@@ -22,96 +21,88 @@ pub enum AppAction {
     Play,
     Pause,
     Load(String),
+    LoadPlaylist(Vec<SongDescription>),
     ShowLogin,
     TryLogin(String, String),
-    LoginSuccess(String)
+    LoginSuccess(String),
+    Error
 }
 
 pub struct App {
     components: Vec<Box<dyn Component>>,
-    state: Rc<RefCell<AppState>>,
-    sender: Sender<Command>
+    model: Rc<RefCell<AppModel>>
 }
 
 impl App {
 
     fn new(
-        sender: Sender<Command>,
-        state: Rc<RefCell<AppState>>,
+        model: Rc<RefCell<AppModel>>,
         components: Vec<Box<dyn Component>>) -> Self {
-        Self { sender, state, components }
+        Self { model, components }
+    }
+
+    pub fn new_from_builder(
+        builder: &gtk::Builder,
+        dispatcher: Dispatcher,
+        command_sender: Sender<Command>) -> Self {
+
+        let state = AppState::new(Vec::new());
+        let model = AppModel::new(state, dispatcher.clone());
+        let model = Rc::new(RefCell::new(model));
+
+        let components: Vec<Box<dyn Component>> = vec![
+            Box::new(Playback::new(builder, Rc::clone(&model) as Rc<RefCell<dyn PlaybackModel>>)),
+            Box::new(Playlist::new(builder, Rc::clone(&model) as Rc<RefCell<dyn PlaylistModel>>)),
+            Box::new(Login::new(builder, dispatcher.clone())),
+            Box::new(Player::new(command_sender))
+        ];
+
+        App::new(model, components)
     }
 
     fn handle(&self, message: AppAction) {
         println!("AppAction={:?}", message);
 
-        if let None = self.try_relay_message(message.clone()) {
-            println!("Warning! Could not communicate with backend");
-        }
-
         self.update_state(message.clone());
 
         for component in self.components.iter() {
-            component.handle(message.clone());
+            component.handle(&message);
         }
     }
 
     fn update_state(&self, message: AppAction) {
-        let mut state = self.state.borrow_mut();
+        let mut model = self.model.borrow_mut();
         match message {
             AppAction::Play => {
-                state.is_playing = true
+                model.state.is_playing = true;
             },
             AppAction::Pause => {
-                state.is_playing = false
+                model.state.is_playing = false;
             },
             AppAction::Load(uri) => {
-                state.is_playing = true;
-                state.current_song_uri = Some(uri)
+                model.state.is_playing = true;
+                model.state.current_song_uri = Some(uri);
+            },
+            AppAction::LoadPlaylist(tracks) => {
+                model.state.playlist = tracks;
             },
             AppAction::LoginSuccess(token) => {
-                state.token = Some(token)
+                model.state.token = Some(token.clone());
+                model.dispatcher.dispatch_async(Box::pin(async {
+                    if let Some(tracks) = api::get_album(token, "4xwx0x7k6c5VuThz5qVqmV").await {
+                        AppAction::LoadPlaylist(tracks)
+                    } else {
+                        AppAction::Error
+                    }
+                }));
             }
             _ => {}
         };
     }
 
-    fn try_relay_message(&self, message: AppAction) -> Option<()> {
-        let mut sender = self.sender.clone();
-        match message.clone() {
-            AppAction::Play => sender.try_send(Command::PlayerResume).ok(),
-            AppAction::Pause => sender.try_send(Command::PlayerPause).ok(),
-            AppAction::Load(track) => {
-                if let Some(id) = SpotifyId::from_uri(&track).ok() {
-                    sender.try_send(Command::PlayerLoad(id)).ok()
-                } else {
-                    None
-                }
-            },
-            AppAction::TryLogin(username, password) => {
-                sender.try_send(Command::Login(username, password)).ok()
-            },
-            _ => Some(())
-        }
-    }
-
-    pub fn start(builder: &gtk::Builder, dispatcher: Dispatcher, receiver: glib::Receiver<AppAction>, command_sender: Sender<Command>) {
-
-        let state = Rc::new(RefCell::new(AppState::new(vec![
-            SongDescription::new("Sunday Morning", "The Velvet Underground", "spotify:track:11607FzqoipskTsXrwEHnJ"),
-            SongDescription::new("I'm Waiting For The Man", "The Velvet Underground", "spotify:track:3fElupNRLRJ0tbUDahPrAb"),
-            SongDescription::new("Femme Fatale", "The Velvet Underground", "spotify:track:3PG7BAJG9WkmNOJOlc4uAo")
-        ])));
-
-        let app = App::new(command_sender, Rc::clone(&state), vec![
-            Box::new(Playback::new(&builder, Rc::clone(&state), dispatcher.clone())),
-            Box::new(Playlist::new(&builder, Rc::clone(&state), dispatcher.clone())),
-            Box::new(Login::new(&builder, dispatcher.clone()))
-        ]);
-
-        receiver.attach(None, move |msg| {
-            app.handle(msg);
-            glib::Continue(true)
-        });
+    pub async fn start(self, dispatch_loop: DispatchLoop) {
+        dispatch_loop.attach(move |action| {
+            self.handle(action);
+        }).await;
     }
 }

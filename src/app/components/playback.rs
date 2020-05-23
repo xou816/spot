@@ -3,91 +3,83 @@ use gtk::ImageExt;
 use std::rc::Rc;
 use std::cell::RefCell;
 
-use crate::app::{AppAction, SongDescription, Dispatcher};
+use crate::app::{AppAction, SongDescription};
 use crate::app::components::{Component};
 
-pub trait PlaybackState {
+pub trait PlaybackModel {
     fn is_playing(&self) -> bool;
     fn current_song(&self) -> Option<&SongDescription>;
-    fn next_song_action(&self) -> Option<AppAction>;
-    fn prev_song_action(&self) -> Option<AppAction>;
+    fn play_next_song(&self);
+    fn play_prev_song(&self);
+    fn toggle_playback(&self);
 }
 
-pub struct Playback<State: 'static> where State: PlaybackState {
+pub struct Playback {
     play_button: gtk::Button,
     current_song_info: gtk::Label,
-    state: Rc<RefCell<State>>
+    model: Rc<RefCell<dyn PlaybackModel>>
 }
 
-impl<State> Playback<State> where State: PlaybackState {
+impl Playback {
 
     pub fn new(
         builder: &gtk::Builder,
-        state: Rc<RefCell<State>>,
-        dispatcher: Dispatcher) -> Self {
+        model: Rc<RefCell<dyn PlaybackModel>>) -> Self {
 
         let play_button: gtk::Button = builder.get_object("play_pause").unwrap();
         let current_song_info: gtk::Label = builder.get_object("current_song_info").unwrap();
         let next: gtk::Button = builder.get_object("next").unwrap();
         let prev: gtk::Button = builder.get_object("prev").unwrap();
 
-        let weak_state = Rc::downgrade(&state);
-        let dispatcher_clone = dispatcher.clone();
+        let weak_model = Rc::downgrade(&model);
         play_button.connect_clicked(move |_| {
-            weak_state.upgrade()
-                .and_then(|state| {
-                    let state = state.borrow();
-                    dispatcher_clone
-                        .dispatch(if state.is_playing() { AppAction::Pause } else { AppAction::Play })
-                });
+            weak_model.upgrade()
+                .map(|model| model.borrow().toggle_playback());
         });
 
-        let weak_state = Rc::downgrade(&state);
-        let dispatcher_clone = dispatcher.clone();
+        let weak_model = Rc::downgrade(&model);
         next.connect_clicked(move |_| {
-            weak_state.upgrade()
-                .and_then(|state| state.borrow().next_song_action())
-                .and_then(|action| dispatcher_clone.dispatch(action));
+            weak_model.upgrade()
+                .map(|model| model.borrow().play_next_song());
         });
 
-        let weak_state = Rc::downgrade(&state);
-        let dispatcher_clone = dispatcher.clone();
+        let weak_model = Rc::downgrade(&model);
         prev.connect_clicked(move |_| {
-            weak_state.upgrade()
-                .and_then(|state| state.borrow().prev_song_action())
-                .and_then(|action| dispatcher_clone.dispatch(action));
+            weak_model.upgrade()
+                .map(|model| model.borrow().play_prev_song());
         });
 
-        Self { play_button, current_song_info, state }
+        Self { play_button, current_song_info, model }
     }
 
     fn toggle_image(&self) {
-        let is_playing = self.state.borrow().is_playing();
+
+        let is_playing = self.model.borrow().is_playing();
+
         self.play_button.get_children().first()
             .and_then(|child| child.downcast_ref::<gtk::Image>())
             .map(|image| {
-                let new_image_name = if is_playing {
-                    "media-playback-pause"
-                } else {
-                    "media-playback-start"
-                };
-                image.set_from_icon_name(Some(new_image_name), gtk::IconSize::Button);
+                image.set_from_icon_name(
+                    Some(playback_image(is_playing)),
+                    gtk::IconSize::Button);
             })
             .expect("error updating icon");
     }
 
     fn update_current_info(&self) {
-        let state = self.state.borrow();
-        if let Some(song) = state.current_song() {
+
+        let model = self.model.borrow();
+
+        if let Some(song) = model.current_song() {
             let label = format!("<b>{}</b>\n{}", &song.title, &song.artist);
             self.current_song_info.set_label(&label[..]);
         }
     }
 }
 
-impl<State> Component for Playback<State> where State: PlaybackState {
+impl Component for Playback {
 
-    fn handle(&self, action: AppAction) {
+    fn handle(&self, action: &AppAction) {
         match action {
             AppAction::Play|AppAction::Pause => {
                 self.toggle_image();
@@ -98,5 +90,13 @@ impl<State> Component for Playback<State> where State: PlaybackState {
             },
             _ => {}
         }
+    }
+}
+
+fn playback_image(is_playing: bool) -> &'static str {
+    if is_playing {
+        "media-playback-pause"
+    } else {
+        "media-playback-start"
     }
 }

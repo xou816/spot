@@ -24,23 +24,24 @@ fn main() {
 
     let gloop = glib::MainLoop::new(Some(&context), false);
 
-    let (ui_sender, ui_receiver) = glib::MainContext::channel::<AppAction>(glib::PRIORITY_DEFAULT);
-
-    let dispatch_loop = DispatchLoop::wrap(ui_sender.clone());
+    let dispatch_loop = DispatchLoop::new();
     let dispatcher = dispatch_loop.make_dispatcher();
 
     let player_sender = backend::start_player_service(dispatcher.clone());
-    App::start(&builder, dispatcher.clone(), ui_receiver, player_sender);
+
+    context.spawn_local(
+        App::new_from_builder(&builder, dispatcher.clone(), player_sender)
+            .start(dispatch_loop));
+
 
     let window = make_window(&builder);
     app.connect_activate(move |app| {
         window.set_application(Some(app));
         app.add_window(&window);
         window.present();
-        ui_sender.send(AppAction::ShowLogin);
+        dispatcher.dispatch(AppAction::ShowLogin);
     });
 
-    context.spawn_local(dispatch_loop.future());
 
     context.invoke_local(move || {
         app.run(&std::env::args().collect::<Vec<_>>());

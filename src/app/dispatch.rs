@@ -9,20 +9,22 @@ pub type FutureAppAction = std::pin::Pin<Box<dyn Future<Output=AppAction> + Send
 
 #[derive(Clone)]
 pub struct Dispatcher {
-    sender: glib::Sender<AppAction>,
     future_sender: Sender<FutureAppAction>
 }
 
 
 impl Dispatcher {
-    fn new(sender: glib::Sender<AppAction>, future_sender: Sender<FutureAppAction>) -> Self {
-        Self { sender, future_sender }
+    fn new(future_sender: Sender<FutureAppAction>) -> Self {
+        Self { future_sender }
     }
 
     pub fn dispatch<T: Into<Option<AppAction>>>(&self, action: T) -> Option<()> {
         if let Some(action) = action.into() {
-            self.sender.send(action).ok()
+            self.dispatch_async(Box::pin(async {
+                action
+            }))
         } else {
+            println!("No action");
             None
         }
     }
@@ -34,31 +36,27 @@ impl Dispatcher {
 
 
 pub struct DispatchLoop {
-    sender: glib::Sender<AppAction>,
     future_receiver: Receiver<FutureAppAction>,
     future_sender: Sender<FutureAppAction>
 }
 
 impl DispatchLoop {
 
-    pub fn wrap(sender: glib::Sender<AppAction>) -> Self {
+    pub fn new() -> Self {
         let (future_sender, future_receiver) = channel::<FutureAppAction>(0);
-        Self { sender, future_receiver, future_sender }
+        Self { future_receiver, future_sender }
     }
 
     pub fn make_dispatcher(&self) -> Dispatcher {
-        Dispatcher::new(self.sender.clone(), self.future_sender.clone())
+        Dispatcher::new(self.future_sender.clone())
     }
 
-    pub async fn future(self) {
-        let sender = self.sender.clone();
-        self.future_receiver.for_each_concurrent(2, move |action| {
-            let sender = sender.clone();
-            async move {
-                let action = action.await;
-                sender.send(action).expect("Error!");
+    pub async fn attach(self, handler: impl Fn(AppAction) -> ()) {
+        self.future_receiver.for_each_concurrent(2, |action| {
+            async {
+                handler(action.await);
             }
-        }).await
+        }).await;
     }
 }
 

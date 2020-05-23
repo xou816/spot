@@ -19,13 +19,10 @@ impl Login {
         let password: gtk::Entry = builder.get_object("password").unwrap();
         let login_btn: gtk::Button = builder.get_object("login_btn").unwrap();
 
-        let dialog_clone = dialog.clone();
-
         login_btn.connect_clicked(move |_| {
             let username = username.get_text().unwrap().as_str().to_string();
             let password = password.get_text().unwrap().as_str().to_string();
             dispatcher.dispatch(AppAction::TryLogin(username, password)).unwrap();
-            //dialog_clone.hide();
         });
 
         dialog.connect_delete_event(|_, _| {
@@ -38,7 +35,7 @@ impl Login {
 
 impl Component for Login {
 
-    fn handle(&self, action: AppAction) {
+    fn handle(&self, action: &AppAction) {
         if let AppAction::ShowLogin = action {
             self.dialog.set_transient_for(Some(&self.parent));
             self.dialog.set_modal(true);

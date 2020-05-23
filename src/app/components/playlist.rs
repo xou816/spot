@@ -3,58 +3,57 @@ use gtk::{ListBoxExt};
 use gio::prelude::*;
 use gio::ListModelExt;
 
-use std::rc::Rc;
+use std::rc::{Rc, Weak};
 use std::cell::RefCell;
 
-use crate::app::{AppAction, SongDescription, Dispatcher};
+use crate::app::{AppAction, SongDescription};
 use crate::app::components::{Component};
 
 use super::gtypes::Song;
 
-pub trait PlaylistState {
+pub trait PlaylistModel {
     fn songs(&self) -> &Vec<SongDescription>;
     fn current_song_uri(&self) -> Option<String>;
+    fn play_song(&self, uri: String);
 }
 
-pub struct Playlist<State: 'static> where State: PlaylistState {
-    model: gio::ListStore,
-    state: Rc<RefCell<State>>
+pub struct Playlist {
+    list_model: gio::ListStore,
+    model: Rc<RefCell<dyn PlaylistModel>>
 }
 
-impl<State> Playlist<State> where State: PlaylistState {
+impl Playlist {
 
-    pub fn new(builder: &gtk::Builder, state: Rc<RefCell<State>>, dispatcher: Dispatcher) -> Self {
+    pub fn new(builder: &gtk::Builder, model: Rc<RefCell<dyn PlaylistModel>>) -> Self {
+
+        let list_model = gio::ListStore::new(Song::static_type());
 
         let listbox: gtk::ListBox = builder.get_object("listbox").unwrap();
-        let model = gio::ListStore::new(Song::static_type());
 
-        for song in state.borrow().songs().iter() {
-            model.append(&Song::new(&song_name_for(song, false)[..], &song.uri));
-        }
+        let weak_model = Rc::downgrade(&model);
 
-        let clone = dispatcher.clone();
-
-        listbox.bind_model(Some(&model), move |item| {
+        listbox.bind_model(Some(&list_model), move |item| {
             let item = item.downcast_ref::<Song>().unwrap();
-            let row = create_row_for(&item, clone.clone());
+            let row = Playlist::create_row_for(&item, weak_model.clone());
             row.show_all();
             row.upcast::<gtk::Widget>()
         });
 
-        Self { model, state }
+
+        Self { list_model, model }
     }
 
     fn model_song_at(&self, index: usize) -> Option<Song> {
-        self.model.get_object(index as u32).and_then(|object| {
+        self.list_model.get_object(index as u32).and_then(|object| {
             object.downcast::<Song>().ok()
         })
     }
 
     fn update_list(&self) {
-        let state = self.state.borrow();
-        let current_song_uri = state.current_song_uri();
+        let model = self.model.borrow();
+        let current_song_uri = model.current_song_uri();
 
-        for (i, song) in state.songs().iter().enumerate() {
+        for (i, song) in model.songs().iter().enumerate() {
 
             let is_current = current_song_uri.clone().map(|uri| *uri == song.uri);
 
@@ -63,52 +62,72 @@ impl<State> Playlist<State> where State: PlaylistState {
             }
         }
     }
+
+    fn reset_list(&self) {
+        let model = self.model.borrow();
+        let list_model = &self.list_model;
+
+        list_model.remove_all();
+        for song in model.songs().iter() {
+            list_model.append(&Song::new(&song_name_for(song, false)[..], &song.uri));
+        }
+    }
+
 }
 
-impl<State> Component for Playlist<State> where State: PlaylistState {
-    fn handle(&self, action: AppAction) {
-
+impl Component for Playlist {
+    fn handle(&self, action: &AppAction) {
         match action {
             AppAction::Load(_) => {
                 self.update_list();
             },
+            AppAction::LoadPlaylist(_) => {
+                self.reset_list()
+            }
             _ => {}
         }
     }
 }
 
-fn create_row_for(item: &Song, dispatcher: Dispatcher) -> gtk::ListBoxRow {
-    let row = gtk::ListBoxRow::new();
-    let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
-    hbox.set_margin_start(12);
-    hbox.set_margin_end(12);
+impl Playlist {
 
-    if let Some(item_uri) = item.uri() {
-
-        let label = gtk::Label::new(None);
-        label.set_use_markup(true);
-        label.set_halign(gtk::Align::Start);
-
-        item.bind_property("name", &label, "label")
-            .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
-            .build();
-
-        hbox.pack_start(&label, true, true, 0);
-
+    fn create_button_for(song_uri: String, model: Weak<RefCell<dyn PlaylistModel>>) -> gtk::Button {
         let button = gtk::Button::new();
         let image = gtk::Image::new_from_icon_name(Some("media-playback-start"), gtk::IconSize::Button);
         button.add(&image);
         button.set_relief(gtk::ReliefStyle::None);
 
-        hbox.pack_start(&button, false, false, 0);
-
         button.connect_clicked(move |_| {
-            dispatcher.dispatch(AppAction::Load(item_uri.clone())).expect("Could not send");
+            model.upgrade().map(|m| m.borrow().play_song(song_uri.clone()));
         });
+
+        button
     }
 
-    row.add(&hbox);
-    row
+    fn create_row_for(item: &Song, model: Weak<RefCell<dyn PlaylistModel>>) -> gtk::ListBoxRow {
+        let row = gtk::ListBoxRow::new();
+        let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        hbox.set_margin_start(12);
+        hbox.set_margin_end(12);
+
+        if let Some(item_uri) = item.uri() {
+            let label = gtk::Label::new(None);
+            label.set_use_markup(true);
+            label.set_halign(gtk::Align::Start);
+
+            item.bind_property("name", &label, "label")
+                .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                .build();
+
+            hbox.pack_start(&label, true, true, 0);
+
+            let button = Playlist::create_button_for(item_uri, model);
+            hbox.pack_start(&button, false, false, 0);
+        }
+
+        row.add(&hbox);
+        row
+    }
 }
 
 fn song_name_for(song: &SongDescription, is_playing: bool) -> String {
