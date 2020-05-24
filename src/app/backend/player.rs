@@ -1,6 +1,6 @@
 use futures::channel::mpsc::{Receiver};
 use futures::stream::StreamExt;
-use futures::future::{FutureExt, TryFutureExt};
+use futures::future::FutureExt;
 use futures::compat::Future01CompatExt;
 use futures01::future::Future as OldFuture;
 
@@ -9,7 +9,6 @@ use tokio_core::reactor::{Handle};
 use librespot::core::authentication::Credentials;
 use librespot::core::config::SessionConfig;
 use librespot::core::session::Session;
-use librespot::core::spotify_id::SpotifyId;
 use librespot::core::keymaster;
 
 use librespot::playback::config::PlayerConfig;
@@ -20,6 +19,7 @@ use std::rc::Rc;
 use std::cell::RefCell;
 
 use super::{Command, Dispatcher};
+use crate::app::utils;
 
 pub struct SpotifyPlayer {
     player: Rc<RefCell<Option<Player>>>,
@@ -32,37 +32,42 @@ impl SpotifyPlayer {
         Self { player: Rc::new(RefCell::new(None)), sender }
     }
 
+    async fn handle(&self, action: Command, handle: Handle) -> Result<(), &'static str> {
+        let mut player = self.player.borrow_mut();
+        match action {
+            Command::PlayerResume => {
+                let player = player.as_ref().ok_or("Could not get player")?;
+                player.play();
+                Ok(())
+            },
+            Command::PlayerPause => {
+                let player = player.as_ref().ok_or("Could not get player")?;
+                player.pause();
+                Ok(())
+            },
+            Command::PlayerLoad(track) => {
+                let player = player.as_ref().ok_or("Could not get player")?;
+                handle.spawn(player.load(track, true, 0).map_err(|_| ()));
+                Ok(())
+            },
+            Command::Login(username, password) => {
+                let session = create_session(username.clone(), password.clone(), handle.clone()).await?;
+                let token = get_access_token(&session).await?.clone();
+                utils::save_credentials(utils::Credentials {
+                    username, password, token: token.clone()
+                }).map_err(|_| "Could not save token locally")?;
+                self.sender.clone().dispatch(Command::LoginSuccessful(token)).unwrap();
+                player.replace(create_player(session));
+                Ok(())
+            },
+            _ => Ok(())
+        }
+    }
+
     pub async fn start(&self, handle: Handle, receiver: Receiver<Command>) -> Result<(), ()> {
         receiver.for_each(|action| {
             async {
-                match action {
-                    Command::PlayerResume => {
-                        self.player.borrow().as_ref().map(|p| {
-                            p.play();
-                        });
-                    },
-                    Command::PlayerPause => {
-                        self.player.borrow().as_ref().map(|p| {
-                            p.pause();
-                        });
-                    },
-                    Command::PlayerLoad(track) => {
-                        self.player.borrow().as_ref().map(|p| {
-                            handle.spawn(p.load(track, true, 0).map_err(|_| ()));
-                        });
-                    },
-                    Command::Login(username, password) => {
-                        if let Some(session) = create_session(username, password, handle.clone()).await {
-
-                            if let Some(token) = get_access_token(&session).await {
-                                self.sender.clone().dispatch(Command::LoginSuccessful(token)).unwrap();
-                            }
-
-                            self.player.borrow_mut().replace(create_player(session));
-                        }
-                    },
-                    _ => {}
-                }
+                self.handle(action, handle.clone()).await.unwrap();
             }
         }).await;
         Ok(())
@@ -79,16 +84,16 @@ user-library-modify,\
 user-top-read,\
 user-read-recently-played";
 
-async fn get_access_token(session: &Session) -> Option<String> {
+async fn get_access_token(session: &Session) -> Result<String, &'static str> {
     let token = keymaster::get_token(&session, CLIENT_ID, SCOPES).compat().await;
-    token.map(|t| t.access_token).ok()
+    token.map(|t| t.access_token).map_err(|_| "Error obtaining token")
 }
 
-async fn create_session(username: String, password: String, handle: Handle) -> Option<Session> {
+async fn create_session(username: String, password: String, handle: Handle) -> Result<Session, &'static str> {
     let session_config = SessionConfig::default();
     let credentials = Credentials::with_password(username, password);
     let result = Session::connect(session_config, credentials, None, handle).compat().await;
-    result.ok()
+    result.map_err(|_| "Error creating session")
 }
 
 fn create_player(session: Session) -> Player {

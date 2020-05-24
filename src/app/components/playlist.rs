@@ -132,8 +132,8 @@ impl Playlist {
 
 fn song_name_for(song: &SongDescription, is_playing: bool) -> String {
     if is_playing {
-        format!("<b>{} - {}</b>", song.title, song.artist)
+        format!("<b>{} — <small>{}</small></b>", song.title, song.artist)
     } else {
-        format!("{} - {}", song.title, song.artist)
+        format!("{} — <small>{}</small>", song.title, song.artist)
     }
 }

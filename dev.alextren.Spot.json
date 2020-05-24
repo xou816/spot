@@ -12,7 +12,8 @@
         "--share=ipc",
         "--socket=fallback-x11",
         "--socket=wayland",
-        "--socket=pulseaudio"
+        "--socket=pulseaudio",
+        "--talk-name=org.freedesktop.secrets"
     ],
     "build-options" : {
         "append-path" : "/usr/lib/sdk/rust-stable/bin",

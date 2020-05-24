@@ -7,7 +7,7 @@ pub mod playlist;
 pub use playlist::{Playlist, PlaylistModel};
 
 pub mod login;
-pub use login::{Login};
+pub use login::{Login, LoginModel};
 
 pub mod player;
 pub use player::{Player};

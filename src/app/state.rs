@@ -1,6 +1,7 @@
 use super::AppAction;
-use super::components::{PlaybackModel, PlaylistModel};
+use super::components::{PlaybackModel, PlaylistModel, LoginModel};
 use super::Dispatcher;
+use super::utils;
 
 
 #[derive(Clone, Debug)]
@@ -99,5 +100,21 @@ impl PlaylistModel for AppModel {
 
     fn play_song(&self, uri: String) {
         self.dispatcher.dispatch(AppAction::Load(uri));
+    }
+}
+
+impl LoginModel for AppModel {
+
+    fn try_autologin(&self) -> bool {
+        if let Ok(creds) = utils::try_retrieve_credentials() {
+            self.dispatcher.dispatch(AppAction::TryLogin(creds.username, creds.password));
+            true
+        } else {
+            false
+        }
+    }
+
+    fn login(&self, u: String, p: String) {
+        self.dispatcher.dispatch(AppAction::TryLogin(u, p));
     }
 }

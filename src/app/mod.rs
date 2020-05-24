@@ -6,7 +6,7 @@ pub mod dispatch;
 pub use dispatch::{DispatchLoop, Dispatcher};
 
 pub mod components;
-use components::{Component, Playback, Playlist, PlaybackModel, PlaylistModel, Login, Player};
+use components::{Component, Playback, Playlist, PlaybackModel, PlaylistModel, Login, LoginModel, Player};
 
 pub mod backend;
 use backend::Command;
@@ -15,6 +15,8 @@ use backend::api;
 pub mod state;
 pub use state::{AppState, AppModel, SongDescription};
 
+pub mod utils;
+
 
 #[derive(Clone, Debug)]
 pub enum AppAction {
@@ -22,7 +24,7 @@ pub enum AppAction {
     Pause,
     Load(String),
     LoadPlaylist(Vec<SongDescription>),
-    ShowLogin,
+    StartLogin,
     TryLogin(String, String),
     LoginSuccess(String),
     Error
@@ -53,7 +55,7 @@ impl App {
         let components: Vec<Box<dyn Component>> = vec![
             Box::new(Playback::new(builder, Rc::clone(&model) as Rc<RefCell<dyn PlaybackModel>>)),
             Box::new(Playlist::new(builder, Rc::clone(&model) as Rc<RefCell<dyn PlaylistModel>>)),
-            Box::new(Login::new(builder, dispatcher.clone())),
+            Box::new(Login::new(builder, Rc::clone(&model) as Rc<RefCell<dyn LoginModel>>)),
             Box::new(Player::new(command_sender))
         ];
 

@@ -10,8 +10,6 @@ use crate::app::{App, AppAction};
 use crate::app::backend;
 use crate::app::dispatch::{DispatchLoop};
 
-use crate::app::backend::api;
-
 fn main() {
 
     setup_gtk();
@@ -39,7 +37,7 @@ fn main() {
         window.set_application(Some(app));
         app.add_window(&window);
         window.present();
-        dispatcher.dispatch(AppAction::ShowLogin);
+        dispatcher.dispatch(AppAction::StartLogin);
     });
 
 
