@@ -43,6 +43,7 @@ impl Login {
 
     fn show_self_if_needed(&self) {
         if self.model.borrow().try_autologin() {
+            self.dialog.destroy();
             return
         }
         self.dialog.set_transient_for(Some(&self.parent));

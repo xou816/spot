@@ -20,8 +20,6 @@ fn main() {
     let context = glib::MainContext::default();
     context.push_thread_default();
 
-    let gloop = glib::MainLoop::new(Some(&context), false);
-
     let dispatch_loop = DispatchLoop::new();
     let dispatcher = dispatch_loop.make_dispatcher();
 
@@ -45,7 +43,6 @@ fn main() {
         app.run(&std::env::args().collect::<Vec<_>>());
     });
 
-    gloop.run();
     std::process::exit(0);
 }
 
