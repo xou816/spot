@@ -48,9 +48,6 @@ pub async fn get_album(token: String, id: &str) -> Option<Vec<SongDescription>> 
         .unwrap();
     let result = request.send_async().await;
 
-    result.ok().map(|mut response| {
-        response.json::<Album>().expect("Failed to parse")
-    }).map(|album| {
-        album.into()
-    })
+    result.ok()?.json::<Album>().ok().map(|album| album.into())
 }
+

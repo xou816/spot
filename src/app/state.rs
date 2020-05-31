@@ -1,7 +1,7 @@
 use super::AppAction;
 use super::components::{PlaybackModel, PlaylistModel, LoginModel};
 use super::Dispatcher;
-use super::utils;
+use super::credentials;
 
 
 #[derive(Clone, Debug)]
@@ -106,7 +106,7 @@ impl PlaylistModel for AppModel {
 impl LoginModel for AppModel {
 
     fn try_autologin(&self) -> bool {
-        if let Ok(creds) = utils::try_retrieve_credentials() {
+        if let Ok(creds) = credentials::try_retrieve_credentials() {
             self.dispatcher.dispatch(AppAction::TryLogin(creds.username, creds.password));
             true
         } else {

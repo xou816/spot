@@ -19,7 +19,7 @@ use std::rc::Rc;
 use std::cell::RefCell;
 
 use super::{Command, Dispatcher};
-use crate::app::utils;
+use crate::app::credentials;
 
 pub struct SpotifyPlayer {
     player: Rc<RefCell<Option<Player>>>,
@@ -53,7 +53,7 @@ impl SpotifyPlayer {
             Command::Login(username, password) => {
                 let session = create_session(username.clone(), password.clone(), handle.clone()).await?;
                 let token = get_access_token(&session).await?.clone();
-                utils::save_credentials(utils::Credentials {
+                credentials::save_credentials(credentials::Credentials {
                     username, password, token: token.clone()
                 }).map_err(|_| "Could not save token locally")?;
                 self.sender.clone().dispatch(Command::LoginSuccessful(token)).unwrap();

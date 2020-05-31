@@ -8,7 +8,7 @@ mod app;
 
 use crate::app::{App, AppAction};
 use crate::app::backend;
-use crate::app::dispatch::{DispatchLoop};
+use crate::app::dispatch::{DispatchLoop, LocalTaskLoop};
 
 fn main() {
 
@@ -23,19 +23,22 @@ fn main() {
     let dispatch_loop = DispatchLoop::new();
     let dispatcher = dispatch_loop.make_dispatcher();
 
+    let tasks = LocalTaskLoop::new();
+
     let player_sender = backend::start_player_service(dispatcher.clone());
 
     context.spawn_local(
-        App::new_from_builder(&builder, dispatcher.clone(), player_sender)
+        App::new_from_builder(&builder, dispatcher.clone(), tasks.make_worker(), player_sender)
             .start(dispatch_loop));
 
+    context.spawn_local(tasks.attach());
 
     let window = make_window(&builder);
     app.connect_activate(move |app| {
         window.set_application(Some(app));
         app.add_window(&window);
         window.present();
-        dispatcher.dispatch(AppAction::StartLogin);
+        // dispatcher.dispatch(AppAction::StartLogin);
     });
 
 

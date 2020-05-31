@@ -2378,6 +2378,7 @@ dependencies = [
  "futures 0.3.5",
  "futures01",
  "gdk",
+ "gdk-pixbuf",
  "gio",
  "glib",
  "gtk",

@@ -1,11 +1,13 @@
 use std::convert::Into;
+use std::pin::Pin;
 use futures::future::Future;
 use futures::stream::StreamExt;
 use futures::channel::mpsc::{Receiver, Sender, channel};
 
+
 use super::AppAction;
 
-pub type FutureAppAction = std::pin::Pin<Box<dyn Future<Output=AppAction> + Send>>;
+pub type FutureAppAction = Pin<Box<dyn Future<Output=AppAction> + Send>>;
 
 #[derive(Clone)]
 pub struct Dispatcher {
@@ -59,4 +61,40 @@ impl DispatchLoop {
         }).await;
     }
 }
+
+// need to generify the above, but it is hard :(
+
+pub type FutureLocalTask = Pin<Box<dyn Future<Output=()>>>;
+
+pub struct LocalTaskLoop {
+    future_receiver: Receiver<FutureLocalTask>,
+    future_sender: Sender<FutureLocalTask>
+}
+
+impl LocalTaskLoop {
+
+    pub fn new() -> Self {
+        let (future_sender, future_receiver) = channel::<FutureLocalTask>(0);
+        Self { future_receiver, future_sender }
+    }
+
+    pub fn make_worker(&self) -> Worker {
+        Worker(self.future_sender.clone())
+    }
+
+    pub async fn attach(self) {
+        self.future_receiver.for_each_concurrent(2, |task| task).await;
+    }
+}
+
+#[derive(Clone)]
+pub struct Worker(Sender<FutureLocalTask>);
+
+impl Worker {
+
+    pub fn send_task<T: Future<Output=()> + 'static>(&self, task: T) -> Option<()> {
+        self.0.clone().try_send(Box::pin(task)).ok()
+    }
+}
+
 

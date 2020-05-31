@@ -3,7 +3,7 @@ use std::rc::Rc;
 use std::cell::RefCell;
 
 pub mod dispatch;
-pub use dispatch::{DispatchLoop, Dispatcher};
+pub use dispatch::{DispatchLoop, Dispatcher, Worker};
 
 pub mod components;
 use components::{Component, Playback, Playlist, PlaybackModel, PlaylistModel, Login, LoginModel, Player};
@@ -15,7 +15,8 @@ use backend::api;
 pub mod state;
 pub use state::{AppState, AppModel, SongDescription};
 
-pub mod utils;
+pub mod credentials;
+pub mod loader;
 
 
 #[derive(Clone, Debug)]
@@ -46,6 +47,7 @@ impl App {
     pub fn new_from_builder(
         builder: &gtk::Builder,
         dispatcher: Dispatcher,
+        worker: Worker,
         command_sender: Sender<Command>) -> Self {
 
         let state = AppState::new(Vec::new());
@@ -53,7 +55,7 @@ impl App {
         let model = Rc::new(RefCell::new(model));
 
         let components: Vec<Box<dyn Component>> = vec![
-            Box::new(Playback::new(builder, Rc::clone(&model) as Rc<RefCell<dyn PlaybackModel>>)),
+            Box::new(Playback::new(builder, Rc::clone(&model) as Rc<RefCell<dyn PlaybackModel>>, worker)),
             Box::new(Playlist::new(builder, Rc::clone(&model) as Rc<RefCell<dyn PlaylistModel>>)),
             Box::new(Login::new(builder, Rc::clone(&model) as Rc<RefCell<dyn LoginModel>>)),
             Box::new(Player::new(command_sender))

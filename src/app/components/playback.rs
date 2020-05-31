@@ -5,6 +5,9 @@ use std::cell::RefCell;
 
 use crate::app::{AppAction, SongDescription};
 use crate::app::components::{Component};
+use crate::app::dispatch::Worker;
+use crate::app::loader::load_remote_image;
+
 
 pub trait PlaybackModel {
     fn is_playing(&self) -> bool;
@@ -24,7 +27,8 @@ impl Playback {
 
     pub fn new(
         builder: &gtk::Builder,
-        model: Rc<RefCell<dyn PlaybackModel>>) -> Self {
+        model: Rc<RefCell<dyn PlaybackModel>>,
+        worker: Worker) -> Self {
 
         let play_button: gtk::Button = builder.get_object("play_pause").unwrap();
         let current_song_info: gtk::Label = builder.get_object("current_song_info").unwrap();
@@ -47,6 +51,14 @@ impl Playback {
         prev.connect_clicked(move |_| {
             weak_model.upgrade()
                 .map(|model| model.borrow().play_prev_song());
+        });
+
+
+        let image: gtk::Image = builder.get_object("playing_image").unwrap();
+        worker.send_task(async move {
+            let url = "https://images-na.ssl-images-amazon.com/images/I/71YJlc9Wb6L._SL1500_.jpg";
+            let result = load_remote_image(url, 60, 60).await;
+            image.set_from_pixbuf(result.as_ref());
         });
 
         Self { play_button, current_song_info, model }
