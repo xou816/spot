@@ -39,7 +39,10 @@ sources = files(
   'app/components/login.rs',
   'app/components/player.rs',
   'app/components/playlist.rs',
-  'app/components/gtypes.rs',
+  'app/components/browser.rs',
+  'app/components/gtypes/mod.rs',
+  'app/components/gtypes/song_model.rs',
+  'app/components/gtypes/album_model.rs',
   'app/backend/mod.rs',
   'app/backend/player.rs',
   'app/backend/api.rs'

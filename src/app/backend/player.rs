@@ -1,6 +1,5 @@
 use futures::channel::mpsc::{Receiver};
 use futures::stream::StreamExt;
-use futures::future::FutureExt;
 use futures::compat::Future01CompatExt;
 use futures01::future::Future as OldFuture;
 

@@ -35,22 +35,36 @@
                 <property name="can_focus">False</property>
                 <property name="transition_type">crossfade</property>
                 <child>
-                  <object class="GtkBox">
+                  <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="orientation">vertical</property>
+                    <property name="can_focus">True</property>
+                    <property name="shadow_type">in</property>
                     <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
+                      <object class="GtkViewport">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkFlowBox" id="flowbox">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="margin_start">8</property>
+                            <property name="margin_end">8</property>
+                            <property name="margin_top">8</property>
+                            <property name="margin_bottom">8</property>
+                            <property name="homogeneous">True</property>
+                            <property name="column_spacing">8</property>
+                            <property name="row_spacing">8</property>
+                            <property name="min_children_per_line">2</property>
+                            <property name="max_children_per_line">8</property>
+                            <property name="selection_mode">none</property>
+                            <property name="activate_on_single_click">False</property>
+                          </object>
+                        </child>
+                      </object>
                     </child>
                   </object>
                   <packing>
-                    <property name="name">page0</property>
+                    <property name="name">browse</property>
                     <property name="title" translatable="yes">Browse</property>
                   </packing>
                 </child>

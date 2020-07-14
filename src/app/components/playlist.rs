@@ -9,7 +9,7 @@ use std::cell::RefCell;
 use crate::app::{AppAction, SongDescription};
 use crate::app::components::{Component};
 
-use super::gtypes::Song;
+use super::gtypes::SongModel;
 
 pub trait PlaylistModel {
     fn songs(&self) -> &Vec<SongDescription>;
@@ -26,14 +26,14 @@ impl Playlist {
 
     pub fn new(builder: &gtk::Builder, model: Rc<RefCell<dyn PlaylistModel>>) -> Self {
 
-        let list_model = gio::ListStore::new(Song::static_type());
+        let list_model = gio::ListStore::new(SongModel::static_type());
 
         let listbox: gtk::ListBox = builder.get_object("listbox").unwrap();
 
         let weak_model = Rc::downgrade(&model);
 
         listbox.bind_model(Some(&list_model), move |item| {
-            let item = item.downcast_ref::<Song>().unwrap();
+            let item = item.downcast_ref::<SongModel>().unwrap();
             let row = Playlist::create_row_for(&item, weak_model.clone());
             row.show_all();
             row.upcast::<gtk::Widget>()
@@ -43,9 +43,9 @@ impl Playlist {
         Self { list_model, model }
     }
 
-    fn model_song_at(&self, index: usize) -> Option<Song> {
+    fn model_song_at(&self, index: usize) -> Option<SongModel> {
         self.list_model.get_object(index as u32).and_then(|object| {
-            object.downcast::<Song>().ok()
+            object.downcast::<SongModel>().ok()
         })
     }
 
@@ -69,7 +69,7 @@ impl Playlist {
 
         list_model.remove_all();
         for song in model.songs().iter() {
-            list_model.append(&Song::new(&song_name_for(song, false)[..], &song.uri));
+            list_model.append(&SongModel::new(&song_name_for(song, false)[..], &song.uri));
         }
     }
 
@@ -104,7 +104,7 @@ impl Playlist {
         button
     }
 
-    fn create_row_for(item: &Song, model: Weak<RefCell<dyn PlaylistModel>>) -> gtk::ListBoxRow {
+    fn create_row_for(item: &SongModel, model: Weak<RefCell<dyn PlaylistModel>>) -> gtk::ListBoxRow {
         let row = gtk::ListBoxRow::new();
         let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
         hbox.set_margin_start(12);

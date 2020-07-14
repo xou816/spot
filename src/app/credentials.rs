@@ -31,7 +31,7 @@ pub fn save_credentials(creds: Credentials) -> Result<SecretService, SsError> {
     let encoded = to_string(&creds).unwrap();
 
     collection.create_item(
-        SPOT_ATTR,
+        "Spotify Credentials",
         vec![(SPOT_ATTR, "yes")],
         encoded.as_bytes(),
         true,

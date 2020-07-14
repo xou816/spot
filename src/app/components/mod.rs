@@ -12,6 +12,9 @@ pub use login::{Login, LoginModel};
 pub mod player;
 pub use player::{Player};
 
+pub mod browser;
+pub use browser::Browser;
+
 mod gtypes;
 
 pub trait Component {

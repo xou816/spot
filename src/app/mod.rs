@@ -6,7 +6,7 @@ pub mod dispatch;
 pub use dispatch::{DispatchLoop, Dispatcher, Worker};
 
 pub mod components;
-use components::{Component, Playback, Playlist, PlaybackModel, PlaylistModel, Login, LoginModel, Player};
+use components::{Component, Playback, Playlist, PlaybackModel, PlaylistModel, Login, LoginModel, Player, Browser};
 
 pub mod backend;
 use backend::Command;
@@ -55,10 +55,11 @@ impl App {
         let model = Rc::new(RefCell::new(model));
 
         let components: Vec<Box<dyn Component>> = vec![
-            Box::new(Playback::new(builder, Rc::clone(&model) as Rc<RefCell<dyn PlaybackModel>>, worker)),
+            Box::new(Playback::new(builder, Rc::clone(&model) as Rc<RefCell<dyn PlaybackModel>>, worker.clone())),
             Box::new(Playlist::new(builder, Rc::clone(&model) as Rc<RefCell<dyn PlaylistModel>>)),
             Box::new(Login::new(builder, Rc::clone(&model) as Rc<RefCell<dyn LoginModel>>)),
-            Box::new(Player::new(command_sender))
+            Box::new(Player::new(command_sender)),
+            Box::new(Browser::new(builder, worker.clone()))
         ];
 
         App::new(model, components)
