@@ -57,7 +57,6 @@
                             <property name="min_children_per_line">2</property>
                             <property name="max_children_per_line">8</property>
                             <property name="selection_mode">none</property>
-                            <property name="activate_on_single_click">False</property>
                           </object>
                         </child>
                       </object>

@@ -5,7 +5,7 @@ use serde::{Serialize, Deserialize};
 
 static SPOT_ATTR: &'static str = "spot_credentials";
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct Credentials {
     pub username: String,
     pub password: String,

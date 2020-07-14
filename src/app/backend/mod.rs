@@ -11,12 +11,13 @@ pub use player::{SpotifyPlayer};
 pub mod api;
 
 use super::{Dispatcher, AppAction};
+use crate::app::credentials;
 
 
 #[derive(Debug, Clone)]
 pub enum Command {
     Login(String, String),
-    LoginSuccessful(String),
+    LoginSuccessful(credentials::Credentials),
     PlayerLoad(SpotifyId),
     PlayerResume,
     PlayerPause,
@@ -25,7 +26,7 @@ pub enum Command {
 impl Into<Option<AppAction>> for Command {
     fn into(self) -> Option<AppAction> {
         match self {
-            Command::LoginSuccessful(token) => Some(AppAction::LoginSuccess(token)),
+            Command::LoginSuccessful(cred) => Some(AppAction::LoginSuccess(cred)),
             _ => None
         }
     }

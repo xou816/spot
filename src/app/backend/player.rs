@@ -52,10 +52,10 @@ impl SpotifyPlayer {
             Command::Login(username, password) => {
                 let session = create_session(username.clone(), password.clone(), handle.clone()).await?;
                 let token = get_access_token(&session).await?.clone();
-                credentials::save_credentials(credentials::Credentials {
+                let credentials = credentials::Credentials {
                     username, password, token: token.clone()
-                }).map_err(|_| "Could not save token locally")?;
-                self.sender.clone().dispatch(Command::LoginSuccessful(token)).unwrap();
+                };
+                self.sender.clone().dispatch(Command::LoginSuccessful(credentials)).unwrap();
                 player.replace(create_player(session));
                 Ok(())
             },

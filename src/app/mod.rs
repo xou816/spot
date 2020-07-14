@@ -13,9 +13,10 @@ use backend::Command;
 use backend::api;
 
 pub mod state;
-pub use state::{AppState, AppModel, SongDescription};
+pub use state::{AppState, AppModel, SongDescription, AlbumDescription};
 
 pub mod credentials;
+
 pub mod loader;
 
 
@@ -27,7 +28,7 @@ pub enum AppAction {
     LoadPlaylist(Vec<SongDescription>),
     StartLogin,
     TryLogin(String, String),
-    LoginSuccess(String),
+    LoginSuccess(credentials::Credentials),
     Error
 }
 
@@ -91,15 +92,16 @@ impl App {
             AppAction::LoadPlaylist(tracks) => {
                 model.state.playlist = tracks;
             },
-            AppAction::LoginSuccess(token) => {
-                model.state.token = Some(token.clone());
-                model.dispatcher.dispatch_async(Box::pin(async {
-                    if let Some(tracks) = api::get_album(token, "4xwx0x7k6c5VuThz5qVqmV").await {
+            AppAction::LoginSuccess(creds) => {
+                let _ = credentials::save_credentials(creds.clone());
+                model.dispatcher.dispatch_async(Box::pin(async move {
+                    if let Some(tracks) = api::get_album(creds.token, "4xwx0x7k6c5VuThz5qVqmV").await {
                         AppAction::LoadPlaylist(tracks)
                     } else {
                         AppAction::Error
                     }
                 }));
+
             }
             _ => {}
         };

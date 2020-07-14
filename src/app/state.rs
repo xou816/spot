@@ -3,6 +3,14 @@ use super::components::{PlaybackModel, PlaylistModel, LoginModel};
 use super::Dispatcher;
 use super::credentials;
 
+#[derive(Clone, Debug)]
+pub struct AlbumDescription {
+    pub title: String,
+    pub artist: String,
+    pub uri: String,
+    pub art: String,
+    pub songs: Vec<SongDescription>
+}
 
 #[derive(Clone, Debug)]
 pub struct SongDescription {
