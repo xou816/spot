@@ -6,7 +6,7 @@ pub mod dispatch;
 pub use dispatch::{DispatchLoop, Dispatcher, Worker};
 
 pub mod components;
-use components::{Component, Playback, Playlist, PlaybackModel, PlaylistModel, Login, LoginModel, Player, Browser};
+use components::{Component, Playback, Playlist, PlaybackModel, PlaylistModel, Login, LoginModel, Player, Browser, BrowserModel};
 
 pub mod backend;
 use backend::Command;
@@ -52,15 +52,15 @@ impl App {
         command_sender: Sender<Command>) -> Self {
 
         let state = AppState::new(Vec::new());
-        let model = AppModel::new(state, dispatcher.clone());
+        let model = AppModel::new(state, dispatcher.clone(), worker.clone());
         let model = Rc::new(RefCell::new(model));
 
         let components: Vec<Box<dyn Component>> = vec![
             Box::new(Playback::new(builder, Rc::clone(&model) as Rc<RefCell<dyn PlaybackModel>>, worker.clone())),
             Box::new(Playlist::new(builder, Rc::clone(&model) as Rc<RefCell<dyn PlaylistModel>>)),
             Box::new(Login::new(builder, Rc::clone(&model) as Rc<RefCell<dyn LoginModel>>)),
+            Box::new(Browser::new(builder, worker.clone(), Rc::clone(&model) as Rc<RefCell<dyn BrowserModel>>)),
             Box::new(Player::new(command_sender)),
-            Box::new(Browser::new(builder, worker.clone()))
         ];
 
         App::new(model, components)
@@ -94,14 +94,8 @@ impl App {
             },
             AppAction::LoginSuccess(creds) => {
                 let _ = credentials::save_credentials(creds.clone());
-                model.dispatcher.dispatch_async(Box::pin(async move {
-                    if let Some(tracks) = api::get_album(creds.token, "4xwx0x7k6c5VuThz5qVqmV").await {
-                        AppAction::LoadPlaylist(tracks)
-                    } else {
-                        AppAction::Error
-                    }
-                }));
-
+                let mut api = model.api.borrow_mut();
+                api.token = Some(creds.token);
             }
             _ => {}
         };

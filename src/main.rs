@@ -31,7 +31,7 @@ fn main() {
         App::new_from_builder(&builder, dispatcher.clone(), tasks.make_worker(), player_sender)
             .start(dispatch_loop));
 
-    context.spawn_local(tasks.attach());
+    context.spawn_local_with_priority(glib::source::PRIORITY_DEFAULT_IDLE, tasks.attach());
 
     let window = make_window(&builder);
     app.connect_activate(move |app| {

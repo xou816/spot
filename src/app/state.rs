@@ -1,7 +1,12 @@
+use std::rc::Rc;
+use std::cell::RefCell;
+
 use super::AppAction;
-use super::components::{PlaybackModel, PlaylistModel, LoginModel};
-use super::Dispatcher;
+use super::components::{PlaybackModel, PlaylistModel, LoginModel, BrowserModel};
+use super::backend::api::SpotifyApi;
+use super::{Dispatcher, Worker};
 use super::credentials;
+
 
 #[derive(Clone, Debug)]
 pub struct AlbumDescription {
@@ -9,7 +14,8 @@ pub struct AlbumDescription {
     pub artist: String,
     pub uri: String,
     pub art: String,
-    pub songs: Vec<SongDescription>
+    pub songs: Vec<SongDescription>,
+    pub id: String
 }
 
 #[derive(Clone, Debug)]
@@ -27,20 +33,24 @@ impl SongDescription {
 
 pub struct AppModel {
     pub state: AppState,
-    pub dispatcher: Dispatcher
+    pub dispatcher: Dispatcher,
+    pub worker: Worker,
+    pub api: Rc<RefCell<SpotifyApi>>
 }
 
 impl AppModel {
-    pub fn new(state: AppState, dispatcher: Dispatcher) -> Self {
-        Self { state, dispatcher }
+    pub fn new(state: AppState, dispatcher: Dispatcher, worker: Worker) -> Self {
+        Self {
+            state, dispatcher, worker,
+            api: Rc::new(RefCell::new(SpotifyApi::new()))
+        }
     }
 }
 
 pub struct AppState {
     pub is_playing: bool,
     pub current_song_uri: Option<String>,
-    pub playlist: Vec<SongDescription>,
-    pub token: Option<String>
+    pub playlist: Vec<SongDescription>
 }
 
 impl AppState {
@@ -48,8 +58,7 @@ impl AppState {
         Self {
             is_playing: false,
             current_song_uri: None,
-            playlist: songs,
-            token: None
+            playlist: songs
         }
     }
 }
@@ -124,5 +133,30 @@ impl LoginModel for AppModel {
 
     fn login(&self, u: String, p: String) {
         self.dispatcher.dispatch(AppAction::TryLogin(u, p));
+    }
+}
+
+impl BrowserModel for AppModel {
+
+    fn get_saved_albums(&self, completion: Box<dyn Fn(Vec<AlbumDescription>) -> ()>) {
+        let api = Rc::clone(&self.api);
+        self.worker.send_task(async move {
+            if let Some(albums) = api.borrow().get_saved_albums().await {
+                completion(albums);
+            }
+        });
+    }
+
+    fn play_album(&self, album_uri: &str) {
+        let api = Rc::clone(&self.api);
+        let dispatcher = self.dispatcher.clone();
+        let uri = String::from(album_uri);
+        self.worker.send_task(async move {
+            if let Some(songs) = api.borrow().get_album(&uri).await {
+                let first = songs[0].uri.clone();
+                dispatcher.dispatch(AppAction::LoadPlaylist(songs));
+                dispatcher.dispatch(AppAction::Load(first));
+            }
+        });
     }
 }

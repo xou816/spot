@@ -13,7 +13,7 @@ pub mod player;
 pub use player::{Player};
 
 pub mod browser;
-pub use browser::Browser;
+pub use browser::{Browser, BrowserModel};
 
 mod gtypes;
 

@@ -16,6 +16,7 @@ pub struct SavedAlbum {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Album {
+    id: String,
     uri: String,
     tracks: Tracks,
     artists: Vec<Artist>,
@@ -75,36 +76,50 @@ impl Into<AlbumDescription> for Album {
             artist,
             uri: self.uri,
             art,
-            songs
+            songs,
+            id: self.id
         }
     }
 }
 
 const SPOTIFY_API: &'static str = "https://api.spotify.com/v1";
 
-pub async fn get_album(token: String, id: &str) -> Option<Vec<SongDescription>> {
-    let uri = format!("{}/albums/{}", SPOTIFY_API, id);
-    let request = Request::get(uri)
-        .header("Authorization", format!("Bearer {}", &token))
-        .body(())
-        .unwrap();
-    let result = request.send_async().await;
-
-    result.ok()?.json::<Album>().ok().map(|album| album.into())
+pub struct SpotifyApi {
+    pub token: Option<String>
 }
 
-pub async fn get_saved_albums(token: String) -> Option<Vec<AlbumDescription>> {
-    let uri = format!("{}/me/albums", SPOTIFY_API);
-    let request = Request::get(uri)
-        .header("Authorization", format!("Bearer {}", &token))
-        .body(())
-        .unwrap();
-    let result = request.send_async().await;
+impl SpotifyApi {
 
-    let page = result.ok()?.json::<Page<SavedAlbum>>().ok()?;
+    pub fn new() -> SpotifyApi {
+        SpotifyApi { token: None }
+    }
 
-    Some(page.items.iter()
-        .map(|saved| saved.album.clone().into())
-        .collect::<Vec<AlbumDescription>>())
+    pub async fn get_album(&self, id: &str) -> Option<Vec<SongDescription>> {
+        let uri = format!("{}/albums/{}", SPOTIFY_API, id);
+        println!("{}", uri);
+        let request = Request::get(uri)
+            .header("Authorization", format!("Bearer {}", self.token.as_ref()?))
+            .body(())
+            .unwrap();
+        let result = request.send_async().await;
+
+        result.ok()?.json::<Album>().ok().map(|album| album.into())
+    }
+
+    pub async fn get_saved_albums(&self) -> Option<Vec<AlbumDescription>> {
+        let uri = format!("{}/me/albums", SPOTIFY_API);
+        println!("{}", uri);
+        let request = Request::get(uri)
+            .header("Authorization", format!("Bearer {}", self.token.as_ref()?))
+            .body(())
+            .unwrap();
+        let result = request.send_async().await;
+
+        let page = result.ok()?.json::<Page<SavedAlbum>>().ok()?;
+
+        Some(page.items.iter()
+            .map(|saved| saved.album.clone().into())
+            .collect::<Vec<AlbumDescription>>())
+    }
 }
 

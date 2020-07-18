@@ -7,62 +7,53 @@ use futures::channel::mpsc::{Receiver, Sender, channel};
 
 use super::AppAction;
 
-pub type FutureAppAction = Pin<Box<dyn Future<Output=AppAction> + Send>>;
-
 #[derive(Clone)]
 pub struct Dispatcher {
-    future_sender: Sender<FutureAppAction>
+    sender: Sender<AppAction>
 }
 
 
 impl Dispatcher {
-    fn new(future_sender: Sender<FutureAppAction>) -> Self {
-        Self { future_sender }
+    fn new(sender: Sender<AppAction>) -> Self {
+        Self { sender }
     }
 
     pub fn dispatch<T: Into<Option<AppAction>>>(&self, action: T) -> Option<()> {
         if let Some(action) = action.into() {
-            self.dispatch_async(Box::pin(async {
-                action
-            }))
+            self.sender.clone().try_send(action).ok()
         } else {
             println!("No action");
             None
         }
     }
-
-    pub fn dispatch_async(&self, action: FutureAppAction) -> Option<()> {
-        self.future_sender.clone().try_send(action).ok()
-    }
 }
 
 
 pub struct DispatchLoop {
-    future_receiver: Receiver<FutureAppAction>,
-    future_sender: Sender<FutureAppAction>
+    receiver: Receiver<AppAction>,
+    sender: Sender<AppAction>
 }
 
 impl DispatchLoop {
 
     pub fn new() -> Self {
-        let (future_sender, future_receiver) = channel::<FutureAppAction>(0);
-        Self { future_receiver, future_sender }
+        let (sender, receiver) = channel::<AppAction>(0);
+        Self { receiver, sender }
     }
 
     pub fn make_dispatcher(&self) -> Dispatcher {
-        Dispatcher::new(self.future_sender.clone())
+        Dispatcher::new(self.sender.clone())
     }
 
     pub async fn attach(self, handler: impl Fn(AppAction) -> ()) {
-        self.future_receiver.for_each_concurrent(2, |action| {
+        self.receiver.for_each(|action| {
             async {
-                handler(action.await);
+                handler(action);
             }
         }).await;
     }
 }
 
-// need to generify the above, but it is hard :(
 
 pub type FutureLocalTask = Pin<Box<dyn Future<Output=()>>>;
 
@@ -83,7 +74,7 @@ impl LocalTaskLoop {
     }
 
     pub async fn attach(self) {
-        self.future_receiver.for_each_concurrent(2, |task| task).await;
+        self.future_receiver.for_each_concurrent(1, |task| task).await;
     }
 }
 

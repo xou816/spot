@@ -27,6 +27,11 @@ impl AlbumModel {
         self.get_property("cover_url").unwrap().get::<&str>()
             .unwrap().map(|s| s.to_string())
     }
+
+    pub fn uri(&self) -> Option<String> {
+        self.get_property("uri").unwrap().get::<&str>()
+            .unwrap().map(|s| s.to_string())
+    }
 }
 
 mod imp {

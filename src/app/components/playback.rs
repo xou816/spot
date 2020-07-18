@@ -55,11 +55,11 @@ impl Playback {
 
 
         let image: gtk::Image = builder.get_object("playing_image").unwrap();
-        worker.send_task(async move {
+        /*worker.send_task(async move {
             let url = "https://images-na.ssl-images-amazon.com/images/I/71YJlc9Wb6L._SL1500_.jpg";
             let result = load_remote_image(url, 60, 60).await;
             image.set_from_pixbuf(result.as_ref());
-        });
+        });*/
 
         Self { play_button, current_song_info, model }
     }
