@@ -131,9 +131,11 @@ impl Playlist {
 }
 
 fn song_name_for(song: &SongDescription, is_playing: bool) -> String {
+    let title = glib::markup_escape_text(&song.title);
+    let artist = glib::markup_escape_text(&song.artist);
     if is_playing {
-        format!("<b>{} — <small>{}</small></b>", song.title, song.artist)
+        format!("<b>{} — <small>{}</small></b>", title.as_str(), artist.as_str())
     } else {
-        format!("{} — <small>{}</small>", song.title, song.artist)
+        format!("{} — <small>{}</small>", title.as_str(), artist.as_str())
     }
 }

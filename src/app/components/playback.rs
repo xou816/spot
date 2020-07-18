@@ -83,7 +83,9 @@ impl Playback {
         let model = self.model.borrow();
 
         if let Some(song) = model.current_song() {
-            let label = format!("<b>{}</b>\n{}", &song.title, &song.artist);
+            let title = glib::markup_escape_text(&song.title);
+            let artist = glib::markup_escape_text(&song.artist);
+            let label = format!("<b>{}</b>\n{}", title.as_str(), artist.as_str());
             self.current_song_info.set_label(&label[..]);
         }
     }
