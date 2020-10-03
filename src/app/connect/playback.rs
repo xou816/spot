@@ -75,40 +75,95 @@ impl PlaybackModel for PlaybackModelImpl {
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
-    use std::rc::Weak;
     use crate::app::dispatch::{AbstractDispatcher};
 
-    struct TestDispatcher(pub Weak<RefCell<AppModel>>);
+    struct TestDispatcher(Rc<RefCell<Vec<AppAction>>>);
+
+    impl TestDispatcher {
+        pub fn new() -> Self {
+            Self(Rc::new(RefCell::new(vec![])))
+        }
+
+        pub fn flush(&self, model: Rc<RefCell<AppModel>>) {
+            let mut buffer = self.0.borrow_mut();
+            for action in buffer.drain(..) {
+                model.borrow_mut().update_state(&action);
+            }
+        }
+    }
 
     impl AbstractDispatcher<AppAction> for TestDispatcher {
         fn dispatch(&self, action: AppAction) -> Option<()> {
-            self.0.upgrade().unwrap().borrow_mut().update_state(&action);
+            self.0.borrow_mut().push(action);
             Some(())
         }
     }
 
-    fn make_app_model(state: AppState) -> Rc<RefCell<AppModel>> {
-        let app_model = AppModel::new(state, Rc::new(TestDispatcher(Weak::default())));
+    fn make_model_and_dispatcher(state: AppState) -> (Rc<RefCell<AppModel>>, Rc<TestDispatcher>) {
+        let dispatcher = Rc::new(TestDispatcher::new());
+        let app_model = AppModel::new(state, Rc::clone(&dispatcher) as Rc<dyn AbstractDispatcher<AppAction>>);
         let app_model = Rc::new(RefCell::new(app_model));
-        app_model.borrow_mut().dispatcher = Rc::new(TestDispatcher(Rc::downgrade(&app_model)));
-        app_model
+        (app_model, dispatcher)
     }
 
     #[test]
     fn test_playback() {
 
-        let state = AppState::new(vec![
+        let mut state = AppState::new(vec![
             SongDescription::new("Song 1", "Artist", "uri1"),
             SongDescription::new("Song 2", "Artist", "uri2")
         ]);
+        state.current_song_uri = Some("uri1".to_owned());
 
-        let app_model = make_app_model(state);
-        let model = PlaybackModelImpl(app_model);
-
+        let (app_model, dispatcher) = make_model_and_dispatcher(state);
+        let model = PlaybackModelImpl(Rc::clone(&app_model));
 
         assert!(!model.is_playing());
-        //model.toggle_playback();
+
+        model.toggle_playback();
+        dispatcher.flush(app_model);
+
         assert!(model.is_playing());
+    }
+
+    #[test]
+    fn test_next() {
+
+        let mut state = AppState::new(vec![
+            SongDescription::new("Song 1", "Artist", "uri1"),
+            SongDescription::new("Song 2", "Artist", "uri2")
+        ]);
+        state.current_song_uri = Some("uri1".to_owned());
+
+        let (app_model, dispatcher) = make_model_and_dispatcher(state);
+        let model = PlaybackModelImpl(Rc::clone(&app_model));
+
+        assert_eq!(model.current_song().unwrap().title, "Song 1");
+
+        model.play_next_song();
+        dispatcher.flush(app_model);
+
+        assert_eq!(model.current_song().unwrap().title, "Song 2");
+    }
+
+    #[test]
+    fn test_next_no_next() {
+
+        let mut state = AppState::new(vec![
+            SongDescription::new("Song 1", "Artist", "uri1"),
+            SongDescription::new("Song 2", "Artist", "uri2")
+        ]);
+        state.current_song_uri = Some("uri2".to_owned());
+
+        let (app_model, dispatcher) = make_model_and_dispatcher(state);
+        let model = PlaybackModelImpl(Rc::clone(&app_model));
+
+        assert_eq!(model.current_song().unwrap().title, "Song 2");
+
+        model.play_next_song();
+        dispatcher.flush(app_model);
+
+        assert_eq!(model.current_song().unwrap().title, "Song 2");
     }
 }
 
