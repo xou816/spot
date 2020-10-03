@@ -7,11 +7,14 @@ use futures::channel::mpsc::{Receiver, Sender, channel};
 
 use super::AppAction;
 
+pub trait AbstractDispatcher<T> {
+    fn dispatch(&self, action: T) -> Option<()>;
+}
+
 #[derive(Clone)]
 pub struct Dispatcher {
     sender: Sender<AppAction>
 }
-
 
 impl Dispatcher {
     fn new(sender: Sender<AppAction>) -> Self {
@@ -25,6 +28,14 @@ impl Dispatcher {
             println!("No action");
             None
         }
+    }
+}
+
+
+impl AbstractDispatcher<AppAction> for Dispatcher {
+
+    fn dispatch(&self, action: AppAction) -> Option<()> {
+        self.sender.clone().try_send(action).ok()
     }
 }
 

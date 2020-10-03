@@ -1,22 +1,25 @@
 use futures::channel::mpsc::{Sender};
 use std::rc::Rc;
 use std::cell::RefCell;
+use gtk::prelude::*;
 
 pub mod dispatch;
-pub use dispatch::{DispatchLoop, Dispatcher, Worker};
+pub use dispatch::{DispatchLoop, Dispatcher, AbstractDispatcher, Worker};
 
 pub mod components;
-use components::{Component, Playback, Playlist, PlaybackModel, PlaylistModel, Login, LoginModel, Player, Browser, BrowserModel};
+use components::{Component, Playback, Playlist, Login, Player, Browser};
+
+pub mod connect;
+use connect::{PlaylistModelImpl, PlaybackModelImpl, LoginModelImpl, BrowserModelImpl};
 
 pub mod backend;
 use backend::Command;
-use backend::api;
+use backend::api::SpotifyApi;
 
 pub mod state;
 pub use state::{AppState, AppModel, SongDescription, AlbumDescription};
 
 pub mod credentials;
-
 pub mod loader;
 
 
@@ -29,6 +32,7 @@ pub enum AppAction {
     StartLogin,
     TryLogin(String, String),
     LoginSuccess(credentials::Credentials),
+    Next,
     Error
 }
 
@@ -52,53 +56,66 @@ impl App {
         command_sender: Sender<Command>) -> Self {
 
         let state = AppState::new(Vec::new());
-        let model = AppModel::new(state, dispatcher.clone(), worker.clone());
+        let model = AppModel::new(state, Rc::new(dispatcher.clone()));
         let model = Rc::new(RefCell::new(model));
 
         let components: Vec<Box<dyn Component>> = vec![
-            Box::new(Playback::new(builder, Rc::clone(&model) as Rc<RefCell<dyn PlaybackModel>>, worker.clone())),
-            Box::new(Playlist::new(builder, Rc::clone(&model) as Rc<RefCell<dyn PlaylistModel>>)),
-            Box::new(Login::new(builder, Rc::clone(&model) as Rc<RefCell<dyn LoginModel>>)),
-            Box::new(Browser::new(builder, worker.clone(), Rc::clone(&model) as Rc<RefCell<dyn BrowserModel>>)),
+            App::make_playback(builder, Rc::clone(&model)),
+            App::make_playlist(builder, Rc::clone(&model)),
+            App::make_login(builder, Rc::clone(&model)),
+            App::make_browser(builder, Rc::clone(&model), worker),
             Box::new(Player::new(command_sender)),
         ];
 
         App::new(model, components)
     }
 
+    fn make_browser(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>, worker: Worker) -> Box<Browser> {
+        let flowbox: gtk::FlowBox = builder.get_object("flowbox").unwrap();
+        let model = Rc::new(BrowserModelImpl::new(
+            app_model,
+            Rc::new(SpotifyApi::new())));
+        Box::new(Browser::new(flowbox, worker, model))
+    }
+
+    fn make_login(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>) -> Box<Login> {
+        let parent: gtk::Window = builder.get_object("window").unwrap();
+        let dialog: gtk::Dialog = builder.get_object("login").unwrap();
+        let username: gtk::Entry = builder.get_object("username").unwrap();
+        let password: gtk::Entry = builder.get_object("password").unwrap();
+        let login_btn: gtk::Button = builder.get_object("login_btn").unwrap();
+
+        let model = Rc::new(LoginModelImpl(app_model));
+        Box::new(Login::new(parent, dialog, username, password, login_btn, model))
+    }
+
+    fn make_playlist(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>) -> Box<Playlist> {
+        let listbox: gtk::ListBox = builder.get_object("listbox").unwrap();
+        let model = Rc::new(PlaylistModelImpl(app_model));
+        Box::new(Playlist::new(listbox, model))
+    }
+
+    fn make_playback(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>) -> Box<Playback> {
+        let play_button: gtk::Button = builder.get_object("play_pause").unwrap();
+        let current_song_info: gtk::Label = builder.get_object("current_song_info").unwrap();
+        let next: gtk::Button = builder.get_object("next").unwrap();
+        let prev: gtk::Button = builder.get_object("prev").unwrap();
+
+        let model = Rc::new(PlaybackModelImpl(app_model));
+        Box::new(Playback::new(play_button, current_song_info, next, prev, model))
+    }
+
     fn handle(&self, message: AppAction) {
         println!("AppAction={:?}", message);
 
-        self.update_state(message.clone());
+        {
+            let mut model = self.model.borrow_mut();
+            model.update_state(&message);
+        }
 
         for component in self.components.iter() {
             component.handle(&message);
         }
-    }
-
-    fn update_state(&self, message: AppAction) {
-        let mut model = self.model.borrow_mut();
-        match message {
-            AppAction::Play => {
-                model.state.is_playing = true;
-            },
-            AppAction::Pause => {
-                model.state.is_playing = false;
-            },
-            AppAction::Load(uri) => {
-                model.state.is_playing = true;
-                model.state.current_song_uri = Some(uri);
-            },
-            AppAction::LoadPlaylist(tracks) => {
-                model.state.playlist = tracks;
-            },
-            AppAction::LoginSuccess(creds) => {
-                let _ = credentials::save_credentials(creds.clone());
-                let mut api = model.api.borrow_mut();
-                api.token = Some(creds.token);
-            }
-            _ => {}
-        };
     }
 
     pub async fn start(self, dispatch_loop: DispatchLoop) {

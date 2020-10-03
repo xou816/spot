@@ -40,6 +40,11 @@ sources = files(
   'app/components/player.rs',
   'app/components/playlist.rs',
   'app/components/browser.rs',
+  'app/connect/mod.rs',
+  'app/connect/playback.rs',
+  'app/connect/login.rs',
+  'app/connect/playlist.rs',
+  'app/connect/browser.rs',
   'app/components/gtypes/mod.rs',
   'app/components/gtypes/song_model.rs',
   'app/components/gtypes/album_model.rs',
@@ -49,6 +54,10 @@ sources = files(
 )
 
 cargo_script = find_program(join_paths(meson.source_root(), 'build-aux/cargo.sh'))
+
+cargo = find_program('cargo')
+test('Unit test', cargo, args: ['test', '--manifest-path', join_paths(meson.source_root(), 'Cargo.toml')])
+
 cargo_release = custom_target(
   'cargo-build',
   build_by_default: true,

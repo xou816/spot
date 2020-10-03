@@ -21,12 +21,14 @@ pub enum Command {
     PlayerLoad(SpotifyId),
     PlayerResume,
     PlayerPause,
+    PlayerEndOfTrack
 }
 
 impl Into<Option<AppAction>> for Command {
     fn into(self) -> Option<AppAction> {
         match self {
             Command::LoginSuccessful(cred) => Some(AppAction::LoginSuccess(cred)),
+            Command::PlayerEndOfTrack => Some(AppAction::Next),
             _ => None
         }
     }

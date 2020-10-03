@@ -45,8 +45,14 @@ impl SpotifyPlayer {
                 Ok(())
             },
             Command::PlayerLoad(track) => {
+                let sender = self.sender.clone();
                 let player = player.as_ref().ok_or("Could not get player")?;
-                handle.spawn(player.load(track, true, 0).map_err(|_| ()));
+                let end_of_track = player.load(track, true, 0)
+                    .map_err(|_| ())
+                    .map(move |_| {
+                        sender.dispatch(Command::PlayerEndOfTrack).unwrap();
+                    });
+                handle.spawn(end_of_track);
                 Ok(())
             },
             Command::Login(username, password) => {

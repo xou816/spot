@@ -2,8 +2,9 @@ use gtk::prelude::*;
 use gtk::ButtonExt;
 use gio::prelude::*;
 
+use std::pin::Pin;
 use std::rc::{Rc, Weak};
-use std::cell::RefCell;
+use std::future::Future;
 
 use crate::app::{AppAction, AlbumDescription};
 use crate::app::components::{Component};
@@ -11,40 +12,51 @@ use super::gtypes::AlbumModel;
 use crate::app::dispatch::Worker;
 use crate::app::loader::load_remote_image;
 
+const STYLE: &str = "
+button.album {
+  padding: 0;
+  border-radius: 0;
+}
+";
+
+pub type VecAlbumDescriptionFuture = Pin<Box<dyn Future<Output=Vec<AlbumDescription>>>>;
+pub type PlayAlbumFuture = Pin<Box<dyn Future<Output=()>>>;
+
 pub trait BrowserModel {
-    fn get_saved_albums(&self, completion: Box<dyn Fn(Vec<AlbumDescription>) -> ()>);
-    fn play_album(&self, album_uri: &str);
+    fn get_saved_albums(&self) -> VecAlbumDescriptionFuture;
+    fn play_album(&self, album_uri: &str) -> PlayAlbumFuture;
 }
 
 
 pub struct Browser {
     browser_model: gio::ListStore,
-    model: Rc<RefCell<dyn BrowserModel>>
+    model: Rc<dyn BrowserModel>,
+    worker: Worker
 }
 
 impl Browser {
 
-    pub fn new(builder: &gtk::Builder, worker: Worker, model: Rc<RefCell<dyn BrowserModel>>) -> Self {
+    pub fn new(flowbox: gtk::FlowBox, worker: Worker, model: Rc<dyn BrowserModel>) -> Self {
 
         let browser_model = gio::ListStore::new(AlbumModel::static_type());
-        let flowbox: gtk::FlowBox = builder.get_object("flowbox").unwrap();
 
         let weak_model = Rc::downgrade(&model);
+        let worker_clone = worker.clone();
         flowbox.bind_model(Some(&browser_model), move |item| {
             let item = item.downcast_ref::<AlbumModel>().unwrap();
-            let child = create_album_for(item, worker.clone(), weak_model.clone());
+            let child = create_album_for(item, worker_clone.clone(), weak_model.clone());
             child.show_all();
             child.upcast::<gtk::Widget>()
         });
 
-        Self { browser_model, model }
+        Self { browser_model, model, worker }
     }
 
     fn load_saved_albums(&self) {
         let browser_model = self.browser_model.clone();
-        let model = self.model.borrow();
-
-        model.get_saved_albums(Box::new(move |albums| {
+        let model = Rc::clone(&self.model);
+        self.worker.send_task(async move {
+            let albums = model.get_saved_albums().await;
             for album in albums {
                 browser_model.append(&AlbumModel::new(
                     &album.artist,
@@ -53,7 +65,7 @@ impl Browser {
                     &album.id
                 ));
             }
-        }));
+        });
     }
 }
 
@@ -68,7 +80,7 @@ impl Component for Browser {
     }
 }
 
-fn create_album_for(album: &AlbumModel, worker: Worker, model: Weak<RefCell<BrowserModel>>) -> gtk::FlowBoxChild {
+fn create_album_for(album: &AlbumModel, worker: Worker, model: Weak<dyn BrowserModel>) -> gtk::FlowBoxChild {
     let child = gtk::FlowBoxChild::new();
 
     let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
@@ -94,9 +106,17 @@ fn create_album_for(album: &AlbumModel, worker: Worker, model: Weak<RefCell<Brow
         button.set_margin_top(0);
         button.connect_clicked(move |_| {
             if let (Some(model), Some(uri)) = (model.upgrade(), album.uri()) {
-                model.borrow().play_album(&uri);
+                worker.send_task(model.play_album(&uri));
             }
         });
+
+        let provider = gtk::CssProvider::new();
+        provider
+            .load_from_data(STYLE.as_bytes())
+            .expect("Failed to load CSS");
+        let context = button.get_style_context();
+        context.add_class("album");
+        context.add_provider(&provider, gtk::STYLE_PROVIDER_PRIORITY_APPLICATION);
 
         button.add(&image);
         hbox.add(&button)

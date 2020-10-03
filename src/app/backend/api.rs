@@ -85,20 +85,20 @@ impl Into<AlbumDescription> for Album {
 const SPOTIFY_API: &'static str = "https://api.spotify.com/v1";
 
 pub struct SpotifyApi {
-    pub token: Option<String>
+
 }
 
 impl SpotifyApi {
 
     pub fn new() -> SpotifyApi {
-        SpotifyApi { token: None }
+        SpotifyApi {}
     }
 
-    pub async fn get_album(&self, id: &str) -> Option<Vec<SongDescription>> {
+    pub async fn get_album(&self, token: &str, id: &str) -> Option<Vec<SongDescription>> {
         let uri = format!("{}/albums/{}", SPOTIFY_API, id);
         println!("{}", uri);
         let request = Request::get(uri)
-            .header("Authorization", format!("Bearer {}", self.token.as_ref()?))
+            .header("Authorization", format!("Bearer {}", token))
             .body(())
             .unwrap();
         let result = request.send_async().await;
@@ -106,11 +106,11 @@ impl SpotifyApi {
         result.ok()?.json::<Album>().ok().map(|album| album.into())
     }
 
-    pub async fn get_saved_albums(&self) -> Option<Vec<AlbumDescription>> {
+    pub async fn get_saved_albums(&self, token: &str) -> Option<Vec<AlbumDescription>> {
         let uri = format!("{}/me/albums", SPOTIFY_API);
         println!("{}", uri);
         let request = Request::get(uri)
-            .header("Authorization", format!("Bearer {}", self.token.as_ref()?))
+            .header("Authorization", format!("Bearer {}", token))
             .body(())
             .unwrap();
         let result = request.send_async().await;
