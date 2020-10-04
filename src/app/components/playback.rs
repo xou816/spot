@@ -1,7 +1,8 @@
 use gtk::prelude::*;
 use gtk::ImageExt;
+use gtk::RangeExt;
 use std::rc::Rc;
-use std::cell::{Ref};
+use std::cell::{RefCell};
 
 use crate::app::{AppAction, SongDescription};
 use crate::app::components::{Component};
@@ -18,6 +19,8 @@ pub trait PlaybackModel {
 pub struct Playback {
     play_button: gtk::Button,
     current_song_info: gtk::Label,
+    seek_bar: gtk::Range,
+    seek_source_id: RefCell<Option<glib::source::SourceId>>,
     model: Rc<dyn PlaybackModel>
 }
 
@@ -28,6 +31,7 @@ impl Playback {
         current_song_info: gtk::Label,
         next: gtk::Button,
         prev: gtk::Button,
+        seek_bar: gtk::Range,
         model: Rc<dyn PlaybackModel>) -> Self {
 
         let weak_model = Rc::downgrade(&model);
@@ -54,10 +58,10 @@ impl Playback {
             image.set_from_pixbuf(result.as_ref());
         });*/
 
-        Self { play_button, current_song_info, model }
+        Self { play_button, current_song_info, seek_bar, seek_source_id: RefCell::new(None), model }
     }
 
-    fn toggle_image(&self) {
+    fn toggle_playing(&self) {
 
         let is_playing = self.model.is_playing();
 
@@ -69,6 +73,21 @@ impl Playback {
                     gtk::IconSize::Button);
             })
             .expect("error updating icon");
+
+        let seek_bar = self.seek_bar.clone();
+        let new_source = if is_playing {
+            Some(gtk::timeout_add_seconds(1, move || {
+                let value = seek_bar.get_value();
+                seek_bar.set_value(value + 1000.0);
+                glib::Continue(true)
+            }))
+        } else {
+            None
+        };
+
+        if let Some(previous) = self.seek_source_id.replace(new_source) {
+            glib::source_remove(previous);
+        }
     }
 
     fn update_current_info(&self) {
@@ -78,6 +97,10 @@ impl Playback {
             let artist = glib::markup_escape_text(&song.artist);
             let label = format!("<b>{}</b>\n{}", title.as_str(), artist.as_str());
             self.current_song_info.set_label(&label[..]);
+
+            let duration = song.duration as f64;
+            self.seek_bar.set_range(0.0, duration);
+            self.seek_bar.set_value(0.0);
         }
     }
 }
@@ -87,11 +110,11 @@ impl Component for Playback {
     fn handle(&self, action: &AppAction) {
         match action {
             AppAction::Play|AppAction::Pause => {
-                self.toggle_image();
+                self.toggle_playing();
             },
-            AppAction::Load(_) => {
+            AppAction::Load(_)|AppAction::Previous|AppAction::Next => {
                 self.update_current_info();
-                self.toggle_image();
+                self.toggle_playing();
             },
             _ => {}
         }

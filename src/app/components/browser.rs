@@ -58,9 +58,16 @@ impl Browser {
         self.worker.send_task(async move {
             let albums = model.get_saved_albums().await;
             for album in albums {
+
+                let title = glib::markup_escape_text(&album.title);
+                let title = format!("<b>{}</b>", title.as_str());
+
+                let artist = glib::markup_escape_text(&album.artist);
+                let artist = format!("<small>{}</small>", artist.as_str());
+
                 browser_model.append(&AlbumModel::new(
-                    &album.artist,
-                    &album.title,
+                    &artist,
+                    &title,
                     &album.art,
                     &album.id
                 ));
@@ -127,12 +134,26 @@ fn create_album_for(album: &AlbumModel, worker: Worker, model: Weak<dyn BrowserM
     let label = gtk::Label::new(None);
     label.set_use_markup(true);
     label.set_halign(gtk::Align::Center);
+    label.set_line_wrap(true);
+    label.set_max_width_chars(25);
+
+    album.bind_property("album", &label, "label")
+        .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+        .build();
+
+    vbox.pack_start(&label, false, false, 3);
+
+    let label = gtk::Label::new(None);
+    label.set_use_markup(true);
+    label.set_halign(gtk::Align::Center);
+    label.set_line_wrap(true);
+    label.set_max_width_chars(25);
 
     album.bind_property("artist", &label, "label")
         .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
         .build();
 
-    vbox.pack_start(&label, false, false, 6);
+    vbox.pack_start(&label, false, false, 3);
 
     child
 }

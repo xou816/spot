@@ -73,7 +73,7 @@ impl Playlist {
 impl Component for Playlist {
     fn handle(&self, action: &AppAction) {
         match action {
-            AppAction::Load(_) => {
+            AppAction::Load(_)|AppAction::Next|AppAction::Previous => {
                 self.update_list();
             },
             AppAction::LoadPlaylist(_) => {

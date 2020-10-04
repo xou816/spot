@@ -17,12 +17,13 @@ pub struct AlbumDescription {
 pub struct SongDescription {
     pub title: String,
     pub artist: String,
-    pub uri: String
+    pub uri: String,
+    pub duration: i64
 }
 
 impl SongDescription {
-    pub fn new(title: &str, artist: &str, uri: &str) -> Self {
-        Self { title: title.to_string(), artist: artist.to_string(), uri: uri.to_string() }
+    pub fn new(title: &str, artist: &str, uri: &str, duration: i64) -> Self {
+        Self { title: title.to_string(), artist: artist.to_string(), uri: uri.to_string(), duration }
     }
 }
 
@@ -66,6 +67,20 @@ impl AppModel {
             AppAction::Pause => {
                 self.state.is_playing = false;
             },
+            AppAction::Next => {
+                let next = self.next_song().map(|s| s.uri.clone());
+                if next.is_some() {
+                    self.state.is_playing = true;
+                    self.state.current_song_uri = next;
+                }
+            },
+            AppAction::Previous => {
+                let prev = self.prev_song().map(|s| s.uri.clone());
+                if prev.is_some() {
+                    self.state.is_playing = true;
+                    self.state.current_song_uri = prev;
+                }
+            },
             AppAction::Load(uri) => {
                 self.state.is_playing = true;
                 self.state.current_song_uri = Some(uri.to_string());
@@ -79,6 +94,25 @@ impl AppModel {
             }
             _ => {}
         };
+    }
+
+    fn prev_song(&self) -> Option<&SongDescription> {
+        let state = &self.state;
+        state.current_song_uri.as_ref().and_then(|uri| {
+            state.playlist.iter()
+                .take_while(|&song| song.uri != *uri)
+                .last()
+        })
+    }
+
+    fn next_song(&self) -> Option<&SongDescription> {
+        let state = &self.state;
+        state.current_song_uri.as_ref().and_then(|uri| {
+            state.playlist.iter()
+                .skip_while(|&song| song.uri != *uri)
+                .skip(1)
+                .next()
+        })
     }
 }
 

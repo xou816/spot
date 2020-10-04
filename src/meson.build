@@ -45,6 +45,7 @@ sources = files(
   'app/connect/login.rs',
   'app/connect/playlist.rs',
   'app/connect/browser.rs',
+  'app/connect/player.rs',
   'app/components/gtypes/mod.rs',
   'app/components/gtypes/song_model.rs',
   'app/components/gtypes/album_model.rs',

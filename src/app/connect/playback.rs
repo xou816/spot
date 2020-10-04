@@ -34,30 +34,11 @@ impl PlaybackModel for PlaybackModelImpl {
     }
 
     fn play_next_song(&self) {
-        let state = self.state();
-        let next_song = state.current_song_uri.as_ref().and_then(|uri| {
-            state.playlist.iter()
-                .skip_while(|&song| song.uri != *uri)
-                .skip(1)
-                .next()
-        });
-        if let Some(song) = next_song {
-            let action = AppAction::Load(song.uri.clone());
-            self.dispatch(action);
-        }
+        self.dispatch(AppAction::Next);
     }
 
     fn play_prev_song(&self) {
-        let state = self.state();
-        let prev_song = state.current_song_uri.as_ref().and_then(|uri| {
-            state.playlist.iter()
-                .take_while(|&song| song.uri != *uri)
-                .last()
-        });
-        if let Some(song) = prev_song {
-            let action = AppAction::Load(song.uri.clone());
-            self.dispatch(action);
-        }
+        self.dispatch(AppAction::Previous);
 
     }
 
@@ -77,11 +58,11 @@ mod tests {
     use super::*;
     use crate::app::dispatch::{AbstractDispatcher};
 
-    struct TestDispatcher(Rc<RefCell<Vec<AppAction>>>);
+    struct TestDispatcher(RefCell<Vec<AppAction>>);
 
     impl TestDispatcher {
         pub fn new() -> Self {
-            Self(Rc::new(RefCell::new(vec![])))
+            Self(RefCell::new(vec![]))
         }
 
         pub fn flush(&self, model: Rc<RefCell<AppModel>>) {

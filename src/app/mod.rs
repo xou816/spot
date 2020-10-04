@@ -10,7 +10,7 @@ pub mod components;
 use components::{Component, Playback, Playlist, Login, Player, Browser};
 
 pub mod connect;
-use connect::{PlaylistModelImpl, PlaybackModelImpl, LoginModelImpl, BrowserModelImpl};
+use connect::{PlaylistModelImpl, PlaybackModelImpl, LoginModelImpl, BrowserModelImpl, PlayerModelImpl};
 
 pub mod backend;
 use backend::Command;
@@ -33,6 +33,7 @@ pub enum AppAction {
     TryLogin(String, String),
     LoginSuccess(credentials::Credentials),
     Next,
+    Previous,
     Error
 }
 
@@ -64,10 +65,15 @@ impl App {
             App::make_playlist(builder, Rc::clone(&model)),
             App::make_login(builder, Rc::clone(&model)),
             App::make_browser(builder, Rc::clone(&model), worker),
-            Box::new(Player::new(command_sender)),
+            App::make_player(command_sender, Rc::clone(&model))
         ];
 
         App::new(model, components)
+    }
+
+    fn make_player(sender: Sender<Command>, app_model: Rc<RefCell<AppModel>>) -> Box<Player> {
+        let model = Rc::new(PlayerModelImpl(app_model));
+        Box::new(Player::new(sender, model))
     }
 
     fn make_browser(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>, worker: Worker) -> Box<Browser> {
@@ -100,9 +106,10 @@ impl App {
         let current_song_info: gtk::Label = builder.get_object("current_song_info").unwrap();
         let next: gtk::Button = builder.get_object("next").unwrap();
         let prev: gtk::Button = builder.get_object("prev").unwrap();
+        let seek_bar: gtk::Range = builder.get_object("seek_bar").unwrap();
 
         let model = Rc::new(PlaybackModelImpl(app_model));
-        Box::new(Playback::new(play_button, current_song_info, next, prev, model))
+        Box::new(Playback::new(play_button, current_song_info, next, prev, seek_bar, model))
     }
 
     fn handle(&self, message: AppAction) {

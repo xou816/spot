@@ -9,3 +9,6 @@ pub use login::LoginModelImpl;
 
 pub mod browser;
 pub use browser::BrowserModelImpl;
+
+pub mod player;
+pub use player::PlayerModelImpl;

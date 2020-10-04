@@ -56,7 +56,7 @@ impl Into<Vec<SongDescription>> for Album {
                 .collect::<Vec<String>>()
                 .join(", ");
 
-            SongDescription::new(&item.name, &artist, &item.uri)
+            SongDescription::new(&item.name, &artist, &item.uri, item.duration_ms)
         }).collect()
     }
 }

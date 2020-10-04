@@ -1,17 +1,23 @@
 use futures::channel::mpsc::Sender;
+use std::rc::Rc;
 use librespot::core::spotify_id::SpotifyId;
 
 use crate::app::AppAction;
 use crate::app::backend::Command;
 use crate::app::components::Component;
 
+pub trait PlayerModel {
+    fn current_song_uri(&self) -> Option<String>;
+}
+
 pub struct Player {
+    model: Rc<dyn PlayerModel>,
     sender: Sender<Command>
 }
 
 impl Player {
-    pub fn new(sender: Sender<Command>) -> Self {
-        Self { sender }
+    pub fn new(sender: Sender<Command>, model: Rc<dyn PlayerModel>) -> Self {
+        Self { sender, model }
     }
 }
 
@@ -23,11 +29,18 @@ impl Component for Player {
             AppAction::Play => sender.try_send(Command::PlayerResume).ok(),
             AppAction::Pause => sender.try_send(Command::PlayerPause).ok(),
             AppAction::Load(track) => {
-                if let Some(id) = SpotifyId::from_uri(&track).ok() {
-                    sender.try_send(Command::PlayerLoad(id)).ok()
-                } else {
-                    None
-                }
+                SpotifyId::from_uri(&track).ok()
+                    .and_then(|id| {
+                        sender.try_send(Command::PlayerLoad(id)).ok()
+                    })
+            },
+            AppAction::Next|AppAction::Previous => {
+                self.model
+                    .current_song_uri()
+                    .and_then(|uri| SpotifyId::from_uri(&uri).ok())
+                    .and_then(|id| {
+                        sender.try_send(Command::PlayerLoad(id)).ok()
+                    })
             },
             AppAction::TryLogin(username, password) => {
                 sender.try_send(Command::Login(username, password)).ok()
