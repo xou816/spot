@@ -45,6 +45,7 @@ impl Component for Player {
             AppAction::TryLogin(username, password) => {
                 sender.try_send(Command::Login(username, password)).ok()
             },
+            AppAction::Seek(position) => sender.try_send(Command::PlayerSeek(position)).ok(),
             _ => Some(())
         };
         option.expect("Could not communicate with backend");

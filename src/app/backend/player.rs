@@ -44,6 +44,11 @@ impl SpotifyPlayer {
                 player.pause();
                 Ok(())
             },
+            Command::PlayerSeek(position) => {
+                let player = player.as_ref().ok_or("Could not get player")?;
+                player.seek(position);
+                Ok(())
+            },
             Command::PlayerLoad(track) => {
                 let sender = self.sender.clone();
                 let player = player.as_ref().ok_or("Could not get player")?;

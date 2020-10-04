@@ -50,6 +50,11 @@ impl PlaybackModel for PlaybackModelImpl {
         };
         self.dispatch(action);
     }
+
+
+    fn seek_to(&self, position: u32) {
+        self.dispatch(AppAction::Seek(position));
+    }
 }
 
 #[cfg(test)]
@@ -91,8 +96,8 @@ mod tests {
     fn test_playback() {
 
         let mut state = AppState::new(vec![
-            SongDescription::new("Song 1", "Artist", "uri1"),
-            SongDescription::new("Song 2", "Artist", "uri2")
+            SongDescription::new("Song 1", "Artist", "uri1", 1000),
+            SongDescription::new("Song 2", "Artist", "uri2", 1000)
         ]);
         state.current_song_uri = Some("uri1".to_owned());
 
@@ -111,8 +116,8 @@ mod tests {
     fn test_next() {
 
         let mut state = AppState::new(vec![
-            SongDescription::new("Song 1", "Artist", "uri1"),
-            SongDescription::new("Song 2", "Artist", "uri2")
+            SongDescription::new("Song 1", "Artist", "uri1", 1000),
+            SongDescription::new("Song 2", "Artist", "uri2", 1000)
         ]);
         state.current_song_uri = Some("uri1".to_owned());
 
@@ -131,8 +136,8 @@ mod tests {
     fn test_next_no_next() {
 
         let mut state = AppState::new(vec![
-            SongDescription::new("Song 1", "Artist", "uri1"),
-            SongDescription::new("Song 2", "Artist", "uri2")
+            SongDescription::new("Song 1", "Artist", "uri1", 1000),
+            SongDescription::new("Song 2", "Artist", "uri2", 1000)
         ]);
         state.current_song_uri = Some("uri2".to_owned());
 

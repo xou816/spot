@@ -27,6 +27,7 @@ pub mod loader;
 pub enum AppAction {
     Play,
     Pause,
+    Seek(u32),
     Load(String),
     LoadPlaylist(Vec<SongDescription>),
     StartLogin,

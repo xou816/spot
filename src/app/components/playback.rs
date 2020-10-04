@@ -14,6 +14,7 @@ pub trait PlaybackModel {
     fn play_next_song(&self);
     fn play_prev_song(&self);
     fn toggle_playback(&self);
+    fn seek_to(&self, position: u32);
 }
 
 pub struct Playback {
@@ -33,6 +34,13 @@ impl Playback {
         prev: gtk::Button,
         seek_bar: gtk::Range,
         model: Rc<dyn PlaybackModel>) -> Self {
+
+        let weak_model = Rc::downgrade(&model);
+        seek_bar.connect_change_value(move |s, _, _| {
+            weak_model.upgrade()
+                .map(|model| model.seek_to(s.get_value() as u32));
+            glib::signal::Inhibit(false)
+        });
 
         let weak_model = Rc::downgrade(&model);
         play_button.connect_clicked(move |_| {
