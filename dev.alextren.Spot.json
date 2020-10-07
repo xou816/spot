@@ -1,7 +1,7 @@
 {
     "app-id" : "dev.alextren.Spot",
     "runtime" : "org.gnome.Platform",
-    "runtime-version" : "3.34",
+    "runtime-version" : "3.38",
     "sdk" : "org.gnome.Sdk",
     "sdk-extensions" : [
         "org.freedesktop.Sdk.Extension.rust-stable"
@@ -21,6 +21,7 @@
             "--share=network"
         ],
         "env" : {
+            "GTK_DEBUG" : "interactive",
             "CARGO_HOME" : "/run/build/spot/cargo",
             "RUST_BACKTRACE" : "full",
             "RUST_LOG" : "spot=debug"

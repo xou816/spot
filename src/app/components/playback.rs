@@ -2,7 +2,7 @@ use gtk::prelude::*;
 use gtk::ImageExt;
 use gtk::RangeExt;
 use std::rc::Rc;
-use std::cell::{RefCell};
+use std::cell::{Cell};
 
 use crate::app::{AppAction, SongDescription};
 use crate::app::components::{Component};
@@ -21,7 +21,7 @@ pub struct Playback {
     play_button: gtk::Button,
     current_song_info: gtk::Label,
     seek_bar: gtk::Range,
-    seek_source_id: RefCell<Option<glib::source::SourceId>>,
+    seek_source_id: Cell<Option<glib::source::SourceId>>,
     model: Rc<dyn PlaybackModel>
 }
 
@@ -66,7 +66,7 @@ impl Playback {
             image.set_from_pixbuf(result.as_ref());
         });*/
 
-        Self { play_button, current_song_info, seek_bar, seek_source_id: RefCell::new(None), model }
+        Self { play_button, current_song_info, seek_bar, seek_source_id: Cell::new(None), model }
     }
 
     fn toggle_playing(&self) {
