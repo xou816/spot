@@ -38,7 +38,7 @@ fn main() {
         window.set_application(Some(app));
         app.add_window(&window);
         window.present();
-        dispatcher.dispatch(AppAction::StartLogin);
+        dispatcher.dispatch(AppAction::Start);
     });
 
 

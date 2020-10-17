@@ -2,7 +2,7 @@ use gtk::prelude::*;
 use gtk::EntryExt;
 use std::rc::Rc;
 
-use crate::app::{AppAction};
+use crate::app::AppEvent;
 use crate::app::components::{Component};
 
 pub struct Login {
@@ -57,11 +57,15 @@ impl Login {
 
 impl Component for Login {
 
-    fn handle(&self, action: &AppAction) {
-        if let AppAction::StartLogin = action {
-            self.show_self_if_needed();
-        } else if let AppAction::LoginSuccess(_) = action {
-            self.hide();
+    fn on_event(&self, event: AppEvent) {
+        match event {
+            AppEvent::LoginCompleted => {
+                self.hide();
+            },
+            AppEvent::Started => {
+                self.show_self_if_needed();
+            },
+            _ => {}
         }
     }
 }

@@ -1,12 +1,12 @@
 use gtk::prelude::*;
-use gtk::{ListBoxExt};
+use gtk::ListBoxExt;
 use gio::prelude::*;
 use gio::ListModelExt;
 
 use std::rc::{Rc, Weak};
-use std::cell::{RefCell, Ref};
+use std::cell::Ref;
 
-use crate::app::{AppAction, SongDescription};
+use crate::app::{AppEvent, SongDescription};
 use crate::app::components::{Component};
 
 use super::gtypes::SongModel;
@@ -71,12 +71,12 @@ impl Playlist {
 }
 
 impl Component for Playlist {
-    fn handle(&self, action: &AppAction) {
-        match action {
-            AppAction::Load(_)|AppAction::Next|AppAction::Previous => {
+    fn on_event(&self, event: AppEvent) {
+        match event {
+            AppEvent::TrackChanged(_) => {
                 self.update_list();
             },
-            AppAction::LoadPlaylist(_) => {
+            AppEvent::PlaylistChanged => {
                 self.reset_list()
             }
             _ => {}
@@ -84,14 +84,22 @@ impl Component for Playlist {
     }
 }
 
+fn play_button_style(button: gtk::ButtonBuilder) -> gtk::ButtonBuilder {
+
+    let image = gtk::Image::new_from_icon_name(
+        Some("media-playback-start"),
+        gtk::IconSize::Button);
+
+    button
+        .image(&image)
+        .relief(gtk::ReliefStyle::None)
+}
+
 impl Playlist {
 
     fn create_button_for(song_uri: String, model: Weak<dyn PlaylistModel>) -> gtk::Button {
-        let button = gtk::Button::new();
-        let image = gtk::Image::new_from_icon_name(Some("media-playback-start"), gtk::IconSize::Button);
-        button.add(&image);
-        button.set_relief(gtk::ReliefStyle::None);
-
+        let button = gtk::ButtonBuilder::new();
+        let button = play_button_style(button).build();
         button.connect_clicked(move |_| {
             model.upgrade().map(|m| m.play_song(song_uri.clone()));
         });

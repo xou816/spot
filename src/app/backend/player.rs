@@ -3,7 +3,7 @@ use futures::stream::StreamExt;
 use futures::compat::Future01CompatExt;
 use futures01::future::Future as OldFuture;
 
-use tokio_core::reactor::{Handle};
+use tokio_core::reactor::Handle;
 
 use librespot::core::authentication::Credentials;
 use librespot::core::config::SessionConfig;
@@ -17,18 +17,23 @@ use librespot::playback::player::Player;
 use std::rc::Rc;
 use std::cell::RefCell;
 
-use super::{Command, Dispatcher};
+use super::Command;
 use crate::app::credentials;
 
+pub trait SpotifyPlayerDelegate {
+    fn end_of_track_reached(&self);
+    fn login_successful(&self, credentials: credentials::Credentials);
+}
+
 pub struct SpotifyPlayer {
-    player: Rc<RefCell<Option<Player>>>,
-    sender: Dispatcher
+    player: RefCell<Option<Player>>,
+    delegate: Rc<dyn SpotifyPlayerDelegate>
 }
 
 impl SpotifyPlayer {
 
-    pub fn new(sender: Dispatcher) -> Self {
-        Self { player: Rc::new(RefCell::new(None)), sender }
+    pub fn new(delegate: Rc<dyn SpotifyPlayerDelegate>) -> Self {
+        Self { player: RefCell::new(None), delegate }
     }
 
     async fn handle(&self, action: Command, handle: Handle) -> Result<(), &'static str> {
@@ -50,12 +55,14 @@ impl SpotifyPlayer {
                 Ok(())
             },
             Command::PlayerLoad(track) => {
-                let sender = self.sender.clone();
+                let delegate = Rc::downgrade(&self.delegate);
                 let player = player.as_ref().ok_or("Could not get player")?;
                 let end_of_track = player.load(track, true, 0)
                     .map_err(|_| ())
                     .map(move |_| {
-                        sender.dispatch(Command::PlayerEndOfTrack).unwrap();
+                        delegate.upgrade().map(|delegate| {
+                            delegate.end_of_track_reached();
+                        });
                     });
                 handle.spawn(end_of_track);
                 Ok(())
@@ -66,7 +73,7 @@ impl SpotifyPlayer {
                 let credentials = credentials::Credentials {
                     username, password, token: token.clone()
                 };
-                self.sender.clone().dispatch(Command::LoginSuccessful(credentials)).unwrap();
+                self.delegate.login_successful(credentials);
                 player.replace(create_player(session));
                 Ok(())
             },
@@ -95,7 +102,7 @@ user-top-read,\
 user-read-recently-played";
 
 async fn get_access_token(session: &Session) -> Result<String, &'static str> {
-    let token = keymaster::get_token(&session, CLIENT_ID, SCOPES).compat().await;
+    let token = keymaster::get_token(session, CLIENT_ID, SCOPES).compat().await;
     token.map(|t| t.access_token).map_err(|_| "Error obtaining token")
 }
 

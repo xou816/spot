@@ -73,7 +73,7 @@ mod tests {
         pub fn flush(&self, model: Rc<RefCell<AppModel>>) {
             let mut buffer = self.0.borrow_mut();
             for action in buffer.drain(..) {
-                model.borrow_mut().update_state(&action);
+                model.borrow_mut().update_state(action);
             }
         }
     }

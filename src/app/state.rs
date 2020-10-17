@@ -1,5 +1,5 @@
 use std::rc::Rc;
-use crate::app::{AppAction, AbstractDispatcher};
+use crate::app::{AppAction, AppEvent, AbstractDispatcher};
 use crate::app::credentials;
 
 
@@ -59,41 +59,54 @@ impl AppModel {
         self.dispatcher.dispatch(action)
     }
 
-    pub fn update_state(&mut self, message: &AppAction) {
+    pub fn update_state(&mut self, message: AppAction) -> Option<AppEvent> {
         match message {
             AppAction::Play => {
                 self.state.is_playing = true;
+                Some(AppEvent::TrackResumed)
             },
             AppAction::Pause => {
                 self.state.is_playing = false;
+                Some(AppEvent::TrackPaused)
             },
             AppAction::Next => {
                 let next = self.next_song().map(|s| s.uri.clone());
                 if next.is_some() {
                     self.state.is_playing = true;
-                    self.state.current_song_uri = next;
+                    self.state.current_song_uri = next.clone();
+                    Some(AppEvent::TrackChanged(next.unwrap()))
+                } else {
+                    None
                 }
             },
             AppAction::Previous => {
                 let prev = self.prev_song().map(|s| s.uri.clone());
                 if prev.is_some() {
                     self.state.is_playing = true;
-                    self.state.current_song_uri = prev;
+                    self.state.current_song_uri = prev.clone();
+                    Some(AppEvent::TrackChanged(prev.unwrap()))
+                } else {
+                    None
                 }
             },
             AppAction::Load(uri) => {
                 self.state.is_playing = true;
-                self.state.current_song_uri = Some(uri.to_string());
+                self.state.current_song_uri = Some(uri.clone());
+                Some(AppEvent::TrackChanged(uri))
             },
             AppAction::LoadPlaylist(tracks) => {
-                self.state.playlist = tracks.to_vec();
+                self.state.playlist = tracks;
+                Some(AppEvent::PlaylistChanged)
             },
             AppAction::LoginSuccess(creds) => {
                 let _ = credentials::save_credentials(creds.clone());
                 self.state.api_token = Some(creds.token.clone());
-            }
-            _ => {}
-        };
+                Some(AppEvent::LoginCompleted)
+            },
+            AppAction::Seek(pos) => Some(AppEvent::TrackSeeked(pos)),
+            AppAction::Start => Some(AppEvent::Started),
+            AppAction::TryLogin(u, p) => Some(AppEvent::LoginStarted(u, p))
+        }
     }
 
     fn prev_song(&self) -> Option<&SongDescription> {

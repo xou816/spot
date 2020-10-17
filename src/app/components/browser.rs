@@ -6,7 +6,7 @@ use std::pin::Pin;
 use std::rc::{Rc, Weak};
 use std::future::Future;
 
-use crate::app::{AppAction, AlbumDescription};
+use crate::app::{AppEvent, AlbumDescription};
 use crate::app::components::{Component};
 use super::gtypes::AlbumModel;
 use crate::app::dispatch::Worker;
@@ -77,14 +77,23 @@ impl Browser {
 }
 
 impl Component for Browser {
-    fn handle(&self, action: &AppAction) {
-        match action {
-            AppAction::LoginSuccess(_) => {
+
+    fn on_event(&self, event: AppEvent) {
+        match event {
+            AppEvent::LoginCompleted => {
                 self.load_saved_albums();
             },
             _ => {}
         }
     }
+}
+
+fn wrapped_label_style(builder: gtk::LabelBuilder) -> gtk::LabelBuilder {
+    builder
+        .halign(gtk::Align::Center)
+        .wrap(true)
+        .max_width_chars(25)
+        .use_markup(true)
 }
 
 fn create_album_for(album: &AlbumModel, worker: Worker, model: Weak<dyn BrowserModel>) -> gtk::FlowBoxChild {
@@ -131,11 +140,8 @@ fn create_album_for(album: &AlbumModel, worker: Worker, model: Weak<dyn BrowserM
 
     vbox.pack_start(&hbox, false, false, 6);
 
-    let label = gtk::Label::new(None);
-    label.set_use_markup(true);
-    label.set_halign(gtk::Align::Center);
-    label.set_line_wrap(true);
-    label.set_max_width_chars(25);
+    let label = gtk::LabelBuilder::new();
+    let label = wrapped_label_style(label).build();
 
     album.bind_property("album", &label, "label")
         .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
@@ -143,11 +149,8 @@ fn create_album_for(album: &AlbumModel, worker: Worker, model: Weak<dyn BrowserM
 
     vbox.pack_start(&label, false, false, 3);
 
-    let label = gtk::Label::new(None);
-    label.set_use_markup(true);
-    label.set_halign(gtk::Align::Center);
-    label.set_line_wrap(true);
-    label.set_max_width_chars(25);
+    let label = gtk::LabelBuilder::new();
+    let label = wrapped_label_style(label).build();
 
     album.bind_property("artist", &label, "label")
         .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)

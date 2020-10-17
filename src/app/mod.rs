@@ -7,10 +7,10 @@ pub mod dispatch;
 pub use dispatch::{DispatchLoop, Dispatcher, AbstractDispatcher, Worker};
 
 pub mod components;
-use components::{Component, Playback, Playlist, Login, Player, Browser};
+use components::{Component, Playback, Playlist, Login, PlayerNotifier, Browser};
 
 pub mod connect;
-use connect::{PlaylistModelImpl, PlaybackModelImpl, LoginModelImpl, BrowserModelImpl, PlayerModelImpl};
+use connect::{PlaylistModelImpl, PlaybackModelImpl, LoginModelImpl, BrowserModelImpl};
 
 pub mod backend;
 use backend::Command;
@@ -30,12 +30,23 @@ pub enum AppAction {
     Seek(u32),
     Load(String),
     LoadPlaylist(Vec<SongDescription>),
-    StartLogin,
+    Start,
     TryLogin(String, String),
     LoginSuccess(credentials::Credentials),
     Next,
     Previous,
-    Error
+}
+
+#[derive(Clone, Debug)]
+pub enum AppEvent {
+    Started,
+    TrackPaused,
+    TrackResumed,
+    TrackSeeked(u32),
+    LoginStarted(String, String),
+    LoginCompleted,
+    TrackChanged(String),
+    PlaylistChanged
 }
 
 pub struct App {
@@ -66,15 +77,14 @@ impl App {
             App::make_playlist(builder, Rc::clone(&model)),
             App::make_login(builder, Rc::clone(&model)),
             App::make_browser(builder, Rc::clone(&model), worker),
-            App::make_player(command_sender, Rc::clone(&model))
+            App::make_player_notifier(command_sender)
         ];
 
         App::new(model, components)
     }
 
-    fn make_player(sender: Sender<Command>, app_model: Rc<RefCell<AppModel>>) -> Box<Player> {
-        let model = Rc::new(PlayerModelImpl(app_model));
-        Box::new(Player::new(sender, model))
+    fn make_player_notifier(sender: Sender<Command>) -> Box<PlayerNotifier> {
+        Box::new(PlayerNotifier::new(sender))
     }
 
     fn make_browser(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>, worker: Worker) -> Box<Browser> {
@@ -114,15 +124,18 @@ impl App {
     }
 
     fn handle(&self, message: AppAction) {
-        println!("AppAction={:?}", message);
-
-        {
+        let event = {
             let mut model = self.model.borrow_mut();
-            model.update_state(&message);
-        }
+            model.update_state(message)
+        };
 
-        for component in self.components.iter() {
-            component.handle(&message);
+
+        println!("AppEvent={:?}", event.clone());
+
+        if let Some(event) = event {
+            for component in self.components.iter() {
+                component.on_event(event.clone());
+            }
         }
     }
 
