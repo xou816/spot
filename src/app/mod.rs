@@ -117,7 +117,7 @@ impl App {
         let current_song_info: gtk::Label = builder.get_object("current_song_info").unwrap();
         let next: gtk::Button = builder.get_object("next").unwrap();
         let prev: gtk::Button = builder.get_object("prev").unwrap();
-        let seek_bar: gtk::Range = builder.get_object("seek_bar").unwrap();
+        let seek_bar: gtk::Scale = builder.get_object("seek_bar").unwrap();
 
         let model = Rc::new(PlaybackModelImpl(app_model));
         Box::new(Playback::new(play_button, current_song_info, next, prev, seek_bar, model))

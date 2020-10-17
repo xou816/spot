@@ -43,3 +43,4 @@ serde_json = "1.0"
 isahc = { version = "0.9", features = ["json"] }
 secret-service = "1.1.0"
 gdk-pixbuf = "0.8.0"
+gtk-test = "0.5.0"

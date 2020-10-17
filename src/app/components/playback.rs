@@ -20,7 +20,7 @@ pub trait PlaybackModel {
 pub struct Playback {
     play_button: gtk::Button,
     current_song_info: gtk::Label,
-    seek_bar: gtk::Range,
+    seek_bar: gtk::Scale,
     seek_source_id: Cell<Option<glib::source::SourceId>>,
     model: Rc<dyn PlaybackModel>
 }
@@ -32,7 +32,7 @@ impl Playback {
         current_song_info: gtk::Label,
         next: gtk::Button,
         prev: gtk::Button,
-        seek_bar: gtk::Range,
+        seek_bar: gtk::Scale,
         model: Rc<dyn PlaybackModel>) -> Self {
 
         let weak_model = Rc::downgrade(&model);
@@ -129,4 +129,73 @@ fn playback_image(is_playing: bool) -> &'static str {
     } else {
         "media-playback-start"
     }
+}
+
+
+#[cfg(test)]
+mod tests {
+    // Note this useful idiom: importing names from outer (for mod tests) scope.
+    use super::*;
+    use gtk_test;
+    use gtk::ContainerExt;
+
+    struct MockModel {
+        toggle_playback_called: Cell<bool>
+    }
+
+    impl MockModel {
+        fn new() -> Self {
+            Self { toggle_playback_called: Cell::new(false) }
+        }
+    }
+
+    impl PlaybackModel for MockModel {
+        fn is_playing(&self) -> bool { false }
+        fn current_song(&self) -> Option<SongDescription> { None }
+        fn play_next_song(&self) {}
+        fn play_prev_song(&self) {}
+
+        fn toggle_playback(&self) {
+            self.toggle_playback_called.replace(true);
+        }
+
+        fn seek_to(&self, position: u32) {}
+    }
+
+    fn make_host_window<F: Fn(&gtk::Window) -> ()>(builder: F) -> gtk::Window {
+        let window = gtk::Window::new(gtk::WindowType::Toplevel);
+        builder(&window);
+        window.show_all();
+        window.activate_focus();
+        window
+    }
+
+    #[test]
+    fn test_tap_play() {
+
+        gtk::init().unwrap();
+
+        let mock_model = Rc::new(MockModel::new());
+        let playback = Playback::new(
+            gtk::Button::new(),
+            gtk::Label::new(None),
+            gtk::Button::new(),
+            gtk::Button::new(),
+            gtk::Scale::new_with_range(gtk::Orientation::Horizontal, 0., 1000., 1.),
+            Rc::clone(&mock_model) as Rc<dyn PlaybackModel>);
+
+        let play_button = playback.play_button.clone();
+        make_host_window(move |w| {
+            w.add(&play_button);
+        });
+
+
+        assert!(!mock_model.toggle_playback_called.get());
+
+        gtk_test::click(&playback.play_button);
+        gtk_test::wait(300);
+
+        assert!(mock_model.toggle_playback_called.get());
+    }
+
 }
