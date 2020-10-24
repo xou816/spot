@@ -29,6 +29,7 @@ pub enum CachePolicy {
     IgnoreExpiry
 }
 
+#[derive(Clone)]
 pub struct CacheManager {}
 
 impl CacheManager {
@@ -112,7 +113,7 @@ impl CacheManager {
             Err(_) => true,
             Ok(stream) => match Self::read_timestamp(&stream, priority).await {
                 Some(expiry) => now > expiry,
-                None => true
+                None => false
             }
         }
     }

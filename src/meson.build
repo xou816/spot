@@ -33,6 +33,7 @@ sources = files(
   'app/mod.rs',
   'app/state.rs',
   'app/dispatch.rs',
+  'app/loader.rs',
   'app/credentials.rs',
   'app/components/mod.rs',
   'app/components/playback.rs',

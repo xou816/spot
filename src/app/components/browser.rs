@@ -10,7 +10,7 @@ use crate::app::{AppEvent, AlbumDescription};
 use crate::app::components::{Component};
 use super::gtypes::AlbumModel;
 use crate::app::dispatch::Worker;
-use crate::app::loader::load_remote_image;
+use crate::app::loader::ImageLoader;
 
 const STYLE: &str = "
 button.album {
@@ -117,7 +117,8 @@ fn create_album_for(album: &AlbumModel, worker: Worker, model: Weak<dyn BrowserM
         let image_clone = image.clone();
         if let Some(url) = album.cover_url() {
             worker.send_task(async move {
-                let result = load_remote_image(&url, 180, 180).await;
+                let loader = ImageLoader::new();
+                let result = loader.load_remote(&url, "jpg", 180, 180).await;
                 image_clone.set_from_pixbuf(result.as_ref());
             });
         }
