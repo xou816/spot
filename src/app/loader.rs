@@ -23,7 +23,7 @@ pub async fn load_remote_image(url: &str, width: i32, height: i32) -> Option<Pix
     let pixbuf_loader = PixbufLoader::new();
     pixbuf_loader.set_size(width, height);
     let mut resp = isahc::get_async(url).await.ok()?;
-    resp.copy_to(LocalPixbuf(&pixbuf_loader)).unwrap();
+    resp.copy_to(LocalPixbuf(&pixbuf_loader)).ok()?;
     pixbuf_loader.close().unwrap();
     pixbuf_loader.get_pixbuf()
 }

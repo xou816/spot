@@ -1,31 +1,17 @@
 use std::rc::{Rc};
 use std::cell::{RefCell};
 
-use crate::app::{AppModel, AbstractDispatcher, AppAction};
-use crate::backend::api::SpotifyApi;
+use crate::app::{AppModel, AppAction};
 use crate::app::components::browser::{BrowserModel, VecAlbumDescriptionFuture, PlayAlbumFuture};
 
 pub struct BrowserModelImpl {
-    app_model: Rc<RefCell<AppModel>>,
-    api: Rc<SpotifyApi>
+    app_model: Rc<RefCell<AppModel>>
 }
 
 impl BrowserModelImpl {
 
-    pub fn new(app_model: Rc<RefCell<AppModel>>, api: Rc<SpotifyApi>) -> Self {
-        BrowserModelImpl { app_model, api }
-    }
-
-    fn api_token(&self) -> Option<String> {
-        if let Some(token) = &self.app_model.borrow().state.api_token {
-            Some(token.clone())
-        } else {
-            None
-        }
-    }
-
-    fn dispatcher(&self) -> Rc<dyn AbstractDispatcher<AppAction>> {
-        Rc::clone(&self.app_model.borrow().dispatcher)
+    pub fn new(app_model: Rc<RefCell<AppModel>>) -> Self {
+        BrowserModelImpl { app_model }
     }
 }
 
@@ -33,29 +19,25 @@ impl BrowserModel for BrowserModelImpl {
 
 
     fn get_saved_albums(&self) -> VecAlbumDescriptionFuture {
-        let api = Rc::clone(&self.api);
-        let token = self.api_token();
+        let app_model = self.app_model.borrow();
+        let api = Rc::clone(&app_model.services.spotify_api);
+
         Box::pin(async move {
-            if let Some(token) = token {
-                api.get_saved_albums(&token).await.unwrap_or(vec![])
-            } else {
-                vec![]
-            }
+            api.get_saved_albums().await.unwrap_or(vec![])
         })
     }
 
     fn play_album(&self, album_uri: &str) -> PlayAlbumFuture {
-        let api = Rc::clone(&self.api);
-        let dispatcher = self.dispatcher();
+        let app_model = self.app_model.borrow();
+        let dispatcher = app_model.dispatcher.box_clone();
+        let api = Rc::clone(&app_model.services.spotify_api);
         let uri = String::from(album_uri);
-        let token = self.api_token();
+
         Box::pin(async move {
-            if let Some(token) = token {
-                if let Some(songs) = api.get_album(&token, &uri).await {
-                    let first = songs[0].uri.clone();
-                    dispatcher.dispatch(AppAction::LoadPlaylist(songs));
-                    dispatcher.dispatch(AppAction::Load(first));
-                }
+            if let Some(songs) = api.get_album(&uri).await {
+                let first = songs[0].uri.clone();
+                dispatcher.dispatch(AppAction::LoadPlaylist(songs));
+                dispatcher.dispatch(AppAction::Load(first));
             }
         })
     }

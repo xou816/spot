@@ -1,6 +1,7 @@
 use std::rc::Rc;
 use crate::app::{AppAction, AppEvent, AbstractDispatcher};
 use crate::app::credentials;
+use crate::backend::api::SpotifyApiClient;
 
 
 #[derive(Clone, Debug)]
@@ -45,14 +46,25 @@ impl AppState {
     }
 }
 
+pub struct AppServices {
+    pub spotify_api: Rc<dyn SpotifyApiClient>
+}
+
 pub struct AppModel {
     pub state: AppState,
-    pub dispatcher: Rc<dyn AbstractDispatcher<AppAction>>
+    pub dispatcher: Box<dyn AbstractDispatcher<AppAction>>,
+    pub services: AppServices
 }
 
 impl AppModel {
-    pub fn new(state: AppState, dispatcher: Rc<dyn AbstractDispatcher<AppAction>>) -> Self {
-        Self { state, dispatcher }
+
+    pub fn new(
+        state: AppState,
+        dispatcher: Box<dyn AbstractDispatcher<AppAction>>,
+        spotify_api: Rc<dyn SpotifyApiClient>) -> Self {
+
+        let services = AppServices { spotify_api };
+        Self { state, dispatcher, services }
     }
 
     pub fn dispatch(&self, action: AppAction) -> Option<()> {
@@ -100,7 +112,8 @@ impl AppModel {
             },
             AppAction::LoginSuccess(creds) => {
                 let _ = credentials::save_credentials(creds.clone());
-                self.state.api_token = Some(creds.token.clone());
+                //self.state.api_token = Some(creds.token.clone());
+                self.services.spotify_api.update_token(&creds.token[..]);
                 Some(AppEvent::LoginCompleted)
             },
             AppAction::Seek(pos) => Some(AppEvent::TrackSeeked(pos)),

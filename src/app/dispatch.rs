@@ -9,6 +9,7 @@ use super::AppAction;
 
 pub trait AbstractDispatcher<T> {
     fn dispatch(&self, action: T) -> Option<()>;
+    fn box_clone(&self) -> Box<dyn AbstractDispatcher<T>>;
 }
 
 #[derive(Clone)]
@@ -36,6 +37,10 @@ impl AbstractDispatcher<AppAction> for Dispatcher {
 
     fn dispatch(&self, action: AppAction) -> Option<()> {
         self.sender.clone().try_send(action).ok()
+    }
+
+    fn box_clone(&self) -> Box<dyn AbstractDispatcher<AppAction>> {
+        Box::new(self.clone())
     }
 }
 

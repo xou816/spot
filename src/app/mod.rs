@@ -14,7 +14,7 @@ use connect::{PlaylistModelImpl, PlaybackModelImpl, LoginModelImpl, BrowserModel
 
 pub mod backend;
 use backend::Command;
-use backend::api::SpotifyApi;
+use backend::api::CachedSpotifyClient;
 
 pub mod state;
 pub use state::{AppState, AppModel, SongDescription, AlbumDescription};
@@ -69,7 +69,8 @@ impl App {
         command_sender: Sender<Command>) -> Self {
 
         let state = AppState::new(Vec::new());
-        let model = AppModel::new(state, Rc::new(dispatcher.clone()));
+        let spotify_client = Rc::new(CachedSpotifyClient::new());
+        let model = AppModel::new(state, dispatcher.box_clone(), spotify_client);
         let model = Rc::new(RefCell::new(model));
 
         let components: Vec<Box<dyn Component>> = vec![
@@ -89,9 +90,7 @@ impl App {
 
     fn make_browser(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>, worker: Worker) -> Box<Browser> {
         let flowbox: gtk::FlowBox = builder.get_object("flowbox").unwrap();
-        let model = Rc::new(BrowserModelImpl::new(
-            app_model,
-            Rc::new(SpotifyApi::new())));
+        let model = Rc::new(BrowserModelImpl::new(app_model));
         Box::new(Browser::new(flowbox, worker, model))
     }
 
@@ -129,10 +128,8 @@ impl App {
             model.update_state(message)
         };
 
-
-        println!("AppEvent={:?}", event.clone());
-
         if let Some(event) = event {
+            //println!("AppEvent={:?}", event.clone());
             for component in self.components.iter() {
                 component.on_event(event.clone());
             }

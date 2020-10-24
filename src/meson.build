@@ -50,7 +50,9 @@ sources = files(
   'app/components/gtypes/album_model.rs',
   'app/backend/mod.rs',
   'app/backend/player.rs',
-  'app/backend/api.rs'
+  'app/backend/api.rs',
+  'app/backend/api_models.rs',
+  'app/backend/cache.rs'
 )
 
 cargo_script = find_program(join_paths(meson.source_root(), 'build-aux/cargo.sh'))

@@ -5,13 +5,17 @@ use futures::future::{FutureExt, TryFutureExt};
 use futures::channel::mpsc::{Sender, channel};
 use librespot::core::spotify_id::SpotifyId;
 
+use super::{Dispatcher, AppAction};
+use crate::app::credentials;
+
 mod player;
 pub use player::{SpotifyPlayer, SpotifyPlayerDelegate};
 
 pub mod api;
+pub mod api_models;
 
-use super::{Dispatcher, AppAction};
-use crate::app::credentials;
+pub mod cache;
+
 
 
 #[derive(Debug, Clone)]

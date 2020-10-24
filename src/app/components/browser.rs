@@ -53,10 +53,15 @@ impl Browser {
     }
 
     fn load_saved_albums(&self) {
+
         let browser_model = self.browser_model.clone();
+
         let model = Rc::clone(&self.model);
         self.worker.send_task(async move {
+
             let albums = model.get_saved_albums().await;
+            browser_model.remove_all();
+
             for album in albums {
 
                 let title = glib::markup_escape_text(&album.title);
@@ -80,7 +85,7 @@ impl Component for Browser {
 
     fn on_event(&self, event: AppEvent) {
         match event {
-            AppEvent::LoginCompleted => {
+            AppEvent::Started|AppEvent::LoginCompleted => {
                 self.load_saved_albums();
             },
             _ => {}
@@ -112,7 +117,7 @@ fn create_album_for(album: &AlbumModel, worker: Worker, model: Weak<dyn BrowserM
         let image_clone = image.clone();
         if let Some(url) = album.cover_url() {
             worker.send_task(async move {
-                let result = load_remote_image(&url, 120, 120).await;
+                let result = load_remote_image(&url, 180, 180).await;
                 image_clone.set_from_pixbuf(result.as_ref());
             });
         }
