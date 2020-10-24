@@ -5,7 +5,7 @@ use std::cell::RefCell;
 use futures::future::LocalBoxFuture;
 
 use crate::app::{SongDescription, AlbumDescription};
-use super::cache::{CacheManager, CacheFile, CachePolicy};
+use super::cache::{CacheManager, CacheFile, CachePolicy, CacheExpiry};
 use super::api_models::*;
 
 const SPOTIFY_API: &'static str = "https://api.spotify.com/v1";
@@ -85,7 +85,10 @@ impl SpotifyApiClient for CachedSpotifyClient {
                 Some(text) => text,
                 None => {
                     let response = self.get_saved_albums_no_cache().await?;
-                    self.cache.write_cache_file(ME_ALBUMS_CACHE, response.as_bytes()).await?;
+                    self.cache.write_cache_file(
+                        ME_ALBUMS_CACHE,
+                        response.as_bytes(),
+                        CacheExpiry::expire_in_seconds(3600)).await?;
                     response
                 }
             };
@@ -111,7 +114,10 @@ impl SpotifyApiClient for CachedSpotifyClient {
                 Some(text) => text,
                 None => {
                     let response = self.get_album_no_cache(&id[..]).await?;
-                    self.cache.write_cache_file(&key[..], response.as_bytes()).await?;
+                    self.cache.write_cache_file(
+                        &key[..],
+                        response.as_bytes(),
+                        CacheExpiry::expire_in_seconds(3600)).await?;
                     response
                 }
             };

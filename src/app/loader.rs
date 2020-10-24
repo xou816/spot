@@ -87,7 +87,7 @@ impl ImageLoader {
                 let mut resp = isahc::get_async(url).await.ok()?;
                 let copy = writable_loader.get_spy();
                 resp.copy_to(writable_loader).ok()?;
-                self.cache.write_cache_file(&resource[..], copy.borrow().as_ref()).await?;
+                self.cache.write_cache_file(&resource[..], copy.borrow().as_ref(), CacheExpiry::Never).await?;
             }
         };
 

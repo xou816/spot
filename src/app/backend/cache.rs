@@ -29,6 +29,24 @@ pub enum CachePolicy {
     IgnoreExpiry
 }
 
+
+#[derive(PartialEq)]
+pub enum CacheExpiry {
+    Never,
+    AtUnixTimestamp(Duration)
+}
+
+impl CacheExpiry {
+
+    pub fn expire_in_seconds(seconds: u64) -> Self {
+        let timestamp = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap();
+        Self::AtUnixTimestamp(timestamp + Duration::new(seconds, 0))
+    }
+}
+
+
 #[derive(Clone)]
 pub struct CacheManager {}
 
@@ -45,7 +63,8 @@ impl CacheManager {
 
     fn cache_meta_path(&self, resource: &str) -> Option<PathBuf> {
         let cache_dir = glib::get_user_cache_dir()?;
-        glib::build_filenamev(&[cache_dir.as_path(), Path::new(resource), Path::new(".expiry")])
+        let full = format!("{}.{}", resource, "expiry");
+        glib::build_filenamev(&[cache_dir.as_path(), Path::new(&full)])
     }
 
     fn cache_file(&self, resource: &str) -> Option<gio::File> {
@@ -133,6 +152,7 @@ impl CacheManager {
             CachePolicy::Default => {
                 let expired = self.is_file_expired(resource, priority).await;
                 if expired {
+                    println!("Expired: {}", resource);
                     CacheFile::Expired
                 } else {
                     match file.read_async_future(priority).await {
@@ -147,7 +167,22 @@ impl CacheManager {
 
 impl CacheManager {
 
-    pub async fn write_cache_file(&self, resource: &str, content: &[u8]) -> Option<()> {
+    pub async fn set_expiry_for(&self, resource: &str, expiry: Duration) -> Option<()> {
+        let priority = glib::PRIORITY_DEFAULT;
+        let meta_file = self.cache_meta_file(resource).unwrap();
+        let content = expiry.as_secs().to_be_bytes().to_owned();
+
+        let flags = gio::FileCreateFlags::REPLACE_DESTINATION | gio::FileCreateFlags::PRIVATE;
+        let stream = meta_file.replace_async_future(None, false, flags, priority).await.ok()?;
+
+        let bytes = glib::Bytes::from(&content);
+        let _ = stream.write_bytes_async_future(&bytes, priority).await.ok()?;
+
+        stream.close_async_future(priority).await.ok()?;
+        Some(())
+    }
+
+    pub async fn write_cache_file(&self, resource: &str, content: &[u8], expiry: CacheExpiry) -> Option<()> {
         let priority = glib::PRIORITY_DEFAULT;
         let file = self.cache_file(resource)?;
 
@@ -158,6 +193,10 @@ impl CacheManager {
         let _ = stream.write_bytes_async_future(&bytes, priority).await.ok()?;
 
         stream.close_async_future(priority).await.ok()?;
+
+        if let CacheExpiry::AtUnixTimestamp(ts) = expiry {
+            self.set_expiry_for(resource, ts).await?;
+        }
 
         Some(())
     }
