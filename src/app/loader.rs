@@ -8,27 +8,48 @@ use gdk_pixbuf::{Pixbuf, PixbufLoaderExt, PixbufLoader};
 use isahc::ResponseExt;
 use crate::backend::cache::*;
 
-struct PixbufLoaderWithCopy<'a> {
-    loader: &'a PixbufLoader,
-    copy: Rc<RefCell<Vec<u8>>>
+struct WriteSpy<W: Write> {
+    write_impl: W,
+    spy: Rc<RefCell<Vec<u8>>>
 }
 
-impl<'a> PixbufLoaderWithCopy<'a> {
-    fn new(loader: &'a PixbufLoader, copy: Rc<RefCell<Vec<u8>>>) -> Self {
-        Self { loader, copy }
+
+impl <W> WriteSpy<W> where W: Write {
+
+    fn new(write_impl: W) -> Self {
+        Self { write_impl, spy: Rc::new(RefCell::new(Vec::new())) }
+    }
+
+    fn get_spy(&self) -> Rc<RefCell<Vec<u8>>> {
+        Rc::clone(&self.spy)
     }
 }
 
-impl<'a> Write for PixbufLoaderWithCopy<'a> {
+impl <W> Write for WriteSpy<W> where W: Write {
 
     fn write(&mut self, buf: &[u8]) -> Result<usize, Error> {
-        self.loader.write(buf).map_err(|e| Error::new(ErrorKind::Other, format!("glib error: {}", e)))?;
-        self.copy.borrow_mut().write(buf)?;
+        let len = self.write_impl.write(buf)?;
+        self.spy.borrow_mut().write(buf)?;
+        Ok(len)
+    }
+
+    fn flush(&mut self) -> Result<(), Error> {
+        self.write_impl.flush()
+    }
+}
+
+struct LocalPixbufLoader<'a>(&'a PixbufLoader);
+
+
+impl<'a> Write for LocalPixbufLoader<'a> {
+
+    fn write(&mut self, buf: &[u8]) -> Result<usize, Error> {
+        self.0.write(buf).map_err(|e| Error::new(ErrorKind::Other, format!("glib error: {}", e)))?;
         Ok(buf.len())
     }
 
     fn flush(&mut self) -> Result<(), Error> {
-        self.loader.close().map_err(|e| Error::new(ErrorKind::Other, format!("glib error: {}", e)))?;
+        self.0.close().map_err(|e| Error::new(ErrorKind::Other, format!("glib error: {}", e)))?;
         Ok(())
     }
 }
@@ -56,8 +77,7 @@ impl ImageLoader {
         let resource = Self::resource_for(url, ext);
         let pixbuf_loader = PixbufLoader::new();
         pixbuf_loader.set_size(width, height);
-        let copy = Rc::new(RefCell::new(Vec::new()));
-        let mut writable_loader = PixbufLoaderWithCopy::new(&pixbuf_loader, Rc::clone(&copy));
+        let mut writable_loader = WriteSpy::new(LocalPixbufLoader(&pixbuf_loader));
 
         match self.cache.read_cache_file(&resource[..], CachePolicy::IgnoreExpiry).await {
             CacheFile::File(buffer) =>  {
@@ -65,7 +85,7 @@ impl ImageLoader {
             },
             _ => {
                 let mut resp = isahc::get_async(url).await.ok()?;
-                // copy_to moves the impl Write, so I had to build something with a shared access to a secondary buffer...
+                let copy = writable_loader.get_spy();
                 resp.copy_to(writable_loader).ok()?;
                 self.cache.write_cache_file(&resource[..], copy.borrow().as_ref()).await?;
             }
