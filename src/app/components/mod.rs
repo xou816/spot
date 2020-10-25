@@ -18,5 +18,5 @@ pub use browser::{Browser, BrowserModel};
 mod gtypes;
 
 pub trait Component {
-    fn on_event(&self, event: AppEvent) {}
+    fn on_event(&self, _: AppEvent) {}
 }

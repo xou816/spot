@@ -1,6 +1,5 @@
 use gtk::prelude::*;
-use gtk::ImageExt;
-use gtk::RangeExt;
+use gtk::{ImageExt, RangeExt, ScaleExt};
 use std::rc::Rc;
 use std::cell::{Cell};
 
@@ -40,6 +39,13 @@ impl Playback {
             weak_model.upgrade()
                 .map(|model| model.seek_to(s.get_value() as u32));
             glib::signal::Inhibit(false)
+        });
+
+        seek_bar.connect_format_value(|_, value| {
+            let seconds = (value/1000.0) as i32;
+            let minutes = seconds.div_euclid(60);
+            let seconds = seconds.rem_euclid(60);
+            format!("{}:{:02}", minutes, seconds)
         });
 
         let weak_model = Rc::downgrade(&model);

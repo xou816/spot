@@ -2,7 +2,6 @@ use gio::prelude::*;
 use glib::subclass;
 use glib::subclass::prelude::*;
 use glib::translate::*;
-use glib::Value;
 use glib::{glib_wrapper, glib_object_wrapper};
 
 glib_wrapper! {

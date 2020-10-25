@@ -76,8 +76,7 @@ impl SpotifyPlayer {
                 self.delegate.login_successful(credentials);
                 player.replace(create_player(session));
                 Ok(())
-            },
-            _ => Ok(())
+            }
         }
     }
 
@@ -91,7 +90,7 @@ impl SpotifyPlayer {
     }
 }
 
-const CLIENT_ID: &'static str = "e1dce60f1e274e20861ce5d96142a4d3";
+const CLIENT_ID: &'static str = "782ae96ea60f4cdf986a766049607005";
 
 const SCOPES: &'static str = "user-read-private,\
 playlist-read-private,\
