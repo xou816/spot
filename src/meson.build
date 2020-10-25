@@ -35,6 +35,8 @@ sources = files(
   'app/dispatch.rs',
   'app/loader.rs',
   'app/credentials.rs',
+  'app/browser_state.rs',
+  'app/models.rs',
   'app/components/mod.rs',
   'app/components/playback.rs',
   'app/components/login.rs',

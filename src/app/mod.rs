@@ -16,8 +16,14 @@ pub mod backend;
 use backend::Command;
 use backend::api::CachedSpotifyClient;
 
+pub mod models;
+pub use models::{SongDescription, AlbumDescription};
+
 pub mod state;
-pub use state::{AppState, AppModel, SongDescription, AlbumDescription};
+pub use state::{AppState, AppModel};
+
+pub mod browser_state;
+pub use browser_state::{BrowserEvent, BrowserAction};
 
 pub mod credentials;
 pub mod loader;
@@ -35,6 +41,7 @@ pub enum AppAction {
     LoginSuccess(credentials::Credentials),
     Next,
     Previous,
+    BrowserAction(BrowserAction)
 }
 
 #[derive(Clone, Debug)]
@@ -46,7 +53,8 @@ pub enum AppEvent {
     LoginStarted(String, String),
     LoginCompleted,
     TrackChanged(String),
-    PlaylistChanged
+    PlaylistChanged,
+    BrowserEvent(BrowserEvent)
 }
 
 pub struct App {
@@ -90,8 +98,9 @@ impl App {
 
     fn make_browser(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>, worker: Worker) -> Box<Browser> {
         let flowbox: gtk::FlowBox = builder.get_object("flowbox").unwrap();
+        let scroll_window: gtk::ScrolledWindow = builder.get_object("browser_scrollwindow").unwrap();
         let model = Rc::new(BrowserModelImpl::new(app_model));
-        Box::new(Browser::new(flowbox, worker, model))
+        Box::new(Browser::new(flowbox, scroll_window, worker, model))
     }
 
     fn make_login(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>) -> Box<Login> {

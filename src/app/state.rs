@@ -1,38 +1,16 @@
 use std::rc::Rc;
 use crate::app::{AppAction, AppEvent, AbstractDispatcher};
 use crate::app::credentials;
+use crate::app::models::*;
+use crate::app::browser_state::BrowserState;
 use crate::backend::api::SpotifyApiClient;
 
-
-#[derive(Clone, Debug)]
-pub struct AlbumDescription {
-    pub title: String,
-    pub artist: String,
-    pub uri: String,
-    pub art: String,
-    pub songs: Vec<SongDescription>,
-    pub id: String
-}
-
-#[derive(Clone, Debug)]
-pub struct SongDescription {
-    pub title: String,
-    pub artist: String,
-    pub uri: String,
-    pub duration: u32
-}
-
-impl SongDescription {
-    pub fn new(title: &str, artist: &str, uri: &str, duration: u32) -> Self {
-        Self { title: title.to_string(), artist: artist.to_string(), uri: uri.to_string(), duration }
-    }
-}
 
 pub struct AppState {
     pub is_playing: bool,
     pub current_song_uri: Option<String>,
     pub playlist: Vec<SongDescription>,
-    pub api_token: Option<String>
+    pub browser_state: BrowserState
 }
 
 impl AppState {
@@ -41,7 +19,7 @@ impl AppState {
             is_playing: false,
             current_song_uri: None,
             playlist: songs,
-            api_token: Option::None
+            browser_state: BrowserState::new()
         }
     }
 }
@@ -112,15 +90,19 @@ impl AppModel {
             },
             AppAction::LoginSuccess(creds) => {
                 let _ = credentials::save_credentials(creds.clone());
-                //self.state.api_token = Some(creds.token.clone());
                 self.services.spotify_api.update_token(&creds.token[..]);
                 Some(AppEvent::LoginCompleted)
             },
             AppAction::Seek(pos) => Some(AppEvent::TrackSeeked(pos)),
             AppAction::Start => Some(AppEvent::Started),
-            AppAction::TryLogin(u, p) => Some(AppEvent::LoginStarted(u, p))
+            AppAction::TryLogin(u, p) => Some(AppEvent::LoginStarted(u, p)),
+            AppAction::BrowserAction(a) => {
+                let event = self.state.browser_state.update_with(a)?;
+                Some(AppEvent::BrowserEvent(event))
+            }
         }
     }
+
 
     fn prev_song(&self) -> Option<&SongDescription> {
         let state = &self.state;

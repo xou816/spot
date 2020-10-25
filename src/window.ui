@@ -40,7 +40,7 @@
                 <property name="can-focus">False</property>
                 <property name="transition-type">crossfade</property>
                 <child>
-                  <object class="GtkScrolledWindow">
+                  <object class="GtkScrolledWindow" id="browser_scrollwindow">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="shadow-type">in</property>

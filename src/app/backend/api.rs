@@ -12,7 +12,7 @@ const SPOTIFY_API: &'static str = "https://api.spotify.com/v1";
 
 pub trait SpotifyApiClient {
     fn get_album(&self, id: &str) -> LocalBoxFuture<Option<Vec<SongDescription>>>;
-    fn get_saved_albums(&self) -> LocalBoxFuture<Option<Vec<AlbumDescription>>>;
+    fn get_saved_albums(&self, offset: u32, limit: u32) -> LocalBoxFuture<Option<Vec<AlbumDescription>>>;
     fn update_token(&self, token: &str);
 }
 
@@ -20,8 +20,6 @@ pub struct CachedSpotifyClient {
     token: RefCell<Option<String>>,
     cache: CacheManager
 }
-
-const ME_ALBUMS_CACHE: &'static str = "me_albums.json";
 
 impl CachedSpotifyClient {
 
@@ -56,12 +54,12 @@ impl CachedSpotifyClient {
         result.text_async().await.ok()
     }
 
-    async fn get_saved_albums_no_cache(&self) -> Option<String> {
+    async fn get_saved_albums_no_cache(&self, offset: u32, limit: u32) -> Option<String> {
 
         let token = self.token.borrow();
         let token = token.as_deref()?;
 
-        let uri = format!("{}/me/albums", SPOTIFY_API);
+        let uri = format!("{}/me/albums?offset={}&limit={}", SPOTIFY_API, offset, limit);
         let request = Request::get(uri)
             .header("Authorization", format!("Bearer {}", token))
             .body(())
@@ -78,15 +76,19 @@ impl SpotifyApiClient for CachedSpotifyClient {
         self.token.replace(Some(token.to_string()));
     }
 
-    fn get_saved_albums(&self) -> LocalBoxFuture<Option<Vec<AlbumDescription>>> {
+    fn get_saved_albums(&self, offset: u32, limit: u32) -> LocalBoxFuture<Option<Vec<AlbumDescription>>> {
         Box::pin(async move {
-            let text = self.get_cache_for(ME_ALBUMS_CACHE).await;
+
+            let key = format!("me_albums_{}_{}.json", offset, limit);
+            let key = &key[..];
+            let text = self.get_cache_for(key).await;
+
             let text = match text {
                 Some(text) => text,
                 None => {
-                    let response = self.get_saved_albums_no_cache().await?;
+                    let response = self.get_saved_albums_no_cache(offset, limit).await?;
                     self.cache.write_cache_file(
-                        ME_ALBUMS_CACHE,
+                        key,
                         response.as_bytes(),
                         CacheExpiry::expire_in_seconds(3600)).await?;
                     response

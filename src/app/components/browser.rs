@@ -1,12 +1,13 @@
 use gtk::prelude::*;
-use gtk::ButtonExt;
+use gtk::{ButtonExt, ScrolledWindowExt};
 use gio::prelude::*;
 
-use std::pin::Pin;
+use std::iter::Iterator;
 use std::rc::{Rc, Weak};
-use std::future::Future;
+use std::cell::Ref;
+use futures::future::LocalBoxFuture;
 
-use crate::app::{AppEvent, AlbumDescription};
+use crate::app::{AppEvent, AlbumDescription, BrowserEvent};
 use crate::app::components::{Component};
 use super::gtypes::AlbumModel;
 use crate::app::dispatch::Worker;
@@ -19,12 +20,12 @@ button.album {
 }
 ";
 
-pub type VecAlbumDescriptionFuture = Pin<Box<dyn Future<Output=Vec<AlbumDescription>>>>;
-pub type PlayAlbumFuture = Pin<Box<dyn Future<Output=()>>>;
 
 pub trait BrowserModel {
-    fn get_saved_albums(&self) -> VecAlbumDescriptionFuture;
-    fn play_album(&self, album_uri: &str) -> PlayAlbumFuture;
+    fn get_saved_albums(&self) -> Ref<'_, Vec<AlbumDescription>>;
+    fn refresh_saved_albums(&self) -> LocalBoxFuture<()>;
+    fn load_more_albums(&self) -> LocalBoxFuture<()>;
+    fn play_album(&self, album_uri: &str) -> LocalBoxFuture<()>;
 }
 
 
@@ -36,7 +37,7 @@ pub struct Browser {
 
 impl Browser {
 
-    pub fn new(flowbox: gtk::FlowBox, worker: Worker, model: Rc<dyn BrowserModel>) -> Self {
+    pub fn new(flowbox: gtk::FlowBox, scroll_window: gtk::ScrolledWindow, worker: Worker, model: Rc<dyn BrowserModel>) -> Self {
 
         let browser_model = gio::ListStore::new(AlbumModel::static_type());
 
@@ -49,35 +50,45 @@ impl Browser {
             child.upcast::<gtk::Widget>()
         });
 
+        let weak_model = Rc::downgrade(&model);
+        let worker_clone = worker.clone();
+        scroll_window.connect_edge_reached(move |_, pos| {
+            if let (gtk::PositionType::Bottom, Some(model)) = (pos, weak_model.upgrade()) {
+                worker_clone.send_task(async move {
+                    model.load_more_albums().await;
+                });
+            }
+        });
+
         Self { browser_model, model, worker }
     }
 
-    fn load_saved_albums(&self) {
+    fn set_saved_albums(&self) {
+        self.browser_model.remove_all();
+        self.append_albums(self.model.get_saved_albums().iter());
+    }
 
-        let browser_model = self.browser_model.clone();
+    fn append_next_albums(&self, offset: usize) {
+        self.append_albums(self.model.get_saved_albums().iter().skip(offset));
+    }
 
-        let model = Rc::clone(&self.model);
-        self.worker.send_task(async move {
+    fn append_albums<'a>(&self, albums: impl Iterator<Item=&'a AlbumDescription>) {
 
-            let albums = model.get_saved_albums().await;
-            browser_model.remove_all();
+        for album in albums {
 
-            for album in albums {
+            let title = glib::markup_escape_text(&album.title);
+            let title = format!("<b>{}</b>", title.as_str());
 
-                let title = glib::markup_escape_text(&album.title);
-                let title = format!("<b>{}</b>", title.as_str());
+            let artist = glib::markup_escape_text(&album.artist);
+            let artist = format!("<small>{}</small>", artist.as_str());
 
-                let artist = glib::markup_escape_text(&album.artist);
-                let artist = format!("<small>{}</small>", artist.as_str());
-
-                browser_model.append(&AlbumModel::new(
-                    &artist,
-                    &title,
-                    &album.art,
-                    &album.id
-                ));
-            }
-        });
+            self.browser_model.append(&AlbumModel::new(
+                &artist,
+                &title,
+                &album.art,
+                &album.id
+            ));
+        }
     }
 }
 
@@ -86,8 +97,17 @@ impl Component for Browser {
     fn on_event(&self, event: AppEvent) {
         match event {
             AppEvent::Started|AppEvent::LoginCompleted => {
-                self.load_saved_albums();
+                let model = Rc::clone(&self.model);
+                self.worker.send_task(async move {
+                    model.refresh_saved_albums().await
+                });
             },
+            AppEvent::BrowserEvent(BrowserEvent::ContentSet) => {
+                self.set_saved_albums();
+            },
+            AppEvent::BrowserEvent(BrowserEvent::ContentAppended(offset)) => {
+                self.append_next_albums(offset);
+            }
             _ => {}
         }
     }
@@ -128,7 +148,7 @@ fn create_album_for(album: &AlbumModel, worker: Worker, model: Weak<dyn BrowserM
         button.set_margin_top(0);
         button.connect_clicked(move |_| {
             if let (Some(model), Some(uri)) = (model.upgrade(), album.uri()) {
-                worker.send_task(model.play_album(&uri));
+                worker.send_task(async move { model.play_album(&uri).await });
             }
         });
 
