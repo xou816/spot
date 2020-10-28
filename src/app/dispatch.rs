@@ -1,45 +1,56 @@
-use std::convert::Into;
 use std::pin::Pin;
 use futures::future::Future;
 use futures::stream::StreamExt;
 use futures::channel::mpsc::{Receiver, Sender, channel};
+use futures::future::LocalBoxFuture;
 
 
 use super::AppAction;
 
-pub trait AbstractDispatcher<T> {
-    fn dispatch(&self, action: T) -> Option<()>;
-    fn box_clone(&self) -> Box<dyn AbstractDispatcher<T>>;
+pub trait ActionDispatcher {
+    fn dispatch(&self, action: AppAction);
+    fn dispatch_async(&self, action: LocalBoxFuture<'static, Option<AppAction>>);
+    fn dispatch_many_async(&self, actions: LocalBoxFuture<'static, Vec<AppAction>>);
+    fn box_clone(&self) -> Box<dyn ActionDispatcher>;
 }
 
 #[derive(Clone)]
-pub struct Dispatcher {
-    sender: Sender<AppAction>
+pub struct ActionDispatcherImpl {
+    sender: Sender<AppAction>,
+    worker: Worker
 }
 
-impl Dispatcher {
-    fn new(sender: Sender<AppAction>) -> Self {
-        Self { sender }
-    }
-
-    pub fn dispatch<T: Into<Option<AppAction>>>(&self, action: T) -> Option<()> {
-        if let Some(action) = action.into() {
-            self.sender.clone().try_send(action).ok()
-        } else {
-            println!("No action");
-            None
-        }
+impl ActionDispatcherImpl {
+    pub fn new(sender: Sender<AppAction>, worker: Worker) -> Self {
+        Self { sender, worker }
     }
 }
 
+impl ActionDispatcher for ActionDispatcherImpl {
 
-impl AbstractDispatcher<AppAction> for Dispatcher {
-
-    fn dispatch(&self, action: AppAction) -> Option<()> {
-        self.sender.clone().try_send(action).ok()
+    fn dispatch(&self, action: AppAction) {
+        self.sender.clone().try_send(action).unwrap();
     }
 
-    fn box_clone(&self) -> Box<dyn AbstractDispatcher<AppAction>> {
+    fn dispatch_async(&self, action: LocalBoxFuture<'static, Option<AppAction>>) {
+        let mut clone = self.sender.clone();
+        self.worker.send_task(async move {
+            if let Some(action) = action.await {
+                clone.try_send(action).unwrap();
+            }
+        });
+    }
+
+    fn dispatch_many_async(&self, actions: LocalBoxFuture<'static, Vec<AppAction>>) {
+        let sender = self.sender.clone();
+        self.worker.send_task(async move {
+            for action in actions.await {
+                sender.clone().try_send(action).unwrap();
+            }
+        });
+    }
+
+    fn box_clone(&self) -> Box<dyn ActionDispatcher> {
         Box::new(self.clone())
     }
 }
@@ -57,8 +68,8 @@ impl DispatchLoop {
         Self { receiver, sender }
     }
 
-    pub fn make_dispatcher(&self) -> Dispatcher {
-        Dispatcher::new(self.sender.clone())
+    pub fn make_dispatcher(&self) -> Sender<AppAction> {
+        self.sender.clone()
     }
 
     pub async fn attach(self, handler: impl Fn(AppAction) -> ()) {

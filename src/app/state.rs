@@ -1,5 +1,5 @@
 use std::rc::Rc;
-use crate::app::{AppAction, AppEvent, AbstractDispatcher};
+use crate::app::{AppAction, AppEvent};
 use crate::app::credentials;
 use crate::app::models::*;
 use crate::app::browser_state::BrowserState;
@@ -30,7 +30,6 @@ pub struct AppServices {
 
 pub struct AppModel {
     pub state: AppState,
-    pub dispatcher: Box<dyn AbstractDispatcher<AppAction>>,
     pub services: AppServices
 }
 
@@ -38,15 +37,10 @@ impl AppModel {
 
     pub fn new(
         state: AppState,
-        dispatcher: Box<dyn AbstractDispatcher<AppAction>>,
         spotify_api: Rc<dyn SpotifyApiClient>) -> Self {
 
         let services = AppServices { spotify_api };
-        Self { state, dispatcher, services }
-    }
-
-    pub fn dispatch(&self, action: AppAction) -> Option<()> {
-        self.dispatcher.dispatch(action)
+        Self { state, services }
     }
 
     pub fn update_state(&mut self, message: AppAction) -> Option<AppEvent> {

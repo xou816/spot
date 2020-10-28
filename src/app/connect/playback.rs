@@ -1,44 +1,47 @@
 use std::rc::{Rc};
 use std::cell::{Ref, RefCell};
 
-use crate::app::{AppModel, AppState, AppAction, SongDescription};
+use crate::app::{AppModel, AppState, AppAction, ActionDispatcher};
+use crate::app::models::*;
 use crate::app::components::{PlaybackModel};
 
-pub struct PlaybackModelImpl(pub Rc<RefCell<AppModel>>);
+pub struct PlaybackModelImpl {
+    app_model: Rc<RefCell<AppModel>>,
+    dispatcher: Box<dyn ActionDispatcher>
+}
 
 impl PlaybackModelImpl {
-    fn dispatch(&self, action: AppAction) {
-        self.0.borrow().dispatch(action);
+    pub fn new(app_model: Rc<RefCell<AppModel>>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
+        Self { app_model, dispatcher }
     }
 
-    fn state(&self) -> Ref<AppState> {
-        Ref::map(self.0.borrow(), |m| &m.state)
+    fn state(&self) -> Ref<'_, AppState> {
+        Ref::map(self.app_model.borrow(), |m| &m.state)
     }
 }
 
 impl PlaybackModel for PlaybackModelImpl {
 
     fn is_playing(&self) -> bool {
-        self.state().is_playing
-            && self.state().current_song_uri.is_some()
+        let state = self.state();
+        state.is_playing && state.current_song_uri.is_some()
     }
 
     fn current_song(&self) -> Option<SongDescription> {
         let state = self.state();
         if let Some(current_song_uri) = state.current_song_uri.as_ref() {
-            state.playlist.iter().find(|&song| song.uri == *current_song_uri).cloned()
+            state.playlist.iter().find(|song| song.uri == *current_song_uri).cloned()
         } else {
-            Option::None
+            None
         }
-
     }
 
     fn play_next_song(&self) {
-        self.dispatch(AppAction::Next);
+        self.dispatcher.dispatch(AppAction::Next);
     }
 
     fn play_prev_song(&self) {
-        self.dispatch(AppAction::Previous);
+        self.dispatcher.dispatch(AppAction::Previous);
 
     }
 
@@ -48,48 +51,43 @@ impl PlaybackModel for PlaybackModelImpl {
         } else {
             AppAction::Play
         };
-        self.dispatch(action);
+        self.dispatcher.dispatch(action);
     }
 
 
     fn seek_to(&self, position: u32) {
-        self.dispatch(AppAction::Seek(position));
+        self.dispatcher.dispatch(AppAction::Seek(position));
     }
 }
 
 #[cfg(test)]
 mod tests {
-    // Note this useful idiom: importing names from outer (for mod tests) scope.
+
     use super::*;
-    use crate::app::dispatch::{AbstractDispatcher};
+    use futures::executor::block_on;
+    use futures::future::LocalBoxFuture;
 
-    struct TestDispatcher(RefCell<Vec<AppAction>>);
+    use crate::app::backend::api::tests::TestSpotifyApiClient;
 
-    impl TestDispatcher {
-        pub fn new() -> Self {
-            Self(RefCell::new(vec![]))
+    #[derive(Clone)]
+    struct TestDispatcher(Rc<RefCell<AppModel>>);
+
+    impl ActionDispatcher for TestDispatcher {
+        fn dispatch(&self, action: AppAction) {
+            self.0.borrow_mut().update_state(action);
         }
 
-        pub fn flush(&self, model: Rc<RefCell<AppModel>>) {
-            let mut buffer = self.0.borrow_mut();
-            for action in buffer.drain(..) {
-                model.borrow_mut().update_state(action);
+        fn dispatch_async(&self, action: LocalBoxFuture<'static, Option<AppAction>>) {
+            if let Some(action) = block_on(action) {
+                self.dispatch(action);
             }
         }
-    }
 
-    impl AbstractDispatcher<AppAction> for TestDispatcher {
-        fn dispatch(&self, action: AppAction) -> Option<()> {
-            self.0.borrow_mut().push(action);
-            Some(())
+        fn dispatch_many_async(&self, actions: LocalBoxFuture<'static, Vec<AppAction>>) {}
+
+        fn box_clone(&self) -> Box<dyn ActionDispatcher> {
+            Box::new(self.clone())
         }
-    }
-
-    fn make_model_and_dispatcher(state: AppState) -> (Rc<RefCell<AppModel>>, Rc<TestDispatcher>) {
-        let dispatcher = Rc::new(TestDispatcher::new());
-        let app_model = AppModel::new(state, Rc::clone(&dispatcher) as Rc<dyn AbstractDispatcher<AppAction>>);
-        let app_model = Rc::new(RefCell::new(app_model));
-        (app_model, dispatcher)
     }
 
     #[test]
@@ -101,14 +99,13 @@ mod tests {
         ]);
         state.current_song_uri = Some("uri1".to_owned());
 
-        let (app_model, dispatcher) = make_model_and_dispatcher(state);
-        let model = PlaybackModelImpl(Rc::clone(&app_model));
+        let app_model = Rc::new(RefCell::new(AppModel::new(state, Rc::new(TestSpotifyApiClient::new()))));
+        let dispatcher = Box::new(TestDispatcher(Rc::clone(&app_model)));
+        let model = PlaybackModelImpl::new(Rc::clone(&app_model), dispatcher.box_clone());
 
         assert!(!model.is_playing());
 
         model.toggle_playback();
-        dispatcher.flush(app_model);
-
         assert!(model.is_playing());
     }
 
@@ -121,13 +118,13 @@ mod tests {
         ]);
         state.current_song_uri = Some("uri1".to_owned());
 
-        let (app_model, dispatcher) = make_model_and_dispatcher(state);
-        let model = PlaybackModelImpl(Rc::clone(&app_model));
+        let app_model = Rc::new(RefCell::new(AppModel::new(state, Rc::new(TestSpotifyApiClient::new()))));
+        let dispatcher = Box::new(TestDispatcher(Rc::clone(&app_model)));
+        let model = PlaybackModelImpl::new(Rc::clone(&app_model), dispatcher.box_clone());
 
         assert_eq!(model.current_song().unwrap().title, "Song 1");
 
         model.play_next_song();
-        dispatcher.flush(app_model);
 
         assert_eq!(model.current_song().unwrap().title, "Song 2");
     }
@@ -141,13 +138,13 @@ mod tests {
         ]);
         state.current_song_uri = Some("uri2".to_owned());
 
-        let (app_model, dispatcher) = make_model_and_dispatcher(state);
-        let model = PlaybackModelImpl(Rc::clone(&app_model));
+        let app_model = Rc::new(RefCell::new(AppModel::new(state, Rc::new(TestSpotifyApiClient::new()))));
+        let dispatcher = Box::new(TestDispatcher(Rc::clone(&app_model)));
+        let model = PlaybackModelImpl::new(Rc::clone(&app_model), dispatcher.box_clone());
 
         assert_eq!(model.current_song().unwrap().title, "Song 2");
 
         model.play_next_song();
-        dispatcher.flush(app_model);
 
         assert_eq!(model.current_song().unwrap().title, "Song 2");
     }

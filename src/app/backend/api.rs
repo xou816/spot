@@ -16,6 +16,33 @@ pub trait SpotifyApiClient {
     fn update_token(&self, token: &str);
 }
 
+#[cfg(test)]
+pub mod tests {
+
+    use super::*;
+
+    pub struct TestSpotifyApiClient {}
+
+    impl TestSpotifyApiClient {
+        pub fn new() -> Self {
+            Self {}
+        }
+    }
+
+    impl SpotifyApiClient for TestSpotifyApiClient {
+
+        fn get_album(&self, id: &str) -> LocalBoxFuture<Option<Vec<SongDescription>>> {
+            Box::pin(async { None })
+        }
+
+        fn get_saved_albums(&self, offset: u32, limit: u32) -> LocalBoxFuture<Option<Vec<AlbumDescription>>> {
+            Box::pin(async { None })
+        }
+
+        fn update_token(&self, token: &str) {}
+    }
+}
+
 pub struct CachedSpotifyClient {
     token: RefCell<Option<String>>,
     cache: CacheManager

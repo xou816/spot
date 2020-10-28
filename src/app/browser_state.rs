@@ -1,10 +1,18 @@
-use super::models::{AlbumDescription};
-
+use std::convert::Into;
+use super::models::*;
+use super::AppAction;
 
 #[derive(Clone, Debug)]
 pub enum BrowserAction {
     SetContent(Vec<AlbumDescription>),
     AppendContent(Vec<AlbumDescription>)
+}
+
+impl Into<AppAction> for BrowserAction {
+
+    fn into(self) -> AppAction {
+        AppAction::BrowserAction(self)
+    }
 }
 
 #[derive(Clone, Debug)]

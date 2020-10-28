@@ -4,7 +4,7 @@ use std::cell::RefCell;
 use gtk::prelude::*;
 
 pub mod dispatch;
-pub use dispatch::{DispatchLoop, Dispatcher, AbstractDispatcher, Worker};
+pub use dispatch::{DispatchLoop, ActionDispatcherImpl, ActionDispatcher, Worker};
 
 pub mod components;
 use components::{Component, Playback, Playlist, Login, PlayerNotifier, Browser};
@@ -72,20 +72,21 @@ impl App {
 
     pub fn new_from_builder(
         builder: &gtk::Builder,
-        dispatcher: Dispatcher,
+        sender: Sender<AppAction>,
         worker: Worker,
         command_sender: Sender<Command>) -> Self {
 
         let state = AppState::new(Vec::new());
+        let dispatcher = Box::new(ActionDispatcherImpl::new(sender, worker.clone()));
         let spotify_client = Rc::new(CachedSpotifyClient::new());
-        let model = AppModel::new(state, dispatcher.box_clone(), spotify_client);
+        let model = AppModel::new(state, spotify_client);
         let model = Rc::new(RefCell::new(model));
 
         let components: Vec<Box<dyn Component>> = vec![
-            App::make_playback(builder, Rc::clone(&model)),
-            App::make_playlist(builder, Rc::clone(&model)),
-            App::make_login(builder, Rc::clone(&model)),
-            App::make_browser(builder, Rc::clone(&model), worker),
+            App::make_playback(builder, Rc::clone(&model), dispatcher.box_clone()),
+            App::make_playlist(builder, Rc::clone(&model), dispatcher.box_clone()),
+            App::make_login(builder, Rc::clone(&model), dispatcher.box_clone()),
+            App::make_browser(builder, Rc::clone(&model), dispatcher.box_clone(), worker),
             App::make_player_notifier(command_sender)
         ];
 
@@ -96,38 +97,43 @@ impl App {
         Box::new(PlayerNotifier::new(sender))
     }
 
-    fn make_browser(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>, worker: Worker) -> Box<Browser> {
+    fn make_browser(
+        builder: &gtk::Builder,
+        app_model: Rc<RefCell<AppModel>>,
+        dispatcher: Box<dyn ActionDispatcher>,
+        worker: Worker) -> Box<Browser> {
+
         let flowbox: gtk::FlowBox = builder.get_object("flowbox").unwrap();
         let scroll_window: gtk::ScrolledWindow = builder.get_object("browser_scrollwindow").unwrap();
-        let model = Rc::new(BrowserModelImpl::new(app_model));
+        let model = Rc::new(BrowserModelImpl::new(app_model, dispatcher));
         Box::new(Browser::new(flowbox, scroll_window, worker, model))
     }
 
-    fn make_login(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>) -> Box<Login> {
+    fn make_login(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>, dispatcher: Box<dyn ActionDispatcher>) -> Box<Login> {
         let parent: gtk::Window = builder.get_object("window").unwrap();
         let dialog: gtk::Dialog = builder.get_object("login").unwrap();
         let username: gtk::Entry = builder.get_object("username").unwrap();
         let password: gtk::Entry = builder.get_object("password").unwrap();
         let login_btn: gtk::Button = builder.get_object("login_btn").unwrap();
 
-        let model = Rc::new(LoginModelImpl(app_model));
+        let model = Rc::new(LoginModelImpl::new(app_model, dispatcher));
         Box::new(Login::new(parent, dialog, username, password, login_btn, model))
     }
 
-    fn make_playlist(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>) -> Box<Playlist> {
+    fn make_playlist(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>, dispatcher: Box<dyn ActionDispatcher>) -> Box<Playlist> {
         let listbox: gtk::ListBox = builder.get_object("listbox").unwrap();
-        let model = Rc::new(PlaylistModelImpl(app_model));
+        let model = Rc::new(PlaylistModelImpl::new(app_model, dispatcher));
         Box::new(Playlist::new(listbox, model))
     }
 
-    fn make_playback(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>) -> Box<Playback> {
+    fn make_playback(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>, dispatcher: Box<dyn ActionDispatcher>) -> Box<Playback> {
         let play_button: gtk::Button = builder.get_object("play_pause").unwrap();
         let current_song_info: gtk::Label = builder.get_object("current_song_info").unwrap();
         let next: gtk::Button = builder.get_object("next").unwrap();
         let prev: gtk::Button = builder.get_object("prev").unwrap();
         let seek_bar: gtk::Scale = builder.get_object("seek_bar").unwrap();
 
-        let model = Rc::new(PlaybackModelImpl(app_model));
+        let model = Rc::new(PlaybackModelImpl::new(app_model, dispatcher));
         Box::new(Playback::new(play_button, current_song_info, next, prev, seek_bar, model))
     }
 

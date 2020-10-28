@@ -5,7 +5,6 @@ use gio::prelude::*;
 use std::iter::Iterator;
 use std::rc::{Rc, Weak};
 use std::cell::Ref;
-use futures::future::LocalBoxFuture;
 
 use crate::app::{AppEvent, AlbumDescription, BrowserEvent};
 use crate::app::components::{Component};
@@ -23,16 +22,15 @@ button.album {
 
 pub trait BrowserModel {
     fn get_saved_albums(&self) -> Ref<'_, Vec<AlbumDescription>>;
-    fn refresh_saved_albums(&self) -> LocalBoxFuture<()>;
-    fn load_more_albums(&self) -> LocalBoxFuture<()>;
-    fn play_album(&self, album_uri: &str) -> LocalBoxFuture<()>;
+    fn refresh_saved_albums(&self);
+    fn load_more_albums(&self);
+    fn play_album(&self, album_uri: &str);
 }
 
 
 pub struct Browser {
     browser_model: gio::ListStore,
-    model: Rc<dyn BrowserModel>,
-    worker: Worker
+    model: Rc<dyn BrowserModel>
 }
 
 impl Browser {
@@ -51,16 +49,13 @@ impl Browser {
         });
 
         let weak_model = Rc::downgrade(&model);
-        let worker_clone = worker.clone();
         scroll_window.connect_edge_reached(move |_, pos| {
             if let (gtk::PositionType::Bottom, Some(model)) = (pos, weak_model.upgrade()) {
-                worker_clone.send_task(async move {
-                    model.load_more_albums().await;
-                });
+                model.load_more_albums();
             }
         });
 
-        Self { browser_model, model, worker }
+        Self { browser_model, model }
     }
 
     fn set_saved_albums(&self) {
@@ -97,10 +92,7 @@ impl Component for Browser {
     fn on_event(&self, event: AppEvent) {
         match event {
             AppEvent::Started|AppEvent::LoginCompleted => {
-                let model = Rc::clone(&self.model);
-                self.worker.send_task(async move {
-                    model.refresh_saved_albums().await
-                });
+                self.model.refresh_saved_albums();
             },
             AppEvent::BrowserEvent(BrowserEvent::ContentSet) => {
                 self.set_saved_albums();
@@ -148,7 +140,7 @@ fn create_album_for(album: &AlbumModel, worker: Worker, model: Weak<dyn BrowserM
         button.set_margin_top(0);
         button.connect_clicked(move |_| {
             if let (Some(model), Some(uri)) = (model.upgrade(), album.uri()) {
-                worker.send_task(async move { model.play_album(&uri).await });
+                model.play_album(&uri);
             }
         });
 

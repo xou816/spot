@@ -5,7 +5,7 @@ use futures::future::{FutureExt, TryFutureExt};
 use futures::channel::mpsc::{Sender, channel};
 use librespot::core::spotify_id::SpotifyId;
 
-use super::{Dispatcher, AppAction};
+use super::{AppAction};
 use crate::app::credentials;
 
 mod player;
@@ -28,13 +28,13 @@ pub enum Command {
 }
 
 struct AppPlayerDelegate {
-    dispatcher: Dispatcher
+    sender: Sender<AppAction>
 }
 
 
 impl AppPlayerDelegate {
-    fn new(dispatcher: Dispatcher) -> Self {
-        Self { dispatcher }
+    fn new(sender: Sender<AppAction>) -> Self {
+        Self { sender }
     }
 }
 
@@ -42,19 +42,19 @@ impl AppPlayerDelegate {
 impl SpotifyPlayerDelegate for AppPlayerDelegate {
 
     fn end_of_track_reached(&self) {
-        self.dispatcher.dispatch(AppAction::Next).unwrap();
+        self.sender.clone().try_send(AppAction::Next).unwrap();
     }
 
     fn login_successful(&self, credentials: credentials::Credentials) {
-        self.dispatcher.dispatch(AppAction::LoginSuccess(credentials));
+        self.sender.clone().try_send(AppAction::LoginSuccess(credentials)).unwrap();
     }
 }
 
-pub fn start_player_service(dispatcher: Dispatcher) -> Sender<Command> {
+pub fn start_player_service(appaction_sender: Sender<AppAction>) -> Sender<Command> {
     let (sender, receiver) = channel::<Command>(0);
     thread::spawn(move || {
         let mut core = Core::new().unwrap();
-        let delegate = Rc::new(AppPlayerDelegate::new(dispatcher));
+        let delegate = Rc::new(AppPlayerDelegate::new(appaction_sender));
         core.run(SpotifyPlayer::new(delegate)
             .start(core.handle(), receiver)
             .boxed_local()

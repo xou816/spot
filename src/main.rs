@@ -21,24 +21,25 @@ fn main() {
     context.push_thread_default();
 
     let dispatch_loop = DispatchLoop::new();
-    let dispatcher = dispatch_loop.make_dispatcher();
+    let sender = dispatch_loop.make_dispatcher();
 
     let tasks = LocalTaskLoop::new();
 
-    let player_sender = backend::start_player_service(dispatcher.clone());
+    let player_sender = backend::start_player_service(sender.clone());
 
     context.spawn_local(
-        App::new_from_builder(&builder, dispatcher.clone(), tasks.make_worker(), player_sender)
+        App::new_from_builder(&builder, sender.clone(), tasks.make_worker(), player_sender)
             .start(dispatch_loop));
 
     context.spawn_local_with_priority(glib::source::PRIORITY_DEFAULT_IDLE, tasks.attach());
 
     let window = make_window(&builder);
     app.connect_activate(move |app| {
+        let mut sender = sender.clone();
         window.set_application(Some(app));
         app.add_window(&window);
         window.present();
-        dispatcher.dispatch(AppAction::Start);
+        sender.try_send(AppAction::Start).unwrap();
     });
 
 
