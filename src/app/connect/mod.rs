@@ -8,4 +8,4 @@ pub mod login;
 pub use login::LoginModelImpl;
 
 pub mod browser;
-pub use browser::BrowserModelImpl;
+pub use browser::{BrowserModelImpl, BrowserFactory};

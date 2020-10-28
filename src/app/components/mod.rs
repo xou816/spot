@@ -1,5 +1,8 @@
 use crate::app::{AppEvent};
 
+pub mod navigation;
+pub use navigation::{Navigation};
+
 pub mod playback;
 pub use playback::{Playback, PlaybackModel};
 

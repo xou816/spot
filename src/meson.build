@@ -43,6 +43,7 @@ sources = files(
   'app/components/player_notifier.rs',
   'app/components/playlist.rs',
   'app/components/browser.rs',
+  'app/components/navigation.rs',
   'app/connect/mod.rs',
   'app/connect/playback.rs',
   'app/connect/login.rs',

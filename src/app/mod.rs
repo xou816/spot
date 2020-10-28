@@ -7,10 +7,10 @@ pub mod dispatch;
 pub use dispatch::{DispatchLoop, ActionDispatcherImpl, ActionDispatcher, Worker};
 
 pub mod components;
-use components::{Component, Playback, Playlist, Login, PlayerNotifier, Browser};
+use components::{Component, Playback, Playlist, Login, PlayerNotifier, Browser, Navigation};
 
 pub mod connect;
-use connect::{PlaylistModelImpl, PlaybackModelImpl, LoginModelImpl, BrowserModelImpl};
+use connect::{PlaylistModelImpl, PlaybackModelImpl, LoginModelImpl, BrowserModelImpl, BrowserFactory};
 
 pub mod backend;
 use backend::Command;
@@ -86,7 +86,7 @@ impl App {
             App::make_playback(builder, Rc::clone(&model), dispatcher.box_clone()),
             App::make_playlist(builder, Rc::clone(&model), dispatcher.box_clone()),
             App::make_login(builder, Rc::clone(&model), dispatcher.box_clone()),
-            App::make_browser(builder, Rc::clone(&model), dispatcher.box_clone(), worker),
+            App::make_navigation(builder, Rc::clone(&model), dispatcher.box_clone(), worker),
             App::make_player_notifier(command_sender)
         ];
 
@@ -97,16 +97,15 @@ impl App {
         Box::new(PlayerNotifier::new(sender))
     }
 
-    fn make_browser(
+    fn make_navigation(
         builder: &gtk::Builder,
         app_model: Rc<RefCell<AppModel>>,
         dispatcher: Box<dyn ActionDispatcher>,
-        worker: Worker) -> Box<Browser> {
+        worker: Worker) -> Box<Navigation> {
 
-        let flowbox: gtk::FlowBox = builder.get_object("flowbox").unwrap();
-        let scroll_window: gtk::ScrolledWindow = builder.get_object("browser_scrollwindow").unwrap();
-        let model = Rc::new(BrowserModelImpl::new(app_model, dispatcher));
-        Box::new(Browser::new(flowbox, scroll_window, worker, model))
+        let browser_factory = BrowserFactory::new(worker, app_model, dispatcher);
+        Box::new(Navigation::new(builder.get_object("browser_stack").unwrap(), browser_factory))
+
     }
 
     fn make_login(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>, dispatcher: Box<dyn ActionDispatcher>) -> Box<Login> {

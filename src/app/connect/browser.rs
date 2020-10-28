@@ -2,9 +2,33 @@ use std::rc::{Rc};
 use std::cell::{RefCell, Ref};
 
 use crate::app::{AppModel, AppAction, BrowserAction, ActionDispatcher};
+use crate::app::dispatch::Worker;
 use crate::app::models::*;
-use crate::app::components::browser::{BrowserModel};
+use crate::app::components::browser::{Browser, BrowserModel};
 use crate::app::backend::api::SpotifyApiClient;
+
+
+pub struct BrowserFactory {
+    worker: Worker,
+    app_model: Rc<RefCell<AppModel>>,
+    dispatcher: Box<dyn ActionDispatcher>
+}
+
+impl BrowserFactory {
+
+    pub fn new(
+        worker: Worker,
+        app_model: Rc<RefCell<AppModel>>,
+        dispatcher: Box<dyn ActionDispatcher>) -> Self {
+
+        Self { worker, app_model, dispatcher }
+    }
+
+    pub fn make_browser(&self, flowbox: gtk::FlowBox, scroll_window: gtk::ScrolledWindow) -> Browser {
+        let model = BrowserModelImpl::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
+        Browser::new(flowbox, scroll_window, self.worker.clone(), Rc::new(model))
+    }
+}
 
 pub struct BrowserModelImpl {
     app_model: Rc<RefCell<AppModel>>,
