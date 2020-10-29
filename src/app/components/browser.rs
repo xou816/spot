@@ -7,7 +7,7 @@ use std::rc::{Rc, Weak};
 use std::cell::Ref;
 
 use crate::app::{AppEvent, AlbumDescription, BrowserEvent};
-use crate::app::components::{Component};
+use crate::app::components::{EventListener};
 use super::gtypes::AlbumModel;
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
@@ -87,9 +87,9 @@ impl Browser {
     }
 }
 
-impl Component for Browser {
+impl EventListener for Browser {
 
-    fn on_event(&self, event: AppEvent) {
+    fn on_event(&self, event: &AppEvent) {
         match event {
             AppEvent::Started|AppEvent::LoginCompleted => {
                 self.model.refresh_saved_albums();
@@ -98,7 +98,7 @@ impl Component for Browser {
                 self.set_saved_albums();
             },
             AppEvent::BrowserEvent(BrowserEvent::ContentAppended(offset)) => {
-                self.append_next_albums(offset);
+                self.append_next_albums(*offset);
             }
             _ => {}
         }

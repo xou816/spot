@@ -7,7 +7,7 @@ use std::rc::{Rc, Weak};
 use std::cell::Ref;
 
 use crate::app::{AppEvent, SongDescription};
-use crate::app::components::{Component};
+use crate::app::components::{EventListener};
 
 use super::gtypes::SongModel;
 
@@ -70,8 +70,8 @@ impl Playlist {
 
 }
 
-impl Component for Playlist {
-    fn on_event(&self, event: AppEvent) {
+impl EventListener for Playlist {
+    fn on_event(&self, event: &AppEvent) {
         match event {
             AppEvent::TrackChanged(_) => {
                 self.update_list();

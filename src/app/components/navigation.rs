@@ -4,7 +4,7 @@ use std::cell::RefCell;
 use std::convert::Into;
 
 use crate::app::connect::BrowserFactory;
-use crate::app::components::Component;
+use crate::app::components::EventListener;
 use crate::app::AppEvent;
 
 use super::browser::{Browser};
@@ -25,7 +25,7 @@ impl Into<&'static str> for NavigationPage {
 pub struct Navigation {
     stack: gtk::Stack,
     browser_factory: BrowserFactory,
-    children: RefCell<HashMap<&'static str, Box<dyn Component>>>
+    children: RefCell<HashMap<&'static str, Box<dyn EventListener>>>
 }
 
 impl Navigation {
@@ -39,13 +39,13 @@ impl Navigation {
         self.stack.add_named(child, name.into());
     }
 
-    fn add_component(&self, component: Box<dyn Component>, name: NavigationPage) {
+    fn add_component(&self, component: Box<dyn EventListener>, name: NavigationPage) {
         self.children.borrow_mut().insert(name.into(), component);
     }
 
-    fn broadcast(&self, event: AppEvent) {
+    fn broadcast(&self, event: &AppEvent) {
         for child in self.children.borrow().values() {
-            child.on_event(event.clone());
+            child.on_event(event);
         }
     }
 
@@ -70,16 +70,15 @@ impl Navigation {
     }
 }
 
-impl Component for Navigation {
+impl EventListener for Navigation {
 
-    fn on_event(&self, event: AppEvent) {
-        let clone = event.clone();
+    fn on_event(&self, event: &AppEvent) {
         match event {
             AppEvent::Started => {
                 self.create_browser();
             },
             _ => {}
         };
-        self.broadcast(clone);
+        self.broadcast(event);
     }
 }

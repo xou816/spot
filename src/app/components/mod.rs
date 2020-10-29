@@ -20,6 +20,6 @@ pub use browser::{Browser, BrowserModel};
 
 mod gtypes;
 
-pub trait Component {
-    fn on_event(&self, _: AppEvent) {}
+pub trait EventListener {
+    fn on_event(&self, _: &AppEvent) {}
 }

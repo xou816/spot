@@ -4,7 +4,7 @@ use std::rc::Rc;
 use std::cell::{Cell};
 
 use crate::app::{AppEvent, SongDescription};
-use crate::app::components::{Component};
+use crate::app::components::{EventListener};
 
 
 pub trait PlaybackModel {
@@ -113,9 +113,9 @@ impl Playback {
     }
 }
 
-impl Component for Playback {
+impl EventListener for Playback {
 
-    fn on_event(&self, event: AppEvent) {
+    fn on_event(&self, event: &AppEvent) {
         match event {
             AppEvent::TrackPaused|AppEvent::TrackResumed => {
                 self.toggle_playing();

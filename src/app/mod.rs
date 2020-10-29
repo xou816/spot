@@ -7,7 +7,7 @@ pub mod dispatch;
 pub use dispatch::{DispatchLoop, ActionDispatcherImpl, ActionDispatcher, Worker};
 
 pub mod components;
-use components::{Component, Playback, Playlist, Login, PlayerNotifier, Browser, Navigation};
+use components::{EventListener, Playback, Playlist, Login, PlayerNotifier, Browser, Navigation};
 
 pub mod connect;
 use connect::{PlaylistModelImpl, PlaybackModelImpl, LoginModelImpl, BrowserModelImpl, BrowserFactory};
@@ -58,7 +58,7 @@ pub enum AppEvent {
 }
 
 pub struct App {
-    components: Vec<Box<dyn Component>>,
+    components: Vec<Box<dyn EventListener>>,
     model: Rc<RefCell<AppModel>>
 }
 
@@ -66,7 +66,7 @@ impl App {
 
     fn new(
         model: Rc<RefCell<AppModel>>,
-        components: Vec<Box<dyn Component>>) -> Self {
+        components: Vec<Box<dyn EventListener>>) -> Self {
         Self { model, components }
     }
 
@@ -82,7 +82,7 @@ impl App {
         let model = AppModel::new(state, spotify_client);
         let model = Rc::new(RefCell::new(model));
 
-        let components: Vec<Box<dyn Component>> = vec![
+        let components: Vec<Box<dyn EventListener>> = vec![
             App::make_playback(builder, Rc::clone(&model), dispatcher.box_clone()),
             App::make_playlist(builder, Rc::clone(&model), dispatcher.box_clone()),
             App::make_login(builder, Rc::clone(&model), dispatcher.box_clone()),
@@ -143,9 +143,8 @@ impl App {
         };
 
         if let Some(event) = event {
-            //println!("AppEvent={:?}", event.clone());
             for component in self.components.iter() {
-                component.on_event(event.clone());
+                component.on_event(&event);
             }
         }
     }

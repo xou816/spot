@@ -3,7 +3,7 @@ use gtk::EntryExt;
 use std::rc::Rc;
 
 use crate::app::AppEvent;
-use crate::app::components::{Component};
+use crate::app::components::{EventListener};
 
 pub struct Login {
     dialog: gtk::Dialog,
@@ -55,9 +55,9 @@ impl Login {
     }
 }
 
-impl Component for Login {
+impl EventListener for Login {
 
-    fn on_event(&self, event: AppEvent) {
+    fn on_event(&self, event: &AppEvent) {
         match event {
             AppEvent::LoginCompleted => {
                 self.hide();
