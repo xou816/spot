@@ -7,6 +7,8 @@ use crate::app::models::*;
 use crate::app::components::browser::{Browser, BrowserModel};
 use crate::app::backend::api::SpotifyApiClient;
 
+use crate::app::browser_state::{LibraryState, BrowserScreen};
+
 
 pub struct BrowserFactory {
     worker: Worker,
@@ -24,9 +26,9 @@ impl BrowserFactory {
         Self { worker, app_model, dispatcher }
     }
 
-    pub fn make_browser(&self, flowbox: gtk::FlowBox, scroll_window: gtk::ScrolledWindow) -> Browser {
+    pub fn make_browser(&self) -> Browser {
         let model = BrowserModelImpl::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        Browser::new(flowbox, scroll_window, self.worker.clone(), Rc::new(model))
+        Browser::new(self.worker.clone(), Rc::new(model))
     }
 }
 
@@ -45,12 +47,21 @@ impl BrowserModelImpl {
     fn spotify(&self) -> Rc<dyn SpotifyApiClient> {
         Rc::clone(&self.app_model.borrow().services.spotify_api)
     }
+
+    fn state(&self) -> Option<Ref<'_, LibraryState>> {
+        let model = self.app_model.borrow();
+        if model.state.browser_state.library_state().is_some() {
+            Some(Ref::map(self.app_model.borrow(), |m| m.state.browser_state.library_state().unwrap()))
+        } else {
+            None
+        }
+    }
 }
 
 impl BrowserModel for BrowserModelImpl {
 
-    fn get_saved_albums(&self) -> Ref<'_, Vec<AlbumDescription>> {
-        Ref::map(self.app_model.borrow(), |m| &m.state.browser_state.albums)
+    fn get_saved_albums(&self) -> Option<Ref<'_, Vec<AlbumDescription>>> {
+        Some(Ref::map(self.state()?, |s| &s.albums))
     }
 
     fn refresh_saved_albums(&self) {
@@ -67,7 +78,8 @@ impl BrowserModel for BrowserModelImpl {
     fn load_more_albums(&self) {
         let app_model = self.app_model.borrow();
         let api = self.spotify();
-        let offset = app_model.state.browser_state.page * self.batch_size;
+        let page = self.state().map(|s| s.page).unwrap_or(0);
+        let offset = page * self.batch_size;
         let batch_size = self.batch_size;
 
         self.dispatcher.dispatch_async(Box::pin(async move {
@@ -77,16 +89,33 @@ impl BrowserModel for BrowserModelImpl {
     }
 
     fn play_album(&self, album_uri: &str) {
-        let app_model = self.app_model.borrow();
-        let api = Rc::clone(&app_model.services.spotify_api);
+        let api = self.spotify();
         let uri = String::from(album_uri);
 
         self.dispatcher.dispatch_many_async(Box::pin(async move {
-            if let Some(songs) = api.get_album(&uri).await {
-                let first_song = songs[0].uri.clone();
-                vec![AppAction::LoadPlaylist(songs), AppAction::Load(first_song)]
+            if let Some(album) = api.get_album(&uri).await {
+                let first_song = album.songs[0].uri.clone();
+                vec![
+                    AppAction::LoadPlaylist(album.songs),
+                    AppAction::Load(first_song.clone())
+                ]
             } else {
                 vec![]
+            }
+        }));
+    }
+
+    fn open_album(&self, album_uri: &str) {
+        self.dispatcher.dispatch(BrowserAction::NavigateToDetails.into());
+
+        let api = self.spotify();
+        let uri = album_uri.to_owned();
+
+        self.dispatcher.dispatch_async(Box::pin(async move {
+            if let Some(album) = api.get_album(&uri[..]).await {
+                Some(BrowserAction::SetDetails(album).into())
+            } else {
+                None
             }
         }));
     }

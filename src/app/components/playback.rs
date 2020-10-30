@@ -140,7 +140,6 @@ fn playback_image(is_playing: bool) -> &'static str {
 
 #[cfg(test)]
 mod tests {
-    // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
     use gtk_test;
     use gtk::ContainerExt;

@@ -21,11 +21,12 @@ pub struct SongDescription {
     pub title: String,
     pub artist: String,
     pub uri: String,
-    pub duration: u32
+    pub duration: u32,
+    pub art: Option<String>
 }
 
 impl SongDescription {
-    pub fn new(title: &str, artist: &str, uri: &str, duration: u32) -> Self {
-        Self { title: title.to_string(), artist: artist.to_string(), uri: uri.to_string(), duration }
+    pub fn new(title: &str, artist: &str, uri: &str, duration: u32, art: Option<String>) -> Self {
+        Self { title: title.to_string(), artist: artist.to_string(), uri: uri.to_string(), duration, art }
     }
 }

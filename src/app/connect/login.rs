@@ -6,13 +6,12 @@ use crate::app::components::{LoginModel};
 use crate::app::credentials;
 
 pub struct LoginModelImpl {
-    app_model: Rc<RefCell<AppModel>>,
     dispatcher: Box<dyn ActionDispatcher>
 }
 
 impl LoginModelImpl {
-    pub fn new(app_model: Rc<RefCell<AppModel>>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
-        Self { app_model, dispatcher }
+    pub fn new(dispatcher: Box<dyn ActionDispatcher>) -> Self {
+        Self { dispatcher }
     }
 }
 

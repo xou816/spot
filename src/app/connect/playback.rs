@@ -94,8 +94,8 @@ mod tests {
     fn test_playback() {
 
         let mut state = AppState::new(vec![
-            SongDescription::new("Song 1", "Artist", "uri1", 1000),
-            SongDescription::new("Song 2", "Artist", "uri2", 1000)
+            SongDescription::new("Song 1", "Artist", "uri1", 1000, None),
+            SongDescription::new("Song 2", "Artist", "uri2", 1000, None)
         ]);
         state.current_song_uri = Some("uri1".to_owned());
 
@@ -113,8 +113,8 @@ mod tests {
     fn test_next() {
 
         let mut state = AppState::new(vec![
-            SongDescription::new("Song 1", "Artist", "uri1", 1000),
-            SongDescription::new("Song 2", "Artist", "uri2", 1000)
+            SongDescription::new("Song 1", "Artist", "uri1", 1000, None),
+            SongDescription::new("Song 2", "Artist", "uri2", 1000, None)
         ]);
         state.current_song_uri = Some("uri1".to_owned());
 
@@ -133,8 +133,8 @@ mod tests {
     fn test_next_no_next() {
 
         let mut state = AppState::new(vec![
-            SongDescription::new("Song 1", "Artist", "uri1", 1000),
-            SongDescription::new("Song 2", "Artist", "uri2", 1000)
+            SongDescription::new("Song 1", "Artist", "uri1", 1000, None),
+            SongDescription::new("Song 2", "Artist", "uri2", 1000, None)
         ]);
         state.current_song_uri = Some("uri2".to_owned());
 

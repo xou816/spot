@@ -97,6 +97,11 @@ impl AppModel {
         }
     }
 
+    fn song_for_uri(&self, uri: &str) -> Option<&SongDescription> {
+        let state = &self.state;
+        state.playlist.iter().find(|&song| song.uri == *uri)
+    }
+
 
     fn prev_song(&self) -> Option<&SongDescription> {
         let state = &self.state;

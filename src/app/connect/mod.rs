@@ -1,5 +1,5 @@
 pub mod playlist;
-pub use playlist::PlaylistModelImpl;
+pub use playlist::{PlaylistFactory};
 
 pub mod playback;
 pub use playback::PlaybackModelImpl;
@@ -8,4 +8,7 @@ pub mod login;
 pub use login::LoginModelImpl;
 
 pub mod browser;
-pub use browser::{BrowserModelImpl, BrowserFactory};
+pub use browser::{BrowserFactory};
+
+pub mod navigation;
+pub use navigation::NavigationModelImpl;

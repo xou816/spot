@@ -7,7 +7,7 @@ use std::rc::{Rc, Weak};
 use std::cell::Ref;
 
 use crate::app::{AppEvent, AlbumDescription, BrowserEvent};
-use crate::app::components::{EventListener};
+use crate::app::components::{Component, EventListener};
 use super::gtypes::AlbumModel;
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
@@ -21,21 +21,32 @@ button.album {
 
 
 pub trait BrowserModel {
-    fn get_saved_albums(&self) -> Ref<'_, Vec<AlbumDescription>>;
+    fn get_saved_albums(&self) -> Option<Ref<'_, Vec<AlbumDescription>>>;
     fn refresh_saved_albums(&self);
     fn load_more_albums(&self);
     fn play_album(&self, album_uri: &str);
+    fn open_album(&self, album_uri: &str);
 }
 
 
 pub struct Browser {
+    root: gtk::Widget,
     browser_model: gio::ListStore,
     model: Rc<dyn BrowserModel>
 }
 
 impl Browser {
 
-    pub fn new(flowbox: gtk::FlowBox, scroll_window: gtk::ScrolledWindow, worker: Worker, model: Rc<dyn BrowserModel>) -> Self {
+    pub fn new(worker: Worker, model: Rc<dyn BrowserModel>) -> Self {
+
+        let flowbox = gtk::FlowBoxBuilder::new()
+            .margin(8)
+            .selection_mode(gtk::SelectionMode::None)
+            .build();
+
+        let scroll_window = gtk::ScrolledWindowBuilder::new()
+            .child(&flowbox)
+            .build();
 
         let browser_model = gio::ListStore::new(AlbumModel::static_type());
 
@@ -55,16 +66,20 @@ impl Browser {
             }
         });
 
-        Self { browser_model, model }
+        Self { root: scroll_window.upcast(), browser_model, model }
     }
 
     fn set_saved_albums(&self) {
         self.browser_model.remove_all();
-        self.append_albums(self.model.get_saved_albums().iter());
+        if let Some(albums) = self.model.get_saved_albums() {
+            self.append_albums(albums.iter());
+        }
     }
 
     fn append_next_albums(&self, offset: usize) {
-        self.append_albums(self.model.get_saved_albums().iter().skip(offset));
+        if let Some(albums) = self.model.get_saved_albums() {
+            self.append_albums(albums.iter().skip(offset));
+        }
     }
 
     fn append_albums<'a>(&self, albums: impl Iterator<Item=&'a AlbumDescription>) {
@@ -105,6 +120,13 @@ impl EventListener for Browser {
     }
 }
 
+impl Component for Browser {
+
+    fn get_root_widget(&self) -> &gtk::Widget {
+        &self.root
+    }
+}
+
 fn wrapped_label_style(builder: gtk::LabelBuilder) -> gtk::LabelBuilder {
     builder
         .halign(gtk::Align::Center)
@@ -140,7 +162,7 @@ fn create_album_for(album: &AlbumModel, worker: Worker, model: Weak<dyn BrowserM
         button.set_margin_top(0);
         button.connect_clicked(move |_| {
             if let (Some(model), Some(uri)) = (model.upgrade(), album.uri()) {
-                model.play_album(&uri);
+                model.open_album(&uri);
             }
         });
 

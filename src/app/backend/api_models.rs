@@ -17,7 +17,7 @@ pub struct SavedAlbum {
 pub struct Album {
     pub id: String,
     pub uri: String,
-    pub tracks: Tracks,
+    pub tracks: Option<Tracks>,
     pub artists: Vec<Artist>,
     pub name: String,
     pub images: Vec<Image>
@@ -39,28 +39,41 @@ pub struct Tracks {
     pub items: Vec<TrackItem>
 }
 
+impl Default for Tracks {
+    fn default() -> Self {
+        Self { items: vec![] }
+    }
+}
+
 #[derive(Deserialize, Debug, Clone)]
 pub struct TrackItem {
     pub uri: String,
     pub name: String,
     pub duration_ms: i64,
-    pub artists: Vec<Artist>
+    pub artists: Vec<Artist>,
+    pub albums: Option<Vec<Album>>
 }
 
 impl Into<Vec<SongDescription>> for Album {
+
     fn into(self) -> Vec<SongDescription> {
-        self.tracks.items.iter().map(|item| {
+
+        let art = self.images.first().unwrap().url.clone();
+        let items = self.tracks.unwrap_or_default().items;
+
+        items.iter().map(|item| {
             let artist = item.artists.iter()
                 .map(|a| a.name.clone())
                 .collect::<Vec<String>>()
                 .join(", ");
 
-            SongDescription::new(&item.name, &artist, &item.uri, item.duration_ms as u32)
+            SongDescription::new(&item.name, &artist, &item.uri, item.duration_ms as u32, Some(art.clone()))
         }).collect()
     }
 }
 
 impl Into<AlbumDescription> for Album {
+
     fn into(self) -> AlbumDescription {
 
         let songs: Vec<SongDescription> = self.clone().into();
@@ -78,5 +91,20 @@ impl Into<AlbumDescription> for Album {
             songs,
             id: self.id
         }
+    }
+}
+
+impl Into<SongDescription> for TrackItem {
+
+    fn into(self) -> SongDescription {
+        let art = self
+            .albums.unwrap_or_default().first().unwrap()
+            .images.first().unwrap()
+            .url.clone();
+        let artist = self.artists.iter()
+            .map(|a| a.name.clone())
+            .collect::<Vec<String>>()
+            .join(", ");
+        SongDescription::new(&self.name, &artist, &self.uri, self.duration_ms as u32, Some(art))
     }
 }

@@ -7,10 +7,10 @@ pub mod dispatch;
 pub use dispatch::{DispatchLoop, ActionDispatcherImpl, ActionDispatcher, Worker};
 
 pub mod components;
-use components::{EventListener, Playback, Playlist, Login, PlayerNotifier, Browser, Navigation};
+use components::{EventListener, Playback, Playlist, Login, PlayerNotifier, Navigation};
 
 pub mod connect;
-use connect::{PlaylistModelImpl, PlaybackModelImpl, LoginModelImpl, BrowserModelImpl, BrowserFactory};
+use connect::{PlaylistFactory, PlaybackModelImpl, LoginModelImpl, BrowserFactory, NavigationModelImpl};
 
 pub mod backend;
 use backend::Command;
@@ -57,6 +57,13 @@ pub enum AppEvent {
     BrowserEvent(BrowserEvent)
 }
 
+trait UpdatableState {
+    type Action;
+    type Event;
+
+    fn update_with(&mut self, action: Self::Action) -> Option<Self::Event>;
+}
+
 pub struct App {
     components: Vec<Box<dyn EventListener>>,
     model: Rc<RefCell<AppModel>>
@@ -85,7 +92,7 @@ impl App {
         let components: Vec<Box<dyn EventListener>> = vec![
             App::make_playback(builder, Rc::clone(&model), dispatcher.box_clone()),
             App::make_playlist(builder, Rc::clone(&model), dispatcher.box_clone()),
-            App::make_login(builder, Rc::clone(&model), dispatcher.box_clone()),
+            App::make_login(builder, dispatcher.box_clone()),
             App::make_navigation(builder, Rc::clone(&model), dispatcher.box_clone(), worker),
             App::make_player_notifier(command_sender)
         ];
@@ -103,26 +110,31 @@ impl App {
         dispatcher: Box<dyn ActionDispatcher>,
         worker: Worker) -> Box<Navigation> {
 
-        let browser_factory = BrowserFactory::new(worker, app_model, dispatcher);
-        Box::new(Navigation::new(builder.get_object("browser_stack").unwrap(), browser_factory))
+        let back_btn: gtk::Button = builder.get_object("nav_back").unwrap();
+        let stack: gtk::Stack = builder.get_object("browser_stack").unwrap();
+
+        let model = NavigationModelImpl::new(dispatcher.box_clone());
+        let browser_factory = BrowserFactory::new(worker, Rc::clone(&app_model), dispatcher.box_clone());
+        let playlist_factory = PlaylistFactory::new(app_model, dispatcher);
+        Box::new(Navigation::new(Rc::new(model), back_btn, stack, browser_factory, playlist_factory))
 
     }
 
-    fn make_login(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>, dispatcher: Box<dyn ActionDispatcher>) -> Box<Login> {
+    fn make_login(builder: &gtk::Builder, dispatcher: Box<dyn ActionDispatcher>) -> Box<Login> {
         let parent: gtk::Window = builder.get_object("window").unwrap();
         let dialog: gtk::Dialog = builder.get_object("login").unwrap();
         let username: gtk::Entry = builder.get_object("username").unwrap();
         let password: gtk::Entry = builder.get_object("password").unwrap();
         let login_btn: gtk::Button = builder.get_object("login_btn").unwrap();
 
-        let model = Rc::new(LoginModelImpl::new(app_model, dispatcher));
+        let model = Rc::new(LoginModelImpl::new(dispatcher));
         Box::new(Login::new(parent, dialog, username, password, login_btn, model))
     }
 
     fn make_playlist(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>, dispatcher: Box<dyn ActionDispatcher>) -> Box<Playlist> {
         let listbox: gtk::ListBox = builder.get_object("listbox").unwrap();
-        let model = Rc::new(PlaylistModelImpl::new(app_model, dispatcher));
-        Box::new(Playlist::new(listbox, model))
+        let playlist = PlaylistFactory::new(app_model, dispatcher).make_current_playlist(listbox);
+        Box::new(playlist)
     }
 
     fn make_playback(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>, dispatcher: Box<dyn ActionDispatcher>) -> Box<Playback> {

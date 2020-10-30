@@ -6,13 +6,13 @@ use gio::ListModelExt;
 use std::rc::{Rc, Weak};
 use std::cell::Ref;
 
-use crate::app::{AppEvent, SongDescription};
+use crate::app::{AppEvent, BrowserEvent, SongDescription};
 use crate::app::components::{EventListener};
 
 use super::gtypes::SongModel;
 
 pub trait PlaylistModel {
-    fn songs(&self) -> Ref<'_, Vec<SongDescription>>;
+    fn songs(&self) -> Option<Ref<'_, Vec<SongDescription>>>;
     fn current_song_uri(&self) -> Option<String>;
     fn play_song(&self, uri: String);
 }
@@ -49,22 +49,28 @@ impl Playlist {
     fn update_list(&self) {
         let current_song_uri = self.model.current_song_uri();
 
-        for (i, song) in self.model.songs().iter().enumerate() {
+        if let Some(songs) = self.model.songs() {
+            for (i, song) in songs.iter().enumerate() {
 
-            let is_current = current_song_uri.clone().map(|uri| *uri == song.uri);
+                let is_current = current_song_uri.clone().map(|uri| *uri == song.uri);
 
-            if let (Some(is_current), Some(model_song)) = (is_current, self.model_song_at(i)) {
-                model_song.set_name(&song_name_for(song, is_current)[..]);
+                if let (Some(is_current), Some(model_song)) = (is_current, self.model_song_at(i)) {
+                    model_song.set_name(&song_name_for(song, is_current)[..]);
+                }
             }
         }
+
     }
 
     fn reset_list(&self) {
         let list_model = &self.list_model;
 
         list_model.remove_all();
-        for song in self.model.songs().iter() {
-            list_model.append(&SongModel::new(&song_name_for(song, false)[..], &song.uri));
+
+        if let Some(songs) = self.model.songs() {
+            for song in songs.iter() {
+                list_model.append(&SongModel::new(&song_name_for(song, false)[..], &song.uri));
+            }
         }
     }
 
@@ -76,7 +82,7 @@ impl EventListener for Playlist {
             AppEvent::TrackChanged(_) => {
                 self.update_list();
             },
-            AppEvent::PlaylistChanged => {
+            AppEvent::PlaylistChanged|AppEvent::BrowserEvent(BrowserEvent::DetailsLoaded) => {
                 self.reset_list()
             }
             _ => {}

@@ -1,72 +1,81 @@
 use gtk::prelude::*;
+use gtk::{ButtonExt, ContainerExt};
 use std::collections::HashMap;
 use std::cell::RefCell;
-use std::convert::Into;
+use std::rc::Rc;
 
-use crate::app::connect::BrowserFactory;
-use crate::app::components::EventListener;
-use crate::app::AppEvent;
+use crate::app::connect::{PlaylistFactory, BrowserFactory};
+use crate::app::components::{EventListener, ListenerComponent, Details};
+use crate::app::{AppEvent, BrowserEvent};
 
 use super::browser::{Browser};
 
-enum NavigationPage {
-    Home
+pub trait NavigationModel {
+    fn go_back(&self);
 }
-
-impl Into<&'static str> for NavigationPage {
-    fn into(self) -> &'static str {
-        match self {
-            Self::Home => "home"
-        }
-    }
-}
-
 
 pub struct Navigation {
+    model: Rc<dyn NavigationModel>,
     stack: gtk::Stack,
     browser_factory: BrowserFactory,
-    children: RefCell<HashMap<&'static str, Box<dyn EventListener>>>
+    playlist_factory: PlaylistFactory,
+    children: RefCell<Vec<Box<dyn ListenerComponent>>>
 }
 
 impl Navigation {
 
-    pub fn new(stack: gtk::Stack, browser_factory: BrowserFactory) -> Self {
-        Self { stack, browser_factory, children: RefCell::new(HashMap::new()) }
+    pub fn new(
+        model: Rc<dyn NavigationModel>,
+        back_button: gtk::Button,
+        stack: gtk::Stack,
+        browser_factory: BrowserFactory,
+        playlist_factory: PlaylistFactory) -> Self {
+
+        let weak_model = Rc::downgrade(&model);
+        back_button.connect_clicked(move |_| {
+            weak_model.upgrade().map(|m| m.go_back());
+        });
+
+        Self { model, stack, browser_factory, playlist_factory, children: RefCell::new(vec![]) }
     }
 
-    fn add_child<W: IsA<gtk::Widget>>(&self, child: &W, name: NavigationPage) {
-        child.show_all();
-        self.stack.add_named(child, name.into());
-    }
+    fn add_component(&self, component: Box<dyn ListenerComponent>, name: &'static str) {
+        let widget = component.get_root_widget();
+        widget.show_all();
+        self.stack.add_named(widget, name);
 
-    fn add_component(&self, component: Box<dyn EventListener>, name: NavigationPage) {
-        self.children.borrow_mut().insert(name.into(), component);
+        self.children.borrow_mut().push(component);
     }
 
     fn broadcast(&self, event: &AppEvent) {
-        for child in self.children.borrow().values() {
+        for child in self.children.borrow().iter() {
             child.on_event(event);
         }
     }
 
-    fn switch_to(&self, name: NavigationPage) {
-        self.stack.set_visible_child_name(name.into());
+    fn switch_to(&self, name: &'static str) {
+        self.stack.set_visible_child_name(name);
     }
 
     fn create_browser(&self) {
+        let browser: Box<Browser> = Box::new(self.browser_factory.make_browser());
+        self.add_component(browser, "library");
+    }
 
-        let flowbox = gtk::FlowBoxBuilder::new()
-            .margin(8)
-            .selection_mode(gtk::SelectionMode::None)
-            .build();
-        let scroll_window = gtk::ScrolledWindowBuilder::new()
-            .child(&flowbox)
-            .build();
+    fn create_details(&self) {
+        let details: Box<Details> = Box::new(Details::new(&self.playlist_factory));
+        self.add_component(details, "details");
+    }
 
-        self.add_child(&scroll_window, NavigationPage::Home);
-
-        let browser: Box<Browser> = Box::new(self.browser_factory.make_browser(flowbox, scroll_window));
-        self.add_component(browser, NavigationPage::Home);
+    fn pop(&self) {
+        let mut children = self.children.borrow_mut();
+        let popped = children.pop();
+        if let Some(last) = children.last() {
+            self.stack.set_visible_child(last.get_root_widget())
+        }
+        if let Some(child) = popped {
+            self.stack.remove(child.get_root_widget());
+        }
     }
 }
 
@@ -76,6 +85,13 @@ impl EventListener for Navigation {
         match event {
             AppEvent::Started => {
                 self.create_browser();
+            },
+            AppEvent::BrowserEvent(BrowserEvent::NavigatedToDetails) => {
+                self.create_details();
+                self.switch_to("details");
+            },
+            AppEvent::BrowserEvent(BrowserEvent::NavigationPopped) => {
+                self.pop();
             },
             _ => {}
         };

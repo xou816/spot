@@ -11,7 +11,8 @@ use super::api_models::*;
 const SPOTIFY_API: &'static str = "https://api.spotify.com/v1";
 
 pub trait SpotifyApiClient {
-    fn get_album(&self, id: &str) -> LocalBoxFuture<Option<Vec<SongDescription>>>;
+    fn get_album(&self, id: &str) -> LocalBoxFuture<Option<AlbumDescription>>;
+    fn get_track(&self, id: &str) -> LocalBoxFuture<Option<SongDescription>>;
     fn get_saved_albums(&self, offset: u32, limit: u32) -> LocalBoxFuture<Option<Vec<AlbumDescription>>>;
     fn update_token(&self, token: &str);
 }
@@ -36,6 +37,11 @@ pub mod tests {
         }
 
         fn get_saved_albums(&self, offset: u32, limit: u32) -> LocalBoxFuture<Option<Vec<AlbumDescription>>> {
+            Box::pin(async { None })
+        }
+
+
+        fn get_track(&self, id: &str) -> LocalBoxFuture<Option<SongDescription>> {
             Box::pin(async { None })
         }
 
@@ -95,12 +101,57 @@ impl CachedSpotifyClient {
         let mut result = request.send_async().await.ok()?;
         result.text_async().await.ok()
     }
+
+    async fn get_track_no_cache(&self, id: &str) -> Option<String> {
+
+        let token = self.token.borrow();
+        let token = token.as_deref()?;
+
+        let uri = format!("{}/tracks/{}", SPOTIFY_API, id);
+        let request = Request::get(uri)
+            .header("Authorization", format!("Bearer {}", token))
+            .body(())
+            .unwrap();
+
+        let mut result = request.send_async().await.ok()?;
+        result.text_async().await.ok()
+    }
+
+    fn album_cache<'a>(id: impl AsRef<str>) -> String {
+        format!("album_{}.json", id.as_ref())
+    }
 }
 
 impl SpotifyApiClient for CachedSpotifyClient {
 
     fn update_token(&self, token: &str) {
         self.token.replace(Some(token.to_string()));
+    }
+
+    fn get_track(&self, id: &str) -> LocalBoxFuture<Option<SongDescription>> {
+        let id = id.to_owned();
+
+        Box::pin(async move {
+            let key = format!("track_{}.json", id);
+            let key = &key[..];
+            let text = self.get_cache_for(key).await;
+
+            let text = match text {
+                Some(text) => text,
+                None => {
+                    let response = self.get_track_no_cache(&id[..]).await?;
+                    self.cache.write_cache_file(
+                        key,
+                        response.as_bytes(),
+                        CacheExpiry::expire_in_seconds(3600)).await?;
+                    response
+                }
+            };
+
+            let track = from_str::<TrackItem>(&text).ok()?;
+
+            Some(track.into())
+        })
     }
 
     fn get_saved_albums(&self, offset: u32, limit: u32) -> LocalBoxFuture<Option<Vec<AlbumDescription>>> {
@@ -124,27 +175,30 @@ impl SpotifyApiClient for CachedSpotifyClient {
 
             let page = from_str::<Page<SavedAlbum>>(&text).ok()?;
 
-            Some(page.items.iter()
+            let albums = page.items.iter()
                 .map(|saved| saved.album.clone().into())
-                .collect::<Vec<AlbumDescription>>())
+                .collect::<Vec<AlbumDescription>>();
+
+            Some(albums)
         })
     }
 
 
-    fn get_album(&self, id: &str) -> LocalBoxFuture<Option<Vec<SongDescription>>> {
+    fn get_album(&self, id: &str) -> LocalBoxFuture<Option<AlbumDescription>> {
 
         let id = id.to_owned();
 
         Box::pin(async move {
-            let key = format!("album_{}.json", id);
+            let key = Self::album_cache(&id);
+            let key = &key[..];
 
-            let text = self.get_cache_for(&key[..]).await;
+            let text = self.get_cache_for(key).await;
             let text = match text {
                 Some(text) => text,
                 None => {
                     let response = self.get_album_no_cache(&id[..]).await?;
                     self.cache.write_cache_file(
-                        &key[..],
+                        key,
                         response.as_bytes(),
                         CacheExpiry::expire_in_seconds(3600)).await?;
                     response
