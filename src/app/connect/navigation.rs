@@ -17,4 +17,8 @@ impl NavigationModel for NavigationModelImpl {
     fn go_back(&self) {
         self.dispatcher.dispatch(BrowserAction::GoBack.into())
     }
+
+    fn can_go_back(&self) -> bool {
+        true
+    }
 }

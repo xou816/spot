@@ -13,10 +13,17 @@ impl Details {
 
     pub fn new(playlist_factory: &PlaylistFactory) -> Self {
 
-        let listbox = gtk::ListBoxBuilder::new().build();
+        let listbox = gtk::ListBoxBuilder::new()
+            .selection_mode(gtk::SelectionMode::None)
+            .build();
+
+        let scroll_window = gtk::ScrolledWindowBuilder::new()
+            .child(&listbox)
+            .build();
+
         let playlist = Box::new(playlist_factory.make_custom_playlist(listbox.clone()));
 
-        Self { root: listbox.upcast(), children: vec![playlist] }
+        Self { root: scroll_window.upcast(), children: vec![playlist] }
     }
 
     fn broadcast_event(&self, event: &AppEvent) {

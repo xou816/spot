@@ -19,8 +19,8 @@ impl PlaylistFactory {
         Self { app_model, dispatcher }
     }
 
-    pub fn make_current_playlist(&self, listbox: gtk::ListBox) -> Playlist {
-        let model = CurrentlyPlayingModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
+    pub fn get_current_playlist(self, listbox: gtk::ListBox) -> Playlist {
+        let model = CurrentlyPlayingModel::new(self.app_model, self.dispatcher);
         Playlist::new(listbox, Rc::new(model))
     }
 
@@ -100,6 +100,9 @@ impl PlaylistModel for AlbumDetailsModel {
     }
 
     fn play_song(&self, uri: String) {
+        if let Some(songs) = self.songs() {
+            self.dispatcher.dispatch(AppAction::LoadPlaylist(songs.clone()));
+        }
         self.dispatcher.dispatch(AppAction::Load(uri));
     }
 }

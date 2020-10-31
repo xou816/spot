@@ -48,13 +48,12 @@ impl Playlist {
 
     fn update_list(&self) {
         let current_song_uri = self.model.current_song_uri();
+        let current_song_uri = &current_song_uri;
 
         if let Some(songs) = self.model.songs() {
             for (i, song) in songs.iter().enumerate() {
-
-                let is_current = current_song_uri.clone().map(|uri| *uri == song.uri);
-
-                if let (Some(is_current), Some(model_song)) = (is_current, self.model_song_at(i)) {
+                let is_current = current_song_uri.as_ref().map(|s| s.eq(&song.uri)).unwrap_or(false);
+                if let Some(model_song) = self.model_song_at(i) {
                     model_song.set_name(&song_name_for(song, is_current)[..]);
                 }
             }
@@ -63,13 +62,17 @@ impl Playlist {
     }
 
     fn reset_list(&self) {
-        let list_model = &self.list_model;
 
+        let current_song_uri = self.model.current_song_uri();
+        let current_song_uri = &current_song_uri;
+
+        let list_model = &self.list_model;
         list_model.remove_all();
 
         if let Some(songs) = self.model.songs() {
             for song in songs.iter() {
-                list_model.append(&SongModel::new(&song_name_for(song, false)[..], &song.uri));
+                let is_current = current_song_uri.as_ref().map(|s| s.eq(&song.uri)).unwrap_or(false);
+                list_model.append(&SongModel::new(&song_name_for(song, is_current)[..], &song.uri));
             }
         }
     }

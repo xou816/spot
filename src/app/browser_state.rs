@@ -42,13 +42,13 @@ impl UpdatableState for DetailsState {
     type Action = BrowserAction;
     type Event = BrowserEvent;
 
-    fn update_with(&mut self, action: Self::Action) -> Option<Self::Event> {
+    fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
             BrowserAction::SetDetails(album) => {
                 self.content = Some(album);
-                Some(BrowserEvent::DetailsLoaded)
+                vec![BrowserEvent::DetailsLoaded]
             },
-            _ => None
+            _ => vec![]
         }
     }
 }
@@ -70,20 +70,20 @@ impl UpdatableState for LibraryState {
     type Action = BrowserAction;
     type Event = BrowserEvent;
 
-    fn update_with(&mut self, action: Self::Action) -> Option<Self::Event> {
+    fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
             BrowserAction::SetContent(content) if content != self.albums => {
                 self.page = 1;
                 self.albums = content;
-                Some(BrowserEvent::ContentSet)
+                vec![BrowserEvent::ContentSet]
             },
             BrowserAction::AppendContent(mut content) => {
                 self.page += 1;
                 let append_index = self.albums.len();
                 self.albums.append(content.as_mut());
-                Some(BrowserEvent::ContentAppended(append_index))
+                vec![BrowserEvent::ContentAppended(append_index)]
             },
-            _ => None
+            _ => vec![]
         }
     }
 }
@@ -131,8 +131,14 @@ impl BrowserState {
             }
         })
     }
+}
 
-    pub fn update_with(&mut self, action: BrowserAction) -> Option<BrowserEvent> {
+impl UpdatableState for BrowserState {
+
+    type Action = BrowserAction;
+    type Event = BrowserEvent;
+
+    fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
 
         let len = self.navigation.len();
         let current = self.navigation.last_mut().unwrap().state();
@@ -140,11 +146,11 @@ impl BrowserState {
         match action {
             BrowserAction::NavigateToDetails => {
                 self.navigation.push(BrowserScreen::Details(DetailsState::default()));
-                Some(BrowserEvent::NavigatedToDetails)
+                vec![BrowserEvent::NavigatedToDetails]
             },
             BrowserAction::GoBack if len > 1 => {
                 self.navigation.pop();
-                Some(BrowserEvent::NavigationPopped)
+                vec![BrowserEvent::NavigationPopped]
             },
             _ => current.update_with(action)
         }

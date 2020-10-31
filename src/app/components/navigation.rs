@@ -12,6 +12,7 @@ use super::browser::{Browser};
 
 pub trait NavigationModel {
     fn go_back(&self);
+    fn can_go_back(&self) -> bool;
 }
 
 pub struct Navigation {

@@ -61,7 +61,7 @@ trait UpdatableState {
     type Action;
     type Event;
 
-    fn update_with(&mut self, action: Self::Action) -> Option<Self::Event>;
+    fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event>;
 }
 
 pub struct App {
@@ -133,7 +133,7 @@ impl App {
 
     fn make_playlist(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>, dispatcher: Box<dyn ActionDispatcher>) -> Box<Playlist> {
         let listbox: gtk::ListBox = builder.get_object("listbox").unwrap();
-        let playlist = PlaylistFactory::new(app_model, dispatcher).make_current_playlist(listbox);
+        let playlist = PlaylistFactory::new(app_model, dispatcher).get_current_playlist(listbox);
         Box::new(playlist)
     }
 
@@ -149,14 +149,14 @@ impl App {
     }
 
     fn handle(&self, message: AppAction) {
-        let event = {
+        let events = {
             let mut model = self.model.borrow_mut();
             model.update_state(message)
         };
 
-        if let Some(event) = event {
+        for event in events.iter() {
             for component in self.components.iter() {
-                component.on_event(&event);
+                component.on_event(event);
             }
         }
     }
