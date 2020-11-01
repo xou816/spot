@@ -1,10 +1,9 @@
 use gtk::prelude::*;
 use gtk::{ButtonExt, ContainerExt};
-use std::collections::HashMap;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::app::connect::{PlaylistFactory, BrowserFactory};
+use crate::app::connect::{DetailsFactory, BrowserFactory};
 use crate::app::components::{EventListener, ListenerComponent, Details};
 use crate::app::{AppEvent, BrowserEvent};
 
@@ -19,7 +18,7 @@ pub struct Navigation {
     model: Rc<dyn NavigationModel>,
     stack: gtk::Stack,
     browser_factory: BrowserFactory,
-    playlist_factory: PlaylistFactory,
+    details_factory: DetailsFactory,
     children: RefCell<Vec<Box<dyn ListenerComponent>>>
 }
 
@@ -30,14 +29,14 @@ impl Navigation {
         back_button: gtk::Button,
         stack: gtk::Stack,
         browser_factory: BrowserFactory,
-        playlist_factory: PlaylistFactory) -> Self {
+        details_factory: DetailsFactory) -> Self {
 
         let weak_model = Rc::downgrade(&model);
         back_button.connect_clicked(move |_| {
             weak_model.upgrade().map(|m| m.go_back());
         });
 
-        Self { model, stack, browser_factory, playlist_factory, children: RefCell::new(vec![]) }
+        Self { model, stack, browser_factory, details_factory, children: RefCell::new(vec![]) }
     }
 
     fn add_component(&self, component: Box<dyn ListenerComponent>, name: &'static str) {
@@ -64,7 +63,7 @@ impl Navigation {
     }
 
     fn create_details(&self) {
-        let details: Box<Details> = Box::new(Details::new(&self.playlist_factory));
+        let details: Box<Details> = Box::new(self.details_factory.make_details());
         self.add_component(details, "details");
     }
 

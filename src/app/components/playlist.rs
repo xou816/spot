@@ -29,6 +29,9 @@ impl Playlist {
         let list_model = gio::ListStore::new(SongModel::static_type());
         let weak_model = Rc::downgrade(&model);
 
+        listbox.set_selection_mode(gtk::SelectionMode::None);
+        listbox.get_style_context().add_class("playlist");
+
         listbox.bind_model(Some(&list_model), move |item| {
             let item = item.downcast_ref::<SongModel>().unwrap();
             let row = Playlist::create_row_for(&item, weak_model.clone());

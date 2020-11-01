@@ -10,7 +10,7 @@ pub mod components;
 use components::{EventListener, Playback, Playlist, Login, PlayerNotifier, Navigation};
 
 pub mod connect;
-use connect::{PlaylistFactory, PlaybackModelImpl, LoginModelImpl, BrowserFactory, NavigationModelImpl};
+use connect::{PlaylistFactory, PlaybackModelImpl, LoginModelImpl, BrowserFactory, DetailsFactory, NavigationModelImpl};
 
 pub mod backend;
 use backend::Command;
@@ -115,8 +115,9 @@ impl App {
 
         let model = NavigationModelImpl::new(dispatcher.box_clone());
         let browser_factory = BrowserFactory::new(worker, Rc::clone(&app_model), dispatcher.box_clone());
-        let playlist_factory = PlaylistFactory::new(app_model, dispatcher);
-        Box::new(Navigation::new(Rc::new(model), back_btn, stack, browser_factory, playlist_factory))
+        let playlist_factory = PlaylistFactory::new(Rc::clone(&app_model), dispatcher.box_clone());
+        let details_factory = DetailsFactory::new(app_model, playlist_factory);
+        Box::new(Navigation::new(Rc::new(model), back_btn, stack, browser_factory, details_factory))
 
     }
 

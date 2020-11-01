@@ -19,7 +19,7 @@ pub mod browser;
 pub use browser::{Browser, BrowserModel};
 
 pub mod details;
-pub use details::*;
+pub use details::{Details, DetailsModel};
 
 mod gtypes;
 

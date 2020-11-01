@@ -30,6 +30,7 @@ run_command(
 # find . -name "*.rs" -printf "'%p',\n"
 sources = files(
 'app/connect/browser.rs',
+'app/connect/details.rs',
 'app/connect/login.rs',
 'app/connect/playback.rs',
 'app/connect/navigation.rs',

@@ -12,3 +12,6 @@ pub use browser::{BrowserFactory};
 
 pub mod navigation;
 pub use navigation::NavigationModelImpl;
+
+pub mod details;
+pub use details::DetailsFactory;

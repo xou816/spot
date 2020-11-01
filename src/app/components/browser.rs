@@ -12,14 +12,6 @@ use super::gtypes::AlbumModel;
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
 
-const STYLE: &str = "
-button.album {
-  padding: 0;
-  border-radius: 0;
-}
-";
-
-
 pub trait BrowserModel {
     fn get_saved_albums(&self) -> Option<Ref<'_, Vec<AlbumDescription>>>;
     fn refresh_saved_albums(&self);
@@ -165,14 +157,7 @@ fn create_album_for(album: &AlbumModel, worker: Worker, model: Weak<dyn BrowserM
                 model.open_album(&uri);
             }
         });
-
-        let provider = gtk::CssProvider::new();
-        provider
-            .load_from_data(STYLE.as_bytes())
-            .expect("Failed to load CSS");
-        let context = button.get_style_context();
-        context.add_class("album");
-        context.add_provider(&provider, gtk::STYLE_PROVIDER_PRIORITY_APPLICATION);
+        button.get_style_context().add_class("album");
 
         button.add(&image);
         hbox.add(&button)

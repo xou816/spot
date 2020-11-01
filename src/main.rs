@@ -61,5 +61,16 @@ fn setup_gtk() {
 }
 
 fn make_window(builder: &gtk::Builder) -> gtk::ApplicationWindow {
-    builder.get_object("window").unwrap()
+    let window: gtk::ApplicationWindow = builder.get_object("window").unwrap();
+
+    let provider = gtk::CssProvider::new();
+    provider.load_from_resource("/dev/alextren/Spot/app.css");
+
+    gtk::StyleContext::add_provider_for_screen(
+        &gdk::Screen::get_default().expect("Error initializing gtk css provider."),
+        &provider,
+        gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+    );
+
+    window
 }

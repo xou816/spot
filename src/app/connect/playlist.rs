@@ -10,6 +10,12 @@ pub struct PlaylistFactory {
     dispatcher: Box<dyn ActionDispatcher>
 }
 
+impl Clone for PlaylistFactory {
+    fn clone(&self) -> Self {
+        Self::new(Rc::clone(&self.app_model), self.dispatcher.box_clone())
+    }
+}
+
 impl PlaylistFactory {
 
     pub fn new(

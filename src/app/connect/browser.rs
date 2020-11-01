@@ -7,7 +7,7 @@ use crate::app::models::*;
 use crate::app::components::browser::{Browser, BrowserModel};
 use crate::app::backend::api::SpotifyApiClient;
 
-use crate::app::browser_state::{LibraryState, BrowserScreen};
+use crate::app::browser_state::{LibraryState};
 
 
 pub struct BrowserFactory {
@@ -76,7 +76,6 @@ impl BrowserModel for BrowserModelImpl {
 
 
     fn load_more_albums(&self) {
-        let app_model = self.app_model.borrow();
         let api = self.spotify();
         let page = self.state().map(|s| s.page).unwrap_or(0);
         let offset = page * self.batch_size;
@@ -108,15 +107,20 @@ impl BrowserModel for BrowserModelImpl {
     fn open_album(&self, album_uri: &str) {
         self.dispatcher.dispatch(BrowserAction::NavigateToDetails.into());
 
-        let api = self.spotify();
-        let uri = album_uri.to_owned();
+        let album = self.get_saved_albums().and_then(|albums| {
+            albums.iter().find(|a| a.id.eq(album_uri)).cloned()
+        });
 
-        self.dispatcher.dispatch_async(Box::pin(async move {
+        if let Some(album) = album {
+            self.dispatcher.dispatch(BrowserAction::SetDetails(album).into());
+        }
+
+        /*self.dispatcher.dispatch_async(Box::pin(async move {
             if let Some(album) = api.get_album(&uri[..]).await {
                 Some(BrowserAction::SetDetails(album).into())
             } else {
                 None
             }
-        }));
+        }));*/
     }
 }
