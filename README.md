@@ -6,6 +6,4 @@ WIP! Very early stage of development...
 
 I suck at Rust right now :(
 
-![Preview](./preview1.png)
-![Preview](./preview2.png)
-
+![Preview](./demo.gif)
