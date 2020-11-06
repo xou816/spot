@@ -1,5 +1,6 @@
 use std::rc::{Rc};
 use std::cell::{Ref, RefCell};
+use ref_filter_map::*;
 
 use crate::app::{AppModel, AppState, AppAction, ActionDispatcher, SongDescription};
 use crate::app::components::{Playlist, PlaylistModel};
@@ -85,12 +86,7 @@ impl AlbumDetailsModel {
     }
 
     fn details_state(&self) -> Option<Ref<'_, DetailsState>> {
-        let model = self.app_model.borrow();
-        if model.state.browser_state.details_state().is_some() {
-            Some(Ref::map(self.app_model.borrow(), |m| m.state.browser_state.details_state().unwrap()))
-        } else {
-            None
-        }
+        ref_filter_map(self.app_model.borrow(), |m| m.state.browser_state.details_state())
     }
 }
 
@@ -102,7 +98,7 @@ impl PlaylistModel for AlbumDetailsModel {
     }
 
     fn songs(&self) -> Option<Ref<'_, Vec<SongDescription>>> {
-        Some(Ref::map(self.details_state()?, |s| &s.content.as_ref().unwrap().songs))
+        ref_filter_map(self.details_state()?, |s| Some(&s.content.as_ref()?.songs))
     }
 
     fn play_song(&self, uri: String) {

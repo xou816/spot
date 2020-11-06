@@ -5,6 +5,8 @@ use std::cell::{Cell};
 
 use crate::app::{AppEvent, SongDescription};
 use crate::app::components::{EventListener};
+use crate::app::loader::ImageLoader;
+use crate::app::dispatch::Worker;
 
 
 pub trait PlaybackModel {
@@ -17,22 +19,26 @@ pub trait PlaybackModel {
 }
 
 pub struct Playback {
+    model: Rc<dyn PlaybackModel>,
+    worker: Worker,
     play_button: gtk::Button,
+    current_song_image: gtk::Image,
     current_song_info: gtk::Label,
     seek_bar: gtk::Scale,
-    seek_source_id: Cell<Option<glib::source::SourceId>>,
-    model: Rc<dyn PlaybackModel>
+    seek_source_id: Cell<Option<glib::source::SourceId>>
 }
 
 impl Playback {
 
     pub fn new(
+        model: Rc<dyn PlaybackModel>,
+        worker: Worker,
         play_button: gtk::Button,
+        current_song_image: gtk::Image,
         current_song_info: gtk::Label,
         next: gtk::Button,
         prev: gtk::Button,
-        seek_bar: gtk::Scale,
-        model: Rc<dyn PlaybackModel>) -> Self {
+        seek_bar: gtk::Scale) -> Self {
 
         let weak_model = Rc::downgrade(&model);
         seek_bar.connect_change_value(move |s, _, _| {
@@ -66,7 +72,7 @@ impl Playback {
                 .map(|model| model.play_prev_song());
         });
 
-        Self { play_button, current_song_info, seek_bar, seek_source_id: Cell::new(None), model }
+        Self { model, worker, play_button, current_song_image, current_song_info, seek_bar, seek_source_id: Cell::new(None) }
     }
 
     fn toggle_playing(&self) {
@@ -101,10 +107,21 @@ impl Playback {
     fn update_current_info(&self) {
 
         if let Some(song) = self.model.current_song() {
+
             let title = glib::markup_escape_text(&song.title);
             let artist = glib::markup_escape_text(&song.artist);
             let label = format!("<b>{}</b>\n{}", title.as_str(), artist.as_str());
             self.current_song_info.set_label(&label[..]);
+
+            let image = self.current_song_image.clone();
+            if let Some(url) = song.art {
+                let url = url.clone();
+                self.worker.send_task(async move {
+                    let loader = ImageLoader::new();
+                    let result = loader.load_remote(&url, "jpg", 48, 48).await;
+                    image.set_from_pixbuf(result.as_ref());
+                });
+            }
 
             let duration = song.duration as f64;
             self.seek_bar.set_range(0.0, duration);
@@ -182,12 +199,13 @@ mod tests {
 
         let mock_model = Rc::new(MockModel::new());
         let playback = Playback::new(
+            Rc::clone(&mock_model) as Rc<dyn PlaybackModel>,
             gtk::Button::new(),
+            gtk::Image::new(),
             gtk::Label::new(None),
             gtk::Button::new(),
             gtk::Button::new(),
-            gtk::Scale::new_with_range(gtk::Orientation::Horizontal, 0., 1000., 1.),
-            Rc::clone(&mock_model) as Rc<dyn PlaybackModel>);
+            gtk::Scale::new_with_range(gtk::Orientation::Horizontal, 0., 1000., 1.));
 
         let play_button = playback.play_button.clone();
         make_host_window(move |w| {

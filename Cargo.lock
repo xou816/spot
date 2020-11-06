@@ -2155,6 +2155,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2439c63f3f6139d1b57529d16bc3b8bb855230c8efcc5d3a896c8bea7c3b1e84"
 
 [[package]]
+name = "ref_filter_map"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b5ceb840e4009da4841ed22a15eb49f64fdd00a2138945c5beacf506b2fb5ed"
+
+[[package]]
 name = "regex"
 version = "1.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2447,6 +2453,7 @@ dependencies = [
  "isahc",
  "librespot",
  "protobuf",
+ "ref_filter_map",
  "secret-service",
  "serde",
  "serde_json",

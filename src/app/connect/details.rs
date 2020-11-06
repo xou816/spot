@@ -1,5 +1,6 @@
 use std::rc::{Rc};
 use std::cell::{Ref, RefCell};
+use ref_filter_map::*;
 
 use crate::app::{AppModel};
 use crate::app::models::*;
@@ -37,12 +38,6 @@ impl DetailsModelImpl {
 impl DetailsModel for DetailsModelImpl {
 
     fn get_album_info(&self) -> Option<Ref<'_, AlbumDescription>> {
-        let app_model = self.app_model.borrow();
-
-        if app_model.state.browser_state.details_state().and_then(|s| s.content.as_ref()).is_some() {
-            Some(Ref::map(app_model, |m| m.state.browser_state.details_state().unwrap().content.as_ref().unwrap()))
-        } else {
-            None
-        }
+        ref_filter_map(self.app_model.borrow(), |m| m.state.browser_state.details_state()?.content.as_ref())
     }
 }

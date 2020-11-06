@@ -90,10 +90,10 @@ impl App {
         let model = Rc::new(RefCell::new(model));
 
         let components: Vec<Box<dyn EventListener>> = vec![
-            App::make_playback(builder, Rc::clone(&model), dispatcher.box_clone()),
+            App::make_playback(builder, Rc::clone(&model), dispatcher.box_clone(), worker.clone()),
             App::make_playlist(builder, Rc::clone(&model), dispatcher.box_clone()),
             App::make_login(builder, dispatcher.box_clone()),
-            App::make_navigation(builder, Rc::clone(&model), dispatcher.box_clone(), worker),
+            App::make_navigation(builder, Rc::clone(&model), dispatcher, worker),
             App::make_player_notifier(command_sender)
         ];
 
@@ -138,15 +138,16 @@ impl App {
         Box::new(playlist)
     }
 
-    fn make_playback(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>, dispatcher: Box<dyn ActionDispatcher>) -> Box<Playback> {
+    fn make_playback(builder: &gtk::Builder, app_model: Rc<RefCell<AppModel>>, dispatcher: Box<dyn ActionDispatcher>, worker: Worker) -> Box<Playback> {
         let play_button: gtk::Button = builder.get_object("play_pause").unwrap();
+        let image: gtk::Image = builder.get_object("playing_image").unwrap();
         let current_song_info: gtk::Label = builder.get_object("current_song_info").unwrap();
         let next: gtk::Button = builder.get_object("next").unwrap();
         let prev: gtk::Button = builder.get_object("prev").unwrap();
         let seek_bar: gtk::Scale = builder.get_object("seek_bar").unwrap();
 
         let model = Rc::new(PlaybackModelImpl::new(app_model, dispatcher));
-        Box::new(Playback::new(play_button, current_song_info, next, prev, seek_bar, model))
+        Box::new(Playback::new(model, worker, play_button, image, current_song_info, next, prev, seek_bar))
     }
 
     fn handle(&self, message: AppAction) {
