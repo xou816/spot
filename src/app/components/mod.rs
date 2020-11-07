@@ -1,25 +1,25 @@
-use crate::app::{AppEvent};
+use crate::app::AppEvent;
 
 pub mod navigation;
-pub use navigation::{Navigation, NavigationModel};
+pub use navigation::*;
 
 pub mod playback;
-pub use playback::{Playback, PlaybackModel};
+pub use playback::*;
 
 pub mod playlist;
-pub use playlist::{Playlist, PlaylistModel};
+pub use playlist::*;
 
 pub mod login;
-pub use login::{Login, LoginModel};
+pub use login::*;
 
 pub mod player_notifier;
-pub use player_notifier::{PlayerNotifier};
+pub use player_notifier::PlayerNotifier;
 
 pub mod browser;
-pub use browser::{Browser, BrowserModel};
+pub use browser::*;
 
 pub mod details;
-pub use details::{Details, DetailsModel};
+pub use details::*;
 
 mod gtypes;
 
@@ -29,6 +29,18 @@ pub trait EventListener {
 
 pub trait Component {
     fn get_root_widget(&self) -> &gtk::Widget;
+
+    fn get_children(&self) -> Option<Vec<Box<dyn EventListener>>> {
+        None
+    }
+
+    fn broadcast_event(&self, event: &AppEvent) {
+        if let Some(children) = self.get_children() {
+            for child in children.iter() {
+                child.on_event(event);
+            }
+        }
+    }
 }
 
 pub trait ListenerComponent: Component + EventListener {}

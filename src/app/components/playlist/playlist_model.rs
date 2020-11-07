@@ -2,9 +2,11 @@ use std::rc::{Rc};
 use std::cell::{Ref, RefCell};
 use ref_filter_map::*;
 
-use crate::app::{AppModel, AppState, AppAction, ActionDispatcher, SongDescription};
-use crate::app::components::{Playlist, PlaylistModel};
-use crate::app::browser_state::{BrowserScreen, DetailsState};
+use crate::app::{AppModel, AppState, AppAction, ActionDispatcher};
+use crate::app::models::*;
+use crate::app::state::DetailsState;
+
+use super::{Playlist, PlaylistModel};
 
 pub struct PlaylistFactory {
     app_model: Rc<RefCell<AppModel>>,

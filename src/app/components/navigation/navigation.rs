@@ -3,11 +3,8 @@ use gtk::{ButtonExt, ContainerExt};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::app::connect::{DetailsFactory, BrowserFactory};
-use crate::app::components::{EventListener, ListenerComponent, Details};
+use crate::app::components::{EventListener, ListenerComponent, Details, DetailsFactory, BrowserFactory, Browser};
 use crate::app::{AppEvent, BrowserEvent};
-
-use super::browser::{Browser};
 
 pub trait NavigationModel {
     fn go_back(&self);

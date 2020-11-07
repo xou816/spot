@@ -1,9 +1,7 @@
-use std::rc::Rc;
-use std::cell::RefCell;
-
-use crate::app::{AppModel, AppAction, ActionDispatcher};
-use crate::app::components::{LoginModel};
+use crate::app::{AppAction, ActionDispatcher};
 use crate::app::credentials;
+
+use super::login::*;
 
 pub struct LoginModelImpl {
     dispatcher: Box<dyn ActionDispatcher>

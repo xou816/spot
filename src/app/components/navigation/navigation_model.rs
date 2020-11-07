@@ -1,5 +1,6 @@
-use crate::app::{AppModel, BrowserAction, ActionDispatcher};
-use crate::app::components::NavigationModel;
+use crate::app::{BrowserAction, ActionDispatcher};
+use super::NavigationModel;
+
 
 pub struct NavigationModelImpl {
     dispatcher: Box<dyn ActionDispatcher>

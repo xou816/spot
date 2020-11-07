@@ -1,28 +1,9 @@
 use std::rc::Rc;
-use crate::app::{AppAction, AppEvent, UpdatableState};
+use crate::app::state::*;
 use crate::app::credentials;
 use crate::app::models::*;
-use crate::app::browser_state::BrowserState;
 use crate::backend::api::SpotifyApiClient;
 
-
-pub struct AppState {
-    pub is_playing: bool,
-    pub current_song_uri: Option<String>,
-    pub playlist: Vec<SongDescription>,
-    pub browser_state: BrowserState
-}
-
-impl AppState {
-    pub fn new(songs: Vec<SongDescription>) -> Self {
-        Self {
-            is_playing: false,
-            current_song_uri: None,
-            playlist: songs,
-            browser_state: BrowserState::new()
-        }
-    }
-}
 
 pub struct AppServices {
     pub spotify_api: Rc<dyn SpotifyApiClient>

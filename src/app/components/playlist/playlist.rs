@@ -7,9 +7,8 @@ use std::rc::{Rc, Weak};
 use std::cell::Ref;
 
 use crate::app::{AppEvent, BrowserEvent, SongDescription};
-use crate::app::components::{EventListener};
-
-use super::gtypes::SongModel;
+use crate::app::components::EventListener;
+use crate::app::components::gtypes::SongModel;
 
 pub trait PlaylistModel {
     fn songs(&self) -> Option<Ref<'_, Vec<SongDescription>>>;

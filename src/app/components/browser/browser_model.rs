@@ -1,14 +1,14 @@
-use std::rc::{Rc};
+use std::rc::Rc;
 use std::cell::{RefCell, Ref};
+use ref_filter_map::*;
 
 use crate::app::{AppModel, AppAction, BrowserAction, ActionDispatcher};
 use crate::app::dispatch::Worker;
 use crate::app::models::*;
-use crate::app::components::browser::{Browser, BrowserModel};
 use crate::app::backend::api::SpotifyApiClient;
+use crate::app::state::LibraryState;
 
-use crate::app::browser_state::{LibraryState};
-
+use super::*;
 
 pub struct BrowserFactory {
     worker: Worker,
@@ -49,12 +49,7 @@ impl BrowserModelImpl {
     }
 
     fn state(&self) -> Option<Ref<'_, LibraryState>> {
-        let model = self.app_model.borrow();
-        if model.state.browser_state.library_state().is_some() {
-            Some(Ref::map(self.app_model.borrow(), |m| m.state.browser_state.library_state().unwrap()))
-        } else {
-            None
-        }
+        ref_filter_map(self.app_model.borrow(), |m| m.state.browser_state.library_state())
     }
 }
 
@@ -114,13 +109,5 @@ impl BrowserModel for BrowserModelImpl {
         if let Some(album) = album {
             self.dispatcher.dispatch(BrowserAction::SetDetails(album).into());
         }
-
-        /*self.dispatcher.dispatch_async(Box::pin(async move {
-            if let Some(album) = api.get_album(&uri[..]).await {
-                Some(BrowserAction::SetDetails(album).into())
-            } else {
-                None
-            }
-        }));*/
     }
 }

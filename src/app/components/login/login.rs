@@ -3,7 +3,7 @@ use gtk::EntryExt;
 use std::rc::Rc;
 
 use crate::app::AppEvent;
-use crate::app::components::{EventListener};
+use crate::app::components::EventListener;
 
 pub struct Login {
     dialog: gtk::Dialog,

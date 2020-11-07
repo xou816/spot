@@ -7,8 +7,7 @@ use std::rc::{Rc, Weak};
 use std::cell::Ref;
 
 use crate::app::{AppEvent, AlbumDescription, BrowserEvent};
-use crate::app::components::{Component, EventListener};
-use super::gtypes::AlbumModel;
+use crate::app::components::{Component, EventListener, gtypes::AlbumModel};
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
 

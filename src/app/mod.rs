@@ -1,4 +1,4 @@
-use futures::channel::mpsc::{Sender};
+use futures::channel::mpsc::Sender;
 use std::rc::Rc;
 use std::cell::RefCell;
 use gtk::prelude::*;
@@ -7,62 +7,21 @@ pub mod dispatch;
 pub use dispatch::{DispatchLoop, ActionDispatcherImpl, ActionDispatcher, Worker};
 
 pub mod components;
-use components::{EventListener, Playback, Playlist, Login, PlayerNotifier, Navigation};
-
-pub mod connect;
-use connect::{PlaylistFactory, PlaybackModelImpl, LoginModelImpl, BrowserFactory, DetailsFactory, NavigationModelImpl};
+use components::*;
 
 pub mod backend;
 use backend::Command;
 use backend::api::CachedSpotifyClient;
 
 pub mod models;
-pub use models::{SongDescription, AlbumDescription};
+use models::*;
 
 pub mod state;
-pub use state::{AppState, AppModel};
-
-pub mod browser_state;
-pub use browser_state::{BrowserEvent, BrowserAction};
+pub use state::{AppState, AppModel, AppEvent, AppAction, BrowserEvent, BrowserAction};
 
 pub mod credentials;
 pub mod loader;
 
-
-#[derive(Clone, Debug)]
-pub enum AppAction {
-    Play,
-    Pause,
-    Seek(u32),
-    Load(String),
-    LoadPlaylist(Vec<SongDescription>),
-    Start,
-    TryLogin(String, String),
-    LoginSuccess(credentials::Credentials),
-    Next,
-    Previous,
-    BrowserAction(BrowserAction)
-}
-
-#[derive(Clone, Debug)]
-pub enum AppEvent {
-    Started,
-    TrackPaused,
-    TrackResumed,
-    TrackSeeked(u32),
-    LoginStarted(String, String),
-    LoginCompleted,
-    TrackChanged(String),
-    PlaylistChanged,
-    BrowserEvent(BrowserEvent)
-}
-
-trait UpdatableState {
-    type Action;
-    type Event;
-
-    fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event>;
-}
 
 pub struct App {
     components: Vec<Box<dyn EventListener>>,

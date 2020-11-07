@@ -1,10 +1,10 @@
 use gtk::prelude::*;
 use gtk::{ImageExt, RangeExt, ScaleExt};
 use std::rc::Rc;
-use std::cell::{Cell};
+use std::cell::Cell;
 
 use crate::app::{AppEvent, SongDescription};
-use crate::app::components::{EventListener};
+use crate::app::components::EventListener;
 use crate::app::loader::ImageLoader;
 use crate::app::dispatch::Worker;
 

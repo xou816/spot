@@ -1,6 +1,7 @@
 use std::convert::Into;
-use super::models::*;
-use super::{AppAction, UpdatableState};
+use crate::app::models::*;
+use crate::app::state::AppAction;
+use super::UpdatableState;
 
 #[derive(Clone, Debug)]
 pub enum BrowserAction {

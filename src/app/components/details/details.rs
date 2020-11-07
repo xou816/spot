@@ -1,8 +1,8 @@
 use std::rc::Rc;
 use std::cell::Ref;
 use gtk::prelude::*;
-use super::{Component, EventListener};
-use crate::app::connect::PlaylistFactory;
+use crate::app::components::{Component, EventListener};
+use crate::app::components::PlaylistFactory;
 use crate::app::{AppEvent, BrowserEvent};
 use crate::app::models::*;
 

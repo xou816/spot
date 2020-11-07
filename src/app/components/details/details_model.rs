@@ -1,11 +1,12 @@
-use std::rc::{Rc};
+use std::rc::Rc;
 use std::cell::{Ref, RefCell};
 use ref_filter_map::*;
 
-use crate::app::{AppModel};
+use crate::app::AppModel;
 use crate::app::models::*;
-use crate::app::components::{Details, DetailsModel};
-use super::PlaylistFactory;
+use crate::app::components::PlaylistFactory;
+
+use super::*;
 
 pub struct DetailsFactory {
     app_model: Rc<RefCell<AppModel>>,

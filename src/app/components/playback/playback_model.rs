@@ -1,9 +1,10 @@
-use std::rc::{Rc};
+use std::rc::Rc;
 use std::cell::{Ref, RefCell};
 
 use crate::app::{AppModel, AppState, AppAction, ActionDispatcher};
 use crate::app::models::*;
-use crate::app::components::{PlaybackModel};
+
+use super::PlaybackModel;
 
 pub struct PlaybackModelImpl {
     app_model: Rc<RefCell<AppModel>>,
