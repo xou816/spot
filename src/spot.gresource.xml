@@ -3,5 +3,6 @@
   <gresource prefix="/dev/alextren/Spot">
     <file>window.ui</file>
     <file>app.css</file>
+    <file alias="components/search.ui">app/components/search/search.ui</file>
   </gresource>
 </gresources>

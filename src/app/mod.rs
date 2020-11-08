@@ -52,7 +52,8 @@ impl App {
             App::make_playback(builder, Rc::clone(&model), dispatcher.box_clone(), worker.clone()),
             App::make_playlist(builder, Rc::clone(&model), dispatcher.box_clone()),
             App::make_login(builder, dispatcher.box_clone()),
-            App::make_navigation(builder, Rc::clone(&model), dispatcher, worker),
+            App::make_navigation(builder, Rc::clone(&model), dispatcher.box_clone(), worker),
+            App::make_search_bar(builder, dispatcher),
             App::make_player_notifier(command_sender)
         ];
 
@@ -76,7 +77,8 @@ impl App {
         let browser_factory = BrowserFactory::new(worker, Rc::clone(&app_model), dispatcher.box_clone());
         let playlist_factory = PlaylistFactory::new(Rc::clone(&app_model), dispatcher.box_clone());
         let details_factory = DetailsFactory::new(app_model, playlist_factory);
-        Box::new(Navigation::new(Rc::new(model), back_btn, stack, browser_factory, details_factory))
+        let search_factory = SearchFactory::new();
+        Box::new(Navigation::new(Rc::new(model), back_btn, stack, browser_factory, details_factory, search_factory))
 
     }
 
@@ -107,6 +109,12 @@ impl App {
 
         let model = Rc::new(PlaybackModelImpl::new(app_model, dispatcher));
         Box::new(Playback::new(model, worker, play_button, image, current_song_info, next, prev, seek_bar))
+    }
+
+    fn make_search_bar(builder: &gtk::Builder, dispatcher: Box<dyn ActionDispatcher>) -> Box<SearchBar> {
+        let search_entry: gtk::SearchEntry = builder.get_object("search_entry").unwrap();
+        let model = Rc::new(SearchBarModelImpl(dispatcher));
+        Box::new(SearchBar::new(model, search_entry))
     }
 
     fn handle(&self, message: AppAction) {

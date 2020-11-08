@@ -21,6 +21,9 @@ pub use browser::*;
 pub mod details;
 pub use details::*;
 
+pub mod search;
+pub use search::*;
+
 mod gtypes;
 
 pub trait EventListener {
@@ -30,7 +33,7 @@ pub trait EventListener {
 pub trait Component {
     fn get_root_widget(&self) -> &gtk::Widget;
 
-    fn get_children(&self) -> Option<Vec<Box<dyn EventListener>>> {
+    fn get_children(&self) -> Option<&Vec<Box<dyn EventListener>>> {
         None
     }
 

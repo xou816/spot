@@ -57,18 +57,16 @@ impl Details {
 
         self.album_name.set_label(album_title);
     }
-
-    fn broadcast_event(&self, event: &AppEvent) {
-        for child in self.children.iter() {
-            child.on_event(event);
-        }
-    }
 }
 
 impl Component for Details {
 
     fn get_root_widget(&self) -> &gtk::Widget {
         &self.root
+    }
+
+    fn get_children(&self) -> Option<&Vec<Box<dyn EventListener>>> {
+        Some(&self.children)
     }
 }
 

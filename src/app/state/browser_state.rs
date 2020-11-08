@@ -9,7 +9,8 @@ pub enum BrowserAction {
     AppendContent(Vec<AlbumDescription>),
     NavigateToDetails,
     SetDetails(AlbumDescription),
-    GoBack
+    GoBack,
+    Search(String)
 }
 
 impl Into<AppAction> for BrowserAction {
@@ -24,7 +25,8 @@ pub enum BrowserEvent {
     ContentAppended(usize),
     NavigatedToDetails,
     DetailsLoaded,
-    NavigationPopped
+    NavigationPopped,
+    NavigatedToSearch
 }
 
 #[derive(Clone)]
@@ -89,10 +91,40 @@ impl UpdatableState for LibraryState {
     }
 }
 
+#[derive(Clone)]
+pub struct SearchState {
+    query: String
+}
+
+impl SearchState {
+
+    fn new(query: String) -> Self {
+        Self { query }
+    }
+}
+
+impl UpdatableState for SearchState {
+
+    type Action = BrowserAction;
+    type Event = BrowserEvent;
+
+    fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
+        match action {
+            BrowserAction::Search(query) => {
+                println!("searching {}", &query[..]);
+                self.query = query;
+                vec![]
+            }
+            _ => vec![]
+        }
+    }
+}
+
 
 pub enum BrowserScreen {
     Library(LibraryState),
-    Details(DetailsState)
+    Details(DetailsState),
+    Search(SearchState)
 }
 
 impl BrowserScreen {
@@ -100,7 +132,8 @@ impl BrowserScreen {
     fn state(&mut self) -> &mut dyn UpdatableState<Action=BrowserAction, Event=BrowserEvent> {
         match self {
             Self::Library(state) => state,
-            Self::Details(state) => state
+            Self::Details(state) => state,
+            Self::Search(state) => state
         }
     }
 }
@@ -132,6 +165,15 @@ impl BrowserState {
             }
         })
     }
+
+    pub fn search_state(&self) -> Option<&SearchState> {
+        self.navigation.iter().find_map(|screen| {
+            match screen {
+                BrowserScreen::Search(state) => Some(state),
+                _ => None
+            }
+        })
+    }
 }
 
 impl UpdatableState for BrowserState {
@@ -142,9 +184,18 @@ impl UpdatableState for BrowserState {
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
 
         let len = self.navigation.len();
-        let current = self.navigation.last_mut().unwrap().state();
+        let current = self.navigation.last_mut().unwrap();
+        let current_state = current.state();
 
         match action {
+            BrowserAction::Search(query) => {
+                if let BrowserScreen::Search(state) = current {
+                    state.update_with(BrowserAction::Search(query))
+                } else {
+                    self.navigation.push(BrowserScreen::Search(SearchState::new(query)));
+                    vec![BrowserEvent::NavigatedToSearch]
+                }
+            },
             BrowserAction::NavigateToDetails => {
                 self.navigation.push(BrowserScreen::Details(DetailsState::default()));
                 vec![BrowserEvent::NavigatedToDetails]
@@ -153,7 +204,7 @@ impl UpdatableState for BrowserState {
                 self.navigation.pop();
                 vec![BrowserEvent::NavigationPopped]
             },
-            _ => current.update_with(action)
+            _ => current_state.update_with(action)
         }
     }
 }

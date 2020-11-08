@@ -305,7 +305,7 @@ audio-volume-medium-symbolic</property>
             <property name="hexpand">True</property>
             <property name="vexpand">True</property>
             <child type="center">
-              <object class="GtkSearchEntry">
+              <object class="GtkSearchEntry" id="search_entry">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="primary-icon-name">edit-find-symbolic</property>

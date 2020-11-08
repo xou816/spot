@@ -3,7 +3,7 @@ use gtk::{ButtonExt, ContainerExt};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::app::components::{EventListener, ListenerComponent, Details, DetailsFactory, BrowserFactory, Browser};
+use crate::app::components::{EventListener, ListenerComponent, DetailsFactory, BrowserFactory, SearchFactory};
 use crate::app::{AppEvent, BrowserEvent};
 
 pub trait NavigationModel {
@@ -16,6 +16,7 @@ pub struct Navigation {
     stack: gtk::Stack,
     browser_factory: BrowserFactory,
     details_factory: DetailsFactory,
+    search_factory: SearchFactory,
     children: RefCell<Vec<Box<dyn ListenerComponent>>>
 }
 
@@ -26,14 +27,15 @@ impl Navigation {
         back_button: gtk::Button,
         stack: gtk::Stack,
         browser_factory: BrowserFactory,
-        details_factory: DetailsFactory) -> Self {
+        details_factory: DetailsFactory,
+        search_factory: SearchFactory) -> Self {
 
         let weak_model = Rc::downgrade(&model);
         back_button.connect_clicked(move |_| {
             weak_model.upgrade().map(|m| m.go_back());
         });
 
-        Self { model, stack, browser_factory, details_factory, children: RefCell::new(vec![]) }
+        Self { model, stack, browser_factory, details_factory, search_factory, children: RefCell::new(vec![]) }
     }
 
     fn add_component(&self, component: Box<dyn ListenerComponent>, name: &'static str) {
@@ -55,13 +57,18 @@ impl Navigation {
     }
 
     fn create_browser(&self) {
-        let browser: Box<Browser> = Box::new(self.browser_factory.make_browser());
-        self.add_component(browser, "library");
+        let browser = self.browser_factory.make_browser();
+        self.add_component(Box::new(browser), "library");
     }
 
     fn create_details(&self) {
-        let details: Box<Details> = Box::new(self.details_factory.make_details());
-        self.add_component(details, "details");
+        let details = self.details_factory.make_details();
+        self.add_component(Box::new(details), "details");
+    }
+
+    fn create_search(&self) {
+        let search_results = self.search_factory.make_search_results();
+        self.add_component(Box::new(search_results), "search")
     }
 
     fn pop(&self) {
@@ -87,9 +94,13 @@ impl EventListener for Navigation {
                 self.create_details();
                 self.switch_to("details");
             },
+            AppEvent::BrowserEvent(BrowserEvent::NavigatedToSearch) => {
+                self.create_search();
+                self.switch_to("search");
+            },
             AppEvent::BrowserEvent(BrowserEvent::NavigationPopped) => {
                 self.pop();
-            },
+            }
             _ => {}
         };
         self.broadcast(event);
