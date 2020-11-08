@@ -97,7 +97,7 @@ impl EventListener for Playlist {
 
 fn play_button_style(button: gtk::ButtonBuilder) -> gtk::ButtonBuilder {
 
-    let image = gtk::Image::new_from_icon_name(
+    let image = gtk::Image::from_icon_name(
         Some("media-playback-start"),
         gtk::IconSize::Button);
 

@@ -12,7 +12,7 @@ use librespot::core::keymaster;
 
 use librespot::playback::config::PlayerConfig;
 use librespot::playback::audio_backend;
-use librespot::playback::player::Player;
+use librespot::playback::player::{Player, PlayerEvent};
 
 use std::rc::Rc;
 use std::cell::RefCell;
@@ -56,9 +56,9 @@ impl SpotifyPlayer {
             },
             Command::PlayerLoad(track) => {
                 let delegate = Rc::downgrade(&self.delegate);
-                let player = player.as_ref().ok_or("Could not get player")?;
-                let end_of_track = player.load(track, true, 0)
-                    .map_err(|_| ())
+                let player = player.as_mut().ok_or("Could not get player")?;
+                player.load(track, true, 0);
+                let end_of_track = player.get_end_of_track_future()
                     .map(move |_| {
                         delegate.upgrade().map(|delegate| {
                             delegate.end_of_track_reached();

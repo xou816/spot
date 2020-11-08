@@ -15,7 +15,7 @@ fn main() {
     setup_gtk();
 
     let app = gtk::Application::new(Some("dev.alextren.Spot"), Default::default()).unwrap();
-    let builder = gtk::Builder::new_from_resource("/dev/alextren/Spot/window.ui");
+    let builder = gtk::Builder::from_resource("/dev/alextren/Spot/window.ui");
 
     let context = glib::MainContext::default();
     context.push_thread_default();
@@ -51,7 +51,7 @@ fn main() {
 }
 
 fn setup_gtk() {
-    gtk::init().unwrap_or_else(|_| panic!("Failed to initialize GTK."));
+    gtk::init().unwrap_or_else(|_| panic!("Failed to initialize GTK"));
 
     let res = gio::Resource::load(config::PKGDATADIR.to_owned() + "/spot.gresource")
         .expect("Could not load resources");

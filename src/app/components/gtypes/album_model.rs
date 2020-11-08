@@ -2,7 +2,7 @@ use gio::prelude::*;
 use glib::subclass;
 use glib::subclass::prelude::*;
 use glib::translate::*;
-use glib::{glib_wrapper, glib_object_wrapper};
+use glib::{glib_wrapper};
 
 glib_wrapper! {
     pub struct AlbumModel(Object<subclass::simple::InstanceStruct<imp::AlbumModel>, subclass::simple::ClassStruct<imp::AlbumModel>, AlbumModelClass>);
@@ -15,15 +15,15 @@ glib_wrapper! {
 // Constructor for new instances. This simply calls glib::Object::new() with
 // initial values for our two properties and then returns the new instance
 impl AlbumModel {
-    pub fn new(artist: &str, album: &str, cover_url: &str, uri: &str) -> AlbumModel {
-        glib::Object::new(Self::static_type(), &[("artist", &artist), ("album", &album), ("cover_url", &cover_url), ("uri", &uri)])
+    pub fn new(artist: &str, album: &str, cover: &str, uri: &str) -> AlbumModel {
+        glib::Object::new(Self::static_type(), &[("artist", &artist), ("album", &album), ("cover", &cover), ("uri", &uri)])
             .expect("Failed to create")
             .downcast()
             .expect("Created with wrong type")
     }
 
     pub fn cover_url(&self) -> Option<String> {
-        self.get_property("cover_url").unwrap().get::<&str>()
+        self.get_property("cover").unwrap().get::<&str>()
             .unwrap().map(|s| s.to_string())
     }
 
@@ -61,9 +61,9 @@ mod imp {
                 glib::ParamFlags::READWRITE,
             )
         }),
-        subclass::Property("cover_url", |cover_url| {
+        subclass::Property("cover", |cover| {
             glib::ParamSpec::string(
-                cover_url,
+                cover,
                 "Cover",
                 "Cover",
                 None,
@@ -87,8 +87,8 @@ mod imp {
     pub struct AlbumModel {
         album: RefCell<Option<String>>,
         artist: RefCell<Option<String>>,
-        uri: RefCell<Option<String>>,
-        cover_url: RefCell<Option<String>>
+        cover: RefCell<Option<String>>,
+        uri: RefCell<Option<String>>
     }
 
     // ObjectSubclass is the trait that defines the new type and
@@ -115,7 +115,7 @@ mod imp {
         // type is created. Here class specific settings can be performed,
         // including installation of properties and registration of signals
         // for the new type.
-        fn class_init(klass: &mut subclass::simple::ClassStruct<Self>) {
+        fn class_init(klass: &mut Self::Class) {
             klass.install_properties(&PROPERTIES);
         }
 
@@ -125,8 +125,8 @@ mod imp {
             Self {
                 album: RefCell::new(None),
                 artist: RefCell::new(None),
-                uri: RefCell::new(None),
-                cover_url: RefCell::new(None),
+                cover: RefCell::new(None),
+                uri: RefCell::new(None)
             }
         }
     }
@@ -154,17 +154,17 @@ mod imp {
                         .expect("type conformity checked by `Object::set_property`");
                     self.artist.replace(artist);
                 },
+                subclass::Property("cover", ..) => {
+                    let cover = value
+                        .get()
+                        .expect("type conformity checked by `Object::set_property`");
+                    self.cover.replace(cover);
+                },
                 subclass::Property("uri", ..) => {
                     let uri = value
                         .get()
                         .expect("type conformity checked by `Object::set_property`");
                     self.uri.replace(uri);
-                },
-                subclass::Property("cover_url", ..) => {
-                    let cover_url = value
-                        .get()
-                        .expect("type conformity checked by `Object::set_property`");
-                    self.cover_url.replace(cover_url);
                 }
                 _ => unimplemented!(),
             }
@@ -178,19 +178,10 @@ mod imp {
             match *prop {
                 subclass::Property("album", ..) => Ok(self.album.borrow().to_value()),
                 subclass::Property("artist", ..) => Ok(self.artist.borrow().to_value()),
+                subclass::Property("cover", ..) => Ok(self.cover.borrow().to_value()),
                 subclass::Property("uri", ..) => Ok(self.uri.borrow().to_value()),
-                subclass::Property("cover_url", ..) => Ok(self.cover_url.borrow().to_value()),
                 _ => unimplemented!(),
             }
-        }
-
-        // Called right after construction of the instance.
-        fn constructed(&self, obj: &glib::Object) {
-            // Chain up to the parent type's implementation of this virtual
-            // method.
-            self.parent_constructed(obj);
-
-            // And here we could do our own initialization.
         }
     }
 }

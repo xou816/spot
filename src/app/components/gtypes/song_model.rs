@@ -3,7 +3,7 @@ use glib::subclass;
 use glib::subclass::prelude::*;
 use glib::translate::*;
 use glib::Value;
-use glib::{glib_wrapper, glib_object_wrapper};
+use glib::{glib_wrapper};
 
 glib_wrapper! {
     pub struct SongModel(Object<subclass::simple::InstanceStruct<imp::SongModel>, subclass::simple::ClassStruct<imp::SongModel>, SongModelClass>);

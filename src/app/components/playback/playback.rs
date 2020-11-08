@@ -90,7 +90,7 @@ impl Playback {
 
         let seek_bar = self.seek_bar.clone();
         let new_source = if is_playing {
-            Some(gtk::timeout_add_seconds(1, move || {
+            Some(glib::timeout_add_seconds_local(1, move || {
                 let value = seek_bar.get_value();
                 seek_bar.set_value(value + 1000.0);
                 glib::Continue(true)
@@ -140,7 +140,7 @@ impl EventListener for Playback {
             AppEvent::TrackChanged(_) => {
                 self.update_current_info();
                 self.toggle_playing();
-            }
+            },
             _ => {}
         }
     }

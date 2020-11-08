@@ -23,7 +23,7 @@ pub struct SearchResults {
 impl SearchResults {
 
     pub fn new() -> Self {
-        let builder = gtk::Builder::new_from_resource("/dev/alextren/Spot/components/search.ui");
+        let builder = gtk::Builder::from_resource("/dev/alextren/Spot/components/search.ui");
         let root: gtk::Box = builder.get_object("search_root").unwrap();
         Self { root: root.upcast() }
     }

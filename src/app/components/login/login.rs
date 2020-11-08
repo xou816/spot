@@ -1,5 +1,5 @@
 use gtk::prelude::*;
-use gtk::EntryExt;
+use gtk::{EntryExt, GtkWindowExt};
 use std::rc::Rc;
 
 use crate::app::AppEvent;
@@ -28,8 +28,8 @@ impl Login {
 
         let weak_model = Rc::downgrade(&model);
         login_btn.connect_clicked(move |_| {
-            let username = username.get_text().unwrap().as_str().to_string();
-            let password = password.get_text().unwrap().as_str().to_string();
+            let username = username.get_text().as_str().to_string();
+            let password = password.get_text().as_str().to_string();
             weak_model.upgrade().map(|m| m.login(username, password));
         });
 
@@ -42,7 +42,7 @@ impl Login {
 
     fn show_self_if_needed(&self) {
         if self.model.try_autologin() {
-            self.dialog.destroy();
+            self.dialog.close();
             return
         }
         self.dialog.set_transient_for(Some(&self.parent));
