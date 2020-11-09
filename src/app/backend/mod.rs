@@ -48,6 +48,10 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
     fn login_successful(&self, credentials: credentials::Credentials) {
         self.sender.clone().try_send(AppAction::LoginSuccess(credentials)).unwrap();
     }
+
+    fn report_error(&self, error: &'static str) {
+        println!("{}", error);
+    }
 }
 
 pub fn start_player_service(appaction_sender: Sender<AppAction>) -> Sender<Command> {

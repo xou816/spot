@@ -32,7 +32,7 @@ impl EventListener for PlayerNotifier {
         };
 
         if let Some(command) = command {
-            self.sender.clone().try_send(command).expect("Could not communicate with backend")
+            let _ = self.sender.clone().try_send(command);
         }
     }
 

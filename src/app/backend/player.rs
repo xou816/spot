@@ -1,3 +1,5 @@
+
+
 use futures::channel::mpsc::{Receiver};
 use futures::stream::StreamExt;
 use futures::compat::Future01CompatExt;
@@ -23,6 +25,7 @@ use crate::app::credentials;
 pub trait SpotifyPlayerDelegate {
     fn end_of_track_reached(&self);
     fn login_successful(&self, credentials: credentials::Credentials);
+    fn report_error(&self, error: &'static str);
 }
 
 pub struct SpotifyPlayer {
@@ -83,7 +86,10 @@ impl SpotifyPlayer {
     pub async fn start(&self, handle: Handle, receiver: Receiver<Command>) -> Result<(), ()> {
         receiver.for_each(|action| {
             async {
-                self.handle(action, handle.clone()).await.unwrap();
+                match self.handle(action, handle.clone()).await {
+                    Ok(_) => {},
+                    Err(err) => self.delegate.report_error(err)
+                }
             }
         }).await;
         Ok(())
