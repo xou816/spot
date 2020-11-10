@@ -41,9 +41,9 @@ impl Playback {
         seek_bar: gtk::Scale) -> Self {
 
         let weak_model = Rc::downgrade(&model);
-        seek_bar.connect_change_value(move |s, _, _| {
+        seek_bar.connect_change_value(move |_, _, requested| {
             weak_model.upgrade()
-                .map(|model| model.seek_to(s.get_value() as u32));
+                .map(|model| model.seek_to(requested as u32));
             glib::signal::Inhibit(false)
         });
 
@@ -128,6 +128,10 @@ impl Playback {
             self.seek_bar.set_value(0.0);
         }
     }
+
+    fn sync_seek(&self, pos: u32) {
+        self.seek_bar.set_value(pos as f64);
+    }
 }
 
 impl EventListener for Playback {
@@ -140,6 +144,9 @@ impl EventListener for Playback {
             AppEvent::TrackChanged(_) => {
                 self.update_current_info();
                 self.toggle_playing();
+            },
+            AppEvent::SeekSynced(pos) => {
+                self.sync_seek(*pos);
             },
             _ => {}
         }

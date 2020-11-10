@@ -1,9 +1,8 @@
-
-
 use futures::channel::mpsc::{Receiver};
 use futures::stream::StreamExt;
 use futures::compat::Future01CompatExt;
 use futures01::future::Future as OldFuture;
+use futures01::stream::Stream as OldStream;
 
 use tokio_core::reactor::Handle;
 
@@ -16,7 +15,7 @@ use librespot::playback::config::PlayerConfig;
 use librespot::playback::audio_backend;
 use librespot::playback::player::{Player, PlayerEvent};
 
-use std::rc::Rc;
+use std::rc::{Rc, Weak};
 use std::cell::RefCell;
 
 use super::Command;
@@ -26,6 +25,7 @@ pub trait SpotifyPlayerDelegate {
     fn end_of_track_reached(&self);
     fn login_successful(&self, credentials: credentials::Credentials);
     fn report_error(&self, error: &'static str);
+    fn notify_playback_state(&self, position: u32);
 }
 
 pub struct SpotifyPlayer {
@@ -77,7 +77,13 @@ impl SpotifyPlayer {
                     username, password, token: token.clone()
                 };
                 self.delegate.login_successful(credentials);
-                player.replace(create_player(session));
+
+                let new_player = create_player(session);
+                handle.spawn(player_subscribe_to_playing_event(
+                    &new_player,
+                    Rc::downgrade(&self.delegate)));
+                player.replace(new_player);
+
                 Ok(())
             }
         }
@@ -123,4 +129,21 @@ fn create_player(session: Session) -> Player {
     let player_config = PlayerConfig::default();
     let (new_player, _) = Player::new(player_config, session, None, move || backend(None));
     new_player
+}
+
+fn player_subscribe_to_playing_event(
+    player: &Player,
+    delegate: Weak<dyn SpotifyPlayerDelegate>) -> impl OldFuture<Item=(), Error=()> {
+
+    player.get_player_event_channel()
+        .filter_map(|event| {
+            match event {
+                PlayerEvent::Playing { position_ms, .. } => Some(position_ms),
+                _ => None
+            }
+        })
+        .for_each(move |position_ms| {
+            delegate.upgrade().ok_or(())?.notify_playback_state(position_ms);
+            Ok(())
+        })
 }

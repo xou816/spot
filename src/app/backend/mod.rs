@@ -52,6 +52,10 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
     fn report_error(&self, error: &'static str) {
         println!("{}", error);
     }
+
+    fn notify_playback_state(&self, position: u32) {
+        self.sender.clone().try_send(AppAction::SyncSeek(position)).unwrap();
+    }
 }
 
 pub fn start_player_service(appaction_sender: Sender<AppAction>) -> Sender<Command> {

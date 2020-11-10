@@ -24,32 +24,24 @@ impl AppModel {
         Self { state, services }
     }
 
-    fn event(event: AppEvent) -> Vec<AppEvent> {
-        vec![event]
-    }
-
-    fn no_event() -> Vec<AppEvent> {
-        vec![]
-    }
-
     pub fn update_state(&mut self, message: AppAction) -> Vec<AppEvent> {
         match message {
             AppAction::Play => {
                 self.state.is_playing = true;
-                Self::event(AppEvent::TrackResumed)
+                vec![AppEvent::TrackResumed]
             },
             AppAction::Pause => {
                 self.state.is_playing = false;
-                Self::event(AppEvent::TrackPaused)
+                vec![AppEvent::TrackPaused]
             },
             AppAction::Next => {
                 let next = self.next_song().map(|s| s.uri.clone());
                 if next.is_some() {
                     self.state.is_playing = true;
                     self.state.current_song_uri = next.clone();
-                    Self::event(AppEvent::TrackChanged(next.unwrap()))
+                    vec![AppEvent::TrackChanged(next.unwrap())]
                 } else {
-                    Self::no_event()
+                    vec![]
                 }
             },
             AppAction::Previous => {
@@ -57,28 +49,29 @@ impl AppModel {
                 if prev.is_some() {
                     self.state.is_playing = true;
                     self.state.current_song_uri = prev.clone();
-                    Self::event(AppEvent::TrackChanged(prev.unwrap()))
+                    vec![AppEvent::TrackChanged(prev.unwrap())]
                 } else {
-                    Self::no_event()
+                    vec![]
                 }
             },
             AppAction::Load(uri) => {
                 self.state.is_playing = true;
                 self.state.current_song_uri = Some(uri.clone());
-                Self::event(AppEvent::TrackChanged(uri))
+                vec![AppEvent::TrackChanged(uri)]
             },
             AppAction::LoadPlaylist(tracks) => {
                 self.state.playlist = tracks;
-                Self::event(AppEvent::PlaylistChanged)
+                vec![AppEvent::PlaylistChanged]
             },
             AppAction::LoginSuccess(creds) => {
                 let _ = credentials::save_credentials(creds.clone());
                 self.services.spotify_api.update_token(&creds.token[..]);
-                Self::event(AppEvent::LoginCompleted)
+                vec![AppEvent::LoginCompleted]
             },
-            AppAction::Seek(pos) => Self::event(AppEvent::TrackSeeked(pos)),
-            AppAction::Start => Self::event(AppEvent::Started),
-            AppAction::TryLogin(u, p) => Self::event(AppEvent::LoginStarted(u, p)),
+            AppAction::Seek(pos) => vec![AppEvent::TrackSeeked(pos)],
+            AppAction::SyncSeek(pos) => vec![AppEvent::SeekSynced(pos)],
+            AppAction::Start => vec![AppEvent::Started],
+            AppAction::TryLogin(u, p) => vec![AppEvent::LoginStarted(u, p)],
             AppAction::BrowserAction(a) => self.state
                 .browser_state
                 .update_with(a)
