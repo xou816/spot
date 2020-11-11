@@ -52,4 +52,5 @@ features = ["json"]
 secret-service = "1.1.0"
 gdk-pixbuf = "^0.9.0"
 gtk-test = "^0.6.0"
+gladis = "^0.4.0"
 ref_filter_map = "^1.0.1"

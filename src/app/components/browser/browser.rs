@@ -1,5 +1,5 @@
 use gtk::prelude::*;
-use gtk::{ButtonExt, ScrolledWindowExt};
+use gtk::ScrolledWindowExt;
 use gio::prelude::*;
 
 use std::iter::Iterator;
@@ -7,9 +7,8 @@ use std::rc::{Rc, Weak};
 use std::cell::Ref;
 
 use crate::app::{AppEvent, AlbumDescription, BrowserEvent};
-use crate::app::components::{Component, EventListener, gtypes::AlbumModel};
+use crate::app::components::{Component, EventListener, gtypes::AlbumModel, Album};
 use crate::app::dispatch::Worker;
-use crate::app::loader::ImageLoader;
 
 pub trait BrowserModel {
     fn get_saved_albums(&self) -> Option<Ref<'_, Vec<AlbumDescription>>>;
@@ -76,16 +75,9 @@ impl Browser {
     fn append_albums<'a>(&self, albums: impl Iterator<Item=&'a AlbumDescription>) {
 
         for album in albums {
-
-            let title = glib::markup_escape_text(&album.title);
-            let title = format!("<b>{}</b>", title.as_str());
-
-            let artist = glib::markup_escape_text(&album.artist);
-            let artist = format!("<small>{}</small>", artist.as_str());
-
             self.browser_model.append(&AlbumModel::new(
-                &artist,
-                &title,
+                &album.artist,
+                &album.title,
                 &album.art,
                 &album.id
             ));
@@ -118,69 +110,17 @@ impl Component for Browser {
     }
 }
 
-fn wrapped_label_style(builder: gtk::LabelBuilder) -> gtk::LabelBuilder {
-    builder
-        .halign(gtk::Align::Center)
-        .wrap(true)
-        .max_width_chars(25)
-        .use_markup(true)
-}
-
-fn create_album_for(album: &AlbumModel, worker: Worker, model: Weak<dyn BrowserModel>) -> gtk::FlowBoxChild {
+fn create_album_for(album_model: &AlbumModel, worker: Worker, model: Weak<dyn BrowserModel>) -> gtk::FlowBoxChild {
     let child = gtk::FlowBoxChild::new();
 
-    let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
-    child.add(&vbox);
+    let album = Album::new(album_model, worker);
+    child.add(album.get_root_widget());
 
-    let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
-    hbox.set_halign(gtk::Align::Center);
-
-    {
-        let album = album.clone();
-
-        let image = gtk::Image::new();
-        let image_clone = image.clone();
-        if let Some(url) = album.cover_url() {
-            worker.send_task(async move {
-                let loader = ImageLoader::new();
-                let result = loader.load_remote(&url, "jpg", 180, 180).await;
-                image_clone.set_from_pixbuf(result.as_ref());
-            });
+    album.connect_album_pressed(move |a| {
+        if let (Some(model), Some(uri)) = (model.upgrade(), a.uri()) {
+            model.open_album(&uri);
         }
-
-        let button = gtk::Button::new();
-        button.set_relief(gtk::ReliefStyle::None);
-        button.set_margin_top(0);
-        button.connect_clicked(move |_| {
-            if let (Some(model), Some(uri)) = (model.upgrade(), album.uri()) {
-                model.open_album(&uri);
-            }
-        });
-        button.get_style_context().add_class("album");
-
-        button.add(&image);
-        hbox.add(&button)
-    }
-
-    vbox.pack_start(&hbox, false, false, 6);
-
-    let label = gtk::LabelBuilder::new();
-    let label = wrapped_label_style(label).build();
-
-    album.bind_property("album", &label, "label")
-        .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
-        .build();
-
-    vbox.pack_start(&label, false, false, 3);
-
-    let label = gtk::LabelBuilder::new();
-    let label = wrapped_label_style(label).build();
-
-    album.bind_property("artist", &label, "label")
-        .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
-        .build();
-
-    vbox.pack_start(&label, false, false, 3);
+    });
 
     child
 }

@@ -1,30 +1,52 @@
+use gtk::prelude::*;
 use crate::app::AppEvent;
 
-pub mod navigation;
+#[macro_export]
+macro_rules! resource {
+    ($resource:expr) => {
+        concat!("/dev/alextren/Spot", $resource)
+    };
+}
+
+mod navigation;
 pub use navigation::*;
 
-pub mod playback;
+mod playback;
 pub use playback::*;
 
-pub mod playlist;
+mod playlist;
 pub use playlist::*;
 
-pub mod login;
+mod login;
 pub use login::*;
 
-pub mod player_notifier;
+mod player_notifier;
 pub use player_notifier::PlayerNotifier;
 
-pub mod browser;
+mod browser;
 pub use browser::*;
 
-pub mod details;
+mod details;
 pub use details::*;
 
-pub mod search;
+mod search;
 pub use search::*;
 
+mod album;
+pub use album::*;
+
 mod gtypes;
+
+pub fn screen_add_css_provider(resource: &str) {
+    let provider = gtk::CssProvider::new();
+    provider.load_from_resource(resource);
+
+    gtk::StyleContext::add_provider_for_screen(
+        &gdk::Screen::get_default().unwrap(),
+        &provider,
+        gtk::STYLE_PROVIDER_PRIORITY_APPLICATION);
+}
+
 
 pub trait EventListener {
     fn on_event(&self, _: &AppEvent) {}

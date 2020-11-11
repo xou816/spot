@@ -36,6 +36,8 @@ sources = files(
 './app/components/playback/playback_model.rs',
 './app/components/playback/playback.rs',
 './app/components/playback/mod.rs',
+'./app/components/album/album.rs',
+'./app/components/album/mod.rs',
 './app/components/browser/browser_model.rs',
 './app/components/browser/browser.rs',
 './app/components/browser/mod.rs',

@@ -4,5 +4,8 @@
     <file>window.ui</file>
     <file>app.css</file>
     <file alias="components/search.ui">app/components/search/search.ui</file>
+    <!-- album -->
+    <file alias="components/album.ui">app/components/album/album.ui</file>
+    <file alias="components/album.css">app/components/album/album.css</file>
   </gresource>
 </gresources>

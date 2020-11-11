@@ -1,0 +1,13 @@
+.album button.album__cover {
+  padding: 0;
+  border-radius: 0;
+}
+
+.album label.album__title {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.album label.album__artist {
+  font-size: 14px;
+}
