@@ -23,14 +23,14 @@ impl From<Option<Vec<u8>>> for CacheFile {
 
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Copy)]
 pub enum CachePolicy {
     Default,
     IgnoreExpiry
 }
 
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Copy)]
 pub enum CacheExpiry {
     Never,
     AtUnixTimestamp(Duration)

@@ -167,6 +167,7 @@ mod tests {
     use super::*;
     use gtk_test;
     use gtk::ContainerExt;
+    use crate::app::dispatch::LocalTaskLoop;
 
     struct MockModel {
         toggle_playback_called: Cell<bool>
@@ -207,12 +208,13 @@ mod tests {
         let mock_model = Rc::new(MockModel::new());
         let playback = Playback::new(
             Rc::clone(&mock_model) as Rc<dyn PlaybackModel>,
+            LocalTaskLoop::new().make_worker(),
             gtk::Button::new(),
             gtk::Image::new(),
             gtk::Label::new(None),
             gtk::Button::new(),
             gtk::Button::new(),
-            gtk::Scale::new_with_range(gtk::Orientation::Horizontal, 0., 1000., 1.));
+            gtk::Scale::with_range(gtk::Orientation::Horizontal, 0., 1000., 1.));
 
         let play_button = playback.play_button.clone();
         make_host_window(move |w| {

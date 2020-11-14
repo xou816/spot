@@ -55,6 +55,7 @@ sources = files(
 './app/components/search/search_bar.rs',
 './app/components/search/mod.rs',
 './app/components/search/search.rs',
+'./app/components/search/search_model.rs',
 './app/components/gtypes/album_model.rs',
 './app/components/gtypes/song_model.rs',
 './app/components/gtypes/mod.rs',

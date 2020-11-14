@@ -84,7 +84,7 @@ impl Playlist {
 impl EventListener for Playlist {
     fn on_event(&self, event: &AppEvent) {
         match event {
-            AppEvent::TrackChanged(_) => {
+            AppEvent::TrackChanged(_)|AppEvent::BrowserEvent(BrowserEvent::NavigationPopped) => {
                 self.update_list();
             },
             AppEvent::PlaylistChanged|AppEvent::BrowserEvent(BrowserEvent::DetailsLoaded) => {

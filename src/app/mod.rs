@@ -74,10 +74,10 @@ impl App {
         let stack: gtk::Stack = builder.get_object("browser_stack").unwrap();
 
         let model = NavigationModelImpl::new(dispatcher.box_clone());
-        let browser_factory = BrowserFactory::new(worker, Rc::clone(&app_model), dispatcher.box_clone());
+        let browser_factory = BrowserFactory::new(worker.clone(), Rc::clone(&app_model), dispatcher.box_clone());
         let playlist_factory = PlaylistFactory::new(Rc::clone(&app_model), dispatcher.box_clone());
-        let details_factory = DetailsFactory::new(app_model, playlist_factory);
-        let search_factory = SearchFactory::new();
+        let details_factory = DetailsFactory::new(Rc::clone(&app_model), playlist_factory);
+        let search_factory = SearchFactory::new(app_model, dispatcher.box_clone(), worker);
         Box::new(Navigation::new(Rc::new(model), back_btn, stack, browser_factory, details_factory, search_factory))
 
     }
