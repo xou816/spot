@@ -103,9 +103,11 @@ impl <'a, S> CacheRequest<'a, S> where S: AsRef<str> + 'a {
 impl CachedSpotifyClient {
 
     pub fn new() -> CachedSpotifyClient {
-        let client = HttpClient::builder()
-            .ssl_options(isahc::config::SslOption::DANGER_ACCEPT_INVALID_CERTS)
-            .build().unwrap();
+        let mut builder = HttpClient::builder();
+        if cfg!(debug_assertions) {
+            builder = builder.ssl_options(isahc::config::SslOption::DANGER_ACCEPT_INVALID_CERTS);
+        }
+        let client = builder.build().unwrap();
         CachedSpotifyClient { token: RefCell::new(None), client, cache: CacheManager::new() }
     }
 
