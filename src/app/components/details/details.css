@@ -1,0 +1,12 @@
+.details label.details__album-label {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.details label.details__artist-label {
+  font-size: 16px;
+}
+
+.details .details__album-art {
+  border-radius: 8px;
+}
