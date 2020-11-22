@@ -1,5 +1,4 @@
 use isahc::prelude::*;
-use isahc::HttpClientBuilder;
 use serde_json::from_str;
 use std::convert::Into;
 use std::cell::RefCell;

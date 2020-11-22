@@ -5,8 +5,9 @@ use std::rc::Rc;
 
 use crate::app::components::{EventListener, ListenerComponent, DetailsFactory, BrowserFactory, SearchFactory};
 use crate::app::{AppEvent, BrowserEvent};
+use crate::app::state::ScreenName;
 
-struct NamedWidget(pub String, pub Box<dyn ListenerComponent>);
+struct NamedWidget(pub ScreenName, pub Box<dyn ListenerComponent>);
 
 pub trait NavigationModel {
     fn go_back(&self);
@@ -40,44 +41,44 @@ impl Navigation {
         Self { model, stack, browser_factory, details_factory, search_factory, children: RefCell::new(vec![]) }
     }
 
-    fn add_component(&self, component: Box<dyn ListenerComponent>, name: String) {
+
+    fn push_screen(&self, name: &ScreenName) {
+        let component: Box<dyn ListenerComponent> = match name {
+            ScreenName::Library => Box::new(self.browser_factory.make_browser()),
+            ScreenName::Details(_) => Box::new(self.details_factory.make_details()),
+            ScreenName::Search => Box::new(self.search_factory.make_search_results())
+        };
+
         let widget = component.get_root_widget();
         widget.show_all();
-        self.stack.add_named(widget, &name);
-        self.children.borrow_mut().push(NamedWidget(name, component));
+
+        self.stack.add_named(widget, name.identifier());
+        self.children.borrow_mut().push(NamedWidget(name.clone(), component));
+        self.stack.set_visible_child_name(name.identifier());
     }
 
-    fn switch_to(&self, name: &str) {
-        self.stack.set_visible_child_name(name);
-    }
-
-    fn create_browser(&self) -> &str {
-        let name = "library";
-        let browser = self.browser_factory.make_browser();
-        self.add_component(Box::new(browser), name.to_owned());
-        name
-    }
-
-    fn create_details(&self, name: String) {
-        let details = self.details_factory.make_details();
-        self.add_component(Box::new(details), name);
-    }
-
-    fn create_search(&self) -> &str {
-        let name = "search";
-        let search_results = self.search_factory.make_search_results();
-        self.add_component(Box::new(search_results), name.to_owned());
-        name
-    }
 
     fn pop(&self) {
         let mut children = self.children.borrow_mut();
         let popped = children.pop();
         if let Some(NamedWidget(name, _)) = children.last() {
-            self.stack.set_visible_child_name(name);
+            self.stack.set_visible_child_name(name.identifier());
         }
         if let Some(NamedWidget(_, child)) = popped {
             self.stack.remove(child.get_root_widget());
+        }
+    }
+
+    fn pop_to(&self, screen: &ScreenName) {
+        self.stack.set_visible_child_name(screen.identifier());
+        let mut children = self.children.borrow_mut();
+        let i = children
+            .iter()
+            .position(|NamedWidget(name, _)| name == screen)
+            .unwrap();
+        let remainder = children.split_off(i + 1);
+        for NamedWidget(_, widget) in remainder {
+            self.stack.remove(widget.get_root_widget());
         }
     }
 }
@@ -87,18 +88,16 @@ impl EventListener for Navigation {
     fn on_event(&self, event: &AppEvent) {
         match event {
             AppEvent::Started => {
-                self.create_browser();
+                self.push_screen(&ScreenName::Library);
             },
-            AppEvent::BrowserEvent(BrowserEvent::NavigatedToDetails(tag)) => {
-                self.create_details(tag.clone());
-                self.switch_to(tag);
-            },
-            AppEvent::BrowserEvent(BrowserEvent::NavigatedToSearch) => {
-                let name = self.create_search();
-                self.switch_to(name);
+            AppEvent::BrowserEvent(BrowserEvent::NavigationPushed(name)) => {
+                self.push_screen(name);
             },
             AppEvent::BrowserEvent(BrowserEvent::NavigationPopped) => {
                 self.pop();
+            },
+            AppEvent::BrowserEvent(BrowserEvent::NavigationPoppedTo(name)) => {
+                self.pop_to(name);
             }
             _ => {}
         };

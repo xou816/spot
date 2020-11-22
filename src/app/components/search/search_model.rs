@@ -3,7 +3,7 @@ use std::cell::{Ref, RefCell};
 use std::ops::Deref;
 use ref_filter_map::ref_filter_map;
 use crate::app::backend::api::SpotifyApiClient;
-use crate::app::state::{AppModel, SearchState, BrowserAction};
+use crate::app::state::{AppModel, SearchState, BrowserAction, ScreenName};
 use crate::app::dispatch::{Worker, ActionDispatcher};
 use crate::app::models::*;
 use super::SearchResults;
@@ -66,7 +66,7 @@ impl SearchResultsModel {
     }
 
     pub fn open_album(&self, uri: &str) {
-        self.dispatcher.dispatch(BrowserAction::NavigateToDetails(uri.to_owned()).into());
+        self.dispatcher.dispatch(BrowserAction::NavigationPush(ScreenName::Details(uri.to_string())).into());
 
         let api = self.spotify();
         if let Some(id) = uri.split(":").last() {

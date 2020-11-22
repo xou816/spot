@@ -6,7 +6,7 @@ use crate::app::{AppModel, AppAction, BrowserAction, ActionDispatcher};
 use crate::app::dispatch::Worker;
 use crate::app::models::*;
 use crate::app::backend::api::SpotifyApiClient;
-use crate::app::state::LibraryState;
+use crate::app::state::{ScreenName, LibraryState};
 
 use super::*;
 
@@ -100,7 +100,8 @@ impl BrowserModel for BrowserModelImpl {
     }
 
     fn open_album(&self, album_uri: &str) {
-        self.dispatcher.dispatch(BrowserAction::NavigateToDetails(album_uri.to_owned()).into());
+        let screen = ScreenName::Details(album_uri.to_owned());
+        self.dispatcher.dispatch(BrowserAction::NavigationPush(screen).into());
 
         let album = self.get_saved_albums().and_then(|albums| {
             albums.iter().find(|a| a.id.eq(album_uri)).cloned()

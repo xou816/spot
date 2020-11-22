@@ -72,6 +72,7 @@ sources = files(
 './app/state/browser_state.rs',
 './app/state/app_state.rs',
 './app/state/mod.rs',
+'./app/state/screen_states.rs',
 './app/mod.rs',
 './config.rs',
 './main.rs',
