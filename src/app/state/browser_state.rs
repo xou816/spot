@@ -188,7 +188,7 @@ impl UpdatableState for BrowserState {
 
                 let navigation = &mut self.navigation;
                 let screen_state = navigation.screen_state(Self::match_search);
-                println!("{:?}", screen_state);
+
                 let mut events = match screen_state {
                     ScreenState::Current => vec![],
                     ScreenState::Present => {
@@ -196,7 +196,7 @@ impl UpdatableState for BrowserState {
                         vec![BrowserEvent::NavigationPoppedTo(ScreenName::Search)]
                     },
                     ScreenState::NotPresent => {
-                        navigation.push(BrowserScreen::Search(SearchState::new(query.to_owned())));
+                        navigation.push(BrowserScreen::Search(Default::default()));
                         vec![BrowserEvent::NavigationPushed(ScreenName::Search)]
                     }
                 };

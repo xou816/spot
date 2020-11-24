@@ -10,3 +10,7 @@
 .details .details__album-art {
   border-radius: 8px;
 }
+
+.details .details__like {
+  font-size: 18px;
+}

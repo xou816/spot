@@ -19,7 +19,8 @@ struct DetailsWidget {
     pub artist_label: gtk::Label,
     pub album_label: gtk::Label,
     pub album_tracks: gtk::ListBox,
-    pub album_art: gtk::Image
+    pub album_art: gtk::Image,
+    pub like_button: gtk::Button
 }
 
 impl DetailsWidget {
@@ -52,9 +53,11 @@ impl Details {
             let album = &info.title[..];
             let artist = &info.artist[..];
             let art = info.art.clone();
+            let is_liked = false;
 
             self.widget.album_label.set_label(album);
             self.widget.artist_label.set_label(artist);
+            self.widget.like_button.set_label(if is_liked { "♥" } else { "♡" });
 
             let image = self.widget.album_art.clone();
             self.worker.send_task(async move {

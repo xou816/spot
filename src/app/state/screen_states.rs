@@ -70,10 +70,9 @@ pub struct SearchState {
     pub album_results: Vec<AlbumDescription>
 }
 
-impl SearchState {
-
-    pub fn new(query: String) -> Self {
-        Self { query, album_results: vec![] }
+impl Default for SearchState {
+    fn default() -> Self {
+        Self { query: "".to_owned(), album_results: vec![] }
     }
 }
 

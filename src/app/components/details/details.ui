@@ -95,20 +95,20 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton">
+                  <object class="GtkButton" id="like_button">
+                    <property name="label" translatable="yes">♥</property>
+                    <property name="width-request">35</property>
+                    <property name="height-request">35</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
-                    <property name="relief">none</property>
-                    <child>
-                      <object class="GtkImage">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="stock">gtk-apply</property>
-                      </object>
-                    </child>
+                    <property name="relief">half</property>
+                    <style>
+                      <class name="circular"/>
+                      <class name="details__like"/>
+                    </style>
                   </object>
                   <packing>
                     <property name="expand">False</property>

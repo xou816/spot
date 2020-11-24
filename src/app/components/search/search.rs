@@ -1,4 +1,5 @@
 use std::rc::Rc;
+use std::cell::Cell;
 use gtk::prelude::*;
 use gio::prelude::*;
 use gladis::Gladis;
@@ -7,6 +8,28 @@ use crate::app::dispatch::Worker;
 use crate::app::components::{Component, EventListener, Album, gtypes::AlbumModel};
 use super::SearchResultsModel;
 
+struct Debouncer(Rc<Cell<Option<glib::source::SourceId>>>);
+
+impl Debouncer {
+
+    fn new() -> Self {
+        Self(Rc::new(Cell::new(None)))
+    }
+
+    fn debounce<F: Fn() + 'static>(&self, interval_ms: u32, f: F) {
+        let source_clone = Rc::downgrade(&self.0);
+        let new_source = glib::timeout_add_local(interval_ms, move || {
+            f();
+            if let Some(cell) = source_clone.upgrade() {
+                cell.set(None);
+            }
+            glib::Continue(false)
+        });
+        if let Some(previous_source) = self.0.replace(Some(new_source)) {
+            glib::source_remove(previous_source);
+        }
+    }
+}
 
 #[derive(Gladis, Clone)]
 struct SearchResultsWidget {
@@ -25,7 +48,8 @@ impl SearchResultsWidget {
 pub struct SearchResults {
     widget: SearchResultsWidget,
     model: Rc<SearchResultsModel>,
-    album_results_model: gio::ListStore
+    album_results_model: gio::ListStore,
+    debouncer: Debouncer
 }
 
 impl SearchResults {
@@ -53,7 +77,7 @@ impl SearchResults {
             child.upcast::<gtk::Widget>()
         });
 
-        Self { widget, model, album_results_model }
+        Self { widget, model, album_results_model, debouncer: Debouncer::new() }
     }
 
     fn update_results(&self) {
@@ -71,7 +95,16 @@ impl SearchResults {
     }
 
     fn update_search_query(&self) {
-        self.model.fetch_results();
+
+        {
+            let model = Rc::downgrade(&self.model);
+            self.debouncer.debounce(600, move || {
+                if let Some(model) = model.upgrade() {
+                    model.fetch_results();
+                }
+            });
+        }
+
         if let Some(query) = self.model.get_query() {
             let formatted = format!("Search results for « {} »", *query);
             self.widget.results_label.set_label(&formatted[..]);
