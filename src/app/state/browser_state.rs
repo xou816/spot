@@ -2,7 +2,7 @@ use std::convert::Into;
 use std::iter::Iterator;
 use crate::app::models::*;
 use crate::app::state::AppAction;
-use super::{UpdatableState, DetailsState, LibraryState, SearchState};
+use super::{UpdatableState, DetailsState, LibraryState, SearchState, ScreenName};
 
 #[derive(Clone, Debug)]
 pub enum BrowserAction {
@@ -33,20 +33,7 @@ pub enum BrowserEvent {
     NavigationPoppedTo(ScreenName),
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum ScreenName {
-    Library, Details(String), Search
-}
 
-impl ScreenName {
-    pub fn identifier(&self) -> &str {
-        match self {
-            Self::Library => "library",
-            Self::Details(s) => &s[..],
-            Self::Search => "search"
-        }
-    }
-}
 
 #[derive(Clone)]
 pub enum BrowserScreen {
@@ -66,6 +53,24 @@ impl BrowserScreen {
     }
 }
 
+impl NamedScreen for BrowserScreen {
+
+    type Name = ScreenName;
+
+    fn name(&self) -> &Self::Name {
+        match self {
+            Self::Library(state) => &state.name,
+            Self::Details(state) => &state.name,
+            Self::Search(state) => &state.name
+        }
+    }
+}
+
+pub trait NamedScreen {
+    type Name: PartialEq;
+    fn name(&self) -> &Self::Name;
+}
+
 #[derive(Debug)]
 enum ScreenState {
     NotPresent,
@@ -76,7 +81,7 @@ enum ScreenState {
 
 struct NavStack<Screen>(Vec<Screen>);
 
-impl <Screen> NavStack<Screen> where Screen: Clone {
+impl <Screen> NavStack<Screen> where Screen: NamedScreen + Clone {
 
     fn new(initial: Screen) -> Self {
         Self(vec![initial])
@@ -84,6 +89,14 @@ impl <Screen> NavStack<Screen> where Screen: Clone {
 
     fn iter_rev(&self) -> impl Iterator<Item=&Screen> {
         self.0.iter().rev()
+    }
+
+    fn count(&self) -> usize {
+        self.0.len()
+    }
+
+    fn current(&self) -> &Screen {
+        self.0.last().unwrap()
     }
 
     fn current_mut(&mut self) -> &mut Screen {
@@ -107,20 +120,20 @@ impl <Screen> NavStack<Screen> where Screen: Clone {
         }
     }
 
-    fn pop_to<P: Fn(&Screen) -> bool>(&mut self, predicate: P) {
+    fn pop_to(&mut self, name: &Screen::Name) {
         let split = self.0
             .iter()
-            .position(predicate)
+            .position(|s| s.name() == name)
             .unwrap();
         self.0.truncate(split + 1);
     }
 
-    fn screen_state<F: Fn(&Screen) -> bool>(&self, predicate: F) -> ScreenState {
+    fn screen_state(&self, name: &Screen::Name) -> ScreenState {
         self.0.iter()
             .rev()
             .enumerate()
             .find_map(|(i, screen)| {
-                let is_screen = predicate(&screen);
+                let is_screen = screen.name() == name;
                 match (i, is_screen) {
                     (0, true) => Some(ScreenState::Current),
                     (_, true) => Some(ScreenState::Present),
@@ -141,8 +154,16 @@ impl BrowserState {
         Self { navigation: NavStack::new(BrowserScreen::Library(Default::default())) }
     }
 
-    fn match_search(screen: &BrowserScreen) -> bool {
-        matches!(screen, BrowserScreen::Search(_))
+    pub fn current_screen(&self) -> &ScreenName {
+        self.navigation.current().name()
+    }
+
+    pub fn can_pop(&self) -> bool {
+        self.navigation.can_pop()
+    }
+
+    pub fn count(&self) -> usize {
+        self.navigation.count()
     }
 
     pub fn library_state(&self) -> Option<&LibraryState> {
@@ -184,15 +205,15 @@ impl UpdatableState for BrowserState {
         let can_pop = self.navigation.can_pop();
 
         match action {
-            BrowserAction::Search(ref query) => {
+            BrowserAction::Search(_) => {
 
                 let navigation = &mut self.navigation;
-                let screen_state = navigation.screen_state(Self::match_search);
+                let screen_state = navigation.screen_state(&ScreenName::Search);
 
                 let mut events = match screen_state {
                     ScreenState::Current => vec![],
                     ScreenState::Present => {
-                        navigation.pop_to(Self::match_search);
+                        navigation.pop_to(&ScreenName::Search);
                         vec![BrowserEvent::NavigationPoppedTo(ScreenName::Search)]
                     },
                     ScreenState::NotPresent => {
@@ -206,7 +227,7 @@ impl UpdatableState for BrowserState {
                 events
             },
             BrowserAction::NavigationPush(ScreenName::Details(tag)) => {
-                self.navigation.push(BrowserScreen::Details(DetailsState::default()));
+                self.navigation.push(BrowserScreen::Details(DetailsState::new(tag.clone())));
                 vec![BrowserEvent::NavigationPushed(ScreenName::Details(tag))]
             },
             BrowserAction::NavigationPop if can_pop => {

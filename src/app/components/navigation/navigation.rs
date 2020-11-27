@@ -1,26 +1,27 @@
 use gtk::prelude::*;
 use gtk::{ButtonExt, ContainerExt};
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell};
 use std::rc::Rc;
 
 use crate::app::components::{EventListener, ListenerComponent, DetailsFactory, BrowserFactory, SearchFactory};
 use crate::app::{AppEvent, BrowserEvent};
 use crate::app::state::ScreenName;
 
-struct NamedWidget(pub ScreenName, pub Box<dyn ListenerComponent>);
-
 pub trait NavigationModel {
     fn go_back(&self);
     fn can_go_back(&self) -> bool;
+    fn visible_child_name(&self) -> Ref<'_, ScreenName>;
+    fn children_count(&self) -> usize;
 }
 
 pub struct Navigation {
     model: Rc<dyn NavigationModel>,
     stack: gtk::Stack,
+    back_button: gtk::Button,
     browser_factory: BrowserFactory,
     details_factory: DetailsFactory,
     search_factory: SearchFactory,
-    children: RefCell<Vec<NamedWidget>>
+    children: RefCell<Vec<Box<dyn ListenerComponent>>>
 }
 
 impl Navigation {
@@ -38,7 +39,7 @@ impl Navigation {
             weak_model.upgrade().map(|m| m.go_back());
         });
 
-        Self { model, stack, browser_factory, details_factory, search_factory, children: RefCell::new(vec![]) }
+        Self { model, stack, back_button, browser_factory, details_factory, search_factory, children: RefCell::new(vec![]) }
     }
 
 
@@ -53,7 +54,7 @@ impl Navigation {
         widget.show_all();
 
         self.stack.add_named(widget, name.identifier());
-        self.children.borrow_mut().push(NamedWidget(name.clone(), component));
+        self.children.borrow_mut().push(component);
         self.stack.set_visible_child_name(name.identifier());
     }
 
@@ -61,25 +62,25 @@ impl Navigation {
     fn pop(&self) {
         let mut children = self.children.borrow_mut();
         let popped = children.pop();
-        if let Some(NamedWidget(name, _)) = children.last() {
-            self.stack.set_visible_child_name(name.identifier());
-        }
-        if let Some(NamedWidget(_, child)) = popped {
+
+        let name = self.model.visible_child_name();
+        self.stack.set_visible_child_name(name.identifier());
+
+        if let Some(child) = popped {
             self.stack.remove(child.get_root_widget());
         }
     }
 
     fn pop_to(&self, screen: &ScreenName) {
         self.stack.set_visible_child_name(screen.identifier());
-        let mut children = self.children.borrow_mut();
-        let i = children
-            .iter()
-            .position(|NamedWidget(name, _)| name == screen)
-            .unwrap();
-        let remainder = children.split_off(i + 1);
-        for NamedWidget(_, widget) in remainder {
+        let remainder = self.children.borrow_mut().split_off(self.model.children_count());
+        for widget in remainder {
             self.stack.remove(widget.get_root_widget());
         }
+    }
+
+    fn update_back_button(&self) {
+        self.back_button.set_sensitive(self.model.can_go_back());
     }
 }
 
@@ -89,19 +90,23 @@ impl EventListener for Navigation {
         match event {
             AppEvent::Started => {
                 self.push_screen(&ScreenName::Library);
+                self.update_back_button();
             },
             AppEvent::BrowserEvent(BrowserEvent::NavigationPushed(name)) => {
                 self.push_screen(name);
+                self.update_back_button();
             },
             AppEvent::BrowserEvent(BrowserEvent::NavigationPopped) => {
                 self.pop();
+                self.update_back_button();
             },
             AppEvent::BrowserEvent(BrowserEvent::NavigationPoppedTo(name)) => {
                 self.pop_to(name);
+                self.update_back_button();
             }
             _ => {}
         };
-        if let Some(NamedWidget(_, listener)) = self.children.borrow().iter().last() {
+        if let Some(listener) = self.children.borrow().iter().last() {
             listener.on_event(event);
         }
     }

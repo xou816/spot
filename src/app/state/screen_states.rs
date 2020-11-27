@@ -1,15 +1,30 @@
 use crate::app::models::*;
 use super::{BrowserEvent, BrowserAction, UpdatableState};
 
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum ScreenName {
+    Library, Details(String), Search
+}
+
+impl ScreenName {
+    pub fn identifier(&self) -> &str {
+        match self {
+            Self::Library => "library",
+            Self::Details(s) => &s[..],
+            Self::Search => "search"
+        }
+    }
+}
 
 #[derive(Clone)]
 pub struct DetailsState {
+    pub name: ScreenName,
     pub content: Option<AlbumDescription>
 }
 
-impl Default for DetailsState {
-    fn default() -> Self {
-        Self { content: None }
+impl DetailsState {
+    pub fn new(id: String) -> Self {
+        Self { name: ScreenName::Details(id), content: None }
     }
 }
 
@@ -31,13 +46,14 @@ impl UpdatableState for DetailsState {
 
 #[derive(Clone)]
 pub struct LibraryState {
+    pub name: ScreenName,
     pub page: u32,
     pub albums: Vec<AlbumDescription>
 }
 
 impl Default for LibraryState {
     fn default() -> Self {
-        Self { page: 0, albums: vec![] }
+        Self { name: ScreenName::Library, page: 0, albums: vec![] }
     }
 }
 
@@ -66,15 +82,17 @@ impl UpdatableState for LibraryState {
 
 #[derive(Clone)]
 pub struct SearchState {
+    pub name: ScreenName,
     pub query: String,
     pub album_results: Vec<AlbumDescription>
 }
 
 impl Default for SearchState {
     fn default() -> Self {
-        Self { query: "".to_owned(), album_results: vec![] }
+        Self { name: ScreenName::Search, query: "".to_owned(), album_results: vec![] }
     }
 }
+
 
 impl UpdatableState for SearchState {
 

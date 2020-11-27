@@ -73,7 +73,7 @@ impl App {
         let back_btn: gtk::Button = builder.get_object("nav_back").unwrap();
         let stack: gtk::Stack = builder.get_object("browser_stack").unwrap();
 
-        let model = NavigationModelImpl::new(dispatcher.box_clone());
+        let model = NavigationModelImpl::new(Rc::clone(&app_model), dispatcher.box_clone());
         let browser_factory = BrowserFactory::new(worker.clone(), Rc::clone(&app_model), dispatcher.box_clone());
         let playlist_factory = PlaylistFactory::new(Rc::clone(&app_model), dispatcher.box_clone());
         let details_factory = DetailsFactory::new(Rc::clone(&app_model), worker.clone(), playlist_factory);

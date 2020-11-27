@@ -101,7 +101,7 @@ impl LocalTaskLoop {
     }
 
     pub async fn attach(self) {
-        self.future_receiver.for_each_concurrent(2, |task| task).await;
+        self.future_receiver.for_each(|task| task).await;
     }
 }
 
