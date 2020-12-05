@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<component type="desktop">
-	<id>dev.alextren.Spot.desktop</id>
+<component type="desktop-application">
+	<id>dev.alextren.Spot</id>
+  <launchable type="desktop-id">dev.alextren.Spot.desktop</launchable>
 	<metadata_license>CC0-1.0</metadata_license>
-	<project_license>LicenseRef-proprietary</project_license>
+	<project_license>MIT</project_license>
 	<description>
 	  <p>
       Spotify Client

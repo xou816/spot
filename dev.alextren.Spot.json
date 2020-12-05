@@ -17,11 +17,8 @@
     ],
     "build-options" : {
         "append-path" : "/usr/lib/sdk/rust-stable/bin",
-        "build-args" : [
-            "--share=network"
-        ],
+        "build-args" : [],
         "env" : {
-            "GTK_DEBUG" : "interactive",
             "CARGO_HOME" : "/run/build/spot/cargo",
             "RUST_BACKTRACE" : "full",
             "RUST_LOG" : "spot=debug"
@@ -45,9 +42,10 @@
             "buildsystem" : "meson",
             "sources" : [
                 {
-                    "type" : "git",
+                    "type" : "dir",
                     "path" : "."
-                }
+                },
+                "cargo-sources.json"
             ]
         }
     ]
