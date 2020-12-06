@@ -33,7 +33,10 @@ mod search;
 pub use search::*;
 
 mod album;
-pub use album::*;
+use album::*;
+
+mod song;
+use song::*;
 
 mod gtypes;
 

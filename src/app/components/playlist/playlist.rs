@@ -7,7 +7,7 @@ use std::rc::{Rc, Weak};
 use std::cell::Ref;
 
 use crate::app::{AppEvent, BrowserEvent, SongDescription};
-use crate::app::components::EventListener;
+use crate::app::components::{Component, EventListener, Song};
 use crate::app::components::gtypes::SongModel;
 
 pub trait PlaylistModel {
@@ -56,7 +56,7 @@ impl Playlist {
             for (i, song) in songs.iter().enumerate() {
                 let is_current = current_song_uri.as_ref().map(|s| s.eq(&song.uri)).unwrap_or(false);
                 if let Some(model_song) = self.model_song_at(i) {
-                    model_song.set_name(&song_name_for(song, is_current)[..]);
+                    model_song.set_playing(is_current);
                 }
             }
         }
@@ -74,7 +74,7 @@ impl Playlist {
         if let Some(songs) = self.model.songs() {
             for song in songs.iter() {
                 let is_current = current_song_uri.as_ref().map(|s| s.eq(&song.uri)).unwrap_or(false);
-                list_model.append(&SongModel::new(&song_name_for(song, is_current)[..], &song.uri));
+                list_model.append(&SongModel::new(&song.title, &song.artist, &song.uri));
             }
         }
     }
@@ -108,38 +108,15 @@ fn play_button_style(button: gtk::ButtonBuilder) -> gtk::ButtonBuilder {
 
 impl Playlist {
 
-    fn create_button_for(song_uri: String, model: Weak<dyn PlaylistModel>) -> gtk::Button {
-        let button = gtk::ButtonBuilder::new();
-        let button = play_button_style(button).build();
-        button.connect_clicked(move |_| {
-            model.upgrade().map(|m| m.play_song(song_uri.clone()));
-        });
-
-        button
-    }
-
     fn create_row_for(item: &SongModel, model: Weak<dyn PlaylistModel>) -> gtk::ListBoxRow {
         let row = gtk::ListBoxRow::new();
-        let hbox = gtk::Box::new(gtk::Orientation::Horizontal, 0);
-        hbox.set_margin_start(12);
-        hbox.set_margin_end(12);
 
-        if let Some(item_uri) = item.uri() {
-            let label = gtk::Label::new(None);
-            label.set_use_markup(true);
-            label.set_halign(gtk::Align::Start);
+        let song = Song::new(item.clone());
+        song.connect_play_pressed(move |song| {
+            model.upgrade().map(|m| m.play_song(song.get_uri()));
+        });
 
-            item.bind_property("name", &label, "label")
-                .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
-                .build();
-
-            hbox.pack_start(&label, true, true, 0);
-
-            let button = Playlist::create_button_for(item_uri, model);
-            hbox.pack_start(&button, false, false, 0);
-        }
-
-        row.add(&hbox);
+        row.add(song.get_root_widget());
         row
     }
 }

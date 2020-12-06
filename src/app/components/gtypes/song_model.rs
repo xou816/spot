@@ -3,7 +3,7 @@ use glib::subclass;
 use glib::subclass::prelude::*;
 use glib::translate::*;
 use glib::Value;
-use glib::{glib_wrapper};
+use glib::glib_wrapper;
 
 glib_wrapper! {
     pub struct SongModel(Object<subclass::simple::InstanceStruct<imp::SongModel>, subclass::simple::ClassStruct<imp::SongModel>, SongModelClass>);
@@ -16,20 +16,28 @@ glib_wrapper! {
 // Constructor for new instances. This simply calls glib::Object::new() with
 // initial values for our two properties and then returns the new instance
 impl SongModel {
-    pub fn new(name: &str, uri: &str) -> SongModel {
-        glib::Object::new(Self::static_type(), &[("name", &name), ("uri", &uri)])
+    pub fn new(title: &str, artist: &str, uri: &str) -> SongModel {
+        glib::Object::new(Self::static_type(), &[("title", &title), ("artist", &artist), ("uri", &uri)])
             .expect("Failed to create")
             .downcast()
             .expect("Created with wrong type")
     }
 
-    pub fn set_name(&self, new_value: &str) {
-        self.set_property("name", &Value::from(new_value)).expect("set 'name' failed");
+    pub fn set_playing(&self, is_playing: bool) {
+        self.set_property("playing", &Value::from(&is_playing)).expect("set 'playing' failed");
     }
 
-    pub fn uri(&self) -> Option<String> {
+    pub fn get_playing(&self) -> bool {
+        self.get_property("playing").unwrap().get::<bool>()
+            .unwrap()
+            .unwrap()
+    }
+
+    pub fn get_uri(&self) -> String {
         self.get_property("uri").unwrap().get::<&str>()
-            .unwrap().map(|s| s.to_string())
+            .unwrap()
+            .unwrap()
+            .to_string()
     }
 }
 
@@ -42,12 +50,21 @@ mod imp {
 
 
     // Static array for defining the properties of the new type.
-    static PROPERTIES: [subclass::Property; 3] = [
-        subclass::Property("name", |name| {
+    static PROPERTIES: [subclass::Property; 4] = [
+        subclass::Property("title", |title| {
             glib::ParamSpec::string(
-                name,
-                "Name",
-                "Name",
+                title,
+                "Title",
+                "Title",
+                None,
+                glib::ParamFlags::READWRITE,
+            )
+        }),
+        subclass::Property("artist", |artist| {
+            glib::ParamSpec::string(
+                artist,
+                "Artist",
+                "Artist",
                 None,
                 glib::ParamFlags::READWRITE,
             )
@@ -64,8 +81,8 @@ mod imp {
         subclass::Property("playing", |playing| {
             glib::ParamSpec::boolean(
                 playing,
-                "URI",
-                "URI",
+                "Playing",
+                "Playing",
                 false,
                 glib::ParamFlags::READWRITE,
             )
@@ -76,7 +93,8 @@ mod imp {
     // the new type. Generally this has to make use of
     // interior mutability.
     pub struct SongModel {
-        name: RefCell<Option<String>>,
+        title: RefCell<Option<String>>,
+        artist: RefCell<Option<String>>,
         uri: RefCell<Option<String>>,
         playing: RefCell<bool>
     }
@@ -113,7 +131,8 @@ mod imp {
         // a new instance of our type with its basic values.
         fn new() -> Self {
             Self {
-                name: RefCell::new(None),
+                title: RefCell::new(None),
+                artist: RefCell::new(None),
                 uri: RefCell::new(None),
                 playing: RefCell::new(false)
             }
@@ -131,11 +150,17 @@ mod imp {
             let prop = &PROPERTIES[id];
 
             match *prop {
-                subclass::Property("name", ..) => {
-                    let name = value
+                subclass::Property("title", ..) => {
+                    let title = value
                         .get()
                         .expect("type conformity checked by `Object::set_property`");
-                    self.name.replace(name);
+                    self.title.replace(title);
+                },
+                subclass::Property("artist", ..) => {
+                    let artist = value
+                        .get()
+                        .expect("type conformity checked by `Object::set_property`");
+                    self.artist.replace(artist);
                 },
                 subclass::Property("uri", ..) => {
                     let uri = value
@@ -160,7 +185,8 @@ mod imp {
             let prop = &PROPERTIES[id];
 
             match *prop {
-                subclass::Property("name", ..) => Ok(self.name.borrow().to_value()),
+                subclass::Property("title", ..) => Ok(self.title.borrow().to_value()),
+                subclass::Property("artist", ..) => Ok(self.artist.borrow().to_value()),
                 subclass::Property("uri", ..) => Ok(self.uri.borrow().to_value()),
                 subclass::Property("playing", ..) => Ok(self.playing.borrow().to_value()),
                 _ => unimplemented!(),

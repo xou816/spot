@@ -1,0 +1,16 @@
+.song .song__index {
+  font-size: 11px;
+}
+
+.song label.song__title {
+  font-size: 16px;
+}
+
+.song label.song__title.song__title--playing {
+  font-weight: bold;
+}
+
+
+.song label.song__artist {
+  font-size: 14px;
+}

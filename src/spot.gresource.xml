@@ -10,5 +10,8 @@
     <!-- details -->
     <file alias="components/details.css">app/components/details/details.css</file>
     <file alias="components/details.ui">app/components/details/details.ui</file>
+    <!-- song -->
+    <file alias="components/song.css">app/components/song/song.css</file>
+    <file alias="components/song.ui">app/components/song/song.ui</file>
   </gresource>
 </gresources>

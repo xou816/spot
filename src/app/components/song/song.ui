@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.38.2 -->
+<interface>
+  <requires lib="gtk+" version="3.24"/>
+  <!-- interface-css-provider-path song.css -->
+  <object class="GtkBox" id="root">
+    <property name="width-request">500</property>
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="spacing">8</property>
+    <child>
+      <object class="GtkLabel" id="song_index">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="margin-start">8</property>
+        <property name="label" translatable="yes">1</property>
+        <style>
+          <class name="song__index"/>
+        </style>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="song_title">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">Title</property>
+        <style>
+          <class name="song__title"/>
+        </style>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="song_artist">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">Artist</property>
+        <style>
+          <class name="song__artist"/>
+        </style>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">2</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkButton" id="play_button">
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="receives-default">True</property>
+        <property name="halign">center</property>
+        <property name="valign">center</property>
+        <property name="relief">none</property>
+        <property name="always-show-image">True</property>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="stock">gtk-media-play</property>
+          </object>
+        </child>
+        <child internal-child="accessible">
+          <object class="AtkObject">
+            <property name="AtkObject::accessible-name" translatable="yes">play</property>
+          </object>
+        </child>
+        <style>
+          <class name="song__play_button"/>
+        </style>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">False</property>
+        <property name="pack-type">end</property>
+        <property name="position">3</property>
+      </packing>
+    </child>
+    <child>
+      <placeholder/>
+    </child>
+    <style>
+      <class name="song"/>
+    </style>
+  </object>
+</interface>
