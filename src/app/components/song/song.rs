@@ -18,6 +18,16 @@ impl SongWidget {
         screen_add_css_provider(resource!("/components/song.css"));
         Self::from_resource(resource!("/components/song.ui")).unwrap()
     }
+
+    fn set_playing(&self, is_playing: bool) {
+        let song_class = "song--playing";
+        let context = self.root.get_style_context();
+        if is_playing {
+            context.add_class(song_class);
+        } else {
+            context.remove_class(song_class);
+        }
+    }
 }
 
 pub struct Song {
@@ -30,6 +40,10 @@ impl Song {
     pub fn new(model: SongModel) -> Self {
         let widget = SongWidget::new();
 
+        model.bind_property("index", &widget.song_index, "label")
+            .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+            .build();
+
         model.bind_property("title", &widget.song_title, "label")
             .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
             .build();
@@ -38,19 +52,10 @@ impl Song {
             .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
             .build();
 
-        let widget_clone = widget.song_title.clone();
-        model.connect_local("notify::playing", true, move |values| {
-            if let Ok(Some(song)) = values[0].get::<SongModel>() {
-                let song_class = "song__title--playing";
-                let context = widget_clone.get_style_context();
-                if song.get_playing() {
-                    context.add_class(song_class);
-                } else {
-                    context.remove_class(song_class);
-                }
-            }
-            None
-        }).expect("connect faild");
+        let widget_clone = widget.clone();
+        model.connect_playing_local(move |song| {
+            widget_clone.set_playing(song.get_playing());
+        });
 
         Self { widget, model }
     }

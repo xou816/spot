@@ -16,8 +16,8 @@ glib_wrapper! {
 // Constructor for new instances. This simply calls glib::Object::new() with
 // initial values for our two properties and then returns the new instance
 impl SongModel {
-    pub fn new(title: &str, artist: &str, uri: &str) -> SongModel {
-        glib::Object::new(Self::static_type(), &[("title", &title), ("artist", &artist), ("uri", &uri)])
+    pub fn new(index: u32, title: &str, artist: &str, uri: &str) -> SongModel {
+        glib::Object::new(Self::static_type(), &[("index", &index), ("title", &title), ("artist", &artist), ("uri", &uri)])
             .expect("Failed to create")
             .downcast()
             .expect("Created with wrong type")
@@ -39,6 +39,15 @@ impl SongModel {
             .unwrap()
             .to_string()
     }
+
+    pub fn connect_playing_local<F: Fn(&Self) + 'static>(&self, handler: F) {
+        self.connect_local("notify::playing", true, move |values| {
+            if let Ok(Some(_self)) = values[0].get::<Self>() {
+                handler(&_self);
+            }
+            None
+        }).expect("connecting to prop 'playing' failed");
+    }
 }
 
 mod imp {
@@ -50,7 +59,17 @@ mod imp {
 
 
     // Static array for defining the properties of the new type.
-    static PROPERTIES: [subclass::Property; 4] = [
+    static PROPERTIES: [subclass::Property; 5] = [
+        subclass::Property("index", |index| {
+            glib::ParamSpec::uint(
+                index,
+                "Index",
+                "Index",
+                1, u32::MAX,
+                1,
+                glib::ParamFlags::READWRITE
+            )
+        }),
         subclass::Property("title", |title| {
             glib::ParamSpec::string(
                 title,
@@ -93,6 +112,7 @@ mod imp {
     // the new type. Generally this has to make use of
     // interior mutability.
     pub struct SongModel {
+        index: RefCell<u32>,
         title: RefCell<Option<String>>,
         artist: RefCell<Option<String>>,
         uri: RefCell<Option<String>>,
@@ -131,6 +151,7 @@ mod imp {
         // a new instance of our type with its basic values.
         fn new() -> Self {
             Self {
+                index: RefCell::new(1),
                 title: RefCell::new(None),
                 artist: RefCell::new(None),
                 uri: RefCell::new(None),
@@ -150,6 +171,13 @@ mod imp {
             let prop = &PROPERTIES[id];
 
             match *prop {
+                subclass::Property("index", ..) => {
+                    let index = value
+                        .get()
+                        .expect("type conformity checked by `Object::set_property`")
+                        .unwrap();
+                    self.index.replace(index);
+                },
                 subclass::Property("title", ..) => {
                     let title = value
                         .get()
@@ -185,6 +213,7 @@ mod imp {
             let prop = &PROPERTIES[id];
 
             match *prop {
+                subclass::Property("index", ..) => Ok(self.index.borrow().to_value()),
                 subclass::Property("title", ..) => Ok(self.title.borrow().to_value()),
                 subclass::Property("artist", ..) => Ok(self.artist.borrow().to_value()),
                 subclass::Property("uri", ..) => Ok(self.uri.borrow().to_value()),

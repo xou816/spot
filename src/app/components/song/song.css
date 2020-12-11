@@ -6,7 +6,7 @@
   font-size: 16px;
 }
 
-.song label.song__title.song__title--playing {
+.song--playing label.song__title {
   font-weight: bold;
 }
 

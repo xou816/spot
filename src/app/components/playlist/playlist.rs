@@ -72,9 +72,10 @@ impl Playlist {
         list_model.remove_all();
 
         if let Some(songs) = self.model.songs() {
-            for song in songs.iter() {
+            for (i, song) in songs.iter().enumerate() {
+                let index = i as u32 + 1;
                 let is_current = current_song_uri.as_ref().map(|s| s.eq(&song.uri)).unwrap_or(false);
-                list_model.append(&SongModel::new(&song.title, &song.artist, &song.uri));
+                list_model.append(&SongModel::new(index, &song.title, &song.artist, &song.uri));
             }
         }
     }
