@@ -62,14 +62,14 @@ pub struct ImageLoader {
 impl ImageLoader {
 
     pub fn new() -> Self {
-        Self { cache: CacheManager::new() }
+        Self { cache: CacheManager::new(&["img"]).unwrap() }
     }
 
     fn resource_for(url: &str, ext: &str) -> String {
         let mut hasher = DefaultHasher::new();
         hasher.write(url.as_bytes());
         let hashed = hasher.finish().to_string();
-        format!("{}.{}", hashed, ext)
+        format!("img/{}.{}", hashed, ext)
     }
 
     pub async fn load_remote(&self, url: &str, ext: &str, width: i32, height: i32) -> Option<Pixbuf> {

@@ -1,5 +1,6 @@
 use serde::Deserialize;
 use std::convert::Into;
+use regex::Regex;
 
 use crate::app::{SongDescription, AlbumDescription};
 
@@ -31,7 +32,8 @@ impl SearchQuery {
             |acc, t| acc + t.to_string() + ",");
         types.pop();
 
-        let query = self.query.replace(" ",  "+");
+        let re = Regex::new(r"(\W|\s)+").unwrap();
+        let query = re.replace_all(&self.query[..], "+");
 
         format!("q={}&type={}&offset={}&limit={}", query, types, self.offset, self.limit)
     }

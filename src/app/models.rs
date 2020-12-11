@@ -30,3 +30,8 @@ impl SongDescription {
         Self { title: title.to_string(), artist: artist.to_string(), uri: uri.to_string(), duration, art }
     }
 }
+#[derive(Clone, Debug)]
+pub struct ArtistDescription {
+    pub name: String,
+    pub albums: Vec<AlbumDescription>
+}

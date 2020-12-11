@@ -6,7 +6,7 @@ use std::convert::AsRef;
 use std::future::Future;
 use futures::future::LocalBoxFuture;
 
-use crate::app::{SongDescription, AlbumDescription};
+use crate::app::models::*;
 use super::cache::{CacheManager, CacheFile, CachePolicy, CacheExpiry};
 use super::api_models::*;
 pub use super::api_models::SearchType;
@@ -14,6 +14,7 @@ pub use super::api_models::SearchType;
 const SPOTIFY_API: &'static str = "https://api.spotify.com/v1";
 
 pub trait SpotifyApiClient {
+    fn get_artist(&self, id: &str) -> LocalBoxFuture<Option<ArtistDescription>>;
     fn get_album(&self, id: &str) -> LocalBoxFuture<Option<AlbumDescription>>;
     fn get_track(&self, id: &str) -> LocalBoxFuture<Option<SongDescription>>;
     fn get_saved_albums(&self, offset: u32, limit: u32) -> LocalBoxFuture<Option<Vec<AlbumDescription>>>;
@@ -35,6 +36,11 @@ pub mod tests {
     }
 
     impl SpotifyApiClient for TestSpotifyApiClient {
+
+
+        fn get_artist(&self, id: &str) -> LocalBoxFuture<Option<ArtistDescription>> {
+            Box::pin(async { None })
+        }
 
         fn get_album(&self, id: &str) -> LocalBoxFuture<Option<AlbumDescription>> {
             Box::pin(async { None })
@@ -107,7 +113,7 @@ impl CachedSpotifyClient {
             builder = builder.ssl_options(isahc::config::SslOption::DANGER_ACCEPT_INVALID_CERTS);
         }
         let client = builder.build().unwrap();
-        CachedSpotifyClient { token: RefCell::new(None), client, cache: CacheManager::new() }
+        CachedSpotifyClient { token: RefCell::new(None), client, cache: CacheManager::new(&["net"]).unwrap() }
     }
 
     fn default_cache_policy(&self) -> CachePolicy {
@@ -119,6 +125,36 @@ impl CachedSpotifyClient {
 
     fn cache_request<'a, S: AsRef<str> + 'a>(&'a self, resource: S, policy: Option<CachePolicy>) -> CacheRequest<'a, S> {
         CacheRequest::for_resource(&self.cache, resource, policy.unwrap_or(self.default_cache_policy()))
+    }
+
+    async fn get_artist_no_cache(&self, id: &str) -> Option<String> {
+
+        let token = self.token.borrow();
+        let token = token.as_deref()?;
+
+        let uri = format!("{}/artists/{}", SPOTIFY_API, id);
+        let request = Request::get(uri)
+            .header("Authorization", format!("Bearer {}", token))
+            .body(())
+            .unwrap();
+
+        let mut result = self.client.send_async(request).await.ok()?;
+        result.text_async().await.ok()
+    }
+
+    async fn get_artist_albums_no_cache(&self, id: &str) -> Option<String> {
+
+        let token = self.token.borrow();
+        let token = token.as_deref()?;
+
+        let uri = format!("{}/artists/{}/albums?include_groups=album", SPOTIFY_API, id);
+        let request = Request::get(uri)
+            .header("Authorization", format!("Bearer {}", token))
+            .body(())
+            .unwrap();
+
+        let mut result = self.client.send_async(request).await.ok()?;
+        result.text_async().await.ok()
     }
 
     async fn get_album_no_cache(&self, id: &str) -> Option<String> {
@@ -195,7 +231,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
         Box::pin(async move {
 
             let cache_request = self.cache_request(
-                format!("track_{}.json", id),
+                format!("net/track_{}.json", id),
                 None);
 
             let text = cache_request
@@ -214,7 +250,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
         Box::pin(async move {
 
             let cache_request = self.cache_request(
-                format!("me_albums_{}_{}.json", offset, limit),
+                format!("net/me_albums_{}_{}.json", offset, limit),
                 None);
 
             let text = cache_request
@@ -241,16 +277,47 @@ impl SpotifyApiClient for CachedSpotifyClient {
         Box::pin(async move {
 
             let cache_request = self.cache_request(
-                format!("album_{}.json", id),
+                format!("net/album_{}.json", id),
                 None);
 
             let text = cache_request
                 .or_else_write(
                     || self.get_album_no_cache(&id[..]),
-                    CacheExpiry::expire_in_seconds(3600))
+                    CacheExpiry::expire_in_hours(24))
                 .await?;
 
             Some(from_str::<Album>(&text).ok()?.into())
+        })
+    }
+
+
+    fn get_artist(&self, id: &str) -> LocalBoxFuture<Option<ArtistDescription>> {
+
+        let id = id.to_owned();
+
+        Box::pin(async move {
+
+            let req = self.cache_request(format!("net/artist_{}.json", id), None);
+            let artist = req
+                .or_else_write(
+                    ||  self.get_artist_no_cache(&id[..]),
+                    CacheExpiry::expire_in_hours(24));
+
+            let req = self.cache_request(format!("net/artist_albums_{}.json", id), None);
+            let albums = req
+                .or_else_write(
+                    ||  self.get_artist_albums_no_cache(&id[..]),
+                    CacheExpiry::expire_in_hours(24));
+
+            let artist: Artist = from_str(&artist.await?).ok()?;
+            let albums: Page<Album> = from_str(&albums.await?).ok()?;
+
+            let albums = albums.items.into_iter()
+                .map(|a| a.into())
+                .collect::<Vec<AlbumDescription>>();
+
+            let result = ArtistDescription { name: artist.name, albums };
+            Some(result)
         })
     }
 

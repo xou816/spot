@@ -44,16 +44,31 @@ impl CacheExpiry {
             .unwrap();
         Self::AtUnixTimestamp(timestamp + Duration::new(seconds, 0))
     }
+
+    pub fn expire_in_hours(hours: u32) -> Self {
+        Self::expire_in_seconds(hours as u64 * 3600)
+    }
 }
 
 
 #[derive(Clone)]
-pub struct CacheManager {}
+pub struct CacheManager {
+    root: PathBuf
+}
 
 impl CacheManager {
 
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(dirs: &[&str]) -> Option<Self> {
+        let root = glib::get_user_cache_dir()?;
+        let root_unwrapped = root.to_str()?;
+        let mask = 0o744;
+
+        for &dir in dirs.iter() {
+            let path = format!("{}/{}", root_unwrapped, dir);
+            glib::mkdir_with_parents(path, mask);
+        }
+
+        Some(Self { root })
     }
 
     fn cache_path(&self, resource: &str) -> Option<PathBuf> {
