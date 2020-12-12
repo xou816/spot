@@ -1,4 +1,5 @@
 use crate::app::models::*;
+use crate::app::ListStore;
 use super::{BrowserEvent, BrowserAction, UpdatableState};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -48,12 +49,12 @@ impl UpdatableState for DetailsState {
 pub struct LibraryState {
     pub name: ScreenName,
     pub page: u32,
-    pub albums: Vec<AlbumDescription>
+    pub albums: ListStore<AlbumDescription, AlbumModel>
 }
 
 impl Default for LibraryState {
     fn default() -> Self {
-        Self { name: ScreenName::Library, page: 0, albums: vec![] }
+        Self { name: ScreenName::Library, page: 0, albums: ListStore::new() }
     }
 }
 
@@ -64,16 +65,20 @@ impl UpdatableState for LibraryState {
 
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
-            BrowserAction::SetContent(content) if content != self.albums => {
+            BrowserAction::SetContent(content) if !self.albums.eq(&content) => {
                 self.page = 1;
-                self.albums = content;
-                vec![BrowserEvent::ContentSet]
+                self.albums.remove_all();
+                for album in content {
+                    self.albums.append(album);
+                }
+                vec![BrowserEvent::LibraryUpdated]
             },
-            BrowserAction::AppendContent(mut content) => {
+            BrowserAction::AppendContent(content) => {
                 self.page += 1;
-                let append_index = self.albums.len();
-                self.albums.append(content.as_mut());
-                vec![BrowserEvent::ContentAppended(append_index)]
+                for album in content {
+                    self.albums.append(album);
+                }
+                vec![BrowserEvent::LibraryUpdated]
             },
             _ => vec![]
         }

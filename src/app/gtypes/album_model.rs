@@ -2,7 +2,7 @@ use gio::prelude::*;
 use glib::subclass;
 use glib::subclass::prelude::*;
 use glib::translate::*;
-use glib::{glib_wrapper};
+use glib::glib_wrapper;
 
 glib_wrapper! {
     pub struct AlbumModel(Object<subclass::simple::InstanceStruct<imp::AlbumModel>, subclass::simple::ClassStruct<imp::AlbumModel>, AlbumModelClass>);

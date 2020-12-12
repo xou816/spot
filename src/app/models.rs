@@ -1,3 +1,17 @@
+use std::convert::Into;
+pub use super::gtypes::*;
+
+impl Into<AlbumModel> for AlbumDescription {
+    fn into(self) -> AlbumModel {
+       AlbumModel::new(
+            &self.artist,
+            &self.title,
+            &self.art,
+            &self.id
+        )
+   }
+}
+
 #[derive(Clone, Debug)]
 pub struct AlbumDescription {
     pub title: String,

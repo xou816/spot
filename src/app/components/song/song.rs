@@ -1,6 +1,7 @@
 use gtk::prelude::*;
 use gladis::Gladis;
-use crate::app::components::{Component, screen_add_css_provider, gtypes::SongModel};
+use crate::app::components::{Component, screen_add_css_provider};
+use crate::app::models::SongModel;
 
 #[derive(Gladis, Clone)]
 struct SongWidget {

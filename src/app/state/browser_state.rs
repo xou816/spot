@@ -23,8 +23,7 @@ impl Into<AppAction> for BrowserAction {
 
 #[derive(Clone, Debug)]
 pub enum BrowserEvent {
-    ContentSet,
-    ContentAppended(usize),
+    LibraryUpdated,
     DetailsLoaded,
     SearchUpdated,
     SearchResultsUpdated,

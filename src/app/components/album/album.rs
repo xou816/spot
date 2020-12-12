@@ -2,7 +2,8 @@ use gtk::prelude::*;
 use gladis::Gladis;
 use crate::app::loader::ImageLoader;
 use crate::app::dispatch::Worker;
-use crate::app::components::{Component, screen_add_css_provider, gtypes::AlbumModel};
+use crate::app::components::{Component, screen_add_css_provider};
+use crate::app::models::AlbumModel;
 
 #[derive(Gladis, Clone)]
 struct AlbumWidget {

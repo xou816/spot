@@ -13,8 +13,13 @@ pub mod backend;
 use backend::Command;
 use backend::api::CachedSpotifyClient;
 
+pub mod gtypes;
+
 pub mod models;
 use models::*;
+
+mod list_store;
+pub use list_store::*;
 
 pub mod state;
 pub use state::{AppState, AppModel, AppEvent, AppAction, BrowserEvent, BrowserAction};

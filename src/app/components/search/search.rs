@@ -5,7 +5,8 @@ use gio::prelude::*;
 use gladis::Gladis;
 use crate::app::state::{AppEvent, BrowserEvent};
 use crate::app::dispatch::Worker;
-use crate::app::components::{Component, EventListener, Album, gtypes::AlbumModel};
+use crate::app::components::{Component, EventListener, Album};
+use crate::app::models::AlbumModel;
 use super::SearchResultsModel;
 
 struct Debouncer(Rc<Cell<Option<glib::source::SourceId>>>);

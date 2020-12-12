@@ -8,7 +8,7 @@ use std::cell::Ref;
 
 use crate::app::{AppEvent, BrowserEvent, SongDescription};
 use crate::app::components::{Component, EventListener, Song};
-use crate::app::components::gtypes::SongModel;
+use crate::app::models::SongModel;
 
 pub trait PlaylistModel {
     fn songs(&self) -> Option<Ref<'_, Vec<SongDescription>>>;
@@ -96,16 +96,6 @@ impl EventListener for Playlist {
     }
 }
 
-fn play_button_style(button: gtk::ButtonBuilder) -> gtk::ButtonBuilder {
-
-    let image = gtk::Image::from_icon_name(
-        Some("media-playback-start"),
-        gtk::IconSize::Button);
-
-    button
-        .image(&image)
-        .relief(gtk::ReliefStyle::None)
-}
 
 impl Playlist {
 
@@ -122,12 +112,3 @@ impl Playlist {
     }
 }
 
-fn song_name_for(song: &SongDescription, is_playing: bool) -> String {
-    let title = glib::markup_escape_text(&song.title);
-    let artist = glib::markup_escape_text(&song.artist);
-    if is_playing {
-        format!("<b>{} — <small>{}</small></b>", title.as_str(), artist.as_str())
-    } else {
-        format!("{} — <small>{}</small>", title.as_str(), artist.as_str())
-    }
-}

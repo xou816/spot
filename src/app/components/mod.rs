@@ -38,8 +38,6 @@ use album::*;
 mod song;
 use song::*;
 
-mod gtypes;
-
 pub fn screen_add_css_provider(resource: &str) {
     let provider = gtk::CssProvider::new();
     provider.load_from_resource(resource);
