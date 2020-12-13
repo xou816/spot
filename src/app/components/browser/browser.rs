@@ -1,6 +1,5 @@
 use gtk::prelude::*;
 use gtk::ScrolledWindowExt;
-use gio::prelude::*;
 
 use std::rc::{Rc, Weak};
 
@@ -57,7 +56,7 @@ impl Browser {
 
 impl EventListener for Browser {
 
-    fn on_event(&self, event: &AppEvent) {
+    fn on_event(&mut self, event: &AppEvent) {
         match event {
             AppEvent::Started => {
                 self.model.refresh_saved_albums();

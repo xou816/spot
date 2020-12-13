@@ -1,9 +1,8 @@
 use std::rc::Rc;
 use std::ops::Deref;
-use std::cell::{RefCell, Ref};
-use ref_filter_map::*;
+use std::cell::{Ref};
 
-use crate::app::{AppModel, AppAction, BrowserAction, ActionDispatcher, ListStore};
+use crate::app::{AppModel, BrowserAction, ActionDispatcher, ListStore};
 use crate::app::dispatch::Worker;
 use crate::app::models::*;
 use crate::app::backend::api::SpotifyApiClient;
@@ -12,7 +11,7 @@ use super::Browser;
 
 pub struct BrowserFactory {
     worker: Worker,
-    app_model: Rc<RefCell<AppModel>>,
+    app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>
 }
 
@@ -20,7 +19,7 @@ impl BrowserFactory {
 
     pub fn new(
         worker: Worker,
-        app_model: Rc<RefCell<AppModel>>,
+        app_model: Rc<AppModel>,
         dispatcher: Box<dyn ActionDispatcher>) -> Self {
 
         Self { worker, app_model, dispatcher }
@@ -33,23 +32,23 @@ impl BrowserFactory {
 }
 
 pub struct BrowserModel {
-    app_model: Rc<RefCell<AppModel>>,
+    app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>,
     batch_size: u32
 }
 
 impl BrowserModel {
 
-    pub fn new(app_model: Rc<RefCell<AppModel>>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
+    pub fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
         Self { app_model, dispatcher, batch_size: 20 }
     }
 
     fn spotify(&self) -> Rc<dyn SpotifyApiClient> {
-        Rc::clone(&self.app_model.borrow().services.spotify_api)
+        Rc::clone(&self.app_model.services.spotify_api)
     }
 
     fn state(&self) -> Option<Ref<'_, LibraryState>> {
-        ref_filter_map(self.app_model.borrow(), |m| m.state.browser_state.library_state())
+        self.app_model.map_state_opt(|s| s.browser_state.library_state())
     }
 
     pub fn get_list_store(&self) -> Option<impl Deref<Target = ListStore<AlbumDescription, AlbumModel>> + '_> {

@@ -72,10 +72,11 @@ impl DispatchLoop {
         self.sender.clone()
     }
 
-    pub async fn attach(self, handler: impl Fn(AppAction) -> ()) {
+    pub async fn attach(self, mut handler: impl FnMut(AppAction) -> ()) {
         self.receiver.for_each(|action| {
-            async {
-                handler(action);
+            let result = handler(action);
+            async move {
+                result
             }
         }).await;
     }

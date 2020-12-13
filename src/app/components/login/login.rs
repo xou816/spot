@@ -5,15 +5,12 @@ use std::rc::Rc;
 use crate::app::AppEvent;
 use crate::app::components::EventListener;
 
+use super::LoginModel;
+
 pub struct Login {
     dialog: gtk::Dialog,
     parent: gtk::Window,
-    model: Rc<dyn LoginModel>
-}
-
-pub trait LoginModel {
-    fn try_autologin(&self) -> bool;
-    fn login(&self, u: String, p: String);
+    model: Rc<LoginModel>
 }
 
 impl Login {
@@ -24,8 +21,9 @@ impl Login {
         username: gtk::Entry,
         password: gtk::Entry,
         login_btn: gtk::Button,
-        model: Rc<dyn LoginModel>) -> Self {
+        model: LoginModel) -> Self {
 
+        let model = Rc::new(model);
         let weak_model = Rc::downgrade(&model);
         login_btn.connect_clicked(move |_| {
             let username = username.get_text().as_str().to_string();
@@ -57,7 +55,7 @@ impl Login {
 
 impl EventListener for Login {
 
-    fn on_event(&self, event: &AppEvent) {
+    fn on_event(&mut self, event: &AppEvent) {
         match event {
             AppEvent::LoginCompleted => {
                 self.hide();

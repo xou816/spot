@@ -1,22 +1,20 @@
 use std::rc::Rc;
-use std::cell::{Ref, RefCell};
 use std::ops::Deref;
-use ref_filter_map::ref_filter_map;
 use crate::app::backend::api::SpotifyApiClient;
-use crate::app::state::{AppModel, SearchState, BrowserAction, ScreenName};
+use crate::app::state::{AppModel, BrowserAction, ScreenName};
 use crate::app::dispatch::{Worker, ActionDispatcher};
 use crate::app::models::*;
 use super::SearchResults;
 
 pub struct SearchFactory {
-    app_model: Rc<RefCell<AppModel>>,
+    app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>,
     worker: Worker
 }
 
 impl SearchFactory {
 
-    pub fn new(app_model: Rc<RefCell<AppModel>>, dispatcher: Box<dyn ActionDispatcher>, worker: Worker) -> Self {
+    pub fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>, worker: Worker) -> Self {
         Self { app_model, dispatcher, worker }
     }
 
@@ -27,23 +25,23 @@ impl SearchFactory {
 }
 
 pub struct SearchResultsModel {
-    app_model: Rc<RefCell<AppModel>>,
+    app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>
 }
 
 impl SearchResultsModel {
 
-    fn new(app_model: Rc<RefCell<AppModel>>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
+    fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
         Self { app_model, dispatcher }
     }
 
     fn spotify(&self) -> Rc<dyn SpotifyApiClient> {
-        Rc::clone(&self.app_model.borrow().services.spotify_api)
+        Rc::clone(&self.app_model.services.spotify_api)
     }
 
     pub fn get_query(&self) -> Option<impl Deref<Target=String> + '_> {
-        ref_filter_map(self.app_model.borrow(), |m| {
-            Some(&m.state.browser_state
+        self.app_model.map_state_opt(|s| {
+            Some(&s.browser_state
                 .search_state()?.query)
         })
     }
@@ -60,8 +58,8 @@ impl SearchResultsModel {
     }
 
     pub fn get_current_results(&self) -> Option<impl Deref<Target=Vec<AlbumDescription>> + '_> {
-        ref_filter_map(self.app_model.borrow(), |m| {
-            Some(&m.state.browser_state.search_state()?.album_results)
+        self.app_model.map_state_opt(|s| {
+            Some(&s.browser_state.search_state()?.album_results)
         })
     }
 

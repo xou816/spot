@@ -3,18 +3,17 @@ use gtk::prelude::*;
 use gtk::SearchEntryExt;
 use crate::app::components::EventListener;
 
-pub trait SearchBarModel {
-    fn search(&self, query: String);
-}
+use super::SearchBarModel;
 
-pub struct SearchBar {
-}
+pub struct SearchBar;
 
 impl SearchBar {
 
     pub fn new(
-        model: Rc<dyn SearchBarModel>,
+        model: SearchBarModel,
         search_entry: gtk::SearchEntry) -> Self {
+
+        let model = Rc::new(model);
 
         {
             let model = model.clone();

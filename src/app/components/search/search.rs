@@ -122,7 +122,7 @@ impl Component for SearchResults {
 
 impl EventListener for SearchResults {
 
-    fn on_event(&self, app_event: &AppEvent) {
+    fn on_event(&mut self, app_event: &AppEvent) {
         match app_event {
             AppEvent::BrowserEvent(BrowserEvent::SearchUpdated) => {
                 self.update_search_query();

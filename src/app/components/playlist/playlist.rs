@@ -65,16 +65,12 @@ impl Playlist {
 
     fn reset_list(&self) {
 
-        let current_song_uri = self.model.current_song_uri();
-        let current_song_uri = &current_song_uri;
-
         let list_model = &self.list_model;
         list_model.remove_all();
 
         if let Some(songs) = self.model.songs() {
             for (i, song) in songs.iter().enumerate() {
                 let index = i as u32 + 1;
-                let is_current = current_song_uri.as_ref().map(|s| s.eq(&song.uri)).unwrap_or(false);
                 list_model.append(&SongModel::new(index, &song.title, &song.artist, &song.uri));
             }
         }
@@ -83,7 +79,7 @@ impl Playlist {
 }
 
 impl EventListener for Playlist {
-    fn on_event(&self, event: &AppEvent) {
+    fn on_event(&mut self, event: &AppEvent) {
         match event {
             AppEvent::TrackChanged(_)|AppEvent::BrowserEvent(BrowserEvent::NavigationPopped) => {
                 self.update_list();

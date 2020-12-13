@@ -1,5 +1,4 @@
 use std::rc::Rc;
-use std::cell::Ref;
 use gtk::prelude::*;
 use gladis::Gladis;
 
@@ -7,11 +6,7 @@ use crate::app::components::{Component, EventListener, screen_add_css_provider, 
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
 use crate::app::{AppEvent, BrowserEvent};
-use crate::app::models::*;
-
-pub trait DetailsModel {
-    fn get_album_info(&self) -> Option<Ref<'_, AlbumDescription>>;
-}
+use super::DetailsModel;
 
 #[derive(Gladis, Clone)]
 struct DetailsWidget {
@@ -32,7 +27,7 @@ impl DetailsWidget {
 }
 
 pub struct Details {
-    model: Rc<dyn DetailsModel>,
+    model: Rc<DetailsModel>,
     worker: Worker,
     widget: DetailsWidget,
     children: Vec<Box<dyn EventListener>>
@@ -40,8 +35,9 @@ pub struct Details {
 
 impl Details {
 
-    pub fn new(model: Rc<dyn DetailsModel>, worker: Worker, playlist_factory: &PlaylistFactory) -> Self {
+    pub fn new(model: DetailsModel, worker: Worker, playlist_factory: &PlaylistFactory) -> Self {
 
+        let model = Rc::new(model);
         let widget = DetailsWidget::new();
         let playlist = Box::new(playlist_factory.make_custom_playlist(widget.album_tracks.clone()));
 
@@ -75,15 +71,15 @@ impl Component for Details {
         &self.widget.root
     }
 
-    fn get_children(&self) -> Option<&Vec<Box<dyn EventListener>>> {
-        Some(&self.children)
+    fn get_children(&mut self) -> Option<&mut Vec<Box<dyn EventListener>>> {
+        Some(&mut self.children)
     }
 }
 
 
 impl EventListener for Details {
 
-    fn on_event(&self, event: &AppEvent) {
+    fn on_event(&mut self, event: &AppEvent) {
         match event {
             AppEvent::BrowserEvent(BrowserEvent::DetailsLoaded) => self.update_details(),
             _ => {}

@@ -1,49 +1,44 @@
 use gtk::prelude::*;
 use gtk::{ButtonExt, ContainerExt};
-use std::cell::{Ref, RefCell};
 use std::rc::Rc;
 
 use crate::app::components::{EventListener, ListenerComponent, DetailsFactory, BrowserFactory, SearchFactory};
 use crate::app::{AppEvent, BrowserEvent};
 use crate::app::state::ScreenName;
 
-pub trait NavigationModel {
-    fn go_back(&self);
-    fn can_go_back(&self) -> bool;
-    fn visible_child_name(&self) -> Ref<'_, ScreenName>;
-    fn children_count(&self) -> usize;
-}
+use super::NavigationModel;
 
 pub struct Navigation {
-    model: Rc<dyn NavigationModel>,
+    model: Rc<NavigationModel>,
     stack: gtk::Stack,
     back_button: gtk::Button,
     browser_factory: BrowserFactory,
     details_factory: DetailsFactory,
     search_factory: SearchFactory,
-    children: RefCell<Vec<Box<dyn ListenerComponent>>>
+    children: Vec<Box<dyn ListenerComponent>>
 }
 
 impl Navigation {
 
     pub fn new(
-        model: Rc<dyn NavigationModel>,
+        model: NavigationModel,
         back_button: gtk::Button,
         stack: gtk::Stack,
         browser_factory: BrowserFactory,
         details_factory: DetailsFactory,
         search_factory: SearchFactory) -> Self {
 
+        let model = Rc::new(model);
         let weak_model = Rc::downgrade(&model);
         back_button.connect_clicked(move |_| {
             weak_model.upgrade().map(|m| m.go_back());
         });
 
-        Self { model, stack, back_button, browser_factory, details_factory, search_factory, children: RefCell::new(vec![]) }
+        Self { model, stack, back_button, browser_factory, details_factory, search_factory, children: vec![] }
     }
 
 
-    fn push_screen(&self, name: &ScreenName) {
+    fn push_screen(&mut self, name: &ScreenName) {
         let component: Box<dyn ListenerComponent> = match name {
             ScreenName::Library => Box::new(self.browser_factory.make_browser()),
             ScreenName::Details(_) => Box::new(self.details_factory.make_details()),
@@ -54,13 +49,13 @@ impl Navigation {
         widget.show_all();
 
         self.stack.add_named(widget, name.identifier());
-        self.children.borrow_mut().push(component);
+        self.children.push(component);
         self.stack.set_visible_child_name(name.identifier());
     }
 
 
-    fn pop(&self) {
-        let mut children = self.children.borrow_mut();
+    fn pop(&mut self) {
+        let children = &mut self.children;
         let popped = children.pop();
 
         let name = self.model.visible_child_name();
@@ -71,9 +66,9 @@ impl Navigation {
         }
     }
 
-    fn pop_to(&self, screen: &ScreenName) {
+    fn pop_to(&mut self, screen: &ScreenName) {
         self.stack.set_visible_child_name(screen.identifier());
-        let remainder = self.children.borrow_mut().split_off(self.model.children_count());
+        let remainder = self.children.split_off(self.model.children_count());
         for widget in remainder {
             self.stack.remove(widget.get_root_widget());
         }
@@ -86,7 +81,7 @@ impl Navigation {
 
 impl EventListener for Navigation {
 
-    fn on_event(&self, event: &AppEvent) {
+    fn on_event(&mut self, event: &AppEvent) {
         match event {
             AppEvent::Started => {
                 self.push_screen(&ScreenName::Library);
@@ -106,7 +101,7 @@ impl EventListener for Navigation {
             }
             _ => {}
         };
-        if let Some(listener) = self.children.borrow().iter().last() {
+        if let Some(listener) = self.children.iter_mut().last() {
             listener.on_event(event);
         }
     }

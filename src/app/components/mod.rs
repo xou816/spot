@@ -50,19 +50,19 @@ pub fn screen_add_css_provider(resource: &str) {
 
 
 pub trait EventListener {
-    fn on_event(&self, _: &AppEvent) {}
+    fn on_event(&mut self, _: &AppEvent) {}
 }
 
 pub trait Component {
     fn get_root_widget(&self) -> &gtk::Widget;
 
-    fn get_children(&self) -> Option<&Vec<Box<dyn EventListener>>> {
+    fn get_children(&mut self) -> Option<&mut Vec<Box<dyn EventListener>>> {
         None
     }
 
-    fn broadcast_event(&self, event: &AppEvent) {
+    fn broadcast_event(&mut self, event: &AppEvent) {
         if let Some(children) = self.get_children() {
-            for child in children.iter() {
+            for child in children.iter_mut() {
                 child.on_event(event);
             }
         }

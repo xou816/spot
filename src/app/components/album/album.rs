@@ -1,4 +1,5 @@
 use gtk::prelude::*;
+use gtk::RevealerExt;
 use gladis::Gladis;
 use crate::app::loader::ImageLoader;
 use crate::app::dispatch::Worker;
@@ -8,6 +9,7 @@ use crate::app::models::AlbumModel;
 #[derive(Gladis, Clone)]
 struct AlbumWidget {
     root: gtk::Widget,
+    revealer: gtk::Revealer,
     album_label: gtk::Label,
     artist_label: gtk::Label,
     cover_btn: gtk::Button,
@@ -33,11 +35,13 @@ impl Album {
         let widget = AlbumWidget::new();
 
         let image = widget.cover_image.clone();
+        let revealer = widget.revealer.clone();
         if let Some(url) = album_model.cover_url() {
             worker.send_task(async move {
                 let loader = ImageLoader::new();
                 let result = loader.load_remote(&url, "jpg", 180, 180).await;
                 image.set_from_pixbuf(result.as_ref());
+                revealer.set_reveal_child(true);
             });
         }
 

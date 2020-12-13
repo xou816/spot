@@ -3,35 +3,56 @@ use gtk::{ImageExt, RangeExt, ScaleExt};
 use std::rc::Rc;
 use std::cell::Cell;
 
-use crate::app::{AppEvent, SongDescription};
+use crate::app::{AppEvent};
 use crate::app::components::EventListener;
 use crate::app::loader::ImageLoader;
 use crate::app::dispatch::Worker;
 
-
-pub trait PlaybackModel {
-    fn is_playing(&self) -> bool;
-    fn current_song(&self) -> Option<SongDescription>;
-    fn play_next_song(&self);
-    fn play_prev_song(&self);
-    fn toggle_playback(&self);
-    fn seek_to(&self, position: u32);
+struct Clock {
+    interval_ms: u32,
+    source: Cell<Option<glib::source::SourceId>>
 }
 
+impl Clock {
+
+    fn new() -> Self {
+        Self { interval_ms: 1000, source: Cell::new(None) }
+    }
+
+    fn start<F: Fn() + 'static>(&self, tick: F) {
+        let new_source = Some(glib::timeout_add_local(self.interval_ms, move || {
+            tick();
+            glib::Continue(true)
+        }));
+        if let Some(previous_source) = self.source.replace(new_source) {
+            glib::source_remove(previous_source);
+        }
+    }
+
+    fn stop(&self) {
+        let new_source = None;
+        if let Some(previous_source) = self.source.replace(new_source) {
+            glib::source_remove(previous_source);
+        }
+    }
+}
+
+use super::PlaybackModel;
+
 pub struct Playback {
-    model: Rc<dyn PlaybackModel>,
+    model: Rc<PlaybackModel>,
     worker: Worker,
     play_button: gtk::Button,
     current_song_image: gtk::Image,
     current_song_info: gtk::Label,
     seek_bar: gtk::Scale,
-    seek_source_id: Cell<Option<glib::source::SourceId>>
+    clock: Clock
 }
 
 impl Playback {
 
     pub fn new(
-        model: Rc<dyn PlaybackModel>,
+        model: PlaybackModel,
         worker: Worker,
         play_button: gtk::Button,
         current_song_image: gtk::Image,
@@ -40,6 +61,7 @@ impl Playback {
         prev: gtk::Button,
         seek_bar: gtk::Scale) -> Self {
 
+        let model = Rc::new(model);
         let weak_model = Rc::downgrade(&model);
         seek_bar.connect_change_value(move |_, _, requested| {
             weak_model.upgrade()
@@ -72,7 +94,7 @@ impl Playback {
                 .map(|model| model.play_prev_song());
         });
 
-        Self { model, worker, play_button, current_song_image, current_song_info, seek_bar, seek_source_id: Cell::new(None) }
+        Self { model, worker, play_button, current_song_image, current_song_info, seek_bar, clock: Clock::new() }
     }
 
     fn toggle_playing(&self) {
@@ -88,19 +110,14 @@ impl Playback {
             })
             .expect("error updating icon");
 
-        let seek_bar = self.seek_bar.clone();
-        let new_source = if is_playing {
-            Some(glib::timeout_add_seconds_local(1, move || {
+        if is_playing {
+            let seek_bar = self.seek_bar.clone();
+            self.clock.start(move || {
                 let value = seek_bar.get_value();
                 seek_bar.set_value(value + 1000.0);
-                glib::Continue(true)
-            }))
+            });
         } else {
-            None
-        };
-
-        if let Some(previous) = self.seek_source_id.replace(new_source) {
-            glib::source_remove(previous);
+            self.clock.stop();
         }
     }
 
@@ -136,7 +153,7 @@ impl Playback {
 
 impl EventListener for Playback {
 
-    fn on_event(&self, event: &AppEvent) {
+    fn on_event(&mut self, event: &AppEvent) {
         match event {
             AppEvent::TrackPaused|AppEvent::TrackResumed => {
                 self.toggle_playing();
@@ -159,75 +176,4 @@ fn playback_image(is_playing: bool) -> &'static str {
     } else {
         "media-playback-start"
     }
-}
-
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use gtk_test;
-    use gtk::ContainerExt;
-    use crate::app::dispatch::LocalTaskLoop;
-
-    struct MockModel {
-        toggle_playback_called: Cell<bool>
-    }
-
-    impl MockModel {
-        fn new() -> Self {
-            Self { toggle_playback_called: Cell::new(false) }
-        }
-    }
-
-    impl PlaybackModel for MockModel {
-        fn is_playing(&self) -> bool { false }
-        fn current_song(&self) -> Option<SongDescription> { None }
-        fn play_next_song(&self) {}
-        fn play_prev_song(&self) {}
-
-        fn toggle_playback(&self) {
-            self.toggle_playback_called.replace(true);
-        }
-
-        fn seek_to(&self, position: u32) {}
-    }
-
-    fn make_host_window<F: Fn(&gtk::Window) -> ()>(builder: F) -> gtk::Window {
-        let window = gtk::Window::new(gtk::WindowType::Toplevel);
-        builder(&window);
-        window.show_all();
-        window.activate_focus();
-        window
-    }
-
-    #[test]
-    fn test_tap_play() {
-
-        gtk::init().unwrap();
-
-        let mock_model = Rc::new(MockModel::new());
-        let playback = Playback::new(
-            Rc::clone(&mock_model) as Rc<dyn PlaybackModel>,
-            LocalTaskLoop::new().make_worker(),
-            gtk::Button::new(),
-            gtk::Image::new(),
-            gtk::Label::new(None),
-            gtk::Button::new(),
-            gtk::Button::new(),
-            gtk::Scale::with_range(gtk::Orientation::Horizontal, 0., 1000., 1.));
-
-        let play_button = playback.play_button.clone();
-        make_host_window(move |w| {
-            w.add(&play_button);
-        });
-
-
-        assert!(!mock_model.toggle_playback_called.get());
-
-        gtk_test::click(&playback.play_button);
-        gtk_test::wait(300);
-
-        assert!(mock_model.toggle_playback_called.get());
-    }
-
 }

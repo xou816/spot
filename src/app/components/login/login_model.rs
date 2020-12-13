@@ -1,21 +1,16 @@
 use crate::app::{AppAction, ActionDispatcher};
 use crate::app::credentials;
 
-use super::login::*;
-
-pub struct LoginModelImpl {
+pub struct LoginModel {
     dispatcher: Box<dyn ActionDispatcher>
 }
 
-impl LoginModelImpl {
+impl LoginModel {
     pub fn new(dispatcher: Box<dyn ActionDispatcher>) -> Self {
         Self { dispatcher }
     }
-}
 
-impl LoginModel for LoginModelImpl {
-
-    fn try_autologin(&self) -> bool {
+    pub fn try_autologin(&self) -> bool {
         if let Ok(creds) = credentials::try_retrieve_credentials() {
             self.dispatcher.dispatch(AppAction::TryLogin(creds.username, creds.password));
             true
@@ -24,7 +19,7 @@ impl LoginModel for LoginModelImpl {
         }
     }
 
-    fn login(&self, u: String, p: String) {
+    pub fn login(&self, u: String, p: String) {
         self.dispatcher.dispatch(AppAction::TryLogin(u, p));
     }
 }

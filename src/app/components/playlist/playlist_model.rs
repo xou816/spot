@@ -1,5 +1,5 @@
-use std::rc::{Rc};
-use std::cell::{Ref, RefCell};
+use std::rc::Rc;
+use std::cell::Ref;
 use ref_filter_map::*;
 
 use crate::app::{AppModel, AppState, AppAction, ActionDispatcher};
@@ -9,7 +9,7 @@ use crate::app::state::DetailsState;
 use super::{Playlist, PlaylistModel};
 
 pub struct PlaylistFactory {
-    app_model: Rc<RefCell<AppModel>>,
+    app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>
 }
 
@@ -22,7 +22,7 @@ impl Clone for PlaylistFactory {
 impl PlaylistFactory {
 
     pub fn new(
-        app_model: Rc<RefCell<AppModel>>,
+        app_model: Rc<AppModel>,
         dispatcher: Box<dyn ActionDispatcher>) -> Self {
 
         Self { app_model, dispatcher }
@@ -40,18 +40,18 @@ impl PlaylistFactory {
 }
 
 struct CurrentlyPlayingModel {
-    app_model: Rc<RefCell<AppModel>>,
+    app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>
 }
 
 impl CurrentlyPlayingModel {
 
-    fn new(app_model: Rc<RefCell<AppModel>>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
+    fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
         Self { app_model, dispatcher }
     }
 
     fn state(&self) -> Ref<'_, AppState> {
-        Ref::map(self.app_model.borrow(), |m| &m.state)
+        self.app_model.get_state()
     }
 }
 
@@ -73,22 +73,22 @@ impl PlaylistModel for CurrentlyPlayingModel {
 
 
 struct AlbumDetailsModel {
-    app_model: Rc<RefCell<AppModel>>,
+    app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>
 }
 
 impl AlbumDetailsModel {
 
-    fn new(app_model: Rc<RefCell<AppModel>>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
+    fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
         Self { app_model, dispatcher }
     }
 
     fn state(&self) -> Ref<'_, AppState> {
-        Ref::map(self.app_model.borrow(), |m| &m.state)
+        self.app_model.get_state()
     }
 
     fn details_state(&self) -> Option<Ref<'_, DetailsState>> {
-        ref_filter_map(self.app_model.borrow(), |m| m.state.browser_state.details_state())
+        self.app_model.map_state_opt(|s| s.browser_state.details_state())
     }
 }
 

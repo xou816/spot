@@ -1,12 +1,10 @@
 use crate::app::{ActionDispatcher, BrowserAction};
 
-use super::SearchBarModel;
+pub struct SearchBarModel(pub Box<dyn ActionDispatcher>);
 
-pub struct SearchBarModelImpl(pub Box<dyn ActionDispatcher>);
+impl SearchBarModel {
 
-impl SearchBarModel for SearchBarModelImpl {
-
-    fn search(&self, query: String) {
+    pub fn search(&self, query: String) {
         self.0.dispatch(BrowserAction::Search(query).into());
     }
 }

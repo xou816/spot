@@ -18,7 +18,7 @@ impl PlayerNotifier {
 
 impl EventListener for PlayerNotifier {
 
-    fn on_event(&self, event: &AppEvent) {
+    fn on_event(&mut self, event: &AppEvent) {
 
         let command = match event {
             AppEvent::TrackPaused => Some(Command::PlayerPause),
