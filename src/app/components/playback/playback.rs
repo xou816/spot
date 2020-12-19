@@ -133,7 +133,7 @@ impl Playback {
             let image = self.current_song_image.clone();
             if let Some(url) = song.art {
                 let url = url.clone();
-                self.worker.send_task(async move {
+                self.worker.send_local_task(async move {
                     let loader = ImageLoader::new();
                     let result = loader.load_remote(&url, "jpg", 48, 48).await;
                     image.set_from_pixbuf(result.as_ref());

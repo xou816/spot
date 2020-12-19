@@ -5,7 +5,6 @@ use std::cell::{Ref};
 use crate::app::{AppModel, BrowserAction, ActionDispatcher, ListStore};
 use crate::app::dispatch::Worker;
 use crate::app::models::*;
-use crate::app::backend::api::SpotifyApiClient;
 use crate::app::state::{ScreenName, LibraryState};
 use super::Browser;
 
@@ -43,10 +42,6 @@ impl BrowserModel {
         Self { app_model, dispatcher, batch_size: 20 }
     }
 
-    fn spotify(&self) -> Rc<dyn SpotifyApiClient> {
-        Rc::clone(&self.app_model.services.spotify_api)
-    }
-
     fn state(&self) -> Option<Ref<'_, LibraryState>> {
         self.app_model.map_state_opt(|s| s.browser_state.library_state())
     }
@@ -56,10 +51,10 @@ impl BrowserModel {
     }
 
     pub fn refresh_saved_albums(&self) {
-        let api = self.spotify();
+        let api = self.app_model.get_spotify();
         let batch_size = self.batch_size;
 
-        self.dispatcher.dispatch_async(Box::pin(async move {
+        self.dispatcher.dispatch_local_async(Box::pin(async move {
             let albums = api.get_saved_albums(0, batch_size).await.unwrap_or(vec![]);
             Some(BrowserAction::SetContent(albums).into())
         }));
@@ -67,12 +62,12 @@ impl BrowserModel {
 
 
     pub fn load_more_albums(&self) {
-        let api = self.spotify();
+        let api = self.app_model.get_spotify();
         let page = self.state().map(|s| s.page).unwrap_or(0);
         let offset = page * self.batch_size;
         let batch_size = self.batch_size;
 
-        self.dispatcher.dispatch_async(Box::pin(async move {
+        self.dispatcher.dispatch_local_async(Box::pin(async move {
             let albums = api.get_saved_albums(offset, batch_size).await.unwrap_or(vec![]);
             Some(BrowserAction::AppendContent(albums).into())
         }));

@@ -59,9 +59,36 @@ pub struct Album {
     pub images: Vec<Image>
 }
 
+impl Album {
+
+    fn best_image<T: PartialOrd, F: Fn(&Image) -> T>(&self, criterion: F) -> Option<&Image> {
+        let mut ords = self.images.iter()
+            .map(|image| (criterion(image), image))
+            .collect::<Vec<(T, &Image)>>();
+
+        ords.sort_by(|a, b| (a.0).partial_cmp(&b.0).unwrap());
+        Some(ords.first()?.1)
+    }
+
+    fn best_image_for_width(&self, width: i32) -> Option<&Image> {
+        self.best_image(|i| (width - i.width as i32).abs())
+    }
+
+
+    fn best_image_for_ratio(&self, ratio: f32) -> Option<&Image> {
+        self.best_image(|i| {
+            let i_ratio = i.height as f32/i.width as f32;
+            (ratio - i_ratio).abs()
+        })
+
+    }
+}
+
 #[derive(Deserialize, Debug, Clone)]
 pub struct Image {
-    pub url: String
+    pub url: String,
+    pub height: u32,
+    pub width: u32
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -99,7 +126,7 @@ impl Into<Vec<SongDescription>> for Album {
 
     fn into(self) -> Vec<SongDescription> {
 
-        let art = self.images.first().unwrap().url.clone();
+        let art = self.best_image_for_width(200).unwrap().url.clone();
         let items = self.tracks.unwrap_or_default().items;
 
         items.iter().map(|item| {
@@ -122,7 +149,7 @@ impl Into<AlbumDescription> for Album {
                 .map(|a| a.name.clone())
                 .collect::<Vec<String>>()
                 .join(", ");
-        let art = self.images.first().unwrap().url.clone();
+        let art = self.best_image_for_width(200).unwrap().url.clone();
 
         AlbumDescription {
             title: self.name,
@@ -140,7 +167,7 @@ impl Into<SongDescription> for TrackItem {
     fn into(self) -> SongDescription {
         let art = self
             .albums.unwrap_or_default().first().unwrap()
-            .images.first().unwrap()
+            .best_image_for_width(200).unwrap()
             .url.clone();
         let artist = self.artists.iter()
             .map(|a| a.name.clone())

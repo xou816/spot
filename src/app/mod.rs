@@ -1,5 +1,6 @@
 use futures::channel::mpsc::Sender;
 use std::rc::Rc;
+use std::sync::Arc;
 use gtk::prelude::*;
 
 pub mod dispatch;
@@ -48,7 +49,7 @@ impl App {
 
         let state = AppState::new(Vec::new());
         let dispatcher = Box::new(ActionDispatcherImpl::new(sender, worker.clone()));
-        let spotify_client = Rc::new(CachedSpotifyClient::new());
+        let spotify_client = Arc::new(CachedSpotifyClient::new());
         let model = AppModel::new(state, spotify_client);
         let model = Rc::new(model);
 

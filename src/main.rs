@@ -8,7 +8,7 @@ mod app;
 
 use crate::app::{App, AppAction};
 use crate::app::backend;
-use crate::app::dispatch::{DispatchLoop, LocalTaskLoop};
+use crate::app::dispatch::{DispatchLoop, spawn_task_handler};
 
 fn main() {
 
@@ -23,15 +23,13 @@ fn main() {
     let dispatch_loop = DispatchLoop::new();
     let sender = dispatch_loop.make_dispatcher();
 
-    let tasks = LocalTaskLoop::new();
+    let worker = spawn_task_handler(&context);
 
     let player_sender = backend::start_player_service(sender.clone());
 
     context.spawn_local(
-        App::new_from_builder(&builder, sender.clone(), tasks.make_worker(), player_sender)
+        App::new_from_builder(&builder, sender.clone(), worker, player_sender)
             .start(dispatch_loop));
-
-    context.spawn_local_with_priority(glib::source::PRIORITY_HIGH_IDLE, tasks.attach());
 
     let window = make_window(&builder);
     app.connect_activate(move |app| {

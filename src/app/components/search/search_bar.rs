@@ -17,7 +17,7 @@ impl SearchBar {
 
         {
             let model = model.clone();
-            search_entry.connect_search_changed(move |s| {
+            search_entry.connect_changed(move |s| {
                 let query = s.get_text().as_str().to_string();
                 if !query.is_empty() {
                     model.search(query);

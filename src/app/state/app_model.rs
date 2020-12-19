@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 use std::cell::{Ref, RefCell};
 use ref_filter_map::*;
 use crate::app::state::*;
@@ -7,23 +7,27 @@ use crate::backend::api::SpotifyApiClient;
 
 
 pub struct AppServices {
-    pub spotify_api: Rc<dyn SpotifyApiClient>
+    pub spotify_api: Arc<dyn SpotifyApiClient>
 }
 
 pub struct AppModel {
     state: RefCell<AppState>,
-    pub services: AppServices
+    services: AppServices
 }
 
 impl AppModel {
 
     pub fn new(
         state: AppState,
-        spotify_api: Rc<dyn SpotifyApiClient>) -> Self {
+        spotify_api: Arc<dyn SpotifyApiClient>) -> Self {
 
         let services = AppServices { spotify_api };
         let state = RefCell::new(state);
         Self { state, services }
+    }
+
+    pub fn get_spotify(&self) -> Arc<dyn SpotifyApiClient> {
+        Arc::clone(&self.services.spotify_api)
     }
 
     pub fn get_state(&self) -> Ref<'_, AppState> {

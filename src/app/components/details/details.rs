@@ -1,5 +1,6 @@
 use std::rc::Rc;
 use gtk::prelude::*;
+use gtk::RevealerExt;
 use gladis::Gladis;
 
 use crate::app::components::{Component, EventListener, screen_add_css_provider, PlaylistFactory};
@@ -14,6 +15,7 @@ struct DetailsWidget {
     pub artist_label: gtk::Label,
     pub album_label: gtk::Label,
     pub album_tracks: gtk::ListBox,
+    pub album_art_revealer: gtk::Revealer,
     pub album_art: gtk::Image,
     pub like_button: gtk::Button
 }
@@ -55,11 +57,13 @@ impl Details {
             self.widget.artist_label.set_label(artist);
             self.widget.like_button.set_label(if is_liked { "♥" } else { "♡" });
 
+            let revealer = self.widget.album_art_revealer.clone();
             let image = self.widget.album_art.clone();
-            self.worker.send_task(async move {
+            self.worker.send_local_task(async move {
                 let pixbuf = ImageLoader::new()
                     .load_remote(&art[..], "jpg", 100, 100).await;
                 image.set_from_pixbuf(pixbuf.as_ref());
+                revealer.set_reveal_child(true);
             });
         }
     }

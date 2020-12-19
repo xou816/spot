@@ -37,7 +37,7 @@ impl Album {
         let image = widget.cover_image.clone();
         let revealer = widget.revealer.clone();
         if let Some(url) = album_model.cover_url() {
-            worker.send_task(async move {
+            worker.send_local_task(async move {
                 let loader = ImageLoader::new();
                 let result = loader.load_remote(&url, "jpg", 180, 180).await;
                 image.set_from_pixbuf(result.as_ref());

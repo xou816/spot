@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.1 -->
+<!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
   <!-- interface-css-provider-path details.css -->
@@ -33,15 +33,22 @@
                 <property name="margin-bottom">8</property>
                 <property name="spacing">16</property>
                 <child>
-                  <object class="GtkImage" id="album_art">
-                    <property name="width-request">100</property>
-                    <property name="height-request">100</property>
+                  <object class="GtkRevealer" id="album_art_revealer">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="stock">gtk-missing-image</property>
-                    <style>
-                      <class name="details__album-art"/>
-                    </style>
+                    <property name="transition-type">crossfade</property>
+                    <child>
+                      <object class="GtkImage" id="album_art">
+                        <property name="width-request">100</property>
+                        <property name="height-request">100</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="stock">gtk-missing-image</property>
+                        <style>
+                          <class name="details__album-art"/>
+                        </style>
+                      </object>
+                    </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>

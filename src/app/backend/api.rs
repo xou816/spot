@@ -1,10 +1,10 @@
 use isahc::prelude::*;
 use serde_json::from_str;
 use std::convert::Into;
-use std::cell::RefCell;
+use std::sync::Mutex;
 use std::convert::AsRef;
 use std::future::Future;
-use futures::future::LocalBoxFuture;
+use futures::future::{LocalBoxFuture, BoxFuture};
 
 use crate::app::models::*;
 use super::cache::{CacheManager, CacheFile, CachePolicy, CacheExpiry};
@@ -18,7 +18,7 @@ pub trait SpotifyApiClient {
     fn get_album(&self, id: &str) -> LocalBoxFuture<Option<AlbumDescription>>;
     fn get_track(&self, id: &str) -> LocalBoxFuture<Option<SongDescription>>;
     fn get_saved_albums(&self, offset: u32, limit: u32) -> LocalBoxFuture<Option<Vec<AlbumDescription>>>;
-    fn search_albums(&self, query: &str, offset: u32, limit: u32) -> LocalBoxFuture<Option<Vec<AlbumDescription>>>;
+    fn search_albums(&self, query: &str, offset: u32, limit: u32) -> BoxFuture<Option<Vec<AlbumDescription>>>;
     fn update_token(&self, token: &str);
 }
 
@@ -55,7 +55,7 @@ pub mod tests {
             Box::pin(async { None })
         }
 
-        fn search_albums(&self, query: &str, offset: u32, limit: u32) -> LocalBoxFuture<Option<Vec<AlbumDescription>>> {
+        fn search_albums(&self, query: &str, offset: u32, limit: u32) -> BoxFuture<Option<Vec<AlbumDescription>>> {
             Box::pin(async { None })
         }
 
@@ -64,7 +64,7 @@ pub mod tests {
 }
 
 pub struct CachedSpotifyClient {
-    token: RefCell<Option<String>>,
+    token: Mutex<Option<String>>,
     client: HttpClient,
     cache: CacheManager
 }
@@ -113,11 +113,11 @@ impl CachedSpotifyClient {
             builder = builder.ssl_options(isahc::config::SslOption::DANGER_ACCEPT_INVALID_CERTS);
         }
         let client = builder.build().unwrap();
-        CachedSpotifyClient { token: RefCell::new(None), client, cache: CacheManager::new(&["net"]).unwrap() }
+        CachedSpotifyClient { token: Mutex::new(None), client, cache: CacheManager::new(&["net"]).unwrap() }
     }
 
     fn default_cache_policy(&self) -> CachePolicy {
-        match *self.token.borrow() {
+        match *self.token.lock().unwrap() {
             Some(_) => CachePolicy::Default,
             None => CachePolicy::IgnoreExpiry
         }
@@ -129,7 +129,7 @@ impl CachedSpotifyClient {
 
     async fn get_artist_no_cache(&self, id: &str) -> Option<String> {
 
-        let token = self.token.borrow();
+        let token = self.token.lock().ok()?;
         let token = token.as_deref()?;
 
         let uri = format!("{}/artists/{}", SPOTIFY_API, id);
@@ -144,7 +144,7 @@ impl CachedSpotifyClient {
 
     async fn get_artist_albums_no_cache(&self, id: &str) -> Option<String> {
 
-        let token = self.token.borrow();
+        let token = self.token.lock().ok()?;
         let token = token.as_deref()?;
 
         let uri = format!("{}/artists/{}/albums?include_groups=album", SPOTIFY_API, id);
@@ -159,7 +159,7 @@ impl CachedSpotifyClient {
 
     async fn get_album_no_cache(&self, id: &str) -> Option<String> {
 
-        let token = self.token.borrow();
+        let token = self.token.lock().ok()?;
         let token = token.as_deref()?;
 
         let uri = format!("{}/albums/{}", SPOTIFY_API, id);
@@ -174,7 +174,7 @@ impl CachedSpotifyClient {
 
     async fn get_saved_albums_no_cache(&self, offset: u32, limit: u32) -> Option<String> {
 
-        let token = self.token.borrow();
+        let token = self.token.lock().ok()?;
         let token = token.as_deref()?;
 
         let uri = format!("{}/me/albums?offset={}&limit={}", SPOTIFY_API, offset, limit);
@@ -189,7 +189,7 @@ impl CachedSpotifyClient {
 
     async fn get_track_no_cache(&self, id: &str) -> Option<String> {
 
-        let token = self.token.borrow();
+        let token = self.token.lock().ok()?;
         let token = token.as_deref()?;
 
         let uri = format!("{}/tracks/{}", SPOTIFY_API, id);
@@ -203,16 +203,19 @@ impl CachedSpotifyClient {
     }
 
     async fn search_no_cache(&self, query: String) -> Option<String> {
-        let token = self.token.borrow();
-        let token = token.as_deref()?;
 
-        let query = SearchQuery { query, types: vec![SearchType::Album], limit: 5, offset: 0 };
-        let uri = format!("{}/search?{}", SPOTIFY_API, query.to_query_string());
+        let request = {
+            let token = self.token.lock().ok()?;
+            let token = token.as_deref()?;
 
-        let request = Request::get(uri)
-            .header("Authorization", format!("Bearer {}", token))
-            .body(())
-            .unwrap();
+            let query = SearchQuery { query, types: vec![SearchType::Album], limit: 5, offset: 0 };
+            let uri = format!("{}/search?{}", SPOTIFY_API, query.to_query_string());
+
+            Request::get(uri)
+                .header("Authorization", format!("Bearer {}", token))
+                .body(())
+                .unwrap()
+        };
 
         let mut result = self.client.send_async(request).await.ok()?;
         result.text_async().await.ok()
@@ -222,7 +225,9 @@ impl CachedSpotifyClient {
 impl SpotifyApiClient for CachedSpotifyClient {
 
     fn update_token(&self, token: &str) {
-        self.token.replace(Some(token.to_string()));
+        if let Some(ref mut mut_token) = self.token.lock().ok() {
+            **mut_token = Some(token.to_string());
+        }
     }
 
     fn get_track(&self, id: &str) -> LocalBoxFuture<Option<SongDescription>> {
@@ -321,7 +326,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
         })
     }
 
-    fn search_albums(&self, query: &str, offset: u32, limit: u32) -> LocalBoxFuture<Option<Vec<AlbumDescription>>> {
+    fn search_albums(&self, query: &str, offset: u32, limit: u32) -> BoxFuture<Option<Vec<AlbumDescription>>> {
 
         let query = query.to_owned();
 

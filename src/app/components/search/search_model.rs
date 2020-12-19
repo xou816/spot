@@ -1,6 +1,5 @@
 use std::rc::Rc;
 use std::ops::Deref;
-use crate::app::backend::api::SpotifyApiClient;
 use crate::app::state::{AppModel, BrowserAction, ScreenName};
 use crate::app::dispatch::{Worker, ActionDispatcher};
 use crate::app::models::*;
@@ -35,10 +34,6 @@ impl SearchResultsModel {
         Self { app_model, dispatcher }
     }
 
-    fn spotify(&self) -> Rc<dyn SpotifyApiClient> {
-        Rc::clone(&self.app_model.services.spotify_api)
-    }
-
     pub fn get_query(&self) -> Option<impl Deref<Target=String> + '_> {
         self.app_model.map_state_opt(|s| {
             Some(&s.browser_state
@@ -47,10 +42,10 @@ impl SearchResultsModel {
     }
 
     pub fn fetch_results(&self) {
-        let api = self.spotify();
+        let api = self.app_model.get_spotify();
         if let Some(query) = self.get_query() {
             let query = query.to_owned();
-            self.dispatcher.dispatch_async(Box::pin(async move {
+            self.dispatcher.dispatch_local_async(Box::pin(async move {
                 let albums = api.search_albums(&query[..], 0, 5).await?;
                 Some(BrowserAction::SetSearchResults(albums).into())
             }))
@@ -66,10 +61,10 @@ impl SearchResultsModel {
     pub fn open_album(&self, uri: &str) {
         self.dispatcher.dispatch(BrowserAction::NavigationPush(ScreenName::Details(uri.to_string())).into());
 
-        let api = self.spotify();
+        let api = self.app_model.get_spotify();
         if let Some(id) = uri.split(":").last() {
             let id = id.to_owned();
-            self.dispatcher.dispatch_async(Box::pin(async move {
+            self.dispatcher.dispatch_local_async(Box::pin(async move {
                 let album = api.get_album(&id).await?;
                 Some(BrowserAction::SetDetails(album).into())
             }));
