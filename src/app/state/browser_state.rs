@@ -11,6 +11,7 @@ pub enum BrowserAction {
     SetDetails(AlbumDescription),
     Search(String),
     SetSearchResults(Vec<AlbumDescription>),
+    SetArtistDetails(ArtistDescription),
     NavigationPush(ScreenName),
     NavigationPop,
 }
@@ -27,6 +28,7 @@ pub enum BrowserEvent {
     DetailsLoaded,
     SearchUpdated,
     SearchResultsUpdated,
+    ArtistDetailsUpdated,
     NavigationPushed(ScreenName),
     NavigationPopped,
     NavigationPoppedTo(ScreenName),
@@ -199,6 +201,15 @@ impl BrowserState {
         self.navigation.iter_rev().find_map(|screen| {
             match screen {
                 BrowserScreen::Search(state) => Some(state),
+                _ => None
+            }
+        })
+    }
+
+    pub fn artist_state(&self) -> Option<&ArtistState> {
+        self.navigation.iter_rev().find_map(|screen| {
+            match screen {
+                BrowserScreen::Artist(state) => Some(state),
                 _ => None
             }
         })

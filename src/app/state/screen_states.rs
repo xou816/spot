@@ -50,12 +50,13 @@ impl UpdatableState for DetailsState {
 #[derive(Clone)]
 pub struct ArtistState {
     pub name: ScreenName,
-    pub content: Option<ArtistDescription>
+    pub artist: Option<String>,
+    pub albums: ListStore<AlbumModel>
 }
 
 impl ArtistState {
     pub fn new(id: String) -> Self {
-        Self { name: ScreenName::Artist(id), content: None }
+        Self { name: ScreenName::Artist(id), artist: None, albums: ListStore::new() }
     }
 }
 
@@ -66,6 +67,13 @@ impl UpdatableState for ArtistState {
 
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
+            BrowserAction::SetArtistDetails(details) => {
+                self.artist = Some(details.name);
+                for album in details.albums {
+                    self.albums.append(album.into());
+                }
+                vec![BrowserEvent::ArtistDetailsUpdated]
+            },
             _ => vec![]
         }
     }
