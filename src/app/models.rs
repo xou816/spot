@@ -22,6 +22,7 @@ impl From<AlbumDescription> for AlbumModel {
 pub struct AlbumDescription {
     pub title: String,
     pub artist: String,
+    pub artist_id: String,
     pub uri: String,
     pub art: String,
     pub songs: Vec<SongDescription>,

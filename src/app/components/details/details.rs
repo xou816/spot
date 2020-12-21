@@ -1,6 +1,6 @@
 use std::rc::Rc;
 use gtk::prelude::*;
-use gtk::RevealerExt;
+use gtk::{RevealerExt, LinkButtonExt};
 use gladis::Gladis;
 
 use crate::app::components::{Component, EventListener, screen_add_css_provider, PlaylistFactory};
@@ -17,7 +17,8 @@ struct DetailsWidget {
     pub album_tracks: gtk::ListBox,
     pub album_art_revealer: gtk::Revealer,
     pub album_art: gtk::Image,
-    pub like_button: gtk::Button
+    pub like_button: gtk::Button,
+    pub more_button: gtk::LinkButton
 }
 
 impl DetailsWidget {
@@ -60,6 +61,14 @@ impl Details {
             self.widget.album_label.set_label(album);
             self.widget.artist_label.set_label(artist);
             self.widget.like_button.set_label(if is_liked { "♥" } else { "♡" });
+
+            let weak_model = Rc::downgrade(&self.model);
+            self.widget.more_button.connect_activate_link(move |_| {
+                if let Some(model) = weak_model.upgrade() {
+                    model.view_artist();
+                }
+                glib::signal::Inhibit(true)
+            });
 
             let revealer = self.widget.album_art_revealer.clone();
             let image = self.widget.album_art.clone();

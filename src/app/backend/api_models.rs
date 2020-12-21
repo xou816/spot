@@ -93,6 +93,7 @@ pub struct Image {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Artist {
+    pub id: String,
     pub uri: String,
     pub name: String
 }
@@ -145,15 +146,13 @@ impl Into<AlbumDescription> for Album {
     fn into(self) -> AlbumDescription {
 
         let songs: Vec<SongDescription> = self.clone().into();
-        let artist = self.artists.iter()
-                .map(|a| a.name.clone())
-                .collect::<Vec<String>>()
-                .join(", ");
+        let artist = self.artists.first().unwrap();
         let art = self.best_image_for_width(200).unwrap().url.clone();
 
         AlbumDescription {
             title: self.name,
-            artist,
+            artist: artist.name.to_owned(),
+            artist_id: artist.id.to_owned(),
             uri: self.uri,
             art,
             songs,

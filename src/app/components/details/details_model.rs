@@ -3,7 +3,7 @@ use std::ops::Deref;
 
 use crate::app::AppModel;
 use crate::app::models::*;
-use crate::app::state::BrowserAction;
+use crate::app::state::{BrowserAction, ScreenName};
 use crate::app::dispatch::{Worker, ActionDispatcher};
 use crate::app::components::PlaylistFactory;
 
@@ -49,5 +49,12 @@ impl DetailsModel {
             let album = api.get_album(&id).await?;
             Some(BrowserAction::SetDetails(album).into())
         }));
+    }
+
+    pub fn view_artist(&self) {
+        if let Some(album) = self.get_album_info() {
+            let artist = &album.artist_id;
+            self.dispatcher.dispatch(BrowserAction::NavigationPush(ScreenName::Artist(artist.to_owned())).into());
+        }
     }
 }

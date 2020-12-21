@@ -2,7 +2,7 @@ use std::convert::Into;
 use std::iter::Iterator;
 use crate::app::models::*;
 use crate::app::state::AppAction;
-use super::{UpdatableState, DetailsState, LibraryState, SearchState, ScreenName};
+use super::{UpdatableState, DetailsState, LibraryState, SearchState, ArtistState, ScreenName};
 
 #[derive(Clone, Debug)]
 pub enum BrowserAction {
@@ -38,7 +38,8 @@ pub enum BrowserEvent {
 pub enum BrowserScreen {
     Library(LibraryState),
     Details(DetailsState),
-    Search(SearchState)
+    Search(SearchState),
+    Artist(ArtistState)
 }
 
 impl BrowserScreen {
@@ -47,7 +48,8 @@ impl BrowserScreen {
         match name {
             ScreenName::Library => BrowserScreen::Library(Default::default()),
             ScreenName::Details(id) => BrowserScreen::Details(DetailsState::new(id.to_string())),
-            ScreenName::Search => BrowserScreen::Search(Default::default())
+            ScreenName::Search => BrowserScreen::Search(Default::default()),
+            ScreenName::Artist(id) => BrowserScreen::Artist(ArtistState::new(id.to_string()))
         }
     }
 
@@ -55,7 +57,8 @@ impl BrowserScreen {
         match self {
             Self::Library(state) => state,
             Self::Details(state) => state,
-            Self::Search(state) => state
+            Self::Search(state) => state,
+            Self::Artist(state) => state
         }
     }
 }
@@ -68,7 +71,8 @@ impl NamedScreen for BrowserScreen {
         match self {
             Self::Library(state) => &state.name,
             Self::Details(state) => &state.name,
-            Self::Search(state) => &state.name
+            Self::Search(state) => &state.name,
+            Self::Artist(state) => &state.name
         }
     }
 }

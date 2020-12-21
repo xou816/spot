@@ -14,3 +14,7 @@
 .details .details__like {
   font-size: 18px;
 }
+
+.details__more {
+  padding: 0;
+}

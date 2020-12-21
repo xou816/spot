@@ -44,15 +44,16 @@ impl Navigation {
         let component: Box<dyn ListenerComponent> = match name {
             ScreenName::Library => Box::new(self.browser_factory.make_browser()),
             ScreenName::Details(id) => Box::new(self.details_factory.make_details(id.to_owned())),
-            ScreenName::Search => Box::new(self.search_factory.make_search_results())
+            ScreenName::Search => Box::new(self.search_factory.make_search_results()),
+            ScreenName::Artist(_) => Box::new(self.browser_factory.make_browser())
         };
 
         let widget = component.get_root_widget();
         widget.show_all();
 
-        self.stack.add_named(widget, name.identifier());
+        self.stack.add_named(widget, name.identifier().as_ref());
         self.children.push(component);
-        self.stack.set_visible_child_name(name.identifier());
+        self.stack.set_visible_child_name(name.identifier().as_ref());
     }
 
 
@@ -61,7 +62,7 @@ impl Navigation {
         let popped = children.pop();
 
         let name = self.model.visible_child_name();
-        self.stack.set_visible_child_name(name.identifier());
+        self.stack.set_visible_child_name(name.identifier().as_ref());
 
         if let Some(child) = popped {
             self.stack.remove(child.get_root_widget());
@@ -69,7 +70,7 @@ impl Navigation {
     }
 
     fn pop_to(&mut self, screen: &ScreenName) {
-        self.stack.set_visible_child_name(screen.identifier());
+        self.stack.set_visible_child_name(screen.identifier().as_ref());
         let remainder = self.children.split_off(self.model.children_count());
         for widget in remainder {
             self.stack.remove(widget.get_root_widget());

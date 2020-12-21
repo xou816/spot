@@ -1,18 +1,20 @@
+use std::borrow::Cow;
 use crate::app::models::*;
 use crate::app::ListStore;
 use super::{BrowserEvent, BrowserAction, UpdatableState};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ScreenName {
-    Library, Details(String), Search
+    Library, Details(String), Search, Artist(String)
 }
 
 impl ScreenName {
-    pub fn identifier(&self) -> &str {
+    pub fn identifier<'a>(&'a self) -> Cow<'a, str> {
         match self {
-            Self::Library => "library",
-            Self::Details(s) => &s[..],
-            Self::Search => "search"
+            Self::Library => Cow::Borrowed("library"),
+            Self::Details(s) => Cow::Owned(format!("album_{}", s)),
+            Self::Search => Cow::Borrowed("search"),
+            Self::Artist(s) => Cow::Owned(format!("artist_{}", s))
         }
     }
 }
@@ -40,6 +42,30 @@ impl UpdatableState for DetailsState {
                 self.content = Some(album);
                 vec![BrowserEvent::DetailsLoaded]
             },
+            _ => vec![]
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct ArtistState {
+    pub name: ScreenName,
+    pub content: Option<ArtistDescription>
+}
+
+impl ArtistState {
+    pub fn new(id: String) -> Self {
+        Self { name: ScreenName::Artist(id), content: None }
+    }
+}
+
+impl UpdatableState for ArtistState {
+
+    type Action = BrowserAction;
+    type Event = BrowserEvent;
+
+    fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
+        match action {
             _ => vec![]
         }
     }
