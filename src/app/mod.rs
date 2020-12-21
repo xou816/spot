@@ -81,7 +81,7 @@ impl App {
         let model = NavigationModel::new(Rc::clone(&app_model), dispatcher.box_clone());
         let browser_factory = BrowserFactory::new(worker.clone(), Rc::clone(&app_model), dispatcher.box_clone());
         let playlist_factory = PlaylistFactory::new(Rc::clone(&app_model), dispatcher.box_clone());
-        let details_factory = DetailsFactory::new(Rc::clone(&app_model), worker.clone(), playlist_factory);
+        let details_factory = DetailsFactory::new(Rc::clone(&app_model), dispatcher.box_clone(), worker.clone(), playlist_factory);
         let search_factory = SearchFactory::new(app_model, dispatcher.box_clone(), worker);
         Box::new(Navigation::new(model, back_btn, stack, browser_factory, details_factory, search_factory))
 

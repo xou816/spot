@@ -37,7 +37,11 @@ pub struct Details {
 
 impl Details {
 
-    pub fn new(model: DetailsModel, worker: Worker, playlist_factory: &PlaylistFactory) -> Self {
+    pub fn new(id: String, model: DetailsModel, worker: Worker, playlist_factory: &PlaylistFactory) -> Self {
+
+        if model.get_album_info().is_none() {
+            model.load_album_info(id);
+        }
 
         let model = Rc::new(model);
         let widget = DetailsWidget::new();

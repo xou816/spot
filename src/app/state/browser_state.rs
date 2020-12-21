@@ -43,6 +43,14 @@ pub enum BrowserScreen {
 
 impl BrowserScreen {
 
+    fn from_name(name: &ScreenName) -> Self {
+        match name {
+            ScreenName::Library => BrowserScreen::Library(Default::default()),
+            ScreenName::Details(id) => BrowserScreen::Details(DetailsState::new(id.to_string())),
+            ScreenName::Search => BrowserScreen::Search(Default::default())
+        }
+    }
+
     fn state(&mut self) -> &mut dyn UpdatableState<Action=BrowserAction, Event=BrowserEvent> {
         match self {
             Self::Library(state) => state,
@@ -191,6 +199,24 @@ impl BrowserState {
             }
         })
     }
+
+    fn push_if_needed(&mut self, name: ScreenName) -> Vec<BrowserEvent> {
+
+        let navigation = &mut self.navigation;
+        let screen_state = navigation.screen_state(&name);
+
+        match screen_state {
+            ScreenState::Current => vec![],
+            ScreenState::Present => {
+                navigation.pop_to(&name);
+                vec![BrowserEvent::NavigationPoppedTo(name)]
+            },
+            ScreenState::NotPresent => {
+                navigation.push(BrowserScreen::from_name(&name));
+                vec![BrowserEvent::NavigationPushed(name)]
+            }
+        }
+    }
 }
 
 
@@ -205,30 +231,13 @@ impl UpdatableState for BrowserState {
 
         match action {
             BrowserAction::Search(_) => {
+                let mut events = self.push_if_needed(ScreenName::Search);
 
-                let navigation = &mut self.navigation;
-                let screen_state = navigation.screen_state(&ScreenName::Search);
-
-                let mut events = match screen_state {
-                    ScreenState::Current => vec![],
-                    ScreenState::Present => {
-                        navigation.pop_to(&ScreenName::Search);
-                        vec![BrowserEvent::NavigationPoppedTo(ScreenName::Search)]
-                    },
-                    ScreenState::NotPresent => {
-                        navigation.push(BrowserScreen::Search(Default::default()));
-                        vec![BrowserEvent::NavigationPushed(ScreenName::Search)]
-                    }
-                };
-
-                let mut update_events = navigation.current_mut().state().update_with(action);
+                let mut update_events = self.navigation.current_mut().state().update_with(action);
                 events.append(&mut update_events);
                 events
             },
-            BrowserAction::NavigationPush(ScreenName::Details(tag)) => {
-                self.navigation.push(BrowserScreen::Details(DetailsState::new(tag.clone())));
-                vec![BrowserEvent::NavigationPushed(ScreenName::Details(tag))]
-            },
+            BrowserAction::NavigationPush(name) => self.push_if_needed(name),
             BrowserAction::NavigationPop if can_pop => {
                 self.navigation.pop();
                 vec![BrowserEvent::NavigationPopped]

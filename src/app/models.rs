@@ -1,15 +1,21 @@
-use std::convert::Into;
+use std::convert::From;
 pub use super::gtypes::*;
 
-impl Into<AlbumModel> for AlbumDescription {
-    fn into(self) -> AlbumModel {
-       AlbumModel::new(
-            &self.artist,
-            &self.title,
-            &self.art,
-            &self.id
+impl From<&AlbumDescription> for AlbumModel {
+    fn from(album: &AlbumDescription) -> Self {
+        AlbumModel::new(
+            &album.artist,
+            &album.title,
+            &album.art,
+            &album.id
         )
-   }
+    }
+}
+
+impl From<AlbumDescription> for AlbumModel {
+    fn from(album: AlbumDescription) -> Self {
+        Self::from(&album)
+    }
 }
 
 #[derive(Clone, Debug)]

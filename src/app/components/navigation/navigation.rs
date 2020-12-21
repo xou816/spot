@@ -39,9 +39,11 @@ impl Navigation {
 
 
     fn push_screen(&mut self, name: &ScreenName) {
+        println!("{}", name.identifier());
+
         let component: Box<dyn ListenerComponent> = match name {
             ScreenName::Library => Box::new(self.browser_factory.make_browser()),
-            ScreenName::Details(_) => Box::new(self.details_factory.make_details()),
+            ScreenName::Details(id) => Box::new(self.details_factory.make_details(id.to_owned())),
             ScreenName::Search => Box::new(self.search_factory.make_search_results())
         };
 

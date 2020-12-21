@@ -49,7 +49,7 @@ impl UpdatableState for DetailsState {
 pub struct LibraryState {
     pub name: ScreenName,
     pub page: u32,
-    pub albums: ListStore<AlbumDescription, AlbumModel>
+    pub albums: ListStore<AlbumModel>
 }
 
 impl Default for LibraryState {
@@ -65,18 +65,23 @@ impl UpdatableState for LibraryState {
 
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
-            BrowserAction::SetContent(content) if !self.albums.eq(&content) => {
-                self.page = 1;
-                self.albums.remove_all();
-                for album in content {
-                    self.albums.append(album);
+            BrowserAction::SetContent(content) => {
+                let converted = content.iter().map(|a| a.into()).collect::<Vec<AlbumModel>>();
+                if !self.albums.eq(&converted, |a, b| a.uri() == b.uri()) {
+                    self.page = 1;
+                    self.albums.remove_all();
+                    for album in converted {
+                        self.albums.append(album);
+                    }
+                    vec![BrowserEvent::LibraryUpdated]
+                } else {
+                    vec![]
                 }
-                vec![BrowserEvent::LibraryUpdated]
             },
             BrowserAction::AppendContent(content) => {
                 self.page += 1;
                 for album in content {
-                    self.albums.append(album);
+                    self.albums.append(album.into());
                 }
                 vec![BrowserEvent::LibraryUpdated]
             },

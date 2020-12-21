@@ -46,7 +46,7 @@ impl BrowserModel {
         self.app_model.map_state_opt(|s| s.browser_state.library_state())
     }
 
-    pub fn get_list_store(&self) -> Option<impl Deref<Target = ListStore<AlbumDescription, AlbumModel>> + '_> {
+    pub fn get_list_store(&self) -> Option<impl Deref<Target = ListStore<AlbumModel>> + '_> {
         Some(Ref::map(self.state()?, |s| &s.albums))
     }
 
@@ -76,13 +76,5 @@ impl BrowserModel {
     pub fn open_album(&self, album_uri: &str) {
         let screen = ScreenName::Details(album_uri.to_owned());
         self.dispatcher.dispatch(BrowserAction::NavigationPush(screen).into());
-
-        let album = self.get_list_store().and_then(|albums| {
-            (*albums).iter().find(|&a| a.id.eq(album_uri)).cloned()
-        });
-
-        if let Some(album) = album {
-            self.dispatcher.dispatch(BrowserAction::SetDetails(album).into());
-        }
     }
 }

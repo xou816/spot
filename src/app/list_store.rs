@@ -1,22 +1,20 @@
 use std::marker::PhantomData;
 use std::iter::Iterator;
-use std::convert::Into;
+use gio::ListModelExt;
 use glib::prelude::*;
 use gio::prelude::*;
 
-pub struct ListStore<T, GType> {
+pub struct ListStore<GType> {
     store: gio::ListStore,
-    vec: Vec<T>,
     _marker: PhantomData<GType>
 }
 
-impl <T, GType> ListStore<T, GType>
-    where T: Clone + Into<GType>, GType: IsA<glib::Object> {
+impl <GType> ListStore<GType>
+    where GType: IsA<glib::Object> {
 
     pub fn new() -> Self {
         Self {
             store: gio::ListStore::new(GType::static_type()),
-            vec: vec![],
             _marker: PhantomData
         }
     }
@@ -26,34 +24,39 @@ impl <T, GType> ListStore<T, GType>
     }
 
     pub fn remove_all(&mut self) {
-        self.vec.clear();
         self.store.remove_all();
     }
 
-    pub fn append(&mut self, element: T) {
-        let vec = &mut self.vec;
-        vec.push(element.clone());
-        self.store.append(&element.into());
+    pub fn append(&mut self, element: GType) {
+        self.store.append(&element);
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = &T> {
-        self.vec.iter()
+    pub fn iter<'a>(&'a self) -> impl Iterator<Item = GType> + 'a {
+        let store = &self.store;
+        let count = store.get_n_items();
+        (0..count)
+            .into_iter()
+            .map(move |i| store
+                .get_object(i).unwrap()
+                .downcast::<GType>().unwrap())
+    }
+
+    pub fn len(&self) -> usize {
+        self.store.get_n_items() as usize
+    }
+
+    pub fn eq<F>(&self, other: &Vec<GType>, comparison: F) -> bool
+        where F: Fn(&GType, &GType) -> bool {
+        self.len() == other.len() && self.iter()
+            .zip(other.iter())
+            .all(|(left, right)| comparison(&left, right))
     }
 }
 
-impl <T, GType> ListStore<T, GType>
-    where T: Eq {
-
-    pub fn eq(&self, other: &Vec<T>) -> bool {
-        self.vec == *other
-    }
-}
-
-impl <T, GType> Clone for ListStore<T, GType> where T: Clone {
+impl <GType> Clone for ListStore<GType> {
     fn clone(&self) -> Self {
         Self {
             store: self.store.clone(),
-            vec: self.vec.clone(),
             _marker: PhantomData
         }
     }

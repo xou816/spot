@@ -59,17 +59,9 @@ impl SearchResultsModel {
     }
 
     pub fn open_album(&self, uri: &str) {
-        self.dispatcher.dispatch(BrowserAction::NavigationPush(ScreenName::Details(uri.to_string())).into());
-
-        let api = self.app_model.get_spotify();
         if let Some(id) = uri.split(":").last() {
-            let id = id.to_owned();
-            self.dispatcher.dispatch_local_async(Box::pin(async move {
-                let album = api.get_album(&id).await?;
-                Some(BrowserAction::SetDetails(album).into())
-            }));
+            self.dispatcher.dispatch(BrowserAction::NavigationPush(ScreenName::Details(id.to_string())).into());
         }
-
     }
 }
 
