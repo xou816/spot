@@ -7,6 +7,7 @@ use std::future::Future;
 use futures::future::{LocalBoxFuture, BoxFuture};
 
 use crate::app::models::*;
+use crate::app::credentials::Credentials;
 use super::cache::{CacheManager, CacheFile, CachePolicy, CacheExpiry};
 use super::api_models::*;
 pub use super::api_models::SearchType;
@@ -19,7 +20,7 @@ pub trait SpotifyApiClient {
     fn get_track(&self, id: &str) -> LocalBoxFuture<Option<SongDescription>>;
     fn get_saved_albums(&self, offset: u32, limit: u32) -> LocalBoxFuture<Option<Vec<AlbumDescription>>>;
     fn search_albums(&self, query: &str, offset: u32, limit: u32) -> BoxFuture<Option<Vec<AlbumDescription>>>;
-    fn update_token(&self, token: &str);
+    fn update_credentials(&self, credentials: Credentials);
 }
 
 #[cfg(test)]
@@ -59,12 +60,12 @@ pub mod tests {
             Box::pin(async { None })
         }
 
-        fn update_token(&self, token: &str) {}
+        fn update_credentials(&self, credentials: Credentials) {}
     }
 }
 
 pub struct CachedSpotifyClient {
-    token: Mutex<Option<String>>,
+    credentials: Mutex<Option<Credentials>>,
     client: HttpClient,
     cache: CacheManager
 }
@@ -113,11 +114,11 @@ impl CachedSpotifyClient {
             builder = builder.ssl_options(isahc::config::SslOption::DANGER_ACCEPT_INVALID_CERTS);
         }
         let client = builder.build().unwrap();
-        CachedSpotifyClient { token: Mutex::new(None), client, cache: CacheManager::new(&["net"]).unwrap() }
+        CachedSpotifyClient { credentials: Mutex::new(None), client, cache: CacheManager::new(&["net"]).unwrap() }
     }
 
     fn default_cache_policy(&self) -> CachePolicy {
-        match *self.token.lock().unwrap() {
+        match *self.credentials.lock().unwrap() {
             Some(_) => CachePolicy::Default,
             None => CachePolicy::IgnoreExpiry
         }
@@ -129,12 +130,12 @@ impl CachedSpotifyClient {
 
     async fn get_artist_no_cache(&self, id: &str) -> Option<String> {
 
-        let token = self.token.lock().ok()?;
-        let token = token.as_deref()?;
+        let creds = self.credentials.lock().ok()?;
+        let creds = creds.as_ref()?;
 
         let uri = format!("{}/artists/{}", SPOTIFY_API, id);
         let request = Request::get(uri)
-            .header("Authorization", format!("Bearer {}", token))
+            .header("Authorization", format!("Bearer {}", &creds.token))
             .body(())
             .unwrap();
 
@@ -144,10 +145,10 @@ impl CachedSpotifyClient {
 
     async fn get_artist_albums_no_cache(&self, id: &str) -> Option<String> {
 
-        let token = self.token.lock().ok()?;
-        let token = token.as_deref()?;
+        let creds = self.credentials.lock().ok()?;
+        let token = &creds.as_ref()?.token;
 
-        let uri = format!("{}/artists/{}/albums?include_groups=album", SPOTIFY_API, id);
+        let uri = format!("{}/artists/{}/albums?include_groups=album&country=from_token", SPOTIFY_API, id);
         let request = Request::get(uri)
             .header("Authorization", format!("Bearer {}", token))
             .body(())
@@ -159,8 +160,8 @@ impl CachedSpotifyClient {
 
     async fn get_album_no_cache(&self, id: &str) -> Option<String> {
 
-        let token = self.token.lock().ok()?;
-        let token = token.as_deref()?;
+        let creds = self.credentials.lock().ok()?;
+        let token = &creds.as_ref()?.token;
 
         let uri = format!("{}/albums/{}", SPOTIFY_API, id);
         let request = Request::get(uri)
@@ -174,8 +175,8 @@ impl CachedSpotifyClient {
 
     async fn get_saved_albums_no_cache(&self, offset: u32, limit: u32) -> Option<String> {
 
-        let token = self.token.lock().ok()?;
-        let token = token.as_deref()?;
+        let creds = self.credentials.lock().ok()?;
+        let token = &creds.as_ref()?.token;
 
         let uri = format!("{}/me/albums?offset={}&limit={}", SPOTIFY_API, offset, limit);
         let request = Request::get(uri)
@@ -189,8 +190,8 @@ impl CachedSpotifyClient {
 
     async fn get_track_no_cache(&self, id: &str) -> Option<String> {
 
-        let token = self.token.lock().ok()?;
-        let token = token.as_deref()?;
+        let creds = self.credentials.lock().ok()?;
+        let token = &creds.as_ref()?.token;
 
         let uri = format!("{}/tracks/{}", SPOTIFY_API, id);
         let request = Request::get(uri)
@@ -205,11 +206,11 @@ impl CachedSpotifyClient {
     async fn search_no_cache(&self, query: String) -> Option<String> {
 
         let request = {
-            let token = self.token.lock().ok()?;
-            let token = token.as_deref()?;
+            let creds = self.credentials.lock().ok()?;
+            let token = &creds.as_ref()?.token;
 
             let query = SearchQuery { query, types: vec![SearchType::Album], limit: 5, offset: 0 };
-            let uri = format!("{}/search?{}", SPOTIFY_API, query.to_query_string());
+            let uri = format!("{}/search?{}&market=from_token", SPOTIFY_API, query.to_query_string());
 
             Request::get(uri)
                 .header("Authorization", format!("Bearer {}", token))
@@ -224,9 +225,9 @@ impl CachedSpotifyClient {
 
 impl SpotifyApiClient for CachedSpotifyClient {
 
-    fn update_token(&self, token: &str) {
-        if let Some(ref mut mut_token) = self.token.lock().ok() {
-            **mut_token = Some(token.to_string());
+    fn update_credentials(&self, credentials: Credentials) {
+        if let Some(ref mut mut_creds) = self.credentials.lock().ok() {
+            **mut_creds = Some(credentials);
         }
     }
 

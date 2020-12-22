@@ -53,6 +53,10 @@ impl Details {
 
     fn update_details(&self) {
         if let Some(info) = self.model.get_album_info() {
+
+            let context = self.widget.root.get_style_context();
+            context.add_class("details--loaded");
+
             let album = &info.title[..];
             let artist = &info.artist[..];
             let art = info.art.clone();

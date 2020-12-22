@@ -9,7 +9,8 @@ static SPOT_ATTR: &'static str = "spot_credentials";
 pub struct Credentials {
     pub username: String,
     pub password: String,
-    pub token: String
+    pub token: String,
+    pub country: String
 }
 
 pub fn try_retrieve_credentials() -> Result<Credentials, SsError> {

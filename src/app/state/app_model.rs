@@ -46,7 +46,7 @@ impl AppModel {
         match message {
             AppAction::LoginSuccess(ref creds) => {
                 credentials::save_credentials(creds.clone()).expect("could not save credentials");
-                self.services.spotify_api.update_token(&creds.token[..]);
+                self.services.spotify_api.update_credentials(creds.clone());
             },
             _ => {}
         }

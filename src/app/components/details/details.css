@@ -18,3 +18,12 @@
 .details__more {
   padding: 0;
 }
+
+.details {
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.details--loaded {
+  opacity: 1;
+}

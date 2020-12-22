@@ -55,7 +55,7 @@ impl BrowserModel {
         let batch_size = self.batch_size;
 
         self.dispatcher.dispatch_local_async(Box::pin(async move {
-            let albums = api.get_saved_albums(0, batch_size).await.unwrap_or(vec![]);
+            let albums = api.get_saved_albums(0, batch_size).await?;
             Some(BrowserAction::SetContent(albums).into())
         }));
     }

@@ -74,7 +74,7 @@ impl SpotifyPlayer {
                 let session = create_session(username.clone(), password.clone(), handle.clone()).await?;
                 let token = get_access_token(&session).await?.clone();
                 let credentials = credentials::Credentials {
-                    username, password, token: token.clone()
+                    username, password, token: token.clone(), country: session.country()
                 };
                 self.delegate.login_successful(credentials);
 
