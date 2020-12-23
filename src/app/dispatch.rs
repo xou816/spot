@@ -113,7 +113,7 @@ pub fn spawn_task_handler(context: &glib::MainContext) -> Worker {
     context.spawn_local_with_priority(glib::source::PRIORITY_HIGH_IDLE, future_local_receiver.for_each(|t| t));
 
     let (future_sender, future_receiver) = channel::<FutureTask>(0);
-    context.spawn_with_priority(glib::source::PRIORITY_HIGH_IDLE, future_receiver.for_each(|t| t));
+    context.spawn_with_priority(glib::source::PRIORITY_HIGH, future_receiver.for_each_concurrent(2, |t| t));
 
     Worker(future_local_sender, future_sender)
 }

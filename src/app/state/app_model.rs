@@ -7,7 +7,7 @@ use crate::backend::api::SpotifyApiClient;
 
 
 pub struct AppServices {
-    pub spotify_api: Arc<dyn SpotifyApiClient>
+    pub spotify_api: Arc<dyn SpotifyApiClient + Send + Sync>
 }
 
 pub struct AppModel {
@@ -19,14 +19,14 @@ impl AppModel {
 
     pub fn new(
         state: AppState,
-        spotify_api: Arc<dyn SpotifyApiClient>) -> Self {
+        spotify_api: Arc<dyn SpotifyApiClient + Send + Sync>) -> Self {
 
         let services = AppServices { spotify_api };
         let state = RefCell::new(state);
         Self { state, services }
     }
 
-    pub fn get_spotify(&self) -> Arc<dyn SpotifyApiClient> {
+    pub fn get_spotify(&self) -> Arc<dyn SpotifyApiClient + Send + Sync> {
         Arc::clone(&self.services.spotify_api)
     }
 

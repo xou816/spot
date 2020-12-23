@@ -46,7 +46,7 @@ impl ArtistDetailsModel {
 
     pub fn load_artist_details(&self, id: String) {
         let api = self.app_model.get_spotify();
-        self.dispatcher.dispatch_local_async(Box::pin(async move {
+        self.dispatcher.dispatch_async(Box::pin(async move {
             let artist = api.get_artist(&id[..]).await?;
             Some(BrowserAction::SetArtistDetails(artist).into())
         }));

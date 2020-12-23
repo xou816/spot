@@ -54,7 +54,7 @@ impl BrowserModel {
         let api = self.app_model.get_spotify();
         let batch_size = self.batch_size;
 
-        self.dispatcher.dispatch_local_async(Box::pin(async move {
+        self.dispatcher.dispatch_async(Box::pin(async move {
             let albums = api.get_saved_albums(0, batch_size).await?;
             Some(BrowserAction::SetContent(albums).into())
         }));
@@ -67,7 +67,7 @@ impl BrowserModel {
         let offset = page * self.batch_size;
         let batch_size = self.batch_size;
 
-        self.dispatcher.dispatch_local_async(Box::pin(async move {
+        self.dispatcher.dispatch_async(Box::pin(async move {
             let albums = api.get_saved_albums(offset, batch_size).await.unwrap_or(vec![]);
             Some(BrowserAction::AppendContent(albums).into())
         }));

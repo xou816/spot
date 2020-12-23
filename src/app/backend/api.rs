@@ -4,7 +4,7 @@ use std::convert::Into;
 use std::sync::Mutex;
 use std::convert::AsRef;
 use std::future::Future;
-use futures::future::{LocalBoxFuture, BoxFuture};
+use futures::future::BoxFuture;
 
 use crate::app::models::*;
 use crate::app::credentials::Credentials;
@@ -15,10 +15,9 @@ pub use super::api_models::SearchType;
 const SPOTIFY_API: &'static str = "https://api.spotify.com/v1";
 
 pub trait SpotifyApiClient {
-    fn get_artist(&self, id: &str) -> LocalBoxFuture<Option<ArtistDescription>>;
-    fn get_album(&self, id: &str) -> LocalBoxFuture<Option<AlbumDescription>>;
-    fn get_track(&self, id: &str) -> LocalBoxFuture<Option<SongDescription>>;
-    fn get_saved_albums(&self, offset: u32, limit: u32) -> LocalBoxFuture<Option<Vec<AlbumDescription>>>;
+    fn get_artist(&self, id: &str) -> BoxFuture<Option<ArtistDescription>>;
+    fn get_album(&self, id: &str) -> BoxFuture<Option<AlbumDescription>>;
+    fn get_saved_albums(&self, offset: u32, limit: u32) -> BoxFuture<Option<Vec<AlbumDescription>>>;
     fn search_albums(&self, query: &str, offset: u32, limit: u32) -> BoxFuture<Option<Vec<AlbumDescription>>>;
     fn update_credentials(&self, credentials: Credentials);
 }
@@ -39,20 +38,15 @@ pub mod tests {
     impl SpotifyApiClient for TestSpotifyApiClient {
 
 
-        fn get_artist(&self, id: &str) -> LocalBoxFuture<Option<ArtistDescription>> {
+        fn get_artist(&self, id: &str) -> BoxFuture<Option<ArtistDescription>> {
             Box::pin(async { None })
         }
 
-        fn get_album(&self, id: &str) -> LocalBoxFuture<Option<AlbumDescription>> {
+        fn get_album(&self, id: &str) -> BoxFuture<Option<AlbumDescription>> {
             Box::pin(async { None })
         }
 
-        fn get_saved_albums(&self, offset: u32, limit: u32) -> LocalBoxFuture<Option<Vec<AlbumDescription>>> {
-            Box::pin(async { None })
-        }
-
-
-        fn get_track(&self, id: &str) -> LocalBoxFuture<Option<SongDescription>> {
+        fn get_saved_albums(&self, offset: u32, limit: u32) -> BoxFuture<Option<Vec<AlbumDescription>>> {
             Box::pin(async { None })
         }
 
@@ -130,14 +124,16 @@ impl CachedSpotifyClient {
 
     async fn get_artist_no_cache(&self, id: &str) -> Option<String> {
 
-        let creds = self.credentials.lock().ok()?;
-        let creds = creds.as_ref()?;
+        let request = {
+            let creds = self.credentials.lock().ok()?;
+            let creds = creds.as_ref()?;
 
-        let uri = format!("{}/artists/{}", SPOTIFY_API, id);
-        let request = Request::get(uri)
-            .header("Authorization", format!("Bearer {}", &creds.token))
-            .body(())
-            .unwrap();
+            let uri = format!("{}/artists/{}", SPOTIFY_API, id);
+            Request::get(uri)
+                .header("Authorization", format!("Bearer {}", &creds.token))
+                .body(())
+                .unwrap()
+        };
 
         let mut result = self.client.send_async(request).await.ok()?;
         result.text_async().await.ok()
@@ -145,14 +141,16 @@ impl CachedSpotifyClient {
 
     async fn get_artist_albums_no_cache(&self, id: &str) -> Option<String> {
 
-        let creds = self.credentials.lock().ok()?;
-        let token = &creds.as_ref()?.token;
+        let request = {
+            let creds = self.credentials.lock().ok()?;
+            let creds = creds.as_ref()?;
 
-        let uri = format!("{}/artists/{}/albums?include_groups=album&country=from_token", SPOTIFY_API, id);
-        let request = Request::get(uri)
-            .header("Authorization", format!("Bearer {}", token))
-            .body(())
-            .unwrap();
+            let uri = format!("{}/artists/{}/albums?include_groups=album&country=from_token", SPOTIFY_API, id);
+            Request::get(uri)
+                .header("Authorization", format!("Bearer {}", &creds.token))
+                .body(())
+                .unwrap()
+        };
 
         let mut result = self.client.send_async(request).await.ok()?;
         result.text_async().await.ok()
@@ -160,14 +158,16 @@ impl CachedSpotifyClient {
 
     async fn get_album_no_cache(&self, id: &str) -> Option<String> {
 
-        let creds = self.credentials.lock().ok()?;
-        let token = &creds.as_ref()?.token;
+        let request = {
+            let creds = self.credentials.lock().ok()?;
+            let creds = creds.as_ref()?;
 
-        let uri = format!("{}/albums/{}", SPOTIFY_API, id);
-        let request = Request::get(uri)
-            .header("Authorization", format!("Bearer {}", token))
-            .body(())
-            .unwrap();
+            let uri = format!("{}/albums/{}", SPOTIFY_API, id);
+            Request::get(uri)
+                .header("Authorization", format!("Bearer {}", &creds.token))
+                .body(())
+                .unwrap()
+        };
 
         let mut result = self.client.send_async(request).await.ok()?;
         result.text_async().await.ok()
@@ -175,29 +175,16 @@ impl CachedSpotifyClient {
 
     async fn get_saved_albums_no_cache(&self, offset: u32, limit: u32) -> Option<String> {
 
-        let creds = self.credentials.lock().ok()?;
-        let token = &creds.as_ref()?.token;
+        let request = {
+            let creds = self.credentials.lock().ok()?;
+            let creds = creds.as_ref()?;
 
-        let uri = format!("{}/me/albums?offset={}&limit={}", SPOTIFY_API, offset, limit);
-        let request = Request::get(uri)
-            .header("Authorization", format!("Bearer {}", token))
-            .body(())
-            .unwrap();
-
-        let mut result = self.client.send_async(request).await.ok()?;
-        result.text_async().await.ok()
-    }
-
-    async fn get_track_no_cache(&self, id: &str) -> Option<String> {
-
-        let creds = self.credentials.lock().ok()?;
-        let token = &creds.as_ref()?.token;
-
-        let uri = format!("{}/tracks/{}", SPOTIFY_API, id);
-        let request = Request::get(uri)
-            .header("Authorization", format!("Bearer {}", token))
-            .body(())
-            .unwrap();
+            let uri = format!("{}/me/albums?offset={}&limit={}", SPOTIFY_API, offset, limit);
+            Request::get(uri)
+                .header("Authorization", format!("Bearer {}", &creds.token))
+                .body(())
+                .unwrap()
+        };
 
         let mut result = self.client.send_async(request).await.ok()?;
         result.text_async().await.ok()
@@ -231,28 +218,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
         }
     }
 
-    fn get_track(&self, id: &str) -> LocalBoxFuture<Option<SongDescription>> {
-        let id = id.to_owned();
-
-        Box::pin(async move {
-
-            let cache_request = self.cache_request(
-                format!("net/track_{}.json", id),
-                None);
-
-            let text = cache_request
-                .or_else_write(
-                    || self.get_track_no_cache(&id[..]),
-                    CacheExpiry::expire_in_seconds(3600))
-                .await?;
-
-            let track = from_str::<TrackItem>(&text).ok()?;
-
-            Some(track.into())
-        })
-    }
-
-    fn get_saved_albums(&self, offset: u32, limit: u32) -> LocalBoxFuture<Option<Vec<AlbumDescription>>> {
+    fn get_saved_albums(&self, offset: u32, limit: u32) -> BoxFuture<Option<Vec<AlbumDescription>>> {
         Box::pin(async move {
 
             let cache_request = self.cache_request(
@@ -276,7 +242,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
     }
 
 
-    fn get_album(&self, id: &str) -> LocalBoxFuture<Option<AlbumDescription>> {
+    fn get_album(&self, id: &str) -> BoxFuture<Option<AlbumDescription>> {
 
         let id = id.to_owned();
 
@@ -297,7 +263,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
     }
 
 
-    fn get_artist(&self, id: &str) -> LocalBoxFuture<Option<ArtistDescription>> {
+    fn get_artist(&self, id: &str) -> BoxFuture<Option<ArtistDescription>> {
 
         let id = id.to_owned();
 

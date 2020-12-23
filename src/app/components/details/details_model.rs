@@ -45,7 +45,7 @@ impl DetailsModel {
 
     pub fn load_album_info(&self, id: String) {
         let api = self.app_model.get_spotify();
-        self.dispatcher.dispatch_local_async(Box::pin(async move {
+        self.dispatcher.dispatch_async(Box::pin(async move {
             let album = api.get_album(&id).await?;
             Some(BrowserAction::SetDetails(album).into())
         }));
