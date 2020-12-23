@@ -33,22 +33,15 @@
                 <property name="margin-bottom">8</property>
                 <property name="spacing">16</property>
                 <child>
-                  <object class="GtkRevealer" id="album_art_revealer">
+                  <object class="GtkImage" id="album_art">
+                    <property name="width-request">100</property>
+                    <property name="height-request">100</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="transition-type">crossfade</property>
-                    <child>
-                      <object class="GtkImage" id="album_art">
-                        <property name="width-request">100</property>
-                        <property name="height-request">100</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="stock">gtk-missing-image</property>
-                        <style>
-                          <class name="details__album-art"/>
-                        </style>
-                      </object>
-                    </child>
+                    <property name="stock">gtk-missing-image</property>
+                    <style>
+                      <class name="details__album-art"/>
+                    </style>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -81,22 +74,8 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="artist_label">
-                        <property name="name">details__artist-label</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="halign">start</property>
+                      <object class="GtkLinkButton" id="artist_button">
                         <property name="label" translatable="yes">Artist</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLinkButton" id="more_button">
-                        <property name="label" translatable="yes">More</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
