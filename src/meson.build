@@ -85,10 +85,6 @@ sources = files(
 )
 
 cargo_script = find_program(join_paths(meson.source_root(), 'build-aux/cargo.sh'))
-
-cargo = find_program('cargo')
-test('Unit test', cargo, args: ['test', '--manifest-path', join_paths(meson.source_root(), 'Cargo.toml')])
-
 cargo_release = custom_target(
   'cargo-build',
   build_by_default: true,
@@ -104,5 +100,14 @@ cargo_release = custom_target(
     '@OUTPUT@',
     get_option('buildtype'),
     meson.project_name(),
+  ]
+)
+
+cargo_test = find_program(join_paths(meson.source_root(), 'build-aux/test.sh'))
+test('Unit test',
+  cargo_test,
+  args: [
+    meson.build_root(),
+    meson.source_root()
   ]
 )
