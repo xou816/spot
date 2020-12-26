@@ -1,11 +1,11 @@
-use std::rc::Rc;
 use std::ops::Deref;
+use std::rc::Rc;
 
-use crate::app::AppModel;
+use crate::app::components::PlaylistFactory;
+use crate::app::dispatch::{ActionDispatcher, Worker};
 use crate::app::models::*;
 use crate::app::state::{BrowserAction, ScreenName};
-use crate::app::dispatch::{Worker, ActionDispatcher};
-use crate::app::components::PlaylistFactory;
+use crate::app::AppModel;
 
 use super::Details;
 
@@ -13,13 +13,22 @@ pub struct DetailsFactory {
     app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>,
     worker: Worker,
-    playlist_factory: PlaylistFactory
+    playlist_factory: PlaylistFactory,
 }
 
 impl DetailsFactory {
-
-    pub fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>, worker: Worker, playlist_factory: PlaylistFactory) -> Self {
-        Self { app_model, dispatcher, worker, playlist_factory }
+    pub fn new(
+        app_model: Rc<AppModel>,
+        dispatcher: Box<dyn ActionDispatcher>,
+        worker: Worker,
+        playlist_factory: PlaylistFactory,
+    ) -> Self {
+        Self {
+            app_model,
+            dispatcher,
+            worker,
+            playlist_factory,
+        }
     }
 
     pub fn make_details(&self, id: String) -> Details {
@@ -30,17 +39,20 @@ impl DetailsFactory {
 
 pub struct DetailsModel {
     app_model: Rc<AppModel>,
-    dispatcher: Box<dyn ActionDispatcher>
+    dispatcher: Box<dyn ActionDispatcher>,
 }
 
 impl DetailsModel {
-
     fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
-        Self { app_model, dispatcher }
+        Self {
+            app_model,
+            dispatcher,
+        }
     }
 
     pub fn get_album_info(&self) -> Option<impl Deref<Target = AlbumDescription> + '_> {
-        self.app_model.map_state_opt(|s| s.browser_state.details_state()?.content.as_ref())
+        self.app_model
+            .map_state_opt(|s| s.browser_state.details_state()?.content.as_ref())
     }
 
     pub fn load_album_info(&self, id: String) {
@@ -54,7 +66,9 @@ impl DetailsModel {
     pub fn view_artist(&self) {
         if let Some(album) = self.get_album_info() {
             let artist = &album.artist_id;
-            self.dispatcher.dispatch(BrowserAction::NavigationPush(ScreenName::Artist(artist.to_owned())).into());
+            self.dispatcher.dispatch(
+                BrowserAction::NavigationPush(ScreenName::Artist(artist.to_owned())).into(),
+            );
         }
     }
 }

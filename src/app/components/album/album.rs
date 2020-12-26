@@ -1,10 +1,10 @@
+use crate::app::components::{screen_add_css_provider, Component};
+use crate::app::dispatch::Worker;
+use crate::app::loader::ImageLoader;
+use crate::app::models::AlbumModel;
+use gladis::Gladis;
 use gtk::prelude::*;
 use gtk::RevealerExt;
-use gladis::Gladis;
-use crate::app::loader::ImageLoader;
-use crate::app::dispatch::Worker;
-use crate::app::components::{Component, screen_add_css_provider};
-use crate::app::models::AlbumModel;
 
 #[derive(Gladis, Clone)]
 struct AlbumWidget {
@@ -13,11 +13,10 @@ struct AlbumWidget {
     album_label: gtk::Label,
     artist_label: gtk::Label,
     cover_btn: gtk::Button,
-    cover_image: gtk::Image
+    cover_image: gtk::Image,
 }
 
 impl AlbumWidget {
-
     pub fn new() -> Self {
         screen_add_css_provider(resource!("/components/album.css"));
         Self::from_resource(resource!("/components/album.ui")).unwrap()
@@ -26,11 +25,10 @@ impl AlbumWidget {
 
 pub struct Album {
     widget: AlbumWidget,
-    model: AlbumModel
+    model: AlbumModel,
 }
 
 impl Album {
-
     pub fn new(album_model: &AlbumModel, worker: Worker) -> Self {
         let widget = AlbumWidget::new();
 
@@ -45,25 +43,31 @@ impl Album {
             });
         }
 
-        album_model.bind_property("album", &widget.album_label, "label")
+        album_model
+            .bind_property("album", &widget.album_label, "label")
             .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
             .build();
 
-        album_model.bind_property("artist", &widget.artist_label, "label")
+        album_model
+            .bind_property("artist", &widget.artist_label, "label")
             .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
             .build();
 
-        Self { widget, model: album_model.clone() }
+        Self {
+            widget,
+            model: album_model.clone(),
+        }
     }
 
     pub fn connect_album_pressed<F: Fn(&AlbumModel) + 'static>(&self, f: F) {
         let model_clone = self.model.clone();
-        self.widget.cover_btn.connect_clicked(move |_| f(&model_clone));
+        self.widget
+            .cover_btn
+            .connect_clicked(move |_| f(&model_clone));
     }
 }
 
 impl Component for Album {
-
     fn get_root_widget(&self) -> &gtk::Widget {
         &self.widget.root
     }

@@ -1,26 +1,29 @@
-use std::io::{Error, ErrorKind, Write};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::Hasher;
+use std::io::{Error, ErrorKind, Write};
 
-use gdk_pixbuf::{Pixbuf, PixbufLoaderExt, PixbufLoader};
-use isahc::prelude::*;
 use crate::backend::cache::*;
+use gdk_pixbuf::{Pixbuf, PixbufLoader, PixbufLoaderExt};
+use isahc::prelude::*;
 
 struct WriteSpy<'a, W: Write> {
     write_impl: W,
-    spy: &'a mut Vec<u8>
+    spy: &'a mut Vec<u8>,
 }
 
-
-impl <'a, W> WriteSpy<'a, W> where W: Write {
-
+impl<'a, W> WriteSpy<'a, W>
+where
+    W: Write,
+{
     fn new(write_impl: W, spy: &'a mut Vec<u8>) -> Self {
         Self { write_impl, spy }
     }
 }
 
-impl <'a, W> Write for WriteSpy<'a, W> where W: Write {
-
+impl<'a, W> Write for WriteSpy<'a, W>
+where
+    W: Write,
+{
     fn write(&mut self, buf: &[u8]) -> Result<usize, Error> {
         let len = self.write_impl.write(buf)?;
         self.spy.write(buf)?;
@@ -34,29 +37,31 @@ impl <'a, W> Write for WriteSpy<'a, W> where W: Write {
 
 struct LocalPixbufLoader<'a>(&'a PixbufLoader);
 
-
 impl<'a> Write for LocalPixbufLoader<'a> {
-
     fn write(&mut self, buf: &[u8]) -> Result<usize, Error> {
-        self.0.write(buf).map_err(|e| Error::new(ErrorKind::Other, format!("glib error: {}", e)))?;
+        self.0
+            .write(buf)
+            .map_err(|e| Error::new(ErrorKind::Other, format!("glib error: {}", e)))?;
         Ok(buf.len())
     }
 
     fn flush(&mut self) -> Result<(), Error> {
-        self.0.close().map_err(|e| Error::new(ErrorKind::Other, format!("glib error: {}", e)))?;
+        self.0
+            .close()
+            .map_err(|e| Error::new(ErrorKind::Other, format!("glib error: {}", e)))?;
         Ok(())
     }
 }
 
-
 pub struct ImageLoader {
-    cache: CacheManager
+    cache: CacheManager,
 }
 
 impl ImageLoader {
-
     pub fn new() -> Self {
-        Self { cache: CacheManager::new(&["img"]).unwrap() }
+        Self {
+            cache: CacheManager::new(&["img"]).unwrap(),
+        }
     }
 
     fn resource_for(url: &str, ext: &str) -> String {
@@ -75,22 +80,33 @@ impl ImageLoader {
         client.get_async(url).await.ok()
     }
 
-    pub async fn load_remote(&self, url: &str, ext: &str, width: i32, height: i32) -> Option<Pixbuf> {
-
+    pub async fn load_remote(
+        &self,
+        url: &str,
+        ext: &str,
+        width: i32,
+        height: i32,
+    ) -> Option<Pixbuf> {
         let resource = Self::resource_for(url, ext);
         let pixbuf_loader = PixbufLoader::new();
         pixbuf_loader.set_size(width, height);
         let mut copy = vec![];
         let mut writable_loader = WriteSpy::new(LocalPixbufLoader(&pixbuf_loader), &mut copy);
 
-        match self.cache.read_cache_file(&resource[..], CachePolicy::IgnoreExpiry).await {
-            CacheFile::File(buffer) =>  {
+        match self
+            .cache
+            .read_cache_file(&resource[..], CachePolicy::IgnoreExpiry)
+            .await
+        {
+            CacheFile::File(buffer) => {
                 writable_loader.write_all(&buffer[..]).ok()?;
-            },
+            }
             _ => {
                 if let Some(mut resp) = Self::get_image(url).await {
                     resp.copy_to(writable_loader).ok()?;
-                    self.cache.write_cache_file(&resource[..], &copy[..], CacheExpiry::Never).await?;
+                    self.cache
+                        .write_cache_file(&resource[..], &copy[..], CacheExpiry::Never)
+                        .await?;
                 }
             }
         };

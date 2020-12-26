@@ -1,21 +1,22 @@
-use std::marker::PhantomData;
-use std::iter::Iterator;
+use gio::prelude::*;
 use gio::ListModelExt;
 use glib::prelude::*;
-use gio::prelude::*;
+use std::iter::Iterator;
+use std::marker::PhantomData;
 
 pub struct ListStore<GType> {
     store: gio::ListStore,
-    _marker: PhantomData<GType>
+    _marker: PhantomData<GType>,
 }
 
-impl <GType> ListStore<GType>
-    where GType: IsA<glib::Object> {
-
+impl<GType> ListStore<GType>
+where
+    GType: IsA<glib::Object>,
+{
     pub fn new() -> Self {
         Self {
             store: gio::ListStore::new(GType::static_type()),
-            _marker: PhantomData
+            _marker: PhantomData,
         }
     }
 
@@ -36,9 +37,7 @@ impl <GType> ListStore<GType>
         let count = store.get_n_items();
         (0..count)
             .into_iter()
-            .map(move |i| store
-                .get_object(i).unwrap()
-                .downcast::<GType>().unwrap())
+            .map(move |i| store.get_object(i).unwrap().downcast::<GType>().unwrap())
     }
 
     pub fn len(&self) -> usize {
@@ -46,18 +45,22 @@ impl <GType> ListStore<GType>
     }
 
     pub fn eq<F>(&self, other: &Vec<GType>, comparison: F) -> bool
-        where F: Fn(&GType, &GType) -> bool {
-        self.len() == other.len() && self.iter()
-            .zip(other.iter())
-            .all(|(left, right)| comparison(&left, right))
+    where
+        F: Fn(&GType, &GType) -> bool,
+    {
+        self.len() == other.len()
+            && self
+                .iter()
+                .zip(other.iter())
+                .all(|(left, right)| comparison(&left, right))
     }
 }
 
-impl <GType> Clone for ListStore<GType> {
+impl<GType> Clone for ListStore<GType> {
     fn clone(&self) -> Self {
         Self {
             store: self.store.clone(),
-            _marker: PhantomData
+            _marker: PhantomData,
         }
     }
 }

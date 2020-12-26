@@ -1,8 +1,8 @@
 use gio::prelude::*;
+use glib::glib_wrapper;
 use glib::subclass;
 use glib::subclass::prelude::*;
 use glib::translate::*;
-use glib::glib_wrapper;
 
 glib_wrapper! {
     pub struct AlbumModel(Object<subclass::simple::InstanceStruct<imp::AlbumModel>, subclass::simple::ClassStruct<imp::AlbumModel>, AlbumModelClass>);
@@ -16,30 +16,43 @@ glib_wrapper! {
 // initial values for our two properties and then returns the new instance
 impl AlbumModel {
     pub fn new(artist: &str, album: &str, cover: &str, uri: &str) -> AlbumModel {
-        glib::Object::new(Self::static_type(), &[("artist", &artist), ("album", &album), ("cover", &cover), ("uri", &uri)])
-            .expect("Failed to create")
-            .downcast()
-            .expect("Created with wrong type")
+        glib::Object::new(
+            Self::static_type(),
+            &[
+                ("artist", &artist),
+                ("album", &album),
+                ("cover", &cover),
+                ("uri", &uri),
+            ],
+        )
+        .expect("Failed to create")
+        .downcast()
+        .expect("Created with wrong type")
     }
 
     pub fn cover_url(&self) -> Option<String> {
-        self.get_property("cover").unwrap().get::<&str>()
-            .unwrap().map(|s| s.to_string())
+        self.get_property("cover")
+            .unwrap()
+            .get::<&str>()
+            .unwrap()
+            .map(|s| s.to_string())
     }
 
     pub fn uri(&self) -> Option<String> {
-        self.get_property("uri").unwrap().get::<&str>()
-            .unwrap().map(|s| s.to_string())
+        self.get_property("uri")
+            .unwrap()
+            .get::<&str>()
+            .unwrap()
+            .map(|s| s.to_string())
     }
 }
 
 mod imp {
 
     use super::*;
-    use glib::{glib_object_subclass, glib_object_impl};
+    use glib::{glib_object_impl, glib_object_subclass};
 
     use std::cell::RefCell;
-
 
     // Static array for defining the properties of the new type.
     static PROPERTIES: [subclass::Property; 4] = [
@@ -53,32 +66,14 @@ mod imp {
             )
         }),
         subclass::Property("album", |album| {
-            glib::ParamSpec::string(
-                album,
-                "Album",
-                "Album",
-                None,
-                glib::ParamFlags::READWRITE,
-            )
+            glib::ParamSpec::string(album, "Album", "Album", None, glib::ParamFlags::READWRITE)
         }),
         subclass::Property("cover", |cover| {
-            glib::ParamSpec::string(
-                cover,
-                "Cover",
-                "Cover",
-                None,
-                glib::ParamFlags::READWRITE,
-            )
+            glib::ParamSpec::string(cover, "Cover", "Cover", None, glib::ParamFlags::READWRITE)
         }),
         subclass::Property("uri", |uri| {
-            glib::ParamSpec::string(
-                uri,
-                "URI",
-                "URI",
-                None,
-                glib::ParamFlags::READWRITE,
-            )
-        })
+            glib::ParamSpec::string(uri, "URI", "URI", None, glib::ParamFlags::READWRITE)
+        }),
     ];
 
     // This is the struct containing all state carried with
@@ -88,7 +83,7 @@ mod imp {
         album: RefCell<Option<String>>,
         artist: RefCell<Option<String>>,
         cover: RefCell<Option<String>>,
-        uri: RefCell<Option<String>>
+        uri: RefCell<Option<String>>,
     }
 
     // ObjectSubclass is the trait that defines the new type and
@@ -126,7 +121,7 @@ mod imp {
                 album: RefCell::new(None),
                 artist: RefCell::new(None),
                 cover: RefCell::new(None),
-                uri: RefCell::new(None)
+                uri: RefCell::new(None),
             }
         }
     }
@@ -147,19 +142,19 @@ mod imp {
                         .get()
                         .expect("type conformity checked by `Object::set_property`");
                     self.album.replace(album);
-                },
+                }
                 subclass::Property("artist", ..) => {
                     let artist = value
                         .get()
                         .expect("type conformity checked by `Object::set_property`");
                     self.artist.replace(artist);
-                },
+                }
                 subclass::Property("cover", ..) => {
                     let cover = value
                         .get()
                         .expect("type conformity checked by `Object::set_property`");
                     self.cover.replace(cover);
-                },
+                }
                 subclass::Property("uri", ..) => {
                     let uri = value
                         .get()

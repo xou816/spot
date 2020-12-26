@@ -1,18 +1,20 @@
-use std::rc::Rc;
 use std::ops::Deref;
+use std::rc::Rc;
 
-use crate::app::{AppModel, AppState, AppAction, ActionDispatcher};
 use crate::app::models::*;
-
+use crate::app::{ActionDispatcher, AppAction, AppModel, AppState};
 
 pub struct PlaybackModel {
     app_model: Rc<AppModel>,
-    dispatcher: Box<dyn ActionDispatcher>
+    dispatcher: Box<dyn ActionDispatcher>,
 }
 
 impl PlaybackModel {
     pub fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
-        Self { app_model, dispatcher }
+        Self {
+            app_model,
+            dispatcher,
+        }
     }
 
     fn state(&self) -> impl Deref<Target = AppState> + '_ {
@@ -27,7 +29,11 @@ impl PlaybackModel {
     pub fn current_song(&self) -> Option<SongDescription> {
         let state = self.state();
         if let Some(current_song_uri) = state.current_song_uri.as_ref() {
-            state.playlist.iter().find(|song| song.uri == *current_song_uri).cloned()
+            state
+                .playlist
+                .iter()
+                .find(|song| song.uri == *current_song_uri)
+                .cloned()
         } else {
             None
         }
@@ -39,7 +45,6 @@ impl PlaybackModel {
 
     pub fn play_prev_song(&self) {
         self.dispatcher.dispatch(AppAction::Previous);
-
     }
 
     pub fn toggle_playback(&self) {
@@ -51,9 +56,7 @@ impl PlaybackModel {
         self.dispatcher.dispatch(action);
     }
 
-
     pub fn seek_to(&self, position: u32) {
         self.dispatcher.dispatch(AppAction::Seek(position));
     }
 }
-

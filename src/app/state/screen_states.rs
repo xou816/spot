@@ -1,11 +1,14 @@
-use std::borrow::Cow;
+use super::{BrowserAction, BrowserEvent, UpdatableState};
 use crate::app::models::*;
 use crate::app::ListStore;
-use super::{BrowserEvent, BrowserAction, UpdatableState};
+use std::borrow::Cow;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ScreenName {
-    Library, Details(String), Search, Artist(String)
+    Library,
+    Details(String),
+    Search,
+    Artist(String),
 }
 
 impl ScreenName {
@@ -14,7 +17,7 @@ impl ScreenName {
             Self::Library => Cow::Borrowed("library"),
             Self::Details(s) => Cow::Owned(format!("album_{}", s)),
             Self::Search => Cow::Borrowed("search"),
-            Self::Artist(s) => Cow::Owned(format!("artist_{}", s))
+            Self::Artist(s) => Cow::Owned(format!("artist_{}", s)),
         }
     }
 }
@@ -22,17 +25,19 @@ impl ScreenName {
 #[derive(Clone)]
 pub struct DetailsState {
     pub name: ScreenName,
-    pub content: Option<AlbumDescription>
+    pub content: Option<AlbumDescription>,
 }
 
 impl DetailsState {
     pub fn new(id: String) -> Self {
-        Self { name: ScreenName::Details(id), content: None }
+        Self {
+            name: ScreenName::Details(id),
+            content: None,
+        }
     }
 }
 
 impl UpdatableState for DetailsState {
-
     type Action = BrowserAction;
     type Event = BrowserEvent;
 
@@ -41,8 +46,8 @@ impl UpdatableState for DetailsState {
             BrowserAction::SetDetails(album) => {
                 self.content = Some(album);
                 vec![BrowserEvent::DetailsLoaded]
-            },
-            _ => vec![]
+            }
+            _ => vec![],
         }
     }
 }
@@ -51,17 +56,20 @@ impl UpdatableState for DetailsState {
 pub struct ArtistState {
     pub name: ScreenName,
     pub artist: Option<String>,
-    pub albums: ListStore<AlbumModel>
+    pub albums: ListStore<AlbumModel>,
 }
 
 impl ArtistState {
     pub fn new(id: String) -> Self {
-        Self { name: ScreenName::Artist(id), artist: None, albums: ListStore::new() }
+        Self {
+            name: ScreenName::Artist(id),
+            artist: None,
+            albums: ListStore::new(),
+        }
     }
 }
 
 impl UpdatableState for ArtistState {
-
     type Action = BrowserAction;
     type Event = BrowserEvent;
 
@@ -73,8 +81,8 @@ impl UpdatableState for ArtistState {
                     self.albums.append(album.into());
                 }
                 vec![BrowserEvent::ArtistDetailsUpdated]
-            },
-            _ => vec![]
+            }
+            _ => vec![],
         }
     }
 }
@@ -83,24 +91,30 @@ impl UpdatableState for ArtistState {
 pub struct LibraryState {
     pub name: ScreenName,
     pub page: u32,
-    pub albums: ListStore<AlbumModel>
+    pub albums: ListStore<AlbumModel>,
 }
 
 impl Default for LibraryState {
     fn default() -> Self {
-        Self { name: ScreenName::Library, page: 0, albums: ListStore::new() }
+        Self {
+            name: ScreenName::Library,
+            page: 0,
+            albums: ListStore::new(),
+        }
     }
 }
 
 impl UpdatableState for LibraryState {
-
     type Action = BrowserAction;
     type Event = BrowserEvent;
 
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
             BrowserAction::SetContent(content) => {
-                let converted = content.iter().map(|a| a.into()).collect::<Vec<AlbumModel>>();
+                let converted = content
+                    .iter()
+                    .map(|a| a.into())
+                    .collect::<Vec<AlbumModel>>();
                 if !self.albums.eq(&converted, |a, b| a.uri() == b.uri()) {
                     self.page = 1;
                     self.albums.remove_all();
@@ -111,15 +125,15 @@ impl UpdatableState for LibraryState {
                 } else {
                     vec![]
                 }
-            },
+            }
             BrowserAction::AppendContent(content) => {
                 self.page += 1;
                 for album in content {
                     self.albums.append(album.into());
                 }
                 vec![BrowserEvent::LibraryUpdated]
-            },
-            _ => vec![]
+            }
+            _ => vec![],
         }
     }
 }
@@ -128,18 +142,20 @@ impl UpdatableState for LibraryState {
 pub struct SearchState {
     pub name: ScreenName,
     pub query: String,
-    pub album_results: Vec<AlbumDescription>
+    pub album_results: Vec<AlbumDescription>,
 }
 
 impl Default for SearchState {
     fn default() -> Self {
-        Self { name: ScreenName::Search, query: "".to_owned(), album_results: vec![] }
+        Self {
+            name: ScreenName::Search,
+            query: "".to_owned(),
+            album_results: vec![],
+        }
     }
 }
 
-
 impl UpdatableState for SearchState {
-
     type Action = BrowserAction;
     type Event = BrowserEvent;
 
@@ -148,12 +164,12 @@ impl UpdatableState for SearchState {
             BrowserAction::Search(query) if query != self.query => {
                 self.query = query;
                 vec![BrowserEvent::SearchUpdated]
-            },
+            }
             BrowserAction::SetSearchResults(results) => {
                 self.album_results = results;
                 vec![BrowserEvent::SearchResultsUpdated]
             }
-            _ => vec![]
+            _ => vec![],
         }
     }
 }

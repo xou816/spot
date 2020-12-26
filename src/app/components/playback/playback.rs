@@ -1,22 +1,24 @@
 use gtk::prelude::*;
 use gtk::{ImageExt, RangeExt, ScaleExt};
-use std::rc::Rc;
 use std::cell::Cell;
+use std::rc::Rc;
 
-use crate::app::{AppEvent};
 use crate::app::components::EventListener;
-use crate::app::loader::ImageLoader;
 use crate::app::dispatch::Worker;
+use crate::app::loader::ImageLoader;
+use crate::app::AppEvent;
 
 struct Clock {
     interval_ms: u32,
-    source: Cell<Option<glib::source::SourceId>>
+    source: Cell<Option<glib::source::SourceId>>,
 }
 
 impl Clock {
-
     fn new() -> Self {
-        Self { interval_ms: 1000, source: Cell::new(None) }
+        Self {
+            interval_ms: 1000,
+            source: Cell::new(None),
+        }
     }
 
     fn start<F: Fn() + 'static>(&self, tick: F) {
@@ -46,11 +48,10 @@ pub struct Playback {
     current_song_image: gtk::Image,
     current_song_info: gtk::Label,
     seek_bar: gtk::Scale,
-    clock: Clock
+    clock: Clock,
 }
 
 impl Playback {
-
     pub fn new(
         model: PlaybackModel,
         worker: Worker,
@@ -59,18 +60,19 @@ impl Playback {
         current_song_info: gtk::Label,
         next: gtk::Button,
         prev: gtk::Button,
-        seek_bar: gtk::Scale) -> Self {
-
+        seek_bar: gtk::Scale,
+    ) -> Self {
         let model = Rc::new(model);
         let weak_model = Rc::downgrade(&model);
         seek_bar.connect_change_value(move |_, _, requested| {
-            weak_model.upgrade()
+            weak_model
+                .upgrade()
                 .map(|model| model.seek_to(requested as u32));
             glib::signal::Inhibit(false)
         });
 
         seek_bar.connect_format_value(|_, value| {
-            let seconds = (value/1000.0) as i32;
+            let seconds = (value / 1000.0) as i32;
             let minutes = seconds.div_euclid(60);
             let seconds = seconds.rem_euclid(60);
             format!("{}:{:02}", minutes, seconds)
@@ -78,35 +80,39 @@ impl Playback {
 
         let weak_model = Rc::downgrade(&model);
         play_button.connect_clicked(move |_| {
-            weak_model.upgrade()
-                .map(|model| model.toggle_playback());
+            weak_model.upgrade().map(|model| model.toggle_playback());
         });
 
         let weak_model = Rc::downgrade(&model);
         next.connect_clicked(move |_| {
-            weak_model.upgrade()
-                .map(|model| model.play_next_song());
+            weak_model.upgrade().map(|model| model.play_next_song());
         });
 
         let weak_model = Rc::downgrade(&model);
         prev.connect_clicked(move |_| {
-            weak_model.upgrade()
-                .map(|model| model.play_prev_song());
+            weak_model.upgrade().map(|model| model.play_prev_song());
         });
 
-        Self { model, worker, play_button, current_song_image, current_song_info, seek_bar, clock: Clock::new() }
+        Self {
+            model,
+            worker,
+            play_button,
+            current_song_image,
+            current_song_info,
+            seek_bar,
+            clock: Clock::new(),
+        }
     }
 
     fn toggle_playing(&self) {
-
         let is_playing = self.model.is_playing();
 
-        self.play_button.get_children().first()
+        self.play_button
+            .get_children()
+            .first()
             .and_then(|child| child.downcast_ref::<gtk::Image>())
             .map(|image| {
-                image.set_from_icon_name(
-                    Some(playback_image(is_playing)),
-                    gtk::IconSize::Button);
+                image.set_from_icon_name(Some(playback_image(is_playing)), gtk::IconSize::Button);
             })
             .expect("error updating icon");
 
@@ -122,9 +128,7 @@ impl Playback {
     }
 
     fn update_current_info(&self) {
-
         if let Some(song) = self.model.current_song() {
-
             let title = glib::markup_escape_text(&song.title);
             let artist = glib::markup_escape_text(&song.artist);
             let label = format!("<b>{}</b>\n{}", title.as_str(), artist.as_str());
@@ -152,19 +156,18 @@ impl Playback {
 }
 
 impl EventListener for Playback {
-
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::TrackPaused|AppEvent::TrackResumed => {
+            AppEvent::TrackPaused | AppEvent::TrackResumed => {
                 self.toggle_playing();
-            },
+            }
             AppEvent::TrackChanged(_) => {
                 self.update_current_info();
                 self.toggle_playing();
-            },
+            }
             AppEvent::SeekSynced(pos) => {
                 self.sync_seek(*pos);
-            },
+            }
             _ => {}
         }
     }

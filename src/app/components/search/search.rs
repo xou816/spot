@@ -1,18 +1,17 @@
-use std::rc::Rc;
-use std::cell::Cell;
-use gtk::prelude::*;
+use super::SearchResultsModel;
+use crate::app::components::{Album, Component, EventListener};
+use crate::app::dispatch::Worker;
+use crate::app::models::AlbumModel;
+use crate::app::state::{AppEvent, BrowserEvent};
 use gio::prelude::*;
 use gladis::Gladis;
-use crate::app::state::{AppEvent, BrowserEvent};
-use crate::app::dispatch::Worker;
-use crate::app::components::{Component, EventListener, Album};
-use crate::app::models::AlbumModel;
-use super::SearchResultsModel;
+use gtk::prelude::*;
+use std::cell::Cell;
+use std::rc::Rc;
 
 struct Debouncer(Rc<Cell<Option<glib::source::SourceId>>>);
 
 impl Debouncer {
-
     fn new() -> Self {
         Self(Rc::new(Cell::new(None)))
     }
@@ -36,11 +35,10 @@ impl Debouncer {
 struct SearchResultsWidget {
     search_root: gtk::Widget,
     results_label: gtk::Label,
-    albums_results: gtk::FlowBox
+    albums_results: gtk::FlowBox,
 }
 
 impl SearchResultsWidget {
-
     fn new() -> Self {
         Self::from_resource(resource!("/components/search.ui")).unwrap()
     }
@@ -50,11 +48,10 @@ pub struct SearchResults {
     widget: SearchResultsWidget,
     model: Rc<SearchResultsModel>,
     album_results_model: gio::ListStore,
-    debouncer: Debouncer
+    debouncer: Debouncer,
 }
 
 impl SearchResults {
-
     pub fn new(model: SearchResultsModel, worker: Worker) -> Self {
         let model = Rc::new(model);
         let widget = SearchResultsWidget::new();
@@ -63,22 +60,29 @@ impl SearchResults {
         let worker_clone = worker.clone();
 
         let model_clone = Rc::clone(&model);
-        widget.albums_results.bind_model(Some(&album_results_model), move |item| {
-            let item = item.downcast_ref::<AlbumModel>().unwrap();
-            let child = gtk::FlowBoxChild::new();
-            let album = Album::new(item, worker_clone.clone());
-            let weak = Rc::downgrade(&model_clone);
-            album.connect_album_pressed(move |a| {
-                if let (Some(uri), Some(m)) = (a.uri().as_ref(), weak.upgrade()) {
-                    m.open_album(uri);
-                }
+        widget
+            .albums_results
+            .bind_model(Some(&album_results_model), move |item| {
+                let item = item.downcast_ref::<AlbumModel>().unwrap();
+                let child = gtk::FlowBoxChild::new();
+                let album = Album::new(item, worker_clone.clone());
+                let weak = Rc::downgrade(&model_clone);
+                album.connect_album_pressed(move |a| {
+                    if let (Some(uri), Some(m)) = (a.uri().as_ref(), weak.upgrade()) {
+                        m.open_album(uri);
+                    }
+                });
+                child.add(album.get_root_widget());
+                child.show_all();
+                child.upcast::<gtk::Widget>()
             });
-            child.add(album.get_root_widget());
-            child.show_all();
-            child.upcast::<gtk::Widget>()
-        });
 
-        Self { widget, model, album_results_model, debouncer: Debouncer::new() }
+        Self {
+            widget,
+            model,
+            album_results_model,
+            debouncer: Debouncer::new(),
+        }
     }
 
     fn update_results(&self) {
@@ -89,14 +93,13 @@ impl SearchResults {
                     &album.artist,
                     &album.title,
                     &album.art,
-                    &album.uri
+                    &album.uri,
                 ));
             }
         }
     }
 
     fn update_search_query(&self) {
-
         {
             let model = Rc::downgrade(&self.model);
             self.debouncer.debounce(600, move || {
@@ -114,22 +117,20 @@ impl SearchResults {
 }
 
 impl Component for SearchResults {
-
     fn get_root_widget(&self) -> &gtk::Widget {
         &self.widget.search_root
     }
 }
 
 impl EventListener for SearchResults {
-
     fn on_event(&mut self, app_event: &AppEvent) {
         match app_event {
             AppEvent::BrowserEvent(BrowserEvent::SearchUpdated) => {
                 self.update_search_query();
-            },
+            }
             AppEvent::BrowserEvent(BrowserEvent::SearchResultsUpdated) => {
                 self.update_results();
-            },
+            }
             _ => {}
         }
     }

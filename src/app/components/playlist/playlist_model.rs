@@ -1,16 +1,16 @@
-use std::rc::Rc;
-use std::cell::Ref;
 use ref_filter_map::*;
+use std::cell::Ref;
+use std::rc::Rc;
 
-use crate::app::{AppModel, AppState, AppAction, ActionDispatcher};
 use crate::app::models::*;
 use crate::app::state::DetailsState;
+use crate::app::{ActionDispatcher, AppAction, AppModel, AppState};
 
 use super::{Playlist, PlaylistModel};
 
 pub struct PlaylistFactory {
     app_model: Rc<AppModel>,
-    dispatcher: Box<dyn ActionDispatcher>
+    dispatcher: Box<dyn ActionDispatcher>,
 }
 
 impl Clone for PlaylistFactory {
@@ -20,12 +20,11 @@ impl Clone for PlaylistFactory {
 }
 
 impl PlaylistFactory {
-
-    pub fn new(
-        app_model: Rc<AppModel>,
-        dispatcher: Box<dyn ActionDispatcher>) -> Self {
-
-        Self { app_model, dispatcher }
+    pub fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
+        Self {
+            app_model,
+            dispatcher,
+        }
     }
 
     pub fn get_current_playlist(self, listbox: gtk::ListBox) -> Playlist {
@@ -41,13 +40,15 @@ impl PlaylistFactory {
 
 struct CurrentlyPlayingModel {
     app_model: Rc<AppModel>,
-    dispatcher: Box<dyn ActionDispatcher>
+    dispatcher: Box<dyn ActionDispatcher>,
 }
 
 impl CurrentlyPlayingModel {
-
     fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
-        Self { app_model, dispatcher }
+        Self {
+            app_model,
+            dispatcher,
+        }
     }
 
     fn state(&self) -> Ref<'_, AppState> {
@@ -55,9 +56,7 @@ impl CurrentlyPlayingModel {
     }
 }
 
-
 impl PlaylistModel for CurrentlyPlayingModel {
-
     fn current_song_uri(&self) -> Option<String> {
         self.state().current_song_uri.clone()
     }
@@ -71,16 +70,17 @@ impl PlaylistModel for CurrentlyPlayingModel {
     }
 }
 
-
 struct AlbumDetailsModel {
     app_model: Rc<AppModel>,
-    dispatcher: Box<dyn ActionDispatcher>
+    dispatcher: Box<dyn ActionDispatcher>,
 }
 
 impl AlbumDetailsModel {
-
     fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
-        Self { app_model, dispatcher }
+        Self {
+            app_model,
+            dispatcher,
+        }
     }
 
     fn state(&self) -> Ref<'_, AppState> {
@@ -88,13 +88,12 @@ impl AlbumDetailsModel {
     }
 
     fn details_state(&self) -> Option<Ref<'_, DetailsState>> {
-        self.app_model.map_state_opt(|s| s.browser_state.details_state())
+        self.app_model
+            .map_state_opt(|s| s.browser_state.details_state())
     }
 }
 
-
 impl PlaylistModel for AlbumDetailsModel {
-
     fn current_song_uri(&self) -> Option<String> {
         self.state().current_song_uri.clone()
     }
@@ -105,9 +104,9 @@ impl PlaylistModel for AlbumDetailsModel {
 
     fn play_song(&self, uri: String) {
         if let Some(songs) = self.songs() {
-            self.dispatcher.dispatch(AppAction::LoadPlaylist(songs.clone()));
+            self.dispatcher
+                .dispatch(AppAction::LoadPlaylist(songs.clone()));
         }
         self.dispatcher.dispatch(AppAction::Load(uri));
     }
 }
-

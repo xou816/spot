@@ -1,6 +1,6 @@
 use crate::app::credentials;
 use crate::app::models::*;
-use crate::app::state::{BrowserState, BrowserAction, BrowserEvent, UpdatableState};
+use crate::app::state::{BrowserAction, BrowserEvent, BrowserState, UpdatableState};
 
 #[derive(Clone, Debug)]
 pub enum AppAction {
@@ -15,7 +15,7 @@ pub enum AppAction {
     LoginSuccess(credentials::Credentials),
     Next,
     Previous,
-    BrowserAction(BrowserAction)
+    BrowserAction(BrowserAction),
 }
 
 #[derive(Clone, Debug)]
@@ -29,24 +29,23 @@ pub enum AppEvent {
     LoginCompleted,
     TrackChanged(String),
     PlaylistChanged,
-    BrowserEvent(BrowserEvent)
+    BrowserEvent(BrowserEvent),
 }
 
 pub struct AppState {
     pub is_playing: bool,
     pub current_song_uri: Option<String>,
     pub playlist: Vec<SongDescription>,
-    pub browser_state: BrowserState
+    pub browser_state: BrowserState,
 }
 
 impl AppState {
-
     pub fn new(songs: Vec<SongDescription>) -> Self {
         Self {
             is_playing: false,
             current_song_uri: None,
             playlist: songs,
-            browser_state: BrowserState::new()
+            browser_state: BrowserState::new(),
         }
     }
 
@@ -55,11 +54,11 @@ impl AppState {
             AppAction::Play => {
                 self.is_playing = true;
                 vec![AppEvent::TrackResumed]
-            },
+            }
             AppAction::Pause => {
                 self.is_playing = false;
                 vec![AppEvent::TrackPaused]
-            },
+            }
             AppAction::Next => {
                 let next = self.next_song().map(|s| s.uri.clone());
                 if next.is_some() {
@@ -69,7 +68,7 @@ impl AppState {
                 } else {
                     vec![]
                 }
-            },
+            }
             AppAction::Previous => {
                 let prev = self.prev_song().map(|s| s.uri.clone());
                 if prev.is_some() {
@@ -79,45 +78,46 @@ impl AppState {
                 } else {
                     vec![]
                 }
-            },
+            }
             AppAction::Load(uri) => {
                 self.is_playing = true;
                 self.current_song_uri = Some(uri.clone());
                 vec![AppEvent::TrackChanged(uri)]
-            },
+            }
             AppAction::LoadPlaylist(tracks) => {
                 self.playlist = tracks;
                 vec![AppEvent::PlaylistChanged]
-            },
+            }
             AppAction::LoginSuccess(_) => vec![AppEvent::LoginCompleted],
             AppAction::Seek(pos) => vec![AppEvent::TrackSeeked(pos)],
             AppAction::SyncSeek(pos) => vec![AppEvent::SeekSynced(pos)],
             AppAction::Start => vec![AppEvent::Started],
             AppAction::TryLogin(u, p) => vec![AppEvent::LoginStarted(u, p)],
-            AppAction::BrowserAction(a) => self.browser_state
+            AppAction::BrowserAction(a) => self
+                .browser_state
                 .update_with(a)
                 .into_iter()
                 .map(|e| AppEvent::BrowserEvent(e))
-                .collect()
+                .collect(),
         }
     }
 
     fn prev_song(&self) -> Option<&SongDescription> {
         self.current_song_uri.as_ref().and_then(|uri| {
-            self.playlist.iter()
+            self.playlist
+                .iter()
                 .take_while(|&song| song.uri != *uri)
                 .last()
         })
-
     }
 
     fn next_song(&self) -> Option<&SongDescription> {
         self.current_song_uri.as_ref().and_then(|uri| {
-            self.playlist.iter()
+            self.playlist
+                .iter()
                 .skip_while(|&song| song.uri != *uri)
                 .skip(1)
                 .next()
         })
     }
 }
-
