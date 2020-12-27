@@ -73,15 +73,6 @@ impl Album {
     fn best_image_for_width(&self, width: i32) -> Option<&Image> {
         self.best_image(|i| (width - i.width as i32).abs())
     }
-
-
-    fn best_image_for_ratio(&self, ratio: f32) -> Option<&Image> {
-        self.best_image(|i| {
-            let i_ratio = i.height as f32/i.width as f32;
-            (ratio - i_ratio).abs()
-        })
-
-    }
 }
 
 #[derive(Deserialize, Debug, Clone)]

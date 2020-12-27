@@ -22,7 +22,7 @@ impl Into<AppAction> for BrowserAction {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Eq, PartialEq, Clone, Debug)]
 pub enum BrowserEvent {
     LibraryUpdated,
     DetailsLoaded,
@@ -260,4 +260,76 @@ impl UpdatableState for BrowserState {
             _ => self.navigation.current_mut().state().update_with(action)
         }
     }
+}
+
+#[cfg(test)]
+pub mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_navigation_push() {
+        let mut state = BrowserState::new();
+        
+        assert_eq!(*state.current_screen(), ScreenName::Library);
+        assert_eq!(state.count(), 1);
+
+        let new_screen = ScreenName::Artist("some_id".to_string());
+        state.update_with(BrowserAction::NavigationPush(new_screen.clone()));
+        
+        assert_eq!(state.current_screen(), &new_screen);
+        assert_eq!(state.count(), 2);
+        assert_eq!(state.artist_state().is_some(), true);
+    }
+
+    #[test]
+    fn test_navigation_pop() {
+        let mut state = BrowserState::new();
+        let new_screen = ScreenName::Artist("some_id".to_string());
+        state.update_with(BrowserAction::NavigationPush(new_screen.clone()));
+        
+        assert_eq!(state.current_screen(), &new_screen);
+        assert_eq!(state.count(), 2);
+
+        state.update_with(BrowserAction::NavigationPop);
+        assert_eq!(state.current_screen(), &ScreenName::Library);
+        assert_eq!(state.count(), 1);
+
+        let events = state.update_with(BrowserAction::NavigationPop);
+        assert_eq!(state.current_screen(), &ScreenName::Library);
+        assert_eq!(state.count(), 1);
+        assert_eq!(events, vec![]);
+    }
+
+    #[test]
+    fn test_navigation_push_same_screen() {
+        let mut state = BrowserState::new();
+        let new_screen = ScreenName::Artist("some_id".to_string());
+        state.update_with(BrowserAction::NavigationPush(new_screen.clone()));
+        
+        assert_eq!(state.current_screen(), &new_screen);
+        assert_eq!(state.count(), 2);
+
+        let events = state.update_with(BrowserAction::NavigationPush(new_screen.clone()));
+        assert_eq!(state.current_screen(), &new_screen);
+        assert_eq!(state.count(), 2);
+        assert_eq!(events, vec![]);
+    }
+
+    #[test]
+    fn test_navigation_push_same_screen_will_pop() {
+        let mut state = BrowserState::new();
+        let new_screen = ScreenName::Artist("some_id".to_string());
+        state.update_with(BrowserAction::NavigationPush(new_screen.clone()));
+        state.update_with(BrowserAction::NavigationPush(ScreenName::Search));
+        
+        assert_eq!(state.current_screen(), &ScreenName::Search);
+        assert_eq!(state.count(), 3);
+
+        let events = state.update_with(BrowserAction::NavigationPush(new_screen.clone()));
+        assert_eq!(state.current_screen(), &new_screen);
+        assert_eq!(state.count(), 2);
+        assert_eq!(events, vec![BrowserEvent::NavigationPoppedTo(new_screen)]);
+    }
+
 }
