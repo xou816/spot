@@ -24,7 +24,9 @@ Should be as simple as opening the project and hitting run :)
 
 ### Manually
 
-Requires Rust (stable), GTK3, and a couple other things. See for instance this [Dockerfile](.github/actions/test/Dockerfile) for dependencies required in Fedora 33. 
+Requires Rust (stable), GTK3, and a couple other things. 
+
+**Build** dependencies on Ubuntu 20.04 for instance: ```build-essential pkg-config meson libssl-dev libglib2.0-dev-bin libgtk-3-dev libasound2-dev libpulse-dev```. 
 
 Then, with meson:
 
