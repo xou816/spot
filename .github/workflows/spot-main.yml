@@ -2,9 +2,9 @@ name: spot-main
 
 on:
   push:
-    branches: [ update_ci ] #FIXME
+    branches: [ master ]
   pull_request:
-    branches: [ update_ci ]
+    branches: [ master ]
 
 
 jobs:
