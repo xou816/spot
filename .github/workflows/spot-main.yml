@@ -1,0 +1,35 @@
+name: spot-main
+
+on:
+  push:
+    branches: [ update_ci ] #FIXME
+  pull_request:
+    branches: [ update_ci ]
+
+
+jobs:
+  build:
+
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        default: true
+        components: rustfmt
+
+    - name: Install system dependencies
+      run: |
+        sudo apt update -q
+        sudo apt install -y build-essential pkg-config meson libssl-dev libglib2.0-dev-bin libgtk-3-dev libasound2-dev libpulse-dev
+
+    - name: Build
+      run: meson target && ninja -C target
+
+    - name: Test
+      run: meson test -C target
