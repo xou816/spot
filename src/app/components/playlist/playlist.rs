@@ -1,14 +1,14 @@
-use gtk::prelude::*;
-use gtk::ListBoxExt;
 use gio::prelude::*;
 use gio::ListModelExt;
+use gtk::prelude::*;
+use gtk::ListBoxExt;
 
-use std::rc::{Rc, Weak};
 use std::cell::Ref;
+use std::rc::{Rc, Weak};
 
-use crate::app::{AppEvent, BrowserEvent, SongDescription};
 use crate::app::components::{Component, EventListener, Song};
 use crate::app::models::SongModel;
+use crate::app::{AppEvent, BrowserEvent, SongDescription};
 
 pub trait PlaylistModel {
     fn songs(&self) -> Option<Ref<'_, Vec<SongDescription>>>;
@@ -18,13 +18,11 @@ pub trait PlaylistModel {
 
 pub struct Playlist {
     list_model: gio::ListStore,
-    model: Rc<dyn PlaylistModel>
+    model: Rc<dyn PlaylistModel>,
 }
 
 impl Playlist {
-
     pub fn new(listbox: gtk::ListBox, model: Rc<dyn PlaylistModel>) -> Self {
-
         let list_model = gio::ListStore::new(SongModel::static_type());
         let weak_model = Rc::downgrade(&model);
 
@@ -38,14 +36,13 @@ impl Playlist {
             row.upcast::<gtk::Widget>()
         });
 
-
         Self { list_model, model }
     }
 
     fn model_song_at(&self, index: usize) -> Option<SongModel> {
-        self.list_model.get_object(index as u32).and_then(|object| {
-            object.downcast::<SongModel>().ok()
-        })
+        self.list_model
+            .get_object(index as u32)
+            .and_then(|object| object.downcast::<SongModel>().ok())
     }
 
     fn update_list(&self) {
@@ -54,17 +51,18 @@ impl Playlist {
 
         if let Some(songs) = self.model.songs() {
             for (i, song) in songs.iter().enumerate() {
-                let is_current = current_song_uri.as_ref().map(|s| s.eq(&song.uri)).unwrap_or(false);
+                let is_current = current_song_uri
+                    .as_ref()
+                    .map(|s| s.eq(&song.uri))
+                    .unwrap_or(false);
                 if let Some(model_song) = self.model_song_at(i) {
                     model_song.set_playing(is_current);
                 }
             }
         }
-
     }
 
     fn reset_list(&self) {
-
         let list_model = &self.list_model;
         list_model.remove_all();
 
@@ -75,16 +73,15 @@ impl Playlist {
             }
         }
     }
-
 }
 
 impl EventListener for Playlist {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::TrackChanged(_)|AppEvent::BrowserEvent(BrowserEvent::NavigationPopped) => {
+            AppEvent::TrackChanged(_) | AppEvent::BrowserEvent(BrowserEvent::NavigationPopped) => {
                 self.update_list();
-            },
-            AppEvent::PlaylistChanged|AppEvent::BrowserEvent(BrowserEvent::DetailsLoaded) => {
+            }
+            AppEvent::PlaylistChanged | AppEvent::BrowserEvent(BrowserEvent::DetailsLoaded) => {
                 self.reset_list()
             }
             _ => {}
@@ -92,9 +89,7 @@ impl EventListener for Playlist {
     }
 }
 
-
 impl Playlist {
-
     fn create_row_for(item: &SongModel, model: Weak<dyn PlaylistModel>) -> gtk::ListBoxRow {
         let row = gtk::ListBoxRow::new();
 
@@ -107,4 +102,3 @@ impl Playlist {
         row
     }
 }
-

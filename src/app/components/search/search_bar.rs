@@ -1,18 +1,14 @@
-use std::rc::Rc;
+use crate::app::components::EventListener;
 use gtk::prelude::*;
 use gtk::SearchEntryExt;
-use crate::app::components::EventListener;
+use std::rc::Rc;
 
 use super::SearchBarModel;
 
 pub struct SearchBar;
 
 impl SearchBar {
-
-    pub fn new(
-        model: SearchBarModel,
-        search_entry: gtk::SearchEntry) -> Self {
-
+    pub fn new(model: SearchBarModel, search_entry: gtk::SearchEntry) -> Self {
         let model = Rc::new(model);
 
         {

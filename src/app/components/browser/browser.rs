@@ -3,23 +3,21 @@ use gtk::ScrolledWindowExt;
 
 use std::rc::{Rc, Weak};
 
-use crate::app::AppEvent;
-use crate::app::components::{Component, EventListener, Album};
+use super::BrowserModel;
+use crate::app::components::{Album, Component, EventListener};
 use crate::app::dispatch::Worker;
 use crate::app::models::AlbumModel;
-use super::BrowserModel;
+use crate::app::AppEvent;
 
 pub struct Browser {
     root: gtk::Widget,
     flowbox: gtk::FlowBox,
     worker: Worker,
-    model: Rc<BrowserModel>
+    model: Rc<BrowserModel>,
 }
 
 impl Browser {
-
     pub fn new(worker: Worker, model: BrowserModel) -> Self {
-
         let model = Rc::new(model);
 
         let flowbox = gtk::FlowBoxBuilder::new()
@@ -27,9 +25,7 @@ impl Browser {
             .selection_mode(gtk::SelectionMode::None)
             .build();
 
-        let scroll_window = gtk::ScrolledWindowBuilder::new()
-            .child(&flowbox)
-            .build();
+        let scroll_window = gtk::ScrolledWindowBuilder::new().child(&flowbox).build();
 
         let weak_model = Rc::downgrade(&model);
         scroll_window.connect_edge_reached(move |_, pos| {
@@ -38,7 +34,12 @@ impl Browser {
             }
         });
 
-        Self { root: scroll_window.upcast(), flowbox, worker, model }
+        Self {
+            root: scroll_window.upcast(),
+            flowbox,
+            worker,
+            model,
+        }
     }
 
     fn bind_flowbox(&self, store: &gio::ListStore) {
@@ -55,29 +56,31 @@ impl Browser {
 }
 
 impl EventListener for Browser {
-
     fn on_event(&mut self, event: &AppEvent) {
         match event {
             AppEvent::Started => {
                 self.model.refresh_saved_albums();
                 self.bind_flowbox(self.model.get_list_store().unwrap().unsafe_store())
-            },
+            }
             AppEvent::LoginCompleted => {
                 self.model.refresh_saved_albums();
-            },
+            }
             _ => {}
         }
     }
 }
 
 impl Component for Browser {
-
     fn get_root_widget(&self) -> &gtk::Widget {
         &self.root
     }
 }
 
-fn create_album_for(album_model: &AlbumModel, worker: Worker, model: Weak<BrowserModel>) -> gtk::FlowBoxChild {
+fn create_album_for(
+    album_model: &AlbumModel,
+    worker: Worker,
+    model: Weak<BrowserModel>,
+) -> gtk::FlowBoxChild {
     let child = gtk::FlowBoxChild::new();
 
     let album = Album::new(album_model, worker);

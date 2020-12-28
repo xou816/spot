@@ -1,9 +1,9 @@
 use gio::prelude::*;
+use glib::glib_wrapper;
 use glib::subclass;
 use glib::subclass::prelude::*;
 use glib::translate::*;
 use glib::Value;
-use glib::glib_wrapper;
 
 glib_wrapper! {
     pub struct SongModel(Object<subclass::simple::InstanceStruct<imp::SongModel>, subclass::simple::ClassStruct<imp::SongModel>, SongModelClass>);
@@ -17,24 +17,37 @@ glib_wrapper! {
 // initial values for our two properties and then returns the new instance
 impl SongModel {
     pub fn new(index: u32, title: &str, artist: &str, uri: &str) -> SongModel {
-        glib::Object::new(Self::static_type(), &[("index", &index), ("title", &title), ("artist", &artist), ("uri", &uri)])
-            .expect("Failed to create")
-            .downcast()
-            .expect("Created with wrong type")
+        glib::Object::new(
+            Self::static_type(),
+            &[
+                ("index", &index),
+                ("title", &title),
+                ("artist", &artist),
+                ("uri", &uri),
+            ],
+        )
+        .expect("Failed to create")
+        .downcast()
+        .expect("Created with wrong type")
     }
 
     pub fn set_playing(&self, is_playing: bool) {
-        self.set_property("playing", &Value::from(&is_playing)).expect("set 'playing' failed");
+        self.set_property("playing", &Value::from(&is_playing))
+            .expect("set 'playing' failed");
     }
 
     pub fn get_playing(&self) -> bool {
-        self.get_property("playing").unwrap().get::<bool>()
+        self.get_property("playing")
+            .unwrap()
+            .get::<bool>()
             .unwrap()
             .unwrap()
     }
 
     pub fn get_uri(&self) -> String {
-        self.get_property("uri").unwrap().get::<&str>()
+        self.get_property("uri")
+            .unwrap()
+            .get::<&str>()
             .unwrap()
             .unwrap()
             .to_string()
@@ -46,17 +59,17 @@ impl SongModel {
                 handler(&_self);
             }
             None
-        }).expect("connecting to prop 'playing' failed");
+        })
+        .expect("connecting to prop 'playing' failed");
     }
 }
 
 mod imp {
 
     use super::*;
-    use glib::{glib_object_subclass, glib_object_impl};
+    use glib::{glib_object_impl, glib_object_subclass};
 
     use std::cell::RefCell;
-
 
     // Static array for defining the properties of the new type.
     static PROPERTIES: [subclass::Property; 5] = [
@@ -65,19 +78,14 @@ mod imp {
                 index,
                 "Index",
                 "Index",
-                1, u32::MAX,
                 1,
-                glib::ParamFlags::READWRITE
+                u32::MAX,
+                1,
+                glib::ParamFlags::READWRITE,
             )
         }),
         subclass::Property("title", |title| {
-            glib::ParamSpec::string(
-                title,
-                "Title",
-                "Title",
-                None,
-                glib::ParamFlags::READWRITE,
-            )
+            glib::ParamSpec::string(title, "Title", "Title", None, glib::ParamFlags::READWRITE)
         }),
         subclass::Property("artist", |artist| {
             glib::ParamSpec::string(
@@ -89,13 +97,7 @@ mod imp {
             )
         }),
         subclass::Property("uri", |uri| {
-            glib::ParamSpec::string(
-                uri,
-                "URI",
-                "URI",
-                None,
-                glib::ParamFlags::READWRITE,
-            )
+            glib::ParamSpec::string(uri, "URI", "URI", None, glib::ParamFlags::READWRITE)
         }),
         subclass::Property("playing", |playing| {
             glib::ParamSpec::boolean(
@@ -105,7 +107,7 @@ mod imp {
                 false,
                 glib::ParamFlags::READWRITE,
             )
-        })
+        }),
     ];
 
     // This is the struct containing all state carried with
@@ -116,7 +118,7 @@ mod imp {
         title: RefCell<Option<String>>,
         artist: RefCell<Option<String>>,
         uri: RefCell<Option<String>>,
-        playing: RefCell<bool>
+        playing: RefCell<bool>,
     }
 
     // ObjectSubclass is the trait that defines the new type and
@@ -155,7 +157,7 @@ mod imp {
                 title: RefCell::new(None),
                 artist: RefCell::new(None),
                 uri: RefCell::new(None),
-                playing: RefCell::new(false)
+                playing: RefCell::new(false),
             }
         }
     }
@@ -177,25 +179,25 @@ mod imp {
                         .expect("type conformity checked by `Object::set_property`")
                         .unwrap();
                     self.index.replace(index);
-                },
+                }
                 subclass::Property("title", ..) => {
                     let title = value
                         .get()
                         .expect("type conformity checked by `Object::set_property`");
                     self.title.replace(title);
-                },
+                }
                 subclass::Property("artist", ..) => {
                     let artist = value
                         .get()
                         .expect("type conformity checked by `Object::set_property`");
                     self.artist.replace(artist);
-                },
+                }
                 subclass::Property("uri", ..) => {
                     let uri = value
                         .get()
                         .expect("type conformity checked by `Object::set_property`");
                     self.uri.replace(uri);
-                },
+                }
                 subclass::Property("playing", ..) => {
                     let playing = value
                         .get()

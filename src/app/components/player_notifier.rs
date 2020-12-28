@@ -1,13 +1,12 @@
 use futures::channel::mpsc::Sender;
 use librespot::core::spotify_id::SpotifyId;
 
-use crate::app::AppEvent;
 use crate::app::backend::Command;
 use crate::app::components::EventListener;
-
+use crate::app::AppEvent;
 
 pub struct PlayerNotifier {
-    sender: Sender<Command>
+    sender: Sender<Command>,
 }
 
 impl PlayerNotifier {
@@ -17,23 +16,22 @@ impl PlayerNotifier {
 }
 
 impl EventListener for PlayerNotifier {
-
     fn on_event(&mut self, event: &AppEvent) {
-
         let command = match event {
             AppEvent::TrackPaused => Some(Command::PlayerPause),
             AppEvent::TrackResumed => Some(Command::PlayerResume),
-            AppEvent::TrackChanged(uri) => {
-                SpotifyId::from_uri(&uri).ok().map(|uri| Command::PlayerLoad(uri))
-            },
-            AppEvent::LoginStarted(username, password) => Some(Command::Login(username.to_owned(), password.to_owned())),
+            AppEvent::TrackChanged(uri) => SpotifyId::from_uri(&uri)
+                .ok()
+                .map(|uri| Command::PlayerLoad(uri)),
+            AppEvent::LoginStarted(username, password) => {
+                Some(Command::Login(username.to_owned(), password.to_owned()))
+            }
             AppEvent::TrackSeeked(position) => Some(Command::PlayerSeek(*position)),
-            _ => None
+            _ => None,
         };
 
         if let Some(command) = command {
             let _ = self.sender.clone().try_send(command);
         }
     }
-
 }

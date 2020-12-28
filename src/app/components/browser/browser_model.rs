@@ -1,27 +1,30 @@
-use std::rc::Rc;
+use std::cell::Ref;
 use std::ops::Deref;
-use std::cell::{Ref};
+use std::rc::Rc;
 
-use crate::app::{AppModel, BrowserAction, ActionDispatcher, ListStore};
+use super::Browser;
 use crate::app::dispatch::Worker;
 use crate::app::models::*;
-use crate::app::state::{ScreenName, LibraryState};
-use super::Browser;
+use crate::app::state::{LibraryState, ScreenName};
+use crate::app::{ActionDispatcher, AppModel, BrowserAction, ListStore};
 
 pub struct BrowserFactory {
     worker: Worker,
     app_model: Rc<AppModel>,
-    dispatcher: Box<dyn ActionDispatcher>
+    dispatcher: Box<dyn ActionDispatcher>,
 }
 
 impl BrowserFactory {
-
     pub fn new(
         worker: Worker,
         app_model: Rc<AppModel>,
-        dispatcher: Box<dyn ActionDispatcher>) -> Self {
-
-        Self { worker, app_model, dispatcher }
+        dispatcher: Box<dyn ActionDispatcher>,
+    ) -> Self {
+        Self {
+            worker,
+            app_model,
+            dispatcher,
+        }
     }
 
     pub fn make_browser(&self) -> Browser {
@@ -33,17 +36,21 @@ impl BrowserFactory {
 pub struct BrowserModel {
     app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>,
-    batch_size: u32
+    batch_size: u32,
 }
 
 impl BrowserModel {
-
     pub fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
-        Self { app_model, dispatcher, batch_size: 20 }
+        Self {
+            app_model,
+            dispatcher,
+            batch_size: 20,
+        }
     }
 
     fn state(&self) -> Option<Ref<'_, LibraryState>> {
-        self.app_model.map_state_opt(|s| s.browser_state.library_state())
+        self.app_model
+            .map_state_opt(|s| s.browser_state.library_state())
     }
 
     pub fn get_list_store(&self) -> Option<impl Deref<Target = ListStore<AlbumModel>> + '_> {
@@ -60,7 +67,6 @@ impl BrowserModel {
         }));
     }
 
-
     pub fn load_more_albums(&self) {
         let api = self.app_model.get_spotify();
         let page = self.state().map(|s| s.page).unwrap_or(0);
@@ -68,13 +74,17 @@ impl BrowserModel {
         let batch_size = self.batch_size;
 
         self.dispatcher.dispatch_async(Box::pin(async move {
-            let albums = api.get_saved_albums(offset, batch_size).await.unwrap_or(vec![]);
+            let albums = api
+                .get_saved_albums(offset, batch_size)
+                .await
+                .unwrap_or(vec![]);
             Some(BrowserAction::AppendContent(albums).into())
         }));
     }
 
     pub fn open_album(&self, album_uri: &str) {
         let screen = ScreenName::Details(album_uri.to_owned());
-        self.dispatcher.dispatch(BrowserAction::NavigationPush(screen).into());
+        self.dispatcher
+            .dispatch(BrowserAction::NavigationPush(screen).into());
     }
 }

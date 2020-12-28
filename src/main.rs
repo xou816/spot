@@ -1,17 +1,16 @@
 use gio::prelude::*;
+use glib;
 use gtk::prelude::*;
 use gtk::SettingsExt;
-use glib;
 
-mod config;
 mod app;
+mod config;
 
-use crate::app::{App, AppAction};
 use crate::app::backend;
-use crate::app::dispatch::{DispatchLoop, spawn_task_handler};
+use crate::app::dispatch::{spawn_task_handler, DispatchLoop};
+use crate::app::{App, AppAction};
 
 fn main() {
-
     setup_gtk();
 
     let app = gtk::Application::new(Some("dev.alextren.Spot"), Default::default()).unwrap();
@@ -28,8 +27,8 @@ fn main() {
     let player_sender = backend::start_player_service(sender.clone());
 
     context.spawn_local(
-        App::new_from_builder(&builder, sender.clone(), worker, player_sender)
-            .start(dispatch_loop));
+        App::new_from_builder(&builder, sender.clone(), worker, player_sender).start(dispatch_loop),
+    );
 
     let window = make_window(&builder);
     app.connect_activate(move |app| {
@@ -39,7 +38,6 @@ fn main() {
         window.present();
         sender.try_send(AppAction::Start).unwrap();
     });
-
 
     context.invoke_local(move || {
         app.run(&std::env::args().collect::<Vec<_>>());
@@ -55,7 +53,9 @@ fn setup_gtk() {
         .expect("Could not load resources");
     gio::resources_register(&res);
 
-    gtk::Settings::get_default().unwrap().set_property_gtk_application_prefer_dark_theme(true);
+    gtk::Settings::get_default()
+        .unwrap()
+        .set_property_gtk_application_prefer_dark_theme(true);
 }
 
 fn make_window(builder: &gtk::Builder) -> gtk::ApplicationWindow {

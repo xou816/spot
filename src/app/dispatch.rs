@@ -1,9 +1,8 @@
-use std::pin::Pin;
+use futures::channel::mpsc::{channel, Receiver, Sender};
 use futures::future::Future;
-use futures::stream::StreamExt;
-use futures::channel::mpsc::{Receiver, Sender, channel};
 use futures::future::{BoxFuture, LocalBoxFuture};
-
+use futures::stream::StreamExt;
+use std::pin::Pin;
 
 use super::AppAction;
 
@@ -19,7 +18,7 @@ pub trait ActionDispatcher {
 #[derive(Clone)]
 pub struct ActionDispatcherImpl {
     sender: Sender<AppAction>,
-    worker: Worker
+    worker: Worker,
 }
 
 impl ActionDispatcherImpl {
@@ -29,7 +28,6 @@ impl ActionDispatcherImpl {
 }
 
 impl ActionDispatcher for ActionDispatcherImpl {
-
     fn dispatch(&self, action: AppAction) {
         self.sender.clone().try_send(action).unwrap();
     }
@@ -75,14 +73,12 @@ impl ActionDispatcher for ActionDispatcherImpl {
     }
 }
 
-
 pub struct DispatchLoop {
     receiver: Receiver<AppAction>,
-    sender: Sender<AppAction>
+    sender: Sender<AppAction>,
 }
 
 impl DispatchLoop {
-
     pub fn new() -> Self {
         let (sender, receiver) = channel::<AppAction>(0);
         Self { receiver, sender }
@@ -93,27 +89,30 @@ impl DispatchLoop {
     }
 
     pub async fn attach(self, mut handler: impl FnMut(AppAction) -> ()) {
-        self.receiver.for_each(|action| {
-            let result = handler(action);
-            async move {
-                result
-            }
-        }).await;
+        self.receiver
+            .for_each(|action| {
+                let result = handler(action);
+                async move { result }
+            })
+            .await;
     }
 }
 
-
-pub type FutureTask = Pin<Box<dyn Future<Output=()> + Send>>;
-pub type FutureLocalTask = Pin<Box<dyn Future<Output=()>>>;
-
+pub type FutureTask = Pin<Box<dyn Future<Output = ()> + Send>>;
+pub type FutureLocalTask = Pin<Box<dyn Future<Output = ()>>>;
 
 pub fn spawn_task_handler(context: &glib::MainContext) -> Worker {
-
     let (future_local_sender, future_local_receiver) = channel::<FutureLocalTask>(0);
-    context.spawn_local_with_priority(glib::source::PRIORITY_HIGH_IDLE, future_local_receiver.for_each(|t| t));
+    context.spawn_local_with_priority(
+        glib::source::PRIORITY_HIGH_IDLE,
+        future_local_receiver.for_each(|t| t),
+    );
 
     let (future_sender, future_receiver) = channel::<FutureTask>(0);
-    context.spawn_with_priority(glib::source::PRIORITY_HIGH, future_receiver.for_each_concurrent(2, |t| t));
+    context.spawn_with_priority(
+        glib::source::PRIORITY_HIGH,
+        future_receiver.for_each_concurrent(2, |t| t),
+    );
 
     Worker(future_local_sender, future_sender)
 }
@@ -122,12 +121,11 @@ pub fn spawn_task_handler(context: &glib::MainContext) -> Worker {
 pub struct Worker(Sender<FutureLocalTask>, Sender<FutureTask>);
 
 impl Worker {
-
-    pub fn send_local_task<T: Future<Output=()> + 'static>(&self, task: T) -> Option<()> {
+    pub fn send_local_task<T: Future<Output = ()> + 'static>(&self, task: T) -> Option<()> {
         self.0.clone().try_send(Box::pin(task)).ok()
     }
 
-    pub fn send_task<T: Future<Output=()> + Send + 'static>(&self, task: T) -> Option<()> {
+    pub fn send_task<T: Future<Output = ()> + Send + 'static>(&self, task: T) -> Option<()> {
         self.1.clone().try_send(Box::pin(task)).ok()
     }
 }

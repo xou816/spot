@@ -1,5 +1,5 @@
-use gtk::prelude::*;
 use crate::app::AppEvent;
+use gtk::prelude::*;
 
 #[macro_export]
 macro_rules! resource {
@@ -48,9 +48,9 @@ pub fn screen_add_css_provider(resource: &str) {
     gtk::StyleContext::add_provider_for_screen(
         &gdk::Screen::get_default().unwrap(),
         &provider,
-        gtk::STYLE_PROVIDER_PRIORITY_APPLICATION);
+        gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+    );
 }
-
 
 pub trait EventListener {
     fn on_event(&mut self, _: &AppEvent) {}
@@ -73,4 +73,4 @@ pub trait Component {
 }
 
 pub trait ListenerComponent: Component + EventListener {}
-impl <T> ListenerComponent for T where T: Component + EventListener {}
+impl<T> ListenerComponent for T where T: Component + EventListener {}

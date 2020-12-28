@@ -1,7 +1,7 @@
+use secret_service::{EncryptionType, SecretService, SsError};
+use serde::{Deserialize, Serialize};
+use serde_json::{from_str, to_string};
 use std::str::from_utf8;
-use secret_service::{SecretService, EncryptionType, SsError};
-use serde_json::{to_string, from_str};
-use serde::{Serialize, Deserialize};
 
 static SPOT_ATTR: &'static str = "spot_credentials";
 
@@ -10,7 +10,7 @@ pub struct Credentials {
     pub username: String,
     pub password: String,
     pub token: String,
-    pub country: String
+    pub country: String,
 }
 
 pub fn try_retrieve_credentials() -> Result<Credentials, SsError> {
@@ -36,7 +36,8 @@ pub fn save_credentials(creds: Credentials) -> Result<SecretService, SsError> {
         vec![(SPOT_ATTR, "yes")],
         encoded.as_bytes(),
         true,
-        "text/plain")?;
+        "text/plain",
+    )?;
 
     Ok(service)
 }
