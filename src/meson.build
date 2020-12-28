@@ -104,7 +104,7 @@ cargo_release = custom_target(
 )
 
 cargo_test = find_program(join_paths(meson.source_root(), 'build-aux/test.sh'))
-test('Unit test',
+test('Unit tests',
   cargo_test,
   args: [
     meson.build_root(),
