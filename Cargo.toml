@@ -34,7 +34,7 @@ version = "0.1.30"
 
 [dependencies.futures]
 package = "futures"
-version = "0.3.5"
+version = "0.3.8"
 features = ["compat"]
 
 [dependencies.serde]
