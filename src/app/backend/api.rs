@@ -12,7 +12,7 @@ use super::cache::{CacheExpiry, CacheFile, CacheManager, CachePolicy};
 use crate::app::credentials::Credentials;
 use crate::app::models::*;
 
-const SPOTIFY_API: &'static str = "https://api.spotify.com/v1";
+const SPOTIFY_API: &str = "https://api.spotify.com/v1";
 
 pub trait SpotifyApiClient {
     fn get_artist(&self, id: &str) -> BoxFuture<Option<ArtistDescription>>;
@@ -42,32 +42,32 @@ pub mod tests {
     }
 
     impl SpotifyApiClient for TestSpotifyApiClient {
-        fn get_artist(&self, id: &str) -> BoxFuture<Option<ArtistDescription>> {
+        fn get_artist(&self, _id: &str) -> BoxFuture<Option<ArtistDescription>> {
             Box::pin(async { None })
         }
 
-        fn get_album(&self, id: &str) -> BoxFuture<Option<AlbumDescription>> {
+        fn get_album(&self, _id: &str) -> BoxFuture<Option<AlbumDescription>> {
             Box::pin(async { None })
         }
 
         fn get_saved_albums(
             &self,
-            offset: u32,
-            limit: u32,
+            _offset: u32,
+            _limit: u32,
         ) -> BoxFuture<Option<Vec<AlbumDescription>>> {
             Box::pin(async { None })
         }
 
         fn search_albums(
             &self,
-            query: &str,
-            offset: u32,
-            limit: u32,
+            _query: &str,
+            _offset: u32,
+            _limit: u32,
         ) -> BoxFuture<Option<Vec<AlbumDescription>>> {
             Box::pin(async { None })
         }
 
-        fn update_credentials(&self, credentials: Credentials) {}
+        fn update_credentials(&self, _credentials: Credentials) {}
     }
 }
 
@@ -153,7 +153,7 @@ impl CachedSpotifyClient {
         CacheRequest::for_resource(
             &self.cache,
             resource,
-            policy.unwrap_or(self.default_cache_policy()),
+            policy.unwrap_or_else(|| self.default_cache_policy()),
         )
     }
 
@@ -241,7 +241,7 @@ impl CachedSpotifyClient {
             let uri = format!(
                 "{}/search?{}&market=from_token",
                 SPOTIFY_API,
-                query.to_query_string()
+                query.into_query_string()
             );
 
             Request::get(uri)
@@ -257,7 +257,7 @@ impl CachedSpotifyClient {
 
 impl SpotifyApiClient for CachedSpotifyClient {
     fn update_credentials(&self, credentials: Credentials) {
-        if let Some(ref mut mut_creds) = self.credentials.lock().ok() {
+        if let Ok(ref mut mut_creds) = self.credentials.lock() {
             **mut_creds = Some(credentials);
         }
     }
@@ -343,8 +343,8 @@ impl SpotifyApiClient for CachedSpotifyClient {
     fn search_albums(
         &self,
         query: &str,
-        offset: u32,
-        limit: u32,
+        _offset: u32,
+        _limit: u32,
     ) -> BoxFuture<Option<Vec<AlbumDescription>>> {
         let query = query.to_owned();
 

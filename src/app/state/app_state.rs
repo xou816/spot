@@ -97,7 +97,7 @@ impl AppState {
                 .browser_state
                 .update_with(a)
                 .into_iter()
-                .map(|e| AppEvent::BrowserEvent(e))
+                .map(AppEvent::BrowserEvent)
                 .collect(),
         }
     }
@@ -116,8 +116,7 @@ impl AppState {
             self.playlist
                 .iter()
                 .skip_while(|&song| song.uri != *uri)
-                .skip(1)
-                .next()
+                .nth(1)
         })
     }
 }

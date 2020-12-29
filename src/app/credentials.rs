@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string};
 use std::str::from_utf8;
 
-static SPOT_ATTR: &'static str = "spot_credentials";
+static SPOT_ATTR: &str = "spot_credentials";
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct Credentials {

@@ -12,7 +12,7 @@ pub enum ScreenName {
 }
 
 impl ScreenName {
-    pub fn identifier<'a>(&'a self) -> Cow<'a, str> {
+    pub fn identifier(&self) -> Cow<str> {
         match self {
             Self::Library => Cow::Borrowed("library"),
             Self::Details(s) => Cow::Owned(format!("album_{}", s)),

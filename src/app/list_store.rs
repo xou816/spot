@@ -1,6 +1,5 @@
 use gio::prelude::*;
 use gio::ListModelExt;
-use glib::prelude::*;
 use std::iter::Iterator;
 use std::marker::PhantomData;
 
@@ -44,7 +43,7 @@ where
         self.store.get_n_items() as usize
     }
 
-    pub fn eq<F>(&self, other: &Vec<GType>, comparison: F) -> bool
+    pub fn eq<F>(&self, other: &[GType], comparison: F) -> bool
     where
         F: Fn(&GType, &GType) -> bool,
     {

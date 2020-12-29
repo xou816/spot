@@ -57,7 +57,6 @@ impl SearchResults {
         let widget = SearchResultsWidget::new();
 
         let album_results_model = gio::ListStore::new(AlbumModel::static_type());
-        let worker_clone = worker.clone();
 
         let model_clone = Rc::clone(&model);
         widget
@@ -65,7 +64,7 @@ impl SearchResults {
             .bind_model(Some(&album_results_model), move |item| {
                 let item = item.downcast_ref::<AlbumModel>().unwrap();
                 let child = gtk::FlowBoxChild::new();
-                let album = Album::new(item, worker_clone.clone());
+                let album = Album::new(item, worker.clone());
                 let weak = Rc::downgrade(&model_clone);
                 album.connect_album_pressed(move |a| {
                     if let (Some(uri), Some(m)) = (a.uri().as_ref(), weak.upgrade()) {

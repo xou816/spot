@@ -22,7 +22,7 @@ impl EventListener for PlayerNotifier {
             AppEvent::TrackResumed => Some(Command::PlayerResume),
             AppEvent::TrackChanged(uri) => SpotifyId::from_uri(&uri)
                 .ok()
-                .map(|uri| Command::PlayerLoad(uri)),
+                .map(Command::PlayerLoad),
             AppEvent::LoginStarted(username, password) => {
                 Some(Command::Login(username.to_owned(), password.to_owned()))
             }

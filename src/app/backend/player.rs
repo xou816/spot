@@ -64,9 +64,9 @@ impl SpotifyPlayer {
                 let player = player.as_mut().ok_or("Could not get player")?;
                 player.load(track, true, 0);
                 let end_of_track = player.get_end_of_track_future().map(move |_| {
-                    delegate.upgrade().map(|delegate| {
+                    if let Some(delegate) = delegate.upgrade() {
                         delegate.end_of_track_reached();
-                    });
+                    }
                 });
                 handle.spawn(end_of_track);
                 Ok(())
@@ -74,11 +74,11 @@ impl SpotifyPlayer {
             Command::Login(username, password) => {
                 let session =
                     create_session(username.clone(), password.clone(), handle.clone()).await?;
-                let token = get_access_token(&session).await?.clone();
+                let token = get_access_token(&session).await?;
                 let credentials = credentials::Credentials {
                     username,
                     password,
-                    token: token.clone(),
+                    token,
                     country: session.country(),
                 };
                 self.delegate.login_successful(credentials);
@@ -108,9 +108,9 @@ impl SpotifyPlayer {
     }
 }
 
-const CLIENT_ID: &'static str = "782ae96ea60f4cdf986a766049607005";
+const CLIENT_ID: &str = "782ae96ea60f4cdf986a766049607005";
 
-const SCOPES: &'static str = "user-read-private,\
+const SCOPES: &str = "user-read-private,\
 playlist-read-private,\
 playlist-read-collaborative,\
 user-library-read,\

@@ -77,7 +77,7 @@ impl BrowserModel {
             let albums = api
                 .get_saved_albums(offset, batch_size)
                 .await
-                .unwrap_or(vec![]);
+                .unwrap_or_else(Vec::new);
             Some(BrowserAction::AppendContent(albums).into())
         }));
     }

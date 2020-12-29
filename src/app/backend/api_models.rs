@@ -10,7 +10,7 @@ pub enum SearchType {
 }
 
 impl SearchType {
-    fn to_string(self) -> &'static str {
+    fn into_string(self) -> &'static str {
         match self {
             Self::Artist => "artist",
             Self::Album => "album",
@@ -26,11 +26,11 @@ pub struct SearchQuery {
 }
 
 impl SearchQuery {
-    pub fn to_query_string(self) -> String {
+    pub fn into_query_string(self) -> String {
         let mut types = self
             .types
             .into_iter()
-            .fold(String::new(), |acc, t| acc + t.to_string() + ",");
+            .fold(String::new(), |acc, t| acc + t.into_string() + ",");
         types.pop();
 
         let re = Regex::new(r"(\W|\s)+").unwrap();

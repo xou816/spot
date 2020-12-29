@@ -88,7 +88,7 @@ impl DispatchLoop {
         self.sender.clone()
     }
 
-    pub async fn attach(self, mut handler: impl FnMut(AppAction) -> ()) {
+    pub async fn attach(self, mut handler: impl FnMut(AppAction)) {
         self.receiver
             .for_each(|action| {
                 let result = handler(action);

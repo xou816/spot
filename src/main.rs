@@ -1,5 +1,4 @@
 use gio::prelude::*;
-use glib;
 use gtk::prelude::*;
 use gtk::SettingsExt;
 

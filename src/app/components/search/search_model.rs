@@ -66,7 +66,7 @@ impl SearchResultsModel {
     }
 
     pub fn open_album(&self, uri: &str) {
-        if let Some(id) = uri.split(":").last() {
+        if let Some(id) = uri.split(':').last() {
             self.dispatcher.dispatch(
                 BrowserAction::NavigationPush(ScreenName::Details(id.to_string())).into(),
             );

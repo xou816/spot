@@ -35,7 +35,9 @@ impl Navigation {
         let model = Rc::new(model);
         let weak_model = Rc::downgrade(&model);
         back_button.connect_clicked(move |_| {
-            weak_model.upgrade().map(|m| m.go_back());
+            if let Some(m) = weak_model.upgrade() {
+                m.go_back()
+            }
         });
 
         Self {
