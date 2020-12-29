@@ -53,6 +53,8 @@ impl Song {
             .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
             .build();
 
+        widget.set_playing(model.get_playing());
+
         let widget_clone = widget.clone();
         model.connect_playing_local(move |song| {
             widget_clone.set_playing(song.get_playing());

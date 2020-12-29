@@ -31,12 +31,18 @@ where
         self.store.append(&element);
     }
 
+    pub fn get(&self, index: u32) -> GType {
+        self.store
+            .get_object(index)
+            .unwrap()
+            .downcast::<GType>()
+            .unwrap()
+    }
+
     pub fn iter<'a>(&'a self) -> impl Iterator<Item = GType> + 'a {
         let store = &self.store;
         let count = store.get_n_items();
-        (0..count)
-            .into_iter()
-            .map(move |i| store.get_object(i).unwrap().downcast::<GType>().unwrap())
+        (0..count).into_iter().map(move |i| self.get(i))
     }
 
     pub fn len(&self) -> usize {
