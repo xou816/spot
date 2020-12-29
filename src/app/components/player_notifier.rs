@@ -20,9 +20,7 @@ impl EventListener for PlayerNotifier {
         let command = match event {
             AppEvent::TrackPaused => Some(Command::PlayerPause),
             AppEvent::TrackResumed => Some(Command::PlayerResume),
-            AppEvent::TrackChanged(uri) => SpotifyId::from_uri(&uri)
-                .ok()
-                .map(Command::PlayerLoad),
+            AppEvent::TrackChanged(uri) => SpotifyId::from_uri(&uri).ok().map(Command::PlayerLoad),
             AppEvent::LoginStarted(username, password) => {
                 Some(Command::Login(username.to_owned(), password.to_owned()))
             }

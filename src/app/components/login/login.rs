@@ -27,7 +27,9 @@ impl Login {
         login_btn.connect_clicked(move |_| {
             let username = username.get_text().as_str().to_string();
             let password = password.get_text().as_str().to_string();
-            weak_model.upgrade().map(|m| m.login(username, password));
+            if let Some(m) = weak_model.upgrade() {
+                m.login(username, password);
+            }
         });
 
         dialog.connect_delete_event(|_, _| gtk::Inhibit(true));

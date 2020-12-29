@@ -65,9 +65,9 @@ impl Playback {
         let model = Rc::new(model);
         let weak_model = Rc::downgrade(&model);
         seek_bar.connect_change_value(move |_, _, requested| {
-            weak_model
-                .upgrade()
-                .map(|model| model.seek_to(requested as u32));
+            if let Some(model) = weak_model.upgrade() {
+                model.seek_to(requested as u32)
+            }
             glib::signal::Inhibit(false)
         });
 
@@ -80,17 +80,23 @@ impl Playback {
 
         let weak_model = Rc::downgrade(&model);
         play_button.connect_clicked(move |_| {
-            weak_model.upgrade().map(|model| model.toggle_playback());
+            if let Some(model) = weak_model.upgrade() {
+                model.toggle_playback()
+            }
         });
 
         let weak_model = Rc::downgrade(&model);
         next.connect_clicked(move |_| {
-            weak_model.upgrade().map(|model| model.play_next_song());
+            if let Some(model) = weak_model.upgrade() {
+                model.play_next_song()
+            }
         });
 
         let weak_model = Rc::downgrade(&model);
         prev.connect_clicked(move |_| {
-            weak_model.upgrade().map(|model| model.play_prev_song());
+            if let Some(model) = weak_model.upgrade() {
+                model.play_prev_song()
+            }
         });
 
         Self {

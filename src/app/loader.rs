@@ -29,7 +29,10 @@ where
         if len == self.spy.write(&buf[0..len])? {
             Ok(len)
         } else {
-            Err(Error::new(ErrorKind::Other, "Could not write same amount of data in both buffers"))
+            Err(Error::new(
+                ErrorKind::Other,
+                "Could not write same amount of data in both buffers",
+            ))
         }
     }
 

@@ -97,11 +97,8 @@ impl App {
             dispatcher.box_clone(),
             worker.clone(),
         );
-        let artist_details_factory = ArtistDetailsFactory::new(
-            Rc::clone(&app_model),
-            dispatcher.box_clone(),
-            worker,
-        );
+        let artist_details_factory =
+            ArtistDetailsFactory::new(Rc::clone(&app_model), dispatcher.box_clone(), worker);
         Box::new(Navigation::new(
             model,
             back_btn,

@@ -95,7 +95,9 @@ impl Playlist {
 
         let song = Song::new(item.clone());
         song.connect_play_pressed(move |song| {
-            model.upgrade().map(|m| m.play_song(song.get_uri()));
+            if let Some(m) = model.upgrade() {
+                m.play_song(song.get_uri());
+            }
         });
 
         row.add(song.get_root_widget());
