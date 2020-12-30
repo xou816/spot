@@ -1,5 +1,6 @@
 use futures::future::BoxFuture;
-use isahc::prelude::*;
+use isahc::config::Configurable;
+use isahc::{AsyncReadResponseExt, HttpClient, Request};
 use serde_json::from_str;
 use std::convert::AsRef;
 use std::convert::Into;
@@ -170,7 +171,7 @@ impl CachedSpotifyClient {
         };
 
         let mut result = self.client.send_async(request).await.ok()?;
-        result.text_async().await.ok()
+        result.text().await.ok()
     }
 
     async fn get_artist_albums_no_cache(&self, id: &str) -> Option<String> {
@@ -189,7 +190,7 @@ impl CachedSpotifyClient {
         };
 
         let mut result = self.client.send_async(request).await.ok()?;
-        result.text_async().await.ok()
+        result.text().await.ok()
     }
 
     async fn get_album_no_cache(&self, id: &str) -> Option<String> {
@@ -205,7 +206,7 @@ impl CachedSpotifyClient {
         };
 
         let mut result = self.client.send_async(request).await.ok()?;
-        result.text_async().await.ok()
+        result.text().await.ok()
     }
 
     async fn get_saved_albums_no_cache(&self, offset: u32, limit: u32) -> Option<String> {
@@ -224,7 +225,7 @@ impl CachedSpotifyClient {
         };
 
         let mut result = self.client.send_async(request).await.ok()?;
-        result.text_async().await.ok()
+        result.text().await.ok()
     }
 
     async fn search_no_cache(&self, query: String) -> Option<String> {
@@ -251,7 +252,7 @@ impl CachedSpotifyClient {
         };
 
         let mut result = self.client.send_async(request).await.ok()?;
-        result.text_async().await.ok()
+        result.text().await.ok()
     }
 }
 

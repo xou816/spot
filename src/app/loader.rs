@@ -1,45 +1,10 @@
+use crate::backend::cache::*;
+use gdk_pixbuf::{Pixbuf, PixbufLoader, PixbufLoaderExt};
+use isahc::config::Configurable;
+use isahc::{AsyncBody, AsyncReadResponseExt, HttpClient, Response};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::Hasher;
 use std::io::{Error, ErrorKind, Write};
-
-use crate::backend::cache::*;
-use gdk_pixbuf::{Pixbuf, PixbufLoader, PixbufLoaderExt};
-use isahc::prelude::*;
-
-struct WriteSpy<'a, W: Write> {
-    write_impl: W,
-    spy: &'a mut Vec<u8>,
-}
-
-impl<'a, W> WriteSpy<'a, W>
-where
-    W: Write,
-{
-    fn new(write_impl: W, spy: &'a mut Vec<u8>) -> Self {
-        Self { write_impl, spy }
-    }
-}
-
-impl<'a, W> Write for WriteSpy<'a, W>
-where
-    W: Write,
-{
-    fn write(&mut self, buf: &[u8]) -> Result<usize, Error> {
-        let len = self.write_impl.write(buf)?;
-        if len == self.spy.write(&buf[0..len])? {
-            Ok(len)
-        } else {
-            Err(Error::new(
-                ErrorKind::Other,
-                "Could not write same amount of data in both buffers",
-            ))
-        }
-    }
-
-    fn flush(&mut self) -> Result<(), Error> {
-        self.write_impl.flush()
-    }
-}
 
 struct LocalPixbufLoader<'a>(&'a PixbufLoader);
 
@@ -77,7 +42,7 @@ impl ImageLoader {
         format!("img/{}.{}", hashed, ext)
     }
 
-    async fn get_image(url: &str) -> Option<Response<Body>> {
+    async fn get_image(url: &str) -> Option<Response<AsyncBody>> {
         let mut builder = HttpClient::builder();
         if cfg!(debug_assertions) {
             builder = builder.ssl_options(isahc::config::SslOption::DANGER_ACCEPT_INVALID_CERTS);
@@ -96,8 +61,7 @@ impl ImageLoader {
         let resource = Self::resource_for(url, ext);
         let pixbuf_loader = PixbufLoader::new();
         pixbuf_loader.set_size(width, height);
-        let mut copy = vec![];
-        let mut writable_loader = WriteSpy::new(LocalPixbufLoader(&pixbuf_loader), &mut copy);
+        let mut loader = LocalPixbufLoader(&pixbuf_loader);
 
         match self
             .cache
@@ -105,14 +69,16 @@ impl ImageLoader {
             .await
         {
             CacheFile::File(buffer) => {
-                writable_loader.write_all(&buffer[..]).ok()?;
+                loader.write_all(&buffer[..]).ok()?;
             }
             _ => {
                 if let Some(mut resp) = Self::get_image(url).await {
-                    resp.copy_to(writable_loader).ok()?;
+                    let mut buffer = vec![];
+                    resp.copy_to(&mut buffer).await.ok()?;
+                    loader.write_all(&buffer[..]).ok()?;
                     self.cache
-                        .write_cache_file(&resource[..], &copy[..], CacheExpiry::Never)
-                        .await?;
+                        .write_cache_file(&resource[..], &buffer[..], CacheExpiry::Never)
+                        .await;
                 }
             }
         };
