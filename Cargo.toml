@@ -42,7 +42,7 @@ version = "^1.0.118"
 features = ["derive"]
 
 [dependencies.serde_json]
-version = "^1.0.60"
+version = "^1.0.61"
 
 [dependencies.isahc]
 version = "^0.9.14"
