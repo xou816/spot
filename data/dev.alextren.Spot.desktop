@@ -1,8 +1,9 @@
 [Desktop Entry]
+Version=1.0
 Name=Spot
 Exec=spot
-Icon=spotify
+Icon=dev.alextren.Spot
 Terminal=false
 Type=Application
-Categories=GTK;
+Categories=GTK;GNOME;Music;AudioVideo;
 StartupNotify=true

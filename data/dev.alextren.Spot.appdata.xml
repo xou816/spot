@@ -1,12 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
 	<id>dev.alextren.Spot</id>
+  <url type="homepage">https://github.com/xou816/spot</url>
+  <name>Spot</name>
+  <summary>Spotify Client for the Gnome desktop</summary>
   <launchable type="desktop-id">dev.alextren.Spot.desktop</launchable>
 	<metadata_license>CC0-1.0</metadata_license>
 	<project_license>MIT</project_license>
+  <content_rating type="oars-1.1" />
 	<description>
 	  <p>
-      Spotify Client
+      Spotify Client for the Gnome desktop. <b>Requires a premium account.</b>
     </p>
+	  <p>Current features:</p>
+	  <ul>
+      <li>playback control (play/pause, previous/next, seeking)</li>
+      <li>library browser (saved albums)</li>
+      <li>album search</li>
+      <li>artist view</li>
+      <li>credentials management with Secret Service</li>
+	  </ul>
 	</description>
+  <screenshots>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/xou816/spot/master/data/appstream/1.png</image>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="0.1" date="2021-01-11">
+      <description>
+        <p>Initial release</p>
+      </description>
+    </release>
+  </releases>
 </component>

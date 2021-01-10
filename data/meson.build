@@ -2,6 +2,10 @@ install_data('dev.alextren.Spot.desktop',
   install_dir: join_paths(get_option('datadir'), 'applications')
 )
 
+install_subdir('hicolor',
+  install_dir: join_paths(get_option('datadir'), 'icons')
+)
+
 install_data('dev.alextren.Spot.appdata.xml',
   install_dir: join_paths(get_option('datadir'), 'appdata')
 )
