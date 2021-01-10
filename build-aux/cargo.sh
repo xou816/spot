@@ -18,7 +18,7 @@ then
         cp "$CARGO_TARGET_DIR"/release/"$APP_BIN" "$OUTPUT"
 else
     echo "DEBUG MODE"
-    cargo build --manifest-path \
+    cargo --offline build --manifest-path \
         "$MESON_SOURCE_ROOT"/Cargo.toml --verbose && \
         cp "$CARGO_TARGET_DIR"/debug/"$APP_BIN" "$OUTPUT"
 fi
