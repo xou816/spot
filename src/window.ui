@@ -155,6 +155,7 @@
                         <property name="relief">none</property>
                         <child>
                             <object class="GtkImage">
+                                <property name="visible">True</property>
                                 <property name="icon-name">media-skip-backward-symbolic</property>
                             </object>
                         </child>
@@ -207,6 +208,7 @@
                         <property name="relief">none</property>
                         <child>
                             <object class="GtkImage">
+                                <property name="visible">True</property>
                                 <property name="icon-name">media-skip-forward-symbolic</property>
                             </object>
                         </child>
@@ -325,6 +327,7 @@ audio-volume-medium-symbolic</property>
                 <property name="valign">center</property>
                 <child>
                     <object class="GtkImage">
+                        <property name="visible">True</property>
                         <property name="icon-name">go-previous-symbolic</property>
                     </object>
                 </child>

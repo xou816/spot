@@ -65,6 +65,7 @@
         <property name="always-show-image">True</property>
         <child>
             <object class="GtkImage">
+                <property name="visible">True</property>
                 <property name="icon-name">media-playback-start-symbolic</property>
             </object>
         </child>
