@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 export SRC="$1"
 export CARGO_TARGET_DIR="$2"/target

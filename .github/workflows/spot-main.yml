@@ -29,7 +29,7 @@ jobs:
         sudo apt install -y build-essential pkg-config meson libssl-dev libglib2.0-dev-bin libgtk-3-dev libasound2-dev libpulse-dev
 
     - name: Build
-      run: meson target && ninja -C target
+      run: meson target -Doffline=false && ninja -C target
 
     - name: Test
       run: meson test -C target
