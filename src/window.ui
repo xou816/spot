@@ -153,7 +153,11 @@
                         <property name="halign">center</property>
                         <property name="valign">center</property>
                         <property name="relief">none</property>
-                        <property name="icon-name">media-skip-backward-symbolic</property>
+                        <child>
+                            <object class="GtkImage">
+                                <property name="icon-name">media-skip-backward-symbolic</property>
+                            </object>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -201,7 +205,11 @@
                         <property name="halign">center</property>
                         <property name="valign">center</property>
                         <property name="relief">none</property>
-                        <property name="icon-name">media-skip-forward-symbolic</property>
+                        <child>
+                            <object class="GtkImage">
+                                <property name="icon-name">media-skip-forward-symbolic</property>
+                            </object>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -315,7 +323,11 @@ audio-volume-medium-symbolic</property>
                 <property name="receives-default">True</property>
                 <property name="halign">start</property>
                 <property name="valign">center</property>
-                <property name="icon-name">go-previous-symbolic</property>
+                <child>
+                    <object class="GtkImage">
+                        <property name="icon-name">go-previous-symbolic</property>
+                    </object>
+                </child>
               </object>
               <packing>
                 <property name="expand">True</property>

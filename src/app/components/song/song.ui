@@ -63,7 +63,11 @@
         <property name="valign">center</property>
         <property name="relief">none</property>
         <property name="always-show-image">True</property>
-        <property name="icon-name">media-playback-start-symbolic</property>
+        <child>
+            <object class="GtkImage">
+                <property name="icon-name">media-playback-start-symbolic</property>
+            </object>
+        </child>
         <child internal-child="accessible">
           <object class="AtkObject">
             <property name="AtkObject::accessible-name" translatable="yes">play</property>
