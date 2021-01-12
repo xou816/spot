@@ -108,7 +108,7 @@ cargo_test = find_program(join_paths(meson.source_root(), 'build-aux/test.sh'))
 test('Unit tests',
   cargo_test,
   args: [
-    meson.build_root(),
-    meson.source_root()
+    meson.source_root(),
+    get_option('offline') ? 'true' : 'false'
   ]
 )

@@ -1,8 +1,10 @@
 #!/bin/sh
 
-export MESON_BUILD_ROOT="$1"
-export MESON_SOURCE_ROOT="$2"
-export CARGO_TARGET_DIR="$MESON_BUILD_ROOT"/target
-export CARGO_HOME="$MESON_SOURCE_ROOT"/cargo
+export SRC="$1"
+export OFFLINE="$2"
 
-cargo test --manifest-path "$MESON_SOURCE_ROOT"/Cargo.toml
+if [[ $OFFLINE = "true" ]]; then
+    export CARGO_HOME="$SRC"/cargo
+fi
+
+cargo test --manifest-path "$SRC"/Cargo.toml
