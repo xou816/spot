@@ -109,6 +109,7 @@ test('Unit tests',
   cargo_test,
   args: [
     meson.source_root(),
+    meson.build_root(),
     get_option('offline') ? 'true' : 'false'
   ]
 )
