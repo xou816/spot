@@ -6,7 +6,7 @@
         {
             "label": "meson",
             "type": "shell",
-            "command": "meson target --reconfigure --prefix=\"$HOME/.local\""
+            "command": "meson target -Doffline=false --reconfigure --prefix=\"$HOME/.local\""
         },
         {
             "label": "build",

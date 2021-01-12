@@ -95,11 +95,12 @@ cargo_release = custom_target(
   install_dir: get_option('bindir'),
   command: [
     cargo_script,
-    meson.build_root(),
     meson.source_root(),
+    meson.build_root(),
+    meson.project_name(),
     '@OUTPUT@',
     get_option('buildtype'),
-    meson.project_name(),
+    get_option('offline') ? 'true' : 'false'
   ]
 )
 

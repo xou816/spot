@@ -4,6 +4,9 @@ Gtk/Rust native Spotify client for the Gnome desktop.
 
 Based on [librespot](https://github.com/librespot-org/librespot/).
 
+<a href='https://flathub.org/apps/details/dev.alextren.Spot'><img width='150' alt='Download on Flathub' src='https://flathub.org/assets/badges/flathub-badge-en.png'/></a>
+
+
 ![Preview](./demo.gif)
 
 ## Features
@@ -31,6 +34,6 @@ Requires Rust (stable), GTK3, and a couple other things.
 Then, with meson:
 
 ```
-meson target --prefix="$HOME/.local"
+meson target -Doffline=false --prefix="$HOME/.local"
 ninja -C target
 ```

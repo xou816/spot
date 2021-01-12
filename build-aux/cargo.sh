@@ -1,25 +1,29 @@
 #!/bin/sh
 
-export MESON_BUILD_ROOT="$1"
-export MESON_SOURCE_ROOT="$2"
-export CARGO_TARGET_DIR="$MESON_BUILD_ROOT"/target
-export CARGO_HOME="$MESON_SOURCE_ROOT"/cargo
-export OUTPUT="$3"
-export BUILDTYPE="$4"
-export APP_BIN="$5"
+export SRC="$1"
+export CARGO_TARGET_DIR="$2"/target
+export APP_BIN="$3"
+export OUTPUT="$4"
+export BUILDTYPE="$5"
+export OFFLINE="$6"
 
-echo $CARGO_HOME
-
-if [[ $BUILDTYPE = "release" ]]
-then
-    echo "RELEASE MODE"
-    cargo --offline build --manifest-path \
-        "$MESON_SOURCE_ROOT"/Cargo.toml --release && \
-        cp "$CARGO_TARGET_DIR"/release/"$APP_BIN" "$OUTPUT"
+if [[ $BUILDTYPE = "release" ]]; then
+    OUTPUT_BIN="$CARGO_TARGET_DIR"/release/"$APP_BIN"
+    PROFILE_ARG="--release"
 else
-    echo "DEBUG MODE"
-    cargo --offline build --manifest-path \
-        "$MESON_SOURCE_ROOT"/Cargo.toml --verbose && \
-        cp "$CARGO_TARGET_DIR"/debug/"$APP_BIN" "$OUTPUT"
+    OUTPUT_BIN="$CARGO_TARGET_DIR"/debug/"$APP_BIN"
+    PROFILE_ARG="--verbose"
+fi
+
+if [[ $OFFLINE = "true" ]]; then
+    export CARGO_HOME="$SRC"/cargo
+
+    cargo --offline build --manifest-path "$SRC"/Cargo.toml \
+        "$PROFILE_ARG" && \
+        cp "$OUTPUT_BIN" "$OUTPUT"
+else
+    cargo build --manifest-path "$SRC"/Cargo.toml \
+        "$PROFILE_ARG" && \
+        cp "$OUTPUT_BIN" "$OUTPUT"
 fi
 
