@@ -7,6 +7,8 @@ export OUTPUT="$4"
 export BUILDTYPE="$5"
 export OFFLINE="$6"
 
+echo $BUILDTYPE
+
 if [[ $BUILDTYPE = "release" ]]; then
     OUTPUT_BIN="$CARGO_TARGET_DIR"/release/"$APP_BIN"
     PROFILE_ARG="--release"

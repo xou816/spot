@@ -34,6 +34,6 @@ Requires Rust (stable), GTK3, and a couple other things.
 Then, with meson:
 
 ```
-meson target -Doffline=false --prefix="$HOME/.local"
+meson target -Dbuildtype=debug -Doffline=false --prefix="$HOME/.local"
 ninja -C target
 ```
