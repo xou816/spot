@@ -64,11 +64,10 @@
         <property name="relief">none</property>
         <property name="always-show-image">True</property>
         <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="stock">gtk-media-play</property>
-          </object>
+            <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="icon-name">media-playback-start-symbolic</property>
+            </object>
         </child>
         <child internal-child="accessible">
           <object class="AtkObject">

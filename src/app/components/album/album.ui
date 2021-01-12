@@ -36,7 +36,7 @@
                     <property name="height-request">180</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="stock">gtk-media-play</property>
+                    <property name="icon-name">media-playback-start-symbolic</property>
                   </object>
                 </child>
                 <style>

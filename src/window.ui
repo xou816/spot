@@ -103,7 +103,7 @@
                     <property name="height-request">40</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="stock">gtk-cdrom</property>
+                    <property name="icon-name">cd-symbolic</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -154,11 +154,10 @@
                         <property name="valign">center</property>
                         <property name="relief">none</property>
                         <child>
-                          <object class="GtkImage">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="stock">gtk-media-previous</property>
-                          </object>
+                            <object class="GtkImage">
+                                <property name="visible">True</property>
+                                <property name="icon-name">media-skip-backward-symbolic</property>
+                            </object>
                         </child>
                       </object>
                       <packing>
@@ -186,7 +185,7 @@
                             <property name="margin-end">6</property>
                             <property name="margin-top">6</property>
                             <property name="margin-bottom">6</property>
-                            <property name="stock">gtk-media-play</property>
+                            <property name="icon-name">media-playback-start-symbolic</property>
                           </object>
                         </child>
                         <style>
@@ -208,11 +207,10 @@
                         <property name="valign">center</property>
                         <property name="relief">none</property>
                         <child>
-                          <object class="GtkImage">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="stock">gtk-media-next</property>
-                          </object>
+                            <object class="GtkImage">
+                                <property name="visible">True</property>
+                                <property name="icon-name">media-skip-forward-symbolic</property>
+                            </object>
                         </child>
                       </object>
                       <packing>
@@ -328,11 +326,10 @@ audio-volume-medium-symbolic</property>
                 <property name="halign">start</property>
                 <property name="valign">center</property>
                 <child>
-                  <object class="GtkImage">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="stock">gtk-go-back</property>
-                  </object>
+                    <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="icon-name">go-previous-symbolic</property>
+                    </object>
                 </child>
               </object>
               <packing>
