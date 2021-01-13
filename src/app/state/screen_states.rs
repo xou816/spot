@@ -5,7 +5,7 @@ use std::borrow::Cow;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ScreenName {
-    Library,
+    Home,
     Details(String),
     Search,
     Artist(String),
@@ -14,7 +14,7 @@ pub enum ScreenName {
 impl ScreenName {
     pub fn identifier(&self) -> Cow<str> {
         match self {
-            Self::Library => Cow::Borrowed("library"),
+            Self::Home => Cow::Borrowed("home"),
             Self::Details(s) => Cow::Owned(format!("album_{}", s)),
             Self::Search => Cow::Borrowed("search"),
             Self::Artist(s) => Cow::Owned(format!("artist_{}", s)),
@@ -97,7 +97,7 @@ pub struct LibraryState {
 impl Default for LibraryState {
     fn default() -> Self {
         Self {
-            name: ScreenName::Library,
+            name: ScreenName::Home,
             page: 0,
             albums: ListStore::new(),
         }

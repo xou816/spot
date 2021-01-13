@@ -1,19 +1,20 @@
 use gtk::prelude::*;
-use gtk::{ButtonExt, ContainerExt};
+use gtk::{ButtonExt, ContainerExt, StackExt, StackSidebarExt};
 use std::rc::Rc;
 
 use crate::app::components::{
-    ArtistDetailsFactory, BrowserFactory, DetailsFactory, EventListener, ListenerComponent,
-    SearchFactory,
+    ArtistDetailsFactory, Browser, BrowserFactory, DetailsFactory, EventListener,
+    ListenerComponent, SearchFactory,
 };
 use crate::app::state::ScreenName;
 use crate::app::{AppEvent, BrowserEvent};
 
-use super::NavigationModel;
+use super::{home::HomeComponent, NavigationModel};
 
 pub struct Navigation {
     model: Rc<NavigationModel>,
-    stack: gtk::Stack,
+    navigation_stack: gtk::Stack,
+    home_stack_sidebar: gtk::StackSidebar,
     back_button: gtk::Button,
     browser_factory: BrowserFactory,
     details_factory: DetailsFactory,
@@ -26,7 +27,8 @@ impl Navigation {
     pub fn new(
         model: NavigationModel,
         back_button: gtk::Button,
-        stack: gtk::Stack,
+        navigation_stack: gtk::Stack,
+        home_stack_sidebar: gtk::StackSidebar,
         browser_factory: BrowserFactory,
         details_factory: DetailsFactory,
         search_factory: SearchFactory,
@@ -42,7 +44,8 @@ impl Navigation {
 
         Self {
             model,
-            stack,
+            navigation_stack,
+            home_stack_sidebar,
             back_button,
             browser_factory,
             details_factory,
@@ -52,11 +55,27 @@ impl Navigation {
         }
     }
 
+    fn make_home(&self) -> Box<dyn ListenerComponent> {
+        let home = HomeComponent::new(
+            self.home_stack_sidebar.clone(),
+            self.browser_factory.make_browser(),
+        );
+
+        let weak_model = Rc::downgrade(&self.model);
+        home.connect_navigated(move || {
+            if let Some(m) = weak_model.upgrade() {
+                m.go_home();
+            }
+        });
+
+        Box::new(home)
+    }
+
     fn push_screen(&mut self, name: &ScreenName) {
         println!("{}", name.identifier());
 
         let component: Box<dyn ListenerComponent> = match name {
-            ScreenName::Library => Box::new(self.browser_factory.make_browser()),
+            ScreenName::Home => self.make_home(),
             ScreenName::Details(id) => Box::new(self.details_factory.make_details(id.to_owned())),
             ScreenName::Search => Box::new(self.search_factory.make_search_results()),
             ScreenName::Artist(id) => Box::new(
@@ -68,9 +87,10 @@ impl Navigation {
         let widget = component.get_root_widget();
         widget.show_all();
 
-        self.stack.add_named(widget, name.identifier().as_ref());
+        self.navigation_stack
+            .add_named(widget, name.identifier().as_ref());
         self.children.push(component);
-        self.stack
+        self.navigation_stack
             .set_visible_child_name(name.identifier().as_ref());
     }
 
@@ -79,20 +99,20 @@ impl Navigation {
         let popped = children.pop();
 
         let name = self.model.visible_child_name();
-        self.stack
+        self.navigation_stack
             .set_visible_child_name(name.identifier().as_ref());
 
         if let Some(child) = popped {
-            self.stack.remove(child.get_root_widget());
+            self.navigation_stack.remove(child.get_root_widget());
         }
     }
 
     fn pop_to(&mut self, screen: &ScreenName) {
-        self.stack
+        self.navigation_stack
             .set_visible_child_name(screen.identifier().as_ref());
         let remainder = self.children.split_off(self.model.children_count());
         for widget in remainder {
-            self.stack.remove(widget.get_root_widget());
+            self.navigation_stack.remove(widget.get_root_widget());
         }
     }
 
@@ -105,7 +125,7 @@ impl EventListener for Navigation {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
             AppEvent::Started => {
-                self.push_screen(&ScreenName::Library);
+                self.push_screen(&ScreenName::Home);
                 self.update_back_button();
             }
             AppEvent::BrowserEvent(BrowserEvent::NavigationPushed(name)) => {

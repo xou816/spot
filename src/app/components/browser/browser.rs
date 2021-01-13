@@ -1,3 +1,4 @@
+use gladis::Gladis;
 use gtk::prelude::*;
 use gtk::ScrolledWindowExt;
 
@@ -9,9 +10,24 @@ use crate::app::dispatch::Worker;
 use crate::app::models::AlbumModel;
 use crate::app::AppEvent;
 
+#[derive(Clone, Gladis)]
+struct BrowserWidget {
+    pub scrolled_window: gtk::ScrolledWindow,
+    pub flowbox: gtk::FlowBox,
+}
+
+impl BrowserWidget {
+    fn new() -> Self {
+        Self::from_resource(resource!("/components/browser.ui")).unwrap()
+    }
+
+    fn root(&self) -> &gtk::Widget {
+        self.scrolled_window.upcast_ref()
+    }
+}
+
 pub struct Browser {
-    root: gtk::Widget,
-    flowbox: gtk::FlowBox,
+    widget: BrowserWidget,
     worker: Worker,
     model: Rc<BrowserModel>,
 }
@@ -20,23 +36,17 @@ impl Browser {
     pub fn new(worker: Worker, model: BrowserModel) -> Self {
         let model = Rc::new(model);
 
-        let flowbox = gtk::FlowBoxBuilder::new()
-            .margin(8)
-            .selection_mode(gtk::SelectionMode::None)
-            .build();
-
-        let scroll_window = gtk::ScrolledWindowBuilder::new().child(&flowbox).build();
+        let widget = BrowserWidget::new();
 
         let weak_model = Rc::downgrade(&model);
-        scroll_window.connect_edge_reached(move |_, pos| {
+        widget.scrolled_window.connect_edge_reached(move |_, pos| {
             if let (gtk::PositionType::Bottom, Some(model)) = (pos, weak_model.upgrade()) {
                 model.load_more_albums();
             }
         });
 
         Self {
-            root: scroll_window.upcast(),
-            flowbox,
+            widget,
             worker,
             model,
         }
@@ -46,7 +56,7 @@ impl Browser {
         let weak_model = Rc::downgrade(&self.model);
         let worker_clone = self.worker.clone();
 
-        self.flowbox.bind_model(Some(store), move |item| {
+        self.widget.flowbox.bind_model(Some(store), move |item| {
             let item = item.downcast_ref::<AlbumModel>().unwrap();
             let child = create_album_for(item, worker_clone.clone(), weak_model.clone());
             child.show_all();
@@ -72,7 +82,7 @@ impl EventListener for Browser {
 
 impl Component for Browser {
     fn get_root_widget(&self) -> &gtk::Widget {
-        &self.root
+        self.widget.root()
     }
 }
 

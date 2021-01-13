@@ -53,6 +53,7 @@ sources = files(
 './app/components/playlist/playlist.rs',
 './app/components/playlist/playlist_model.rs',
 './app/components/playlist/mod.rs',
+'./app/components/navigation/home.rs',
 './app/components/navigation/navigation.rs',
 './app/components/navigation/mod.rs',
 './app/components/navigation/navigation_model.rs',

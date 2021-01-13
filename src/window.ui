@@ -20,10 +20,10 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
-              <object class="GtkStackSidebar">
+              <object class="GtkStackSidebar" id="home_stack_sidebar">
+                <property name="width-request">100</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="stack">stack</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -32,48 +32,12 @@
               </packing>
             </child>
             <child>
-              <object class="GtkStack" id="stack">
+              <object class="GtkStack" id="navigation_stack">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="transition-type">crossfade</property>
+                <property name="transition-type">slide-left-right</property>
                 <child>
-                  <object class="GtkStack" id="browser_stack">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="transition-type">slide-left-right</property>
-                    <child>
-                      <placeholder/>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="name">tmp</property>
-                    <property name="title" translatable="yes">Explore</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkScrolledWindow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <child>
-                      <object class="GtkViewport">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="shadow-type">none</property>
-                        <child>
-                          <object class="GtkListBox" id="listbox">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="selection-mode">none</property>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="name">playing</property>
-                    <property name="title" translatable="yes">Currently playing</property>
-                    <property name="position">1</property>
-                  </packing>
+                  <placeholder/>
                 </child>
               </object>
               <packing>

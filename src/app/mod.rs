@@ -77,7 +77,9 @@ impl App {
         worker: Worker,
     ) -> Box<Navigation> {
         let back_btn: gtk::Button = builder.get_object("nav_back").unwrap();
-        let stack: gtk::Stack = builder.get_object("browser_stack").unwrap();
+        let navigation_stack: gtk::Stack = builder.get_object("navigation_stack").unwrap();
+        let home_stack_sidebar: gtk::StackSidebar =
+            builder.get_object("home_stack_sidebar").unwrap();
 
         let model = NavigationModel::new(Rc::clone(&app_model), dispatcher.box_clone());
         let browser_factory = BrowserFactory::new(
@@ -102,7 +104,8 @@ impl App {
         Box::new(Navigation::new(
             model,
             back_btn,
-            stack,
+            navigation_stack,
+            home_stack_sidebar,
             browser_factory,
             details_factory,
             search_factory,
@@ -128,7 +131,7 @@ impl App {
         app_model: Rc<AppModel>,
         dispatcher: Box<dyn ActionDispatcher>,
     ) -> Box<Playlist> {
-        let listbox: gtk::ListBox = builder.get_object("listbox").unwrap();
+        let listbox = gtk::ListBox::new(); // = builder.get_object("listbox").unwrap();
         let playlist = PlaylistFactory::new(app_model, dispatcher).get_current_playlist(listbox);
         Box::new(playlist)
     }
