@@ -180,8 +180,8 @@ impl EventListener for Playback {
 
 fn playback_image(is_playing: bool) -> &'static str {
     if is_playing {
-        "media-playback-pause"
+        "media-playback-pause-symbolic"
     } else {
-        "media-playback-start"
+        "media-playback-start-symbolic"
     }
 }
