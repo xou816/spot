@@ -1,10 +1,10 @@
 use gtk::prelude::*;
-use gtk::{ButtonExt, ContainerExt, StackExt, StackSidebarExt};
+use gtk::{ButtonExt, ContainerExt, StackExt};
 use std::rc::Rc;
 
 use crate::app::components::{
-    ArtistDetailsFactory, Browser, BrowserFactory, DetailsFactory, EventListener,
-    ListenerComponent, SearchFactory,
+    ArtistDetailsFactory, BrowserFactory, DetailsFactory, EventListener, ListenerComponent,
+    NowPlayingFactory, SearchFactory,
 };
 use crate::app::state::ScreenName;
 use crate::app::{AppEvent, BrowserEvent};
@@ -20,6 +20,7 @@ pub struct Navigation {
     details_factory: DetailsFactory,
     search_factory: SearchFactory,
     artist_details_factory: ArtistDetailsFactory,
+    now_playing_factory: NowPlayingFactory,
     children: Vec<Box<dyn ListenerComponent>>,
 }
 
@@ -33,6 +34,7 @@ impl Navigation {
         details_factory: DetailsFactory,
         search_factory: SearchFactory,
         artist_details_factory: ArtistDetailsFactory,
+        now_playing_factory: NowPlayingFactory,
     ) -> Self {
         let model = Rc::new(model);
         let weak_model = Rc::downgrade(&model);
@@ -51,6 +53,7 @@ impl Navigation {
             details_factory,
             search_factory,
             artist_details_factory,
+            now_playing_factory,
             children: vec![],
         }
     }
@@ -59,6 +62,7 @@ impl Navigation {
         let home = HomeComponent::new(
             self.home_stack_sidebar.clone(),
             self.browser_factory.make_browser(),
+            self.now_playing_factory.make_now_playing(),
         );
 
         let weak_model = Rc::downgrade(&self.model);
@@ -142,8 +146,8 @@ impl EventListener for Navigation {
             }
             _ => {}
         };
-        if let Some(listener) = self.children.iter_mut().last() {
-            listener.on_event(event);
+        for child in self.children.iter_mut() {
+            child.on_event(event);
         }
     }
 }

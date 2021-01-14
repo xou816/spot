@@ -1,7 +1,7 @@
 use gtk::prelude::*;
 use gtk::{StackExt, StackSidebarExt};
 
-use crate::app::components::{Browser, Component, EventListener};
+use crate::app::components::{Browser, Component, EventListener, NowPlaying};
 use crate::app::AppEvent;
 
 pub struct HomeComponent {
@@ -10,16 +10,21 @@ pub struct HomeComponent {
 }
 
 impl HomeComponent {
-    pub fn new(stack_sidebar: gtk::StackSidebar, library: Browser) -> Self {
+    pub fn new(
+        stack_sidebar: gtk::StackSidebar,
+        library: Browser,
+        now_playing: NowPlaying,
+    ) -> Self {
         let stack = gtk::Stack::new();
         stack.set_transition_type(gtk::StackTransitionType::Crossfade);
         stack.add_titled(library.get_root_widget(), "library", "Library");
+        stack.add_titled(now_playing.get_root_widget(), "now_playing", "Now playing");
 
         stack_sidebar.set_stack(&stack);
 
         Self {
             stack,
-            components: vec![Box::new(library)],
+            components: vec![Box::new(library), Box::new(now_playing)],
         }
     }
 

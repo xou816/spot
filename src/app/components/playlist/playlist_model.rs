@@ -27,8 +27,9 @@ impl PlaylistFactory {
         }
     }
 
-    pub fn get_current_playlist(self, listbox: gtk::ListBox) -> Playlist {
-        let model = CurrentlyPlayingModel::new(self.app_model, self.dispatcher);
+    pub fn make_current_playlist(&self, listbox: gtk::ListBox) -> Playlist {
+        let model =
+            CurrentlyPlayingModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
         Playlist::new(listbox, Rc::new(model))
     }
 

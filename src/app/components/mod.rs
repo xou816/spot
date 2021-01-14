@@ -41,6 +41,9 @@ use song::*;
 mod artist_details;
 pub use artist_details::*;
 
+mod now_playing;
+pub use now_playing::*;
+
 pub fn screen_add_css_provider(resource: &str) {
     let provider = gtk::CssProvider::new();
     provider.load_from_resource(resource);

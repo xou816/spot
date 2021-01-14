@@ -21,7 +21,7 @@
             <property name="can-focus">False</property>
             <child>
               <object class="GtkStackSidebar" id="home_stack_sidebar">
-                <property name="width-request">100</property>
+                <property name="width-request">150</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
               </object>
