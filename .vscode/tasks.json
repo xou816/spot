@@ -26,6 +26,15 @@
                 "reveal": "always",
                 "panel": "new"
             }
+        },
+        {
+            "label": "test",
+            "type": "shell",
+            "command": "meson test -C target --verbose",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
         }
     ]
 }

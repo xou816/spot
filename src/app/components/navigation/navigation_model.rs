@@ -21,6 +21,11 @@ impl NavigationModel {
             .dispatch(BrowserAction::NavigationPop.into())
     }
 
+    pub fn go_home(&self) {
+        self.dispatcher
+            .dispatch(BrowserAction::NavigationPopTo(ScreenName::Home).into())
+    }
+
     pub fn visible_child_name(&self) -> impl Deref<Target = ScreenName> + '_ {
         self.app_model
             .map_state(|s| s.browser_state.current_screen())

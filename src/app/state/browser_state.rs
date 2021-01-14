@@ -14,6 +14,7 @@ pub enum BrowserAction {
     SetArtistDetails(ArtistDescription),
     NavigationPush(ScreenName),
     NavigationPop,
+    NavigationPopTo(ScreenName),
 }
 
 impl Into<AppAction> for BrowserAction {
@@ -45,7 +46,7 @@ pub enum BrowserScreen {
 impl BrowserScreen {
     fn from_name(name: &ScreenName) -> Self {
         match name {
-            ScreenName::Library => BrowserScreen::Library(Default::default()),
+            ScreenName::Home => BrowserScreen::Library(Default::default()),
             ScreenName::Details(id) => BrowserScreen::Details(DetailsState::new(id.to_string())),
             ScreenName::Search => BrowserScreen::Search(Default::default()),
             ScreenName::Artist(id) => BrowserScreen::Artist(ArtistState::new(id.to_string())),
@@ -237,6 +238,10 @@ impl UpdatableState for BrowserState {
                 events
             }
             BrowserAction::NavigationPush(name) => self.push_if_needed(name),
+            BrowserAction::NavigationPopTo(name) => {
+                self.navigation.pop_to(&name);
+                vec![BrowserEvent::NavigationPoppedTo(name)]
+            }
             BrowserAction::NavigationPop if can_pop => {
                 self.navigation.pop();
                 vec![BrowserEvent::NavigationPopped]
@@ -255,7 +260,7 @@ pub mod tests {
     fn test_navigation_push() {
         let mut state = BrowserState::new();
 
-        assert_eq!(*state.current_screen(), ScreenName::Library);
+        assert_eq!(*state.current_screen(), ScreenName::Home);
         assert_eq!(state.count(), 1);
 
         let new_screen = ScreenName::Artist("some_id".to_string());
@@ -276,11 +281,11 @@ pub mod tests {
         assert_eq!(state.count(), 2);
 
         state.update_with(BrowserAction::NavigationPop);
-        assert_eq!(state.current_screen(), &ScreenName::Library);
+        assert_eq!(state.current_screen(), &ScreenName::Home);
         assert_eq!(state.count(), 1);
 
         let events = state.update_with(BrowserAction::NavigationPop);
-        assert_eq!(state.current_screen(), &ScreenName::Library);
+        assert_eq!(state.current_screen(), &ScreenName::Home);
         assert_eq!(state.count(), 1);
         assert_eq!(events, vec![]);
     }
