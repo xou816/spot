@@ -7,12 +7,14 @@ use std::rc::{Rc, Weak};
 
 use crate::app::components::{Component, EventListener, Song};
 use crate::app::models::SongModel;
-use crate::app::{AppEvent, BrowserEvent, ListStore, SongDescription};
+use crate::app::{AppEvent, ListStore, SongDescription};
 
 pub trait PlaylistModel {
     fn songs(&self) -> Option<Ref<'_, Vec<SongDescription>>>;
     fn current_song_uri(&self) -> Option<String>;
     fn play_song(&self, uri: String);
+    fn should_refresh_songs(&self, event: &AppEvent) -> bool;
+    fn menu_for(&self, uri: String) -> Option<gio::MenuModel>;
 }
 
 pub struct Playlist {
@@ -23,14 +25,31 @@ pub struct Playlist {
 impl Playlist {
     pub fn new(listbox: gtk::ListBox, model: Rc<dyn PlaylistModel>) -> Self {
         let list_model = ListStore::new();
-        let weak_model = Rc::downgrade(&model);
 
         listbox.set_selection_mode(gtk::SelectionMode::None);
         listbox.get_style_context().add_class("playlist");
+        listbox.set_activate_on_single_click(true);
 
+        let list_model_clone = list_model.clone();
+        let weak_model = Rc::downgrade(&model);
+        listbox.connect_row_activated(move |_, row| {
+            let index = row.get_index() as u32;
+            let song: SongModel = list_model_clone.get(index);
+            if let Some(m) = weak_model.upgrade() {
+                m.play_song(song.get_uri());
+            }
+        });
+
+        let weak_model = Rc::downgrade(&model);
         listbox.bind_model(Some(list_model.unsafe_store()), move |item| {
             let item = item.downcast_ref::<SongModel>().unwrap();
-            let row = Self::create_row_for(item, weak_model.clone());
+            let row = Self::create_row_for(
+                item,
+                weak_model.clone(),
+                weak_model
+                    .upgrade()
+                    .and_then(|m| m.menu_for(item.get_uri())),
+            );
             row.show_all();
             row.upcast::<gtk::Widget>()
         });
@@ -38,7 +57,11 @@ impl Playlist {
         Self { list_model, model }
     }
 
-    fn create_row_for(item: &SongModel, model: Weak<dyn PlaylistModel>) -> gtk::ListBoxRow {
+    fn create_row_for(
+        item: &SongModel,
+        model: Weak<dyn PlaylistModel>,
+        menu: Option<gio::MenuModel>,
+    ) -> gtk::ListBoxRow {
         let row = gtk::ListBoxRow::new();
 
         let is_current = model
@@ -52,13 +75,9 @@ impl Playlist {
         item.set_playing(is_current);
 
         let song = Song::new(item.clone());
-        song.connect_play_pressed(move |song| {
-            if let Some(m) = model.upgrade() {
-                m.play_song(song.get_uri());
-            }
-        });
-
         row.add(song.get_root_widget());
+        song.set_menu(menu.as_ref());
+        
         row
     }
 
@@ -95,12 +114,10 @@ impl Playlist {
 impl EventListener for Playlist {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::TrackChanged(_) | AppEvent::BrowserEvent(BrowserEvent::NavigationPopped) => {
+            AppEvent::TrackChanged(_) => {
                 self.update_list();
             }
-            AppEvent::PlaylistChanged | AppEvent::BrowserEvent(BrowserEvent::DetailsLoaded) => {
-                self.reset_list()
-            }
+            _ if self.model.should_refresh_songs(event) => self.reset_list(),
             _ => {}
         }
     }

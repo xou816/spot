@@ -2,12 +2,3 @@ label.title {
   font-size: 22px;
   font-weight: bold;
 }
-
-list.playlist {
-  padding: 8px;
-  border-radius: 8px;
-}
-
-list.playlist row {
-  border-radius: 4px;
-}

@@ -1,15 +1,17 @@
 use crate::app::components::{screen_add_css_provider, Component};
 use crate::app::models::SongModel;
+use gio::MenuModel;
 use gladis::Gladis;
 use gtk::prelude::*;
+use gtk::{MenuButtonExt, WidgetExt};
 
 #[derive(Gladis, Clone)]
 struct SongWidget {
-    root: gtk::Widget,
+    root: gtk::Box,
     song_index: gtk::Label,
     song_title: gtk::Label,
     song_artist: gtk::Label,
-    play_button: gtk::Button,
+    menu_btn: gtk::MenuButton,
 }
 
 impl SongWidget {
@@ -62,15 +64,19 @@ impl Song {
         Self { widget, model }
     }
 
-    pub fn connect_play_pressed<F: Fn(&SongModel) + 'static>(&self, f: F) {
-        self.widget
-            .play_button
-            .connect_clicked(clone!(@weak self.model as model => move |_| f(&model)));
+    pub fn set_menu(&self, menu: Option<&MenuModel>) {
+        if menu.is_some() {
+            let menu_btn = &self.widget.menu_btn;
+            menu_btn.set_menu_model(menu);
+            menu_btn
+                .get_style_context()
+                .add_class("song__menu--enabled");
+        }
     }
 }
 
 impl Component for Song {
     fn get_root_widget(&self) -> &gtk::Widget {
-        &self.widget.root
+        self.widget.root.upcast_ref()
     }
 }

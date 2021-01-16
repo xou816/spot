@@ -27,3 +27,12 @@
 .details--loaded {
   opacity: 1;
 }
+
+list.details__songs {
+  padding: 8px;
+  border-radius: 8px;
+}
+
+list.details__songs row {
+  border-radius: 4px;
+}

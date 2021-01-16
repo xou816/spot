@@ -4,9 +4,13 @@
   <requires lib="gtk+" version="3.24"/>
   <!-- interface-css-provider-path song.css -->
   <object class="GtkBox" id="root">
-    <property name="width-request">500</property>
+    <property name="height-request">30</property>
     <property name="visible">True</property>
     <property name="can-focus">False</property>
+    <property name="margin-start">2</property>
+    <property name="margin-end">2</property>
+    <property name="margin-top">2</property>
+    <property name="margin-bottom">2</property>
     <property name="spacing">8</property>
     <child>
       <object class="GtkLabel" id="song_index">
@@ -55,27 +59,17 @@
       </packing>
     </child>
     <child>
-      <object class="GtkButton" id="play_button">
+      <object class="GtkMenuButton" id="menu_btn">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
+        <property name="focus-on-click">False</property>
         <property name="receives-default">True</property>
-        <property name="halign">center</property>
-        <property name="valign">center</property>
-        <property name="relief">none</property>
-        <property name="always-show-image">True</property>
         <child>
-            <object class="GtkImage">
-                <property name="visible">True</property>
-                <property name="icon-name">media-playback-start-symbolic</property>
-            </object>
-        </child>
-        <child internal-child="accessible">
-          <object class="AtkObject">
-            <property name="AtkObject::accessible-name" translatable="yes">play</property>
-          </object>
+          <placeholder/>
         </child>
         <style>
-          <class name="song__play_button"/>
+          <class name="song__menu"/>
+          <class name="flat"/>
         </style>
       </object>
       <packing>
@@ -84,9 +78,6 @@
         <property name="pack-type">end</property>
         <property name="position">3</property>
       </packing>
-    </child>
-    <child>
-      <placeholder/>
     </child>
     <style>
       <class name="song"/>

@@ -10,7 +10,14 @@
   font-weight: bold;
 }
 
-
 .song label.song__artist {
   font-size: 14px;
+}
+
+.song__menu {
+  opacity: 0;
+}
+
+row:hover .song__menu--enabled, .song__menu--enabled:checked {
+  opacity: 1;
 }

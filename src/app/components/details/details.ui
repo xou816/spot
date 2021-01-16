@@ -38,8 +38,6 @@
                     <property name="height-request">100</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <!-- I'm taking the freedom to use a music symbolic icon
-                    instead of missing-image as default album art (~Gabmus) -->
                     <property name="icon-name">emblem-music-symbolic</property>
                     <style>
                       <class name="details__album-art"/>
@@ -140,6 +138,9 @@
                 <property name="margin-end">8</property>
                 <property name="selection-mode">none</property>
                 <property name="activate-on-single-click">False</property>
+                <style>
+                  <class name="details__songs"/>
+                </style>
               </object>
               <packing>
                 <property name="expand">False</property>

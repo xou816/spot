@@ -1,10 +1,11 @@
+use gio::prelude::*;
 use ref_filter_map::*;
 use std::cell::Ref;
 use std::rc::Rc;
 
 use crate::app::models::*;
 use crate::app::state::DetailsState;
-use crate::app::{ActionDispatcher, AppAction, AppModel, AppState};
+use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState, BrowserEvent};
 
 use super::{Playlist, PlaylistModel};
 
@@ -69,6 +70,16 @@ impl PlaylistModel for CurrentlyPlayingModel {
     fn play_song(&self, uri: String) {
         self.dispatcher.dispatch(AppAction::Load(uri));
     }
+
+    fn should_refresh_songs(&self, event: &AppEvent) -> bool {
+        matches!(event, AppEvent::PlaylistChanged)
+    }
+
+    fn menu_for(&self, _: String) -> Option<gio::MenuModel> {
+        let menu = gio::Menu::new();
+        menu.insert(0, Some("View album"), None);
+        Some(menu.upcast())
+    }
 }
 
 struct AlbumDetailsModel {
@@ -111,5 +122,13 @@ impl PlaylistModel for AlbumDetailsModel {
                 .dispatch(AppAction::LoadPlaylist(songs.clone()));
         }
         self.dispatcher.dispatch(AppAction::Load(uri));
+    }
+
+    fn should_refresh_songs(&self, event: &AppEvent) -> bool {
+        matches!(event, AppEvent::BrowserEvent(BrowserEvent::DetailsLoaded))
+    }
+
+    fn menu_for(&self, _: String) -> Option<gio::MenuModel> {
+        None
     }
 }
