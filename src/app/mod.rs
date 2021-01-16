@@ -140,18 +140,20 @@ impl App {
         let next: gtk::Button = builder.get_object("next").unwrap();
         let prev: gtk::Button = builder.get_object("prev").unwrap();
         let seek_bar: gtk::Scale = builder.get_object("seek_bar").unwrap();
+        let track_duration: gtk::Label = builder.get_object("track_duration").unwrap();
 
-        let model = PlaybackModel::new(app_model, dispatcher);
-        Box::new(Playback::new(
-            model,
-            worker,
+        let widget = PlaybackWidget::new(
             play_button,
             image,
             current_song_info,
+            seek_bar,
+            track_duration,
             next,
             prev,
-            seek_bar,
-        ))
+        );
+
+        let model = PlaybackModel::new(app_model, dispatcher);
+        Box::new(Playback::new(model, worker, widget))
     }
 
     fn make_search_bar(

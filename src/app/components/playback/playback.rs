@@ -1,5 +1,5 @@
 use gtk::prelude::*;
-use gtk::{ImageExt, RangeExt, ScaleExt};
+use gtk::{ImageExt, LabelExt, RangeExt, ScaleExt};
 use std::cell::Cell;
 use std::rc::Rc;
 
@@ -39,61 +39,94 @@ impl Clock {
     }
 }
 
+pub struct PlaybackWidget {
+    play_button: gtk::Button,
+    current_song_image: gtk::Image,
+    current_song_info: gtk::Label,
+    seek_bar: gtk::Scale,
+    track_duration: gtk::Label,
+    next: gtk::Button,
+    prev: gtk::Button,
+}
+
+impl PlaybackWidget {
+    pub fn new(
+        play_button: gtk::Button,
+        current_song_image: gtk::Image,
+        current_song_info: gtk::Label,
+        seek_bar: gtk::Scale,
+        track_duration: gtk::Label,
+        next: gtk::Button,
+        prev: gtk::Button,
+    ) -> Self {
+        seek_bar.connect_format_value(|_, value| Self::format_duration(value));
+
+        Self {
+            play_button,
+            current_song_image,
+            current_song_info,
+            seek_bar,
+            track_duration,
+            next,
+            prev,
+        }
+    }
+
+    fn format_duration(duration: f64) -> String {
+        let seconds = (duration / 1000.0) as i32;
+        let minutes = seconds.div_euclid(60);
+        let seconds = seconds.rem_euclid(60);
+        format!("{}:{:02}", minutes, seconds)
+    }
+
+    fn set_duration(&self, duration: f64) {
+        self.seek_bar.set_draw_value(true);
+        self.seek_bar.set_range(0.0, duration);
+        self.seek_bar.set_value(0.0);
+        self.track_duration.show();
+        self.track_duration
+            .set_text(&Self::format_duration(duration));
+    }
+}
+
 use super::PlaybackModel;
 
 pub struct Playback {
     model: Rc<PlaybackModel>,
     worker: Worker,
-    play_button: gtk::Button,
-    current_song_image: gtk::Image,
-    current_song_info: gtk::Label,
-    seek_bar: gtk::Scale,
+    widget: PlaybackWidget,
     clock: Clock,
 }
 
 impl Playback {
-    pub fn new(
-        model: PlaybackModel,
-        worker: Worker,
-        play_button: gtk::Button,
-        current_song_image: gtk::Image,
-        current_song_info: gtk::Label,
-        next: gtk::Button,
-        prev: gtk::Button,
-        seek_bar: gtk::Scale,
-    ) -> Self {
+    pub fn new(model: PlaybackModel, worker: Worker, widget: PlaybackWidget) -> Self {
         let model = Rc::new(model);
         let weak_model = Rc::downgrade(&model);
-        seek_bar.connect_change_value(move |_, _, requested| {
-            if let Some(model) = weak_model.upgrade() {
-                model.seek_to(requested as u32)
-            }
-            glib::signal::Inhibit(false)
-        });
-
-        seek_bar.connect_format_value(|_, value| {
-            let seconds = (value / 1000.0) as i32;
-            let minutes = seconds.div_euclid(60);
-            let seconds = seconds.rem_euclid(60);
-            format!("{}:{:02}", minutes, seconds)
-        });
+        widget
+            .seek_bar
+            .connect_change_value(move |_, _, requested| {
+                if let Some(model) = weak_model.upgrade() {
+                    model.seek_to(requested as u32)
+                }
+                glib::signal::Inhibit(false)
+            });
 
         let weak_model = Rc::downgrade(&model);
-        play_button.connect_clicked(move |_| {
+        widget.play_button.connect_clicked(move |_| {
             if let Some(model) = weak_model.upgrade() {
                 model.toggle_playback()
             }
         });
 
         let weak_model = Rc::downgrade(&model);
-        next.connect_clicked(move |_| {
+        widget.next.connect_clicked(move |_| {
             if let Some(model) = weak_model.upgrade() {
                 model.play_next_song()
             }
         });
 
         let weak_model = Rc::downgrade(&model);
-        prev.connect_clicked(move |_| {
+        widget.prev.connect_clicked(move |_| {
             if let Some(model) = weak_model.upgrade() {
                 model.play_prev_song()
             }
@@ -102,10 +135,7 @@ impl Playback {
         Self {
             model,
             worker,
-            play_button,
-            current_song_image,
-            current_song_info,
-            seek_bar,
+            widget,
             clock: Clock::new(),
         }
     }
@@ -113,7 +143,8 @@ impl Playback {
     fn toggle_playing(&self) {
         let is_playing = self.model.is_playing();
 
-        self.play_button
+        self.widget
+            .play_button
             .get_children()
             .first()
             .and_then(|child| child.downcast_ref::<gtk::Image>())
@@ -123,7 +154,7 @@ impl Playback {
             .expect("error updating icon");
 
         if is_playing {
-            let seek_bar = self.seek_bar.clone();
+            let seek_bar = self.widget.seek_bar.clone();
             self.clock.start(move || {
                 let value = seek_bar.get_value();
                 seek_bar.set_value(value + 1000.0);
@@ -138,9 +169,9 @@ impl Playback {
             let title = glib::markup_escape_text(&song.title);
             let artist = glib::markup_escape_text(&song.artist);
             let label = format!("<b>{}</b>\n{}", title.as_str(), artist.as_str());
-            self.current_song_info.set_label(&label[..]);
+            self.widget.current_song_info.set_label(&label[..]);
 
-            let image = self.current_song_image.clone();
+            let image = self.widget.current_song_image.clone();
             if let Some(url) = song.art {
                 self.worker.send_local_task(async move {
                     let loader = ImageLoader::new();
@@ -149,14 +180,12 @@ impl Playback {
                 });
             }
 
-            let duration = song.duration as f64;
-            self.seek_bar.set_range(0.0, duration);
-            self.seek_bar.set_value(0.0);
+            self.widget.set_duration(song.duration as f64);
         }
     }
 
     fn sync_seek(&self, pos: u32) {
-        self.seek_bar.set_value(pos as f64);
+        self.widget.seek_bar.set_value(pos as f64);
     }
 }
 

@@ -193,15 +193,39 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkScale" id="seek_bar">
+                  <object class="GtkBox">
                     <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="show-fill-level">True</property>
-                    <property name="restrict-to-fill-level">False</property>
-                    <property name="fill-level">0</property>
-                    <property name="round-digits">0</property>
-                    <property name="digits">0</property>
-                    <property name="value-pos">right</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkScale" id="seek_bar">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="show-fill-level">True</property>
+                        <property name="restrict-to-fill-level">False</property>
+                        <property name="fill-level">0</property>
+                        <property name="round-digits">0</property>
+                        <property name="digits">0</property>
+                        <property name="draw-value">False</property>
+                        <property name="value-pos">left</property>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="track_duration">
+                        <property name="sensitive">False</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">0:00</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -215,40 +239,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkVolumeButton">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="focus-on-click">False</property>
-                <property name="receives-default">True</property>
-                <property name="relief">none</property>
-                <property name="orientation">vertical</property>
-                <property name="icons">audio-volume-muted-symbolic
-audio-volume-high-symbolic
-audio-volume-low-symbolic
-audio-volume-medium-symbolic</property>
-                <child internal-child="plus_button">
-                  <object class="GtkButton">
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">True</property>
-                    <property name="halign">center</property>
-                    <property name="valign">center</property>
-                    <property name="relief">none</property>
-                  </object>
-                </child>
-                <child internal-child="minus_button">
-                  <object class="GtkButton">
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">True</property>
-                    <property name="halign">center</property>
-                    <property name="valign">center</property>
-                    <property name="relief">none</property>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="pack-type">end</property>
-                <property name="position">0</property>
-              </packing>
+              <placeholder/>
             </child>
           </object>
           <packing>
@@ -362,16 +353,30 @@ audio-volume-medium-symbolic</property>
             <property name="valign">center</property>
             <property name="vexpand">True</property>
             <property name="orientation">vertical</property>
+            <property name="spacing">8</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Please not that a premium account is required to use Spot.</property>
+                <property name="wrap">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-left">8</property>
-                <property name="margin-right">8</property>
+                <property name="margin-start">8</property>
+                <property name="margin-end">8</property>
                 <property name="margin-top">8</property>
                 <property name="margin-bottom">8</property>
                 <property name="orientation">vertical</property>
-                <property name="spacing">6</property>
+                <property name="spacing">8</property>
                 <child>
                   <object class="GtkEntry" id="username">
                     <property name="visible">True</property>
@@ -402,7 +407,7 @@ audio-volume-medium-symbolic</property>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">0</property>
+                <property name="position">1</property>
               </packing>
             </child>
           </object>

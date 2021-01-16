@@ -16,6 +16,9 @@
             "group": {
                 "kind": "build",
                 "isDefault": true
+            },
+            "presentation": {
+                "clear": true
             }
         },
         {
@@ -24,7 +27,7 @@
             "command": "$HOME/.local/bin/spot",
             "presentation": {
                 "reveal": "always",
-                "panel": "new"
+                "clear": true
             }
         },
         {
