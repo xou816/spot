@@ -48,6 +48,10 @@ version = "^1.0.61"
 version = "^1.0.3"
 features = ["json"]
 
+[dependencies.rand]
+version = "^0.8.2"
+features = ["small_rng"] 
+
 [dependencies]
 secret-service = "^1.1.3"
 gdk-pixbuf = "^0.9.0"

@@ -63,7 +63,7 @@ impl PlaylistModel for CurrentlyPlayingModel {
     }
 
     fn songs(&self) -> Option<Ref<'_, Vec<SongDescription>>> {
-        Some(Ref::map(self.state(), |s| &s.playlist))
+        Some(Ref::map(self.state(), |s| s.playlist.songs()))
     }
 
     fn play_song(&self, uri: String) {
@@ -105,11 +105,12 @@ impl PlaylistModel for AlbumDetailsModel {
 
     fn play_song(&self, uri: String) {
         let full_state = self.app_model.get_state();
-        let is_in_playlist = full_state.playlist.iter().any(|s| s.uri.eq(&uri));
+        let is_in_playlist = full_state.playlist.songs().iter().any(|s| s.uri.eq(&uri));
+
+        self.dispatcher.dispatch(AppAction::Load(uri));
         if let (Some(songs), false) = (self.songs(), is_in_playlist) {
             self.dispatcher
                 .dispatch(AppAction::LoadPlaylist(songs.clone()));
         }
-        self.dispatcher.dispatch(AppAction::Load(uri));
     }
 }

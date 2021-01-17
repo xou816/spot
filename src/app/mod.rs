@@ -43,7 +43,7 @@ impl App {
         worker: Worker,
         command_sender: Sender<Command>,
     ) -> Self {
-        let state = AppState::new(Vec::new());
+        let state = AppState::new();
         let dispatcher = Box::new(ActionDispatcherImpl::new(sender, worker.clone()));
         let spotify_client = Arc::new(CachedSpotifyClient::new());
         let model = AppModel::new(state, spotify_client);
@@ -135,6 +135,7 @@ impl App {
         worker: Worker,
     ) -> Box<Playback> {
         let play_button: gtk::Button = builder.get_object("play_pause").unwrap();
+        let shuffle_button: gtk::ToggleButton = builder.get_object("shuffle").unwrap();
         let image: gtk::Image = builder.get_object("playing_image").unwrap();
         let current_song_info: gtk::Label = builder.get_object("current_song_info").unwrap();
         let next: gtk::Button = builder.get_object("next").unwrap();
@@ -144,6 +145,7 @@ impl App {
 
         let widget = PlaybackWidget::new(
             play_button,
+            shuffle_button,
             image,
             current_song_info,
             seek_bar,

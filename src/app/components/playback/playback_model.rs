@@ -31,6 +31,7 @@ impl PlaybackModel {
         if let Some(current_song_uri) = state.current_song_uri.as_ref() {
             state
                 .playlist
+                .songs()
                 .iter()
                 .find(|song| song.uri == *current_song_uri)
                 .cloned()
@@ -48,12 +49,11 @@ impl PlaybackModel {
     }
 
     pub fn toggle_playback(&self) {
-        let action = if self.is_playing() {
-            AppAction::Pause
-        } else {
-            AppAction::Play
-        };
-        self.dispatcher.dispatch(action);
+        self.dispatcher.dispatch(AppAction::TogglePlay);
+    }
+
+    pub fn toggle_shuffle(&self) {
+        self.dispatcher.dispatch(AppAction::ToggleShuffle);
     }
 
     pub fn seek_to(&self, position: u32) {

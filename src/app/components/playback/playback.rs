@@ -1,5 +1,5 @@
 use gtk::prelude::*;
-use gtk::{ImageExt, LabelExt, RangeExt, ScaleExt};
+use gtk::{BinExt, ImageExt, LabelExt, RangeExt, ScaleExt};
 use std::cell::Cell;
 use std::rc::Rc;
 
@@ -41,6 +41,7 @@ impl Clock {
 
 pub struct PlaybackWidget {
     play_button: gtk::Button,
+    shuffle_button: gtk::ToggleButton,
     current_song_image: gtk::Image,
     current_song_info: gtk::Label,
     seek_bar: gtk::Scale,
@@ -52,6 +53,7 @@ pub struct PlaybackWidget {
 impl PlaybackWidget {
     pub fn new(
         play_button: gtk::Button,
+        shuffle_button: gtk::ToggleButton,
         current_song_image: gtk::Image,
         current_song_info: gtk::Label,
         seek_bar: gtk::Scale,
@@ -63,6 +65,7 @@ impl PlaybackWidget {
 
         Self {
             play_button,
+            shuffle_button,
             current_song_image,
             current_song_info,
             seek_bar,
@@ -70,6 +73,22 @@ impl PlaybackWidget {
             next,
             prev,
         }
+    }
+
+    fn set_playing(&self, is_playing: bool) {
+        let playback_image = if is_playing {
+            "media-playback-pause-symbolic"
+        } else {
+            "media-playback-start-symbolic"
+        };
+
+        self.play_button
+            .get_child()
+            .and_then(|child| child.downcast::<gtk::Image>().ok())
+            .map(|image| {
+                image.set_from_icon_name(Some(playback_image), gtk::IconSize::Button);
+            })
+            .expect("error updating icon");
     }
 
     fn format_duration(duration: f64) -> String {
@@ -101,6 +120,7 @@ pub struct Playback {
 impl Playback {
     pub fn new(model: PlaybackModel, worker: Worker, widget: PlaybackWidget) -> Self {
         let model = Rc::new(model);
+
         let weak_model = Rc::downgrade(&model);
         widget
             .seek_bar
@@ -132,6 +152,13 @@ impl Playback {
             }
         });
 
+        let weak_model = Rc::downgrade(&model);
+        widget.shuffle_button.connect_clicked(move |_| {
+            if let Some(model) = weak_model.upgrade() {
+                model.toggle_shuffle();
+            }
+        });
+
         Self {
             model,
             worker,
@@ -142,16 +169,7 @@ impl Playback {
 
     fn toggle_playing(&self) {
         let is_playing = self.model.is_playing();
-
-        self.widget
-            .play_button
-            .get_children()
-            .first()
-            .and_then(|child| child.downcast_ref::<gtk::Image>())
-            .map(|image| {
-                image.set_from_icon_name(Some(playback_image(is_playing)), gtk::IconSize::Button);
-            })
-            .expect("error updating icon");
+        self.widget.set_playing(is_playing);
 
         if is_playing {
             let seek_bar = self.widget.seek_bar.clone();
@@ -204,13 +222,5 @@ impl EventListener for Playback {
             }
             _ => {}
         }
-    }
-}
-
-fn playback_image(is_playing: bool) -> &'static str {
-    if is_playing {
-        "media-playback-pause-symbolic"
-    } else {
-        "media-playback-start-symbolic"
     }
 }
