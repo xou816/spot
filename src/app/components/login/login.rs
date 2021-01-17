@@ -1,5 +1,6 @@
+use gio::ApplicationExt;
 use gtk::prelude::*;
-use gtk::{EntryExt, GtkWindowExt};
+use gtk::{EntryExt, GtkWindowExt, WidgetExt};
 use std::rc::Rc;
 
 use crate::app::components::EventListener;
@@ -32,7 +33,13 @@ impl Login {
             }
         });
 
-        dialog.connect_delete_event(|_, _| gtk::Inhibit(true));
+        let parent_clone = parent.clone();
+        dialog.connect_delete_event(move |_, _| {
+            if let Some(app) = parent_clone.get_application().as_ref() {
+                app.quit();
+            }
+            gtk::Inhibit(true)
+        });
 
         Self {
             dialog,
@@ -46,6 +53,10 @@ impl Login {
             self.dialog.close();
             return;
         }
+        self.show_self();
+    }
+
+    fn show_self(&self) {
         self.dialog.set_transient_for(Some(&self.parent));
         self.dialog.set_modal(true);
         self.dialog.show_all();
@@ -64,6 +75,9 @@ impl EventListener for Login {
             }
             AppEvent::Started => {
                 self.show_self_if_needed();
+            }
+            AppEvent::LogoutCompleted => {
+                self.show_self();
             }
             _ => {}
         }

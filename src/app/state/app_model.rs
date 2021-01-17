@@ -42,8 +42,8 @@ impl AppModel {
 
     pub fn update_state(&self, message: AppAction) -> Vec<AppEvent> {
         match message {
-            AppAction::LoginSuccess(ref creds) => {
-                credentials::save_credentials(creds.clone()).expect("could not save credentials");
+            AppAction::SetLoginSuccess(ref creds) => {
+                let _ = credentials::save_credentials(creds.clone());
                 self.services.spotify_api.update_credentials(creds.clone());
             }
             _ => {}

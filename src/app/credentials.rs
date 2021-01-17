@@ -41,3 +41,13 @@ pub fn save_credentials(creds: Credentials) -> Result<SecretService, SsError> {
 
     Ok(service)
 }
+
+pub fn logout() -> Result<(), SsError> {
+    let service = SecretService::new(EncryptionType::Dh)?;
+    let collection = service.get_default_collection()?;
+    let attributes = vec![(SPOT_ATTR, "yes")];
+    let result = collection.search_items(attributes)?;
+
+    let item = result.get(0).ok_or(SsError::NoResult)?;
+    item.delete()
+}

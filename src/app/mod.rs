@@ -43,7 +43,7 @@ impl App {
         worker: Worker,
         command_sender: Sender<Command>,
     ) -> Self {
-        let state = AppState::new(Vec::new());
+        let state = AppState::new();
         let dispatcher = Box::new(ActionDispatcherImpl::new(sender, worker.clone()));
         let spotify_client = Arc::new(CachedSpotifyClient::new());
         let model = AppModel::new(state, spotify_client);
@@ -58,8 +58,9 @@ impl App {
             ),
             App::make_login(builder, dispatcher.box_clone()),
             App::make_navigation(builder, Rc::clone(&model), dispatcher.box_clone(), worker),
-            App::make_search_bar(builder, dispatcher),
+            App::make_search_bar(builder, dispatcher.box_clone()),
             App::make_player_notifier(command_sender),
+            App::make_user_menu(builder, Rc::clone(&model), dispatcher),
         ];
 
         App::new(model, components)
@@ -135,23 +136,27 @@ impl App {
         worker: Worker,
     ) -> Box<Playback> {
         let play_button: gtk::Button = builder.get_object("play_pause").unwrap();
+        let shuffle_button: gtk::ToggleButton = builder.get_object("shuffle").unwrap();
         let image: gtk::Image = builder.get_object("playing_image").unwrap();
         let current_song_info: gtk::Label = builder.get_object("current_song_info").unwrap();
         let next: gtk::Button = builder.get_object("next").unwrap();
         let prev: gtk::Button = builder.get_object("prev").unwrap();
         let seek_bar: gtk::Scale = builder.get_object("seek_bar").unwrap();
+        let track_duration: gtk::Label = builder.get_object("track_duration").unwrap();
 
-        let model = PlaybackModel::new(app_model, dispatcher);
-        Box::new(Playback::new(
-            model,
-            worker,
+        let widget = PlaybackWidget::new(
             play_button,
+            shuffle_button,
             image,
             current_song_info,
+            seek_bar,
+            track_duration,
             next,
             prev,
-            seek_bar,
-        ))
+        );
+
+        let model = PlaybackModel::new(app_model, dispatcher);
+        Box::new(Playback::new(model, worker, widget))
     }
 
     fn make_search_bar(
@@ -161,6 +166,17 @@ impl App {
         let search_entry: gtk::SearchEntry = builder.get_object("search_entry").unwrap();
         let model = SearchBarModel(dispatcher);
         Box::new(SearchBar::new(model, search_entry))
+    }
+
+    fn make_user_menu(
+        builder: &gtk::Builder,
+        app_model: Rc<AppModel>,
+        dispatcher: Box<dyn ActionDispatcher>,
+    ) -> Box<UserMenu> {
+        let button: gtk::MenuButton = builder.get_object("user").unwrap();
+        let model = UserMenuModel::new(app_model, dispatcher);
+        let user_menu = UserMenu::new(button, model);
+        Box::new(user_menu)
     }
 
     fn handle(&mut self, message: AppAction) {
