@@ -106,11 +106,10 @@ impl PlaylistModel for AlbumDetailsModel {
     fn play_song(&self, uri: String) {
         let full_state = self.app_model.get_state();
         let is_in_playlist = full_state.playlist.songs().iter().any(|s| s.uri.eq(&uri));
-
-        self.dispatcher.dispatch(AppAction::Load(uri));
         if let (Some(songs), false) = (self.songs(), is_in_playlist) {
             self.dispatcher
                 .dispatch(AppAction::LoadPlaylist(songs.clone()));
         }
+        self.dispatcher.dispatch(AppAction::Load(uri));
     }
 }

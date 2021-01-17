@@ -58,8 +58,9 @@ impl App {
             ),
             App::make_login(builder, dispatcher.box_clone()),
             App::make_navigation(builder, Rc::clone(&model), dispatcher.box_clone(), worker),
-            App::make_search_bar(builder, dispatcher),
+            App::make_search_bar(builder, dispatcher.box_clone()),
             App::make_player_notifier(command_sender),
+            App::make_user_menu(builder, Rc::clone(&model), dispatcher),
         ];
 
         App::new(model, components)
@@ -165,6 +166,17 @@ impl App {
         let search_entry: gtk::SearchEntry = builder.get_object("search_entry").unwrap();
         let model = SearchBarModel(dispatcher);
         Box::new(SearchBar::new(model, search_entry))
+    }
+
+    fn make_user_menu(
+        builder: &gtk::Builder,
+        app_model: Rc<AppModel>,
+        dispatcher: Box<dyn ActionDispatcher>,
+    ) -> Box<UserMenu> {
+        let button: gtk::MenuButton = builder.get_object("user").unwrap();
+        let model = UserMenuModel::new(app_model, dispatcher);
+        let user_menu = UserMenu::new(button, model);
+        Box::new(user_menu)
     }
 
     fn handle(&mut self, message: AppAction) {

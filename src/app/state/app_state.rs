@@ -13,7 +13,8 @@ pub enum AppAction {
     LoadPlaylist(Vec<SongDescription>),
     Start,
     TryLogin(String, String),
-    LoginSuccess(credentials::Credentials),
+    SetLoginSuccess(credentials::Credentials),
+    Logout,
     Next,
     Previous,
     BrowserAction(BrowserAction),
@@ -28,6 +29,7 @@ pub enum AppEvent {
     SeekSynced(u32),
     LoginStarted(String, String),
     LoginCompleted,
+    LogoutCompleted,
     TrackChanged(String),
     PlaylistChanged,
     BrowserEvent(BrowserEvent),
@@ -90,6 +92,7 @@ pub struct AppState {
     pub current_song_uri: Option<String>,
     pub playlist: ShuffledSongs,
     pub browser_state: BrowserState,
+    pub user: Option<String>,
 }
 
 impl AppState {
@@ -99,6 +102,7 @@ impl AppState {
             current_song_uri: None,
             playlist: ShuffledSongs::new(vec![]),
             browser_state: BrowserState::new(),
+            user: None,
         }
     }
 
@@ -146,7 +150,14 @@ impl AppState {
                 self.playlist.update(tracks, None);
                 vec![AppEvent::PlaylistChanged]
             }
-            AppAction::LoginSuccess(_) => vec![AppEvent::LoginCompleted],
+            AppAction::SetLoginSuccess(credentials) => {
+                self.user = Some(credentials.username);
+                vec![AppEvent::LoginCompleted]
+            }
+            AppAction::Logout => {
+                self.user = None;
+                vec![AppEvent::LogoutCompleted]
+            }
             AppAction::Seek(pos) => vec![AppEvent::TrackSeeked(pos)],
             AppAction::SyncSeek(pos) => vec![AppEvent::SeekSynced(pos)],
             AppAction::Start => vec![AppEvent::Started],

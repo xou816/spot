@@ -43,7 +43,7 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
     fn login_successful(&self, credentials: credentials::Credentials) {
         self.sender
             .clone()
-            .try_send(AppAction::LoginSuccess(credentials))
+            .try_send(AppAction::SetLoginSuccess(credentials))
             .unwrap();
     }
 
