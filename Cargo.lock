@@ -576,39 +576,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "core-foundation"
-version = "0.6.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "25b9e03f145fd4f2bf705e07b900cd41fc636598fe5dc452fd0db1441c3f496d"
-dependencies = [
- "core-foundation-sys 0.6.2",
- "libc",
-]
-
-[[package]]
 name = "core-foundation-sys"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "716c271e8613ace48344f723b60b900a93150271e5be206212d052bbc0883efa"
 dependencies = [
- "libc",
-]
-
-[[package]]
-name = "core-foundation-sys"
-version = "0.6.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e7ca8a5221364ef15ce201e8ed2f609fc312682a8f4e0e3d4aa5879764e0fa3b"
-
-[[package]]
-name = "core-graphics"
-version = "0.18.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f15b3cb55687886a6b66953123621e5a1529a91a01666d646fb64baa13f900f0"
-dependencies = [
- "bitflags",
- "core-foundation",
- "foreign-types",
  "libc",
 ]
 
@@ -638,7 +610,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d58ae1ed6536b1b233f5e3aeb6997a046ddb4d05e3f61701b58a92eb254a829e"
 dependencies = [
  "alsa-sys",
- "core-foundation-sys 0.5.1",
+ "core-foundation-sys",
  "coreaudio-rs",
  "lazy_static",
  "libc",
@@ -833,20 +805,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "enigo"
-version = "0.0.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95ce8d7672e87b3155fd5e8a9226276da5c833e15bc879c7b98a78f743b67814"
-dependencies = [
- "core-graphics",
- "libc",
- "objc",
- "pkg-config",
- "unicode-segmentation",
- "winapi 0.3.9",
-]
-
-[[package]]
 name = "env_logger"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -905,21 +863,6 @@ name = "fnv"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2fad85553e09a6f881f739c29f0b00b0f01357c743266d478b68951ce23285f3"
-
-[[package]]
-name = "foreign-types"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f6f339eb8adc052cd2ca78910fda869aefa38d22d5cb648e6485e4d3fc06f3b1"
-dependencies = [
- "foreign-types-shared",
-]
-
-[[package]]
-name = "foreign-types-shared"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
 
 [[package]]
 name = "form_urlencoded"
@@ -1377,18 +1320,6 @@ dependencies = [
  "libc",
  "pango-sys",
  "system-deps",
-]
-
-[[package]]
-name = "gtk-test"
-version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5c2efff7f57ecf8f6ffd904a0a3d1e29a95b6d4cc3d0cdc619e3837bb330575"
-dependencies = [
- "enigo",
- "gdk",
- "glib",
- "gtk",
 ]
 
 [[package]]
@@ -1957,15 +1888,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "malloc_buf"
-version = "0.0.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62bb907fe88d54d8d9ce32a3cceab4218ed2f6b7d35617cafe9adf84e43919cb"
-dependencies = [
- "libc",
-]
-
-[[package]]
 name = "match_cfg"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2251,15 +2173,6 @@ checksum = "05499f3756671c15885fee9034446956fff3f243d6077b91e5767df161f766b3"
 dependencies = [
  "hermit-abi",
  "libc",
-]
-
-[[package]]
-name = "objc"
-version = "0.2.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "915b1b472bc21c53464d6c8461c9d3af805ba1ef837e1cac254428f4a77177b1"
-dependencies = [
- "malloc_buf",
 ]
 
 [[package]]
@@ -3143,7 +3056,6 @@ dependencies = [
  "gladis",
  "glib",
  "gtk",
- "gtk-test",
  "isahc",
  "librespot",
  "protobuf",

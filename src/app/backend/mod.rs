@@ -9,7 +9,7 @@ use super::AppAction;
 use crate::app::credentials;
 
 mod player;
-pub use player::{SpotifyPlayer, SpotifyPlayerDelegate};
+pub use player::{SpotifyPlayer, SpotifyPlayerDelegate, SpotifyError};
 
 pub mod api;
 mod api_models;
@@ -47,7 +47,7 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
             .unwrap();
     }
 
-    fn report_error(&self, error: &'static str) {
+    fn report_error(&self, error: SpotifyError) {
         println!("{}", error);
     }
 
