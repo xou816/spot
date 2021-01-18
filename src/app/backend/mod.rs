@@ -9,7 +9,7 @@ use super::AppAction;
 use crate::app::credentials;
 
 mod player;
-pub use player::{SpotifyPlayer, SpotifyPlayerDelegate, SpotifyError};
+pub use player::{SpotifyError, SpotifyPlayer, SpotifyPlayerDelegate};
 
 pub mod api;
 mod api_models;
