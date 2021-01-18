@@ -10,7 +10,6 @@ use librespot::core::authentication::Credentials;
 use librespot::core::config::SessionConfig;
 use librespot::core::keymaster;
 use librespot::core::session::Session;
-use librespot::core::spotify_id::SpotifyId;
 
 use librespot::playback::audio_backend;
 use librespot::playback::config::PlayerConfig;
@@ -50,7 +49,6 @@ pub trait SpotifyPlayerDelegate {
 
 pub struct SpotifyPlayer {
     player: RefCell<Option<Player>>,
-    current_track: Cell<Option<SpotifyId>>,
     delegate: Rc<dyn SpotifyPlayerDelegate>,
 }
 
@@ -58,7 +56,6 @@ impl SpotifyPlayer {
     pub fn new(delegate: Rc<dyn SpotifyPlayerDelegate>) -> Self {
         Self {
             player: RefCell::new(None),
-            current_track: Cell::new(None),
             delegate,
         }
     }
@@ -82,21 +79,8 @@ impl SpotifyPlayer {
                 Ok(())
             }
             Command::PlayerLoad(track) => {
-                let delegate = Rc::downgrade(&self.delegate);
                 let player = player.as_mut().ok_or(SpotifyError::PlayerNotReady)?;
                 player.load(track, true, 0);
-
-                let current_track = self.current_track.replace(Some(track));
-
-                if current_track != Some(track) {
-                    let end_of_track = player.get_end_of_track_future().map(move |_| {
-                        if let Some(delegate) = delegate.upgrade() {
-                            delegate.end_of_track_reached();
-                        }
-                    });
-                    handle.spawn(end_of_track);
-                }
-
                 Ok(())
             }
             Command::Login(username, password) => {
@@ -113,6 +97,10 @@ impl SpotifyPlayer {
 
                 let new_player = create_player(session);
                 handle.spawn(player_subscribe_to_playing_event(
+                    &new_player,
+                    Rc::downgrade(&self.delegate),
+                ));
+                handle.spawn(player_end_of_track_event(
                     &new_player,
                     Rc::downgrade(&self.delegate),
                 ));
@@ -175,6 +163,22 @@ fn create_player(session: Session) -> Player {
     let player_config = PlayerConfig::default();
     let (new_player, _) = Player::new(player_config, session, None, move || backend(None));
     new_player
+}
+
+fn player_end_of_track_event(
+    player: &Player,
+    delegate: Weak<dyn SpotifyPlayerDelegate>,
+) -> impl OldFuture<Item = (), Error = ()> {
+    player
+        .get_player_event_channel()
+        .filter(|event| match event {
+            PlayerEvent::EndOfTrack { .. } | PlayerEvent::Stopped { .. } => true,
+            _ => false,
+        })
+        .for_each(move |_| {
+            delegate.upgrade().ok_or(())?.end_of_track_reached();
+            Ok(())
+        })
 }
 
 fn player_subscribe_to_playing_event(
