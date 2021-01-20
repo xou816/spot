@@ -11,10 +11,10 @@ use crate::app::{AppEvent, ListStore, SongDescription};
 
 pub trait PlaylistModel {
     fn songs(&self) -> Option<Ref<'_, Vec<SongDescription>>>;
-    fn current_song_uri(&self) -> Option<String>;
-    fn play_song(&self, uri: String);
+    fn current_song_id(&self) -> Option<String>;
+    fn play_song(&self, id: String);
     fn should_refresh_songs(&self, event: &AppEvent) -> bool;
-    fn menu_for(&self, uri: String) -> Option<gio::MenuModel>;
+    fn menu_for(&self, id: String) -> Option<gio::MenuModel>;
 }
 
 pub struct Playlist {
@@ -67,8 +67,8 @@ impl Playlist {
         let is_current = model
             .upgrade()
             .and_then(|model| {
-                let current_song_uri = model.current_song_uri();
-                current_song_uri.as_ref().map(|s| s.eq(&item.get_uri()))
+                let current_song_id = model.current_song_id();
+                current_song_id.as_ref().map(|s| s.eq(&item.get_uri()))
             })
             .unwrap_or(false);
 
@@ -82,10 +82,10 @@ impl Playlist {
     }
 
     fn song_is_current(&self, song: &SongDescription) -> bool {
-        let current_song_uri = self.model.current_song_uri();
-        let current_song_uri = current_song_uri.as_ref();
+        let current_song_id = self.model.current_song_id();
+        let current_song_id = current_song_id.as_ref();
 
-        current_song_uri.map(|s| s.eq(&song.uri)).unwrap_or(false)
+        current_song_id.map(|s| s.eq(&song.id)).unwrap_or(false)
     }
 
     fn update_list(&self) {
@@ -105,7 +105,7 @@ impl Playlist {
         if let Some(songs) = self.model.songs() {
             for (i, song) in songs.iter().enumerate() {
                 let index = i as u32 + 1;
-                list_model.append(SongModel::new(index, &song.title, &song.artist, &song.uri));
+                list_model.append(SongModel::new(index, &song.title, &song.artists_name(), &song.id));
             }
         }
     }

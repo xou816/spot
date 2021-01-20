@@ -59,16 +59,16 @@ impl CurrentlyPlayingModel {
 }
 
 impl PlaylistModel for CurrentlyPlayingModel {
-    fn current_song_uri(&self) -> Option<String> {
-        self.state().current_song_uri.clone()
+    fn current_song_id(&self) -> Option<String> {
+        self.state().current_song_id.clone()
     }
 
     fn songs(&self) -> Option<Ref<'_, Vec<SongDescription>>> {
         Some(Ref::map(self.state(), |s| s.playlist.songs()))
     }
 
-    fn play_song(&self, uri: String) {
-        self.dispatcher.dispatch(AppAction::Load(uri));
+    fn play_song(&self, id: String) {
+        self.dispatcher.dispatch(AppAction::Load(id));
     }
 
     fn should_refresh_songs(&self, event: &AppEvent) -> bool {
@@ -106,22 +106,22 @@ impl AlbumDetailsModel {
 }
 
 impl PlaylistModel for AlbumDetailsModel {
-    fn current_song_uri(&self) -> Option<String> {
-        self.state().current_song_uri.clone()
+    fn current_song_id(&self) -> Option<String> {
+        self.state().current_song_id.clone()
     }
 
     fn songs(&self) -> Option<Ref<'_, Vec<SongDescription>>> {
         ref_filter_map(self.details_state()?, |s| Some(&s.content.as_ref()?.songs))
     }
 
-    fn play_song(&self, uri: String) {
+    fn play_song(&self, id: String) {
         let full_state = self.app_model.get_state();
-        let is_in_playlist = full_state.playlist.songs().iter().any(|s| s.uri.eq(&uri));
+        let is_in_playlist = full_state.playlist.songs().iter().any(|s| s.id.eq(&id));
         if let (Some(songs), false) = (self.songs(), is_in_playlist) {
             self.dispatcher
                 .dispatch(AppAction::LoadPlaylist(songs.clone()));
         }
-        self.dispatcher.dispatch(AppAction::Load(uri));
+        self.dispatcher.dispatch(AppAction::Load(id));
     }
 
     fn should_refresh_songs(&self, event: &AppEvent) -> bool {

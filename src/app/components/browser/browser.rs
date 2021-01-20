@@ -97,8 +97,8 @@ fn create_album_for(
     child.add(album.get_root_widget());
 
     album.connect_album_pressed(move |a| {
-        if let (Some(model), Some(uri)) = (model.upgrade(), a.uri()) {
-            model.open_album(&uri);
+        if let (Some(model), Some(id)) = (model.upgrade(), a.uri()) {
+            model.open_album(&id);
         }
     });
 

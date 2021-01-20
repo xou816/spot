@@ -3,7 +3,7 @@ use std::convert::From;
 
 impl From<&AlbumDescription> for AlbumModel {
     fn from(album: &AlbumDescription) -> Self {
-        AlbumModel::new(&album.artist, &album.title, &album.art, &album.id)
+        AlbumModel::new(&album.artists_name(), &album.title, &album.art, &album.id)
     }
 }
 
@@ -14,14 +14,34 @@ impl From<AlbumDescription> for AlbumModel {
 }
 
 #[derive(Clone, Debug)]
+pub struct ArtistRef {
+    pub id: String,
+    pub name: String,
+}
+
+#[derive(Clone, Debug)]
+pub struct AlbumRef {
+    pub id: String,
+    pub name: String,
+}
+
+#[derive(Clone, Debug)]
 pub struct AlbumDescription {
+    pub id: String,
     pub title: String,
-    pub artist: String,
-    pub artist_id: String,
-    pub uri: String,
+    pub artists: Vec<ArtistRef>,
     pub art: String,
     pub songs: Vec<SongDescription>,
-    pub id: String,
+}
+
+impl AlbumDescription {
+    pub fn artists_name(&self) -> String {
+        self.artists
+            .iter()
+            .map(|a| a.name.to_string())
+            .collect::<Vec<String>>()
+            .join(", ")
+    }
 }
 
 impl PartialEq for AlbumDescription {
@@ -34,24 +54,24 @@ impl Eq for AlbumDescription {}
 
 #[derive(Clone, Debug)]
 pub struct SongDescription {
+    pub id: String,
     pub title: String,
-    pub artist: String,
-    pub uri: String,
+    pub artists: Vec<ArtistRef>,
+    pub album: AlbumRef,
     pub duration: u32,
     pub art: Option<String>,
 }
 
 impl SongDescription {
-    pub fn new(title: &str, artist: &str, uri: &str, duration: u32, art: Option<String>) -> Self {
-        Self {
-            title: title.to_string(),
-            artist: artist.to_string(),
-            uri: uri.to_string(),
-            duration,
-            art,
-        }
+    pub fn artists_name(&self) -> String {
+        self.artists
+            .iter()
+            .map(|a| a.name.to_string())
+            .collect::<Vec<String>>()
+            .join(", ")
     }
 }
+
 #[derive(Clone, Debug)]
 pub struct ArtistDescription {
     pub name: String,

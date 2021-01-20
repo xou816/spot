@@ -64,7 +64,7 @@ impl Details {
     fn update_details(&self) {
         if let Some(info) = self.model.get_album_info() {
             let album = &info.title[..];
-            let artist = &info.artist[..];
+            let artist = &info.artists_name();
             let art = info.art.clone();
             let is_liked = false;
 

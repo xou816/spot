@@ -67,8 +67,8 @@ impl SearchResults {
                 let album = Album::new(item, worker.clone());
                 let weak = Rc::downgrade(&model_clone);
                 album.connect_album_pressed(move |a| {
-                    if let (Some(uri), Some(m)) = (a.uri().as_ref(), weak.upgrade()) {
-                        m.open_album(uri);
+                    if let (Some(id), Some(m)) = (a.uri().as_ref(), weak.upgrade()) {
+                        m.open_album(id);
                     }
                 });
                 child.add(album.get_root_widget());
@@ -89,10 +89,10 @@ impl SearchResults {
             self.album_results_model.remove_all();
             for album in results.iter() {
                 self.album_results_model.append(&AlbumModel::new(
-                    &album.artist,
+                    &album.artists_name(),
                     &album.title,
                     &album.art,
-                    &album.uri,
+                    &album.id,
                 ));
             }
         }

@@ -185,7 +185,7 @@ impl Playback {
     fn update_current_info(&self) {
         if let Some(song) = self.model.current_song() {
             let title = glib::markup_escape_text(&song.title);
-            let artist = glib::markup_escape_text(&song.artist);
+            let artist = glib::markup_escape_text(&song.artists_name());
             let label = format!("<b>{}</b>\n{}", title.as_str(), artist.as_str());
             self.widget.current_song_info.set_label(&label[..]);
 

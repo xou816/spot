@@ -89,7 +89,7 @@ impl ShuffledSongs {
 
 pub struct AppState {
     pub is_playing: bool,
-    pub current_song_uri: Option<String>,
+    pub current_song_id: Option<String>,
     pub playlist: ShuffledSongs,
     pub browser_state: BrowserState,
     pub user: Option<String>,
@@ -99,7 +99,7 @@ impl AppState {
     pub fn new() -> Self {
         Self {
             is_playing: false,
-            current_song_uri: None,
+            current_song_id: None,
             playlist: ShuffledSongs::new(vec![]),
             browser_state: BrowserState::new(),
             user: None,
@@ -122,29 +122,29 @@ impl AppState {
                 vec![AppEvent::PlaylistChanged]
             }
             AppAction::Next => {
-                let next = self.next_song().map(|s| s.uri.clone());
+                let next = self.next_song().map(|s| s.id.clone());
                 if next.is_some() {
                     self.is_playing = true;
-                    self.current_song_uri = next.clone();
+                    self.current_song_id = next.clone();
                     vec![AppEvent::TrackChanged(next.unwrap())]
                 } else {
                     vec![]
                 }
             }
             AppAction::Previous => {
-                let prev = self.prev_song().map(|s| s.uri.clone());
+                let prev = self.prev_song().map(|s| s.id.clone());
                 if prev.is_some() {
                     self.is_playing = true;
-                    self.current_song_uri = prev.clone();
+                    self.current_song_id = prev.clone();
                     vec![AppEvent::TrackChanged(prev.unwrap())]
                 } else {
                     vec![]
                 }
             }
-            AppAction::Load(uri) => {
+            AppAction::Load(id) => {
                 self.is_playing = true;
-                self.current_song_uri = Some(uri.clone());
-                vec![AppEvent::TrackChanged(uri)]
+                self.current_song_id = Some(id.clone());
+                vec![AppEvent::TrackChanged(id)]
             }
             AppAction::LoadPlaylist(tracks) => {
                 self.playlist.update(tracks, None);
@@ -172,30 +172,30 @@ impl AppState {
     }
 
     fn song_index(&self) -> Option<usize> {
-        self.current_song_uri.as_ref().and_then(|uri| {
+        self.current_song_id.as_ref().and_then(|id| {
             self.playlist
                 .songs()
                 .iter()
-                .position(|song| song.uri == *uri)
+                .position(|song| song.id == *id)
         })
     }
 
     fn prev_song(&self) -> Option<&SongDescription> {
-        self.current_song_uri.as_ref().and_then(|uri| {
+        self.current_song_id.as_ref().and_then(|id| {
             self.playlist
                 .songs()
                 .iter()
-                .take_while(|&song| song.uri != *uri)
+                .take_while(|&song| song.id != *id)
                 .last()
         })
     }
 
     fn next_song(&self) -> Option<&SongDescription> {
-        self.current_song_uri.as_ref().and_then(|uri| {
+        self.current_song_id.as_ref().and_then(|id| {
             self.playlist
                 .songs()
                 .iter()
-                .skip_while(|&song| song.uri != *uri)
+                .skip_while(|&song| song.id != *id)
                 .nth(1)
         })
     }

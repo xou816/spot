@@ -58,11 +58,8 @@ impl ArtistDetailsModel {
         }));
     }
 
-    pub fn open_album(&self, uri: &str) {
-        if let Some(id) = uri.split(':').last() {
-            self.dispatcher.dispatch(
-                BrowserAction::NavigationPush(ScreenName::Details(id.to_string())).into(),
-            );
-        }
+    pub fn open_album(&self, id: &str) {
+        self.dispatcher
+            .dispatch(BrowserAction::NavigationPush(ScreenName::Details(id.to_string())).into());
     }
 }

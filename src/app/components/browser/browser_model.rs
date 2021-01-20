@@ -82,8 +82,8 @@ impl BrowserModel {
         }));
     }
 
-    pub fn open_album(&self, album_uri: &str) {
-        let screen = ScreenName::Details(album_uri.to_owned());
+    pub fn open_album(&self, album_id: &str) {
+        let screen = ScreenName::Details(album_id.to_owned());
         self.dispatcher
             .dispatch(BrowserAction::NavigationPush(screen).into());
     }

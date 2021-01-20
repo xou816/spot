@@ -65,7 +65,7 @@ impl DetailsModel {
 
     pub fn view_artist(&self) {
         if let Some(album) = self.get_album_info() {
-            let artist = &album.artist_id;
+            let artist = &album.artists.first().unwrap().id;
             self.dispatcher.dispatch(
                 BrowserAction::NavigationPush(ScreenName::Artist(artist.to_owned())).into(),
             );

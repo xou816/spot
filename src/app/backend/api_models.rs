@@ -2,7 +2,7 @@ use regex::Regex;
 use serde::Deserialize;
 use std::convert::Into;
 
-use crate::app::{AlbumDescription, SongDescription};
+use crate::app::{AlbumDescription, AlbumRef, ArtistRef, SongDescription};
 
 pub enum SearchType {
     Artist,
@@ -56,7 +56,6 @@ pub struct SavedAlbum {
 #[derive(Deserialize, Debug, Clone)]
 pub struct Album {
     pub id: String,
-    pub uri: String,
     pub tracks: Option<Tracks>,
     pub artists: Vec<Artist>,
     pub name: String,
@@ -90,7 +89,6 @@ pub struct Image {
 #[derive(Deserialize, Debug, Clone)]
 pub struct Artist {
     pub id: String,
-    pub uri: String,
     pub name: String,
 }
 
@@ -107,11 +105,11 @@ impl Default for Tracks {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct TrackItem {
-    pub uri: String,
+    pub id: String,
     pub name: String,
     pub duration_ms: i64,
     pub artists: Vec<Artist>,
-    pub albums: Option<Vec<Album>>,
+    pub album: Option<Album>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -124,23 +122,31 @@ impl Into<Vec<SongDescription>> for Album {
         let art = self.best_image_for_width(200).unwrap().url.clone();
         let items = self.tracks.unwrap_or_default().items;
 
-        items
-            .iter()
-            .map(|item| {
-                let artist = item
-                    .artists
-                    .iter()
-                    .map(|a| a.name.clone())
-                    .collect::<Vec<String>>()
-                    .join(", ");
+        let album_ref = AlbumRef {
+            id: self.id.clone(),
+            name: self.name.clone()
+        };
 
-                SongDescription::new(
-                    &item.name,
-                    &artist,
-                    &item.uri,
-                    item.duration_ms as u32,
-                    Some(art.clone()),
-                )
+        items
+            .into_iter()
+            .map(|item| {
+                let artists = item
+                    .artists
+                    .into_iter()
+                    .map(|a| ArtistRef {
+                        id: a.id,
+                        name: a.name,
+                    })
+                    .collect::<Vec<ArtistRef>>();
+
+                SongDescription {
+                    id: item.id,
+                    title: item.name,
+                    artists,
+                    album: album_ref.clone(),
+                    duration: item.duration_ms as u32,
+                    art: Some(art.clone()),
+                }
             })
             .collect()
     }
@@ -148,45 +154,23 @@ impl Into<Vec<SongDescription>> for Album {
 
 impl Into<AlbumDescription> for Album {
     fn into(self) -> AlbumDescription {
+        let artists = self
+            .artists
+            .iter()
+            .map(|a| ArtistRef {
+                id: a.id.clone(),
+                name: a.name.clone(),
+            })
+            .collect::<Vec<ArtistRef>>();
         let songs: Vec<SongDescription> = self.clone().into();
-        let artist = self.artists.first().unwrap();
         let art = self.best_image_for_width(200).unwrap().url.clone();
 
         AlbumDescription {
+            id: self.id,
             title: self.name,
-            artist: artist.name.to_owned(),
-            artist_id: artist.id.to_owned(),
-            uri: self.uri,
+            artists,
             art,
             songs,
-            id: self.id,
         }
-    }
-}
-
-impl Into<SongDescription> for TrackItem {
-    fn into(self) -> SongDescription {
-        let art = self
-            .albums
-            .unwrap_or_default()
-            .first()
-            .unwrap()
-            .best_image_for_width(200)
-            .unwrap()
-            .url
-            .clone();
-        let artist = self
-            .artists
-            .iter()
-            .map(|a| a.name.clone())
-            .collect::<Vec<String>>()
-            .join(", ");
-        SongDescription::new(
-            &self.name,
-            &artist,
-            &self.uri,
-            self.duration_ms as u32,
-            Some(art),
-        )
     }
 }

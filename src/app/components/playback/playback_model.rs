@@ -23,17 +23,17 @@ impl PlaybackModel {
 
     pub fn is_playing(&self) -> bool {
         let state = self.state();
-        state.is_playing && state.current_song_uri.is_some()
+        state.is_playing && state.current_song_id.is_some()
     }
 
     pub fn current_song(&self) -> Option<SongDescription> {
         let state = self.state();
-        if let Some(current_song_uri) = state.current_song_uri.as_ref() {
+        if let Some(current_song_id) = state.current_song_id.as_ref() {
             state
                 .playlist
                 .songs()
                 .iter()
-                .find(|song| song.uri == *current_song_uri)
+                .find(|song| song.id == *current_song_id)
                 .cloned()
         } else {
             None
