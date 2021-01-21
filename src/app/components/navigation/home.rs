@@ -5,11 +5,12 @@ use crate::app::components::{Browser, Component, EventListener, NowPlaying};
 use crate::app::AppEvent;
 
 fn find_listbox_descendant(w: &gtk::Widget) -> Option<gtk::ListBox> {
-    if let Ok(listbox) = w.clone().downcast::<gtk::ListBox>() {
-        Some(listbox)
-    } else {
-        let next = w.clone().downcast::<gtk::Bin>().ok()?.get_child()?;
-        find_listbox_descendant(&next)
+    match w.clone().downcast::<gtk::ListBox>() {
+        Ok(listbox) => Some(listbox),
+        Err(widget) => {
+            let next = widget.downcast::<gtk::Bin>().ok()?.get_child()?;
+            find_listbox_descendant(&next)
+        }
     }
 }
 
