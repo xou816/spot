@@ -18,6 +18,8 @@ pub enum AppAction {
     Next,
     Previous,
     BrowserAction(BrowserAction),
+    ShowNotification(String),
+    HideNotification,
 }
 
 impl AppAction {
@@ -40,11 +42,13 @@ pub enum AppEvent {
     TrackSeeked(u32),
     SeekSynced(u32),
     LoginStarted(String, String),
-    LoginCompleted,
+    LoginCompleted(credentials::Credentials),
     LogoutCompleted,
     TrackChanged(String),
     PlaylistChanged,
     BrowserEvent(BrowserEvent),
+    NotificationShown(String),
+    NotificationHidden,
 }
 
 pub struct ShuffledSongs {
@@ -163,8 +167,8 @@ impl AppState {
                 vec![AppEvent::PlaylistChanged]
             }
             AppAction::SetLoginSuccess(credentials) => {
-                self.user = Some(credentials.username);
-                vec![AppEvent::LoginCompleted]
+                self.user = Some(credentials.username.clone());
+                vec![AppEvent::LoginCompleted(credentials)]
             }
             AppAction::Logout => {
                 self.user = None;
@@ -180,6 +184,8 @@ impl AppState {
                 .into_iter()
                 .map(AppEvent::BrowserEvent)
                 .collect(),
+            AppAction::ShowNotification(c) => vec![AppEvent::NotificationShown(c)],
+            AppAction::HideNotification => vec![AppEvent::NotificationHidden],
         }
     }
 

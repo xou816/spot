@@ -72,7 +72,7 @@ impl EventListener for Browser {
                 self.model.refresh_saved_albums();
                 self.bind_flowbox(self.model.get_list_store().unwrap().unsafe_store())
             }
-            AppEvent::LoginCompleted => {
+            AppEvent::LoginCompleted(_) => {
                 self.model.refresh_saved_albums();
             }
             _ => {}

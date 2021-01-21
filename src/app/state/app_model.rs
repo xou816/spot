@@ -41,14 +41,6 @@ impl AppModel {
     }
 
     pub fn update_state(&self, message: AppAction) -> Vec<AppEvent> {
-        match message {
-            AppAction::SetLoginSuccess(ref creds) => {
-                let _ = credentials::save_credentials(creds.clone());
-                self.services.spotify_api.update_credentials(creds.clone());
-            }
-            _ => {}
-        }
-
         let mut state = self.state.borrow_mut();
         state.update_state(message)
     }

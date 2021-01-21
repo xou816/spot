@@ -60,7 +60,8 @@ impl App {
             App::make_navigation(builder, Rc::clone(&model), dispatcher.box_clone(), worker),
             App::make_search_bar(builder, dispatcher.box_clone()),
             App::make_player_notifier(command_sender),
-            App::make_user_menu(builder, Rc::clone(&model), dispatcher),
+            App::make_user_menu(builder, Rc::clone(&model), dispatcher.box_clone()),
+            App::make_notification(builder, dispatcher),
         ];
 
         App::new(model, components)
@@ -177,6 +178,17 @@ impl App {
         let model = UserMenuModel::new(app_model, dispatcher);
         let user_menu = UserMenu::new(button, model);
         Box::new(user_menu)
+    }
+
+    fn make_notification(
+        builder: &gtk::Builder,
+        dispatcher: Box<dyn ActionDispatcher>,
+    ) -> Box<Notification> {
+        let root: gtk::Box = builder.get_object("notification").unwrap();
+        let content: gtk::Label = builder.get_object("notification_content").unwrap();
+        let close: gtk::Button = builder.get_object("close_notification").unwrap();
+        let model = NotificationModel::new(dispatcher);
+        Box::new(Notification::new(model, root, content, close))
     }
 
     fn handle(&mut self, message: AppAction) {

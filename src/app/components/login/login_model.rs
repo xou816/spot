@@ -20,6 +20,14 @@ impl LoginModel {
         }
     }
 
+    pub fn save_for_autologin(&self, credentials: credentials::Credentials) {
+        if let Err(_) = credentials::save_credentials(credentials) {
+            self.dispatcher.dispatch(AppAction::ShowNotification(
+                "Could not save password.".to_string(),
+            ));
+        }
+    }
+
     pub fn login(&self, u: String, p: String) {
         self.dispatcher.dispatch(AppAction::TryLogin(u, p));
     }
