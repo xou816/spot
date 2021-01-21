@@ -48,7 +48,10 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
     }
 
     fn report_error(&self, error: SpotifyError) {
-        println!("{}", error);
+        self.sender
+            .clone()
+            .try_send(AppAction::ShowNotification(format!("{}", error)))
+            .unwrap();
     }
 
     fn notify_playback_state(&self, position: u32) {
@@ -63,14 +66,21 @@ pub fn start_player_service(appaction_sender: Sender<AppAction>) -> Sender<Comma
     let (sender, receiver) = channel::<Command>(0);
     thread::spawn(move || {
         let mut core = Core::new().unwrap();
-        let delegate = Rc::new(AppPlayerDelegate::new(appaction_sender));
+        let delegate = Rc::new(AppPlayerDelegate::new(appaction_sender.clone()));
         core.run(
             SpotifyPlayer::new(delegate)
                 .start(core.handle(), receiver)
                 .boxed_local()
                 .compat(),
         )
-        .expect("Player crashed!");
+        .unwrap_or_else(move |_| {
+            appaction_sender
+                .clone()
+                .try_send(AppAction::ShowNotification(
+                    "Player crashed, please restart the application.".to_string(),
+                ))
+                .unwrap();
+        })
     });
     sender
 }

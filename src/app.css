@@ -11,3 +11,12 @@ list.playlist {
 list.playlist row {
   border-radius: 4px;
 }
+
+.notification {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.notification--shown {
+  opacity: 1;
+}

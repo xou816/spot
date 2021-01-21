@@ -34,8 +34,8 @@ impl Error for SpotifyError {}
 impl fmt::Display for SpotifyError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::LoginFailed => write!(f, "LoginFailed"),
-            Self::PlayerNotReady => write!(f, "PlayerNotReady"),
+            Self::LoginFailed => write!(f, "Login failed!"),
+            Self::PlayerNotReady => write!(f, "Player is not responding."),
         }
     }
 }

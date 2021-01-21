@@ -45,7 +45,7 @@ impl UserMenu {
 impl EventListener for UserMenu {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::LoginCompleted => {
+            AppEvent::LoginCompleted(_) => {
                 self.update_menu();
             }
             _ => {}

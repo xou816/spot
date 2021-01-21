@@ -4,6 +4,7 @@ use gtk::{EntryExt, GtkWindowExt, WidgetExt};
 use std::rc::Rc;
 
 use crate::app::components::EventListener;
+use crate::app::credentials::Credentials;
 use crate::app::AppEvent;
 
 use super::LoginModel;
@@ -51,9 +52,9 @@ impl Login {
     fn show_self_if_needed(&self) {
         if self.model.try_autologin() {
             self.dialog.close();
-            return;
+        } else {
+            self.show_self();
         }
-        self.show_self();
     }
 
     fn show_self(&self) {
@@ -62,16 +63,17 @@ impl Login {
         self.dialog.show_all();
     }
 
-    fn hide(&self) {
+    fn hide_and_save_creds(&self, credentials: Credentials) {
         self.dialog.hide();
+        self.model.save_for_autologin(credentials);
     }
 }
 
 impl EventListener for Login {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::LoginCompleted => {
-                self.hide();
+            AppEvent::LoginCompleted(creds) => {
+                self.hide_and_save_creds(creds.clone());
             }
             AppEvent::Started => {
                 self.show_self_if_needed();
