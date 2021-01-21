@@ -1,6 +1,7 @@
-use secret_service::{EncryptionType, SecretService, SsError};
+use secret_service::{EncryptionType, Error, SecretService};
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string};
+use std::collections::HashMap;
 use std::str::from_utf8;
 
 static SPOT_ATTR: &str = "spot_credentials";
@@ -13,41 +14,45 @@ pub struct Credentials {
     pub country: String,
 }
 
-pub fn try_retrieve_credentials() -> Result<Credentials, SsError> {
+fn make_attributes() -> HashMap<&'static str, &'static str> {
+    let mut attributes = HashMap::new();
+    attributes.insert(SPOT_ATTR, "yes");
+    attributes
+}
+
+pub fn try_retrieve_credentials() -> Result<Credentials, Error> {
     let service = SecretService::new(EncryptionType::Dh)?;
     let collection = service.get_default_collection()?;
-    let attributes = vec![(SPOT_ATTR, "yes")];
-    let result = collection.search_items(attributes)?;
+    let result = collection.search_items(make_attributes())?;
 
-    let item = result.get(0).ok_or(SsError::NoResult)?.get_secret()?;
+    let item = result.get(0).ok_or(Error::NoResult)?.get_secret()?;
     let raw = from_utf8(&item).unwrap().to_string();
-    let parsed = from_str(&raw).map_err(|_| SsError::Parse)?;
+    let parsed = from_str(&raw).map_err(|_| Error::Parse)?;
 
     Ok(parsed)
 }
 
-pub fn save_credentials(creds: Credentials) -> Result<SecretService, SsError> {
+pub fn save_credentials(creds: Credentials) -> Result<(), Error> {
     let service = SecretService::new(EncryptionType::Dh)?;
     let collection = service.get_default_collection()?;
     let encoded = to_string(&creds).unwrap();
 
     collection.create_item(
         "Spotify Credentials",
-        vec![(SPOT_ATTR, "yes")],
+        make_attributes(),
         encoded.as_bytes(),
         true,
         "text/plain",
     )?;
 
-    Ok(service)
+    Ok(())
 }
 
-pub fn logout() -> Result<(), SsError> {
+pub fn logout() -> Result<(), Error> {
     let service = SecretService::new(EncryptionType::Dh)?;
     let collection = service.get_default_collection()?;
-    let attributes = vec![(SPOT_ATTR, "yes")];
-    let result = collection.search_items(attributes)?;
+    let result = collection.search_items(make_attributes())?;
 
-    let item = result.get(0).ok_or(SsError::NoResult)?;
+    let item = result.get(0).ok_or(Error::NoResult)?;
     item.delete()
 }
