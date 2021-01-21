@@ -124,7 +124,7 @@ impl Into<Vec<SongDescription>> for Album {
 
         let album_ref = AlbumRef {
             id: self.id.clone(),
-            name: self.name.clone()
+            name: self.name.clone(),
         };
 
         items

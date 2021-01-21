@@ -4,8 +4,8 @@ use std::rc::Rc;
 use crate::app::components::PlaylistFactory;
 use crate::app::dispatch::{ActionDispatcher, Worker};
 use crate::app::models::*;
-use crate::app::state::{BrowserAction, ScreenName};
-use crate::app::AppModel;
+use crate::app::state::BrowserAction;
+use crate::app::{AppAction, AppModel};
 
 use super::Details;
 
@@ -66,9 +66,8 @@ impl DetailsModel {
     pub fn view_artist(&self) {
         if let Some(album) = self.get_album_info() {
             let artist = &album.artists.first().unwrap().id;
-            self.dispatcher.dispatch(
-                BrowserAction::NavigationPush(ScreenName::Artist(artist.to_owned())).into(),
-            );
+            self.dispatcher
+                .dispatch(AppAction::ViewArtist(artist.to_owned()));
         }
     }
 }

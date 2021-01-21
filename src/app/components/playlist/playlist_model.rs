@@ -6,10 +6,7 @@ use std::rc::Rc;
 
 use crate::app::models::*;
 use crate::app::state::DetailsState;
-use crate::app::{
-    state::ScreenName, ActionDispatcher, AppAction, AppEvent, AppModel, AppState, BrowserAction,
-    BrowserEvent,
-};
+use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState, BrowserEvent};
 
 use super::{Playlist, PlaylistModel};
 
@@ -87,8 +84,7 @@ impl PlaylistModel for CurrentlyPlayingModel {
         let view_album = SimpleAction::new("view_album", None);
         let dispatcher = self.dispatcher.box_clone();
         view_album.connect_activate(move |_, _| {
-            dispatcher
-                .dispatch(BrowserAction::NavigationPush(ScreenName::Details(album_id.clone())).into());
+            dispatcher.dispatch(AppAction::ViewAlbum(album_id.clone()));
         });
 
         let group = SimpleActionGroup::new();

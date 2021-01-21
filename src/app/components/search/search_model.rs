@@ -1,7 +1,7 @@
 use super::SearchResults;
 use crate::app::dispatch::{ActionDispatcher, Worker};
 use crate::app::models::*;
-use crate::app::state::{AppModel, BrowserAction, ScreenName};
+use crate::app::state::{AppAction, AppModel, BrowserAction};
 use std::ops::Deref;
 use std::rc::Rc;
 
@@ -67,6 +67,6 @@ impl SearchResultsModel {
 
     pub fn open_album(&self, id: &str) {
         self.dispatcher
-            .dispatch(BrowserAction::NavigationPush(ScreenName::Details(id.to_string())).into());
+            .dispatch(AppAction::ViewAlbum(id.to_string()));
     }
 }

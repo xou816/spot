@@ -1,6 +1,6 @@
 use crate::app::credentials;
 use crate::app::models::*;
-use crate::app::state::{BrowserAction, BrowserEvent, BrowserState, UpdatableState};
+use crate::app::state::{BrowserAction, BrowserEvent, BrowserState, ScreenName, UpdatableState};
 use rand::{rngs::SmallRng, seq::SliceRandom, SeedableRng};
 
 #[derive(Clone, Debug)]
@@ -18,6 +18,18 @@ pub enum AppAction {
     Next,
     Previous,
     BrowserAction(BrowserAction),
+}
+
+impl AppAction {
+    #[allow(non_snake_case)]
+    pub fn ViewAlbum(id: String) -> Self {
+        BrowserAction::NavigationPush(ScreenName::Details(id)).into()
+    }
+
+    #[allow(non_snake_case)]
+    pub fn ViewArtist(id: String) -> Self {
+        BrowserAction::NavigationPush(ScreenName::Artist(id)).into()
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -172,12 +184,9 @@ impl AppState {
     }
 
     fn song_index(&self) -> Option<usize> {
-        self.current_song_id.as_ref().and_then(|id| {
-            self.playlist
-                .songs()
-                .iter()
-                .position(|song| song.id == *id)
-        })
+        self.current_song_id
+            .as_ref()
+            .and_then(|id| self.playlist.songs().iter().position(|song| song.id == *id))
     }
 
     fn prev_song(&self) -> Option<&SongDescription> {
