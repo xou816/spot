@@ -1,11 +1,21 @@
 use gtk::prelude::*;
-use gtk::{StackExt, StackSidebarExt};
+use gtk::{ListBoxExt, StackExt, StackSidebarExt};
 
 use crate::app::components::{Browser, Component, EventListener, NowPlaying};
 use crate::app::AppEvent;
 
+fn find_listbox_descendant(w: &gtk::Widget) -> Option<gtk::ListBox> {
+    if let Ok(listbox) = w.clone().downcast::<gtk::ListBox>() {
+        Some(listbox)
+    } else {
+        let next = w.clone().downcast::<gtk::Bin>().ok()?.get_child()?;
+        find_listbox_descendant(&next)
+    }
+}
+
 pub struct HomeComponent {
     stack: gtk::Stack,
+    stack_sidebar: gtk::StackSidebar,
     components: Vec<Box<dyn EventListener>>,
 }
 
@@ -24,14 +34,18 @@ impl HomeComponent {
 
         Self {
             stack,
+            stack_sidebar,
             components: vec![Box::new(library), Box::new(now_playing)],
         }
     }
 
     pub fn connect_navigated<F: Fn() + 'static>(&self, f: F) {
-        self.stack.connect_property_visible_child_notify(move |_| {
-            f();
-        });
+        // stack sidebar wraps a listbox with a scroll window, so i'm cheating a bit there to get the listbox ;)
+        if let Some(listbox) = find_listbox_descendant(self.stack_sidebar.upcast_ref()) {
+            listbox.connect_row_activated(move |_, _| {
+                f();
+            });
+        }
     }
 }
 
