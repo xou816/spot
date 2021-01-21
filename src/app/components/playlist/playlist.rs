@@ -14,6 +14,7 @@ pub trait PlaylistModel {
     fn current_song_id(&self) -> Option<String>;
     fn play_song(&self, id: String);
     fn should_refresh_songs(&self, event: &AppEvent) -> bool;
+    fn actions_for(&self, id: String) -> Option<gio::ActionGroup>;
     fn menu_for(&self, id: String) -> Option<gio::MenuModel>;
 }
 
@@ -48,6 +49,9 @@ impl Playlist {
                 weak_model.clone(),
                 weak_model
                     .upgrade()
+                    .and_then(|m| m.actions_for(item.get_uri())),
+                weak_model
+                    .upgrade()
                     .and_then(|m| m.menu_for(item.get_uri())),
             );
             row.show_all();
@@ -60,6 +64,7 @@ impl Playlist {
     fn create_row_for(
         item: &SongModel,
         model: Weak<dyn PlaylistModel>,
+        actions: Option<gio::ActionGroup>,
         menu: Option<gio::MenuModel>,
     ) -> gtk::ListBoxRow {
         let row = gtk::ListBoxRow::new();
@@ -77,7 +82,7 @@ impl Playlist {
         let song = Song::new(item.clone());
         row.add(song.get_root_widget());
         song.set_menu(menu.as_ref());
-        
+        song.set_actions(actions.as_ref());
         row
     }
 
@@ -105,7 +110,12 @@ impl Playlist {
         if let Some(songs) = self.model.songs() {
             for (i, song) in songs.iter().enumerate() {
                 let index = i as u32 + 1;
-                list_model.append(SongModel::new(index, &song.title, &song.artists_name(), &song.id));
+                list_model.append(SongModel::new(
+                    index,
+                    &song.title,
+                    &song.artists_name(),
+                    &song.id,
+                ));
             }
         }
     }

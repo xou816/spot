@@ -64,6 +64,10 @@ impl Song {
         Self { widget, model }
     }
 
+    pub fn set_actions(&self, actions: Option<&gio::ActionGroup>) {
+        self.get_root_widget().insert_action_group("song", actions);
+    }
+
     pub fn set_menu(&self, menu: Option<&MenuModel>) {
         if menu.is_some() {
             let menu_btn = &self.widget.menu_btn;

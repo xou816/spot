@@ -1,11 +1,15 @@
 use gio::prelude::*;
+use gio::{ActionMapExt, SimpleAction, SimpleActionGroup};
 use ref_filter_map::*;
 use std::cell::Ref;
 use std::rc::Rc;
 
 use crate::app::models::*;
 use crate::app::state::DetailsState;
-use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState, BrowserEvent};
+use crate::app::{
+    state::ScreenName, ActionDispatcher, AppAction, AppEvent, AppModel, AppState, BrowserAction,
+    BrowserEvent,
+};
 
 use super::{Playlist, PlaylistModel};
 
@@ -75,9 +79,26 @@ impl PlaylistModel for CurrentlyPlayingModel {
         matches!(event, AppEvent::PlaylistChanged)
     }
 
+    fn actions_for(&self, id: String) -> Option<gio::ActionGroup> {
+        let songs = self.songs()?;
+        let song = songs.iter().find(|s| s.id.eq(&id))?;
+
+        let album_id = song.album.id.clone();
+        let view_album = SimpleAction::new("view_album", None);
+        let dispatcher = self.dispatcher.box_clone();
+        view_album.connect_activate(move |_, _| {
+            dispatcher
+                .dispatch(BrowserAction::NavigationPush(ScreenName::Details(album_id.clone())).into());
+        });
+
+        let group = SimpleActionGroup::new();
+        group.add_action(&view_album);
+        Some(group.upcast())
+    }
+
     fn menu_for(&self, _: String) -> Option<gio::MenuModel> {
         let menu = gio::Menu::new();
-        menu.insert(0, Some("View album"), None);
+        menu.insert(0, Some("View album"), Some("song.view_album"));
         Some(menu.upcast())
     }
 }
@@ -126,6 +147,10 @@ impl PlaylistModel for AlbumDetailsModel {
 
     fn should_refresh_songs(&self, event: &AppEvent) -> bool {
         matches!(event, AppEvent::BrowserEvent(BrowserEvent::DetailsLoaded))
+    }
+
+    fn actions_for(&self, _: String) -> Option<gio::ActionGroup> {
+        None
     }
 
     fn menu_for(&self, _: String) -> Option<gio::MenuModel> {
