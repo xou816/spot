@@ -18,9 +18,9 @@ impl SongWidget {
         Self::from_resource(resource!("/components/song.ui")).unwrap()
     }
 
-    fn set_playing(&self, is_playing: bool) {
+    fn set_playing(widget: &gtk::Widget, is_playing: bool) {
         let song_class = "song--playing";
-        let context = self.root.get_style_context();
+        let context = widget.get_style_context();
         if is_playing {
             context.add_class(song_class);
         } else {
@@ -53,21 +53,19 @@ impl Song {
             .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
             .build();
 
-        widget.set_playing(model.get_playing());
+        SongWidget::set_playing(&widget.root, model.get_playing());
 
-        let widget_clone = widget.clone();
-        model.connect_playing_local(move |song| {
-            widget_clone.set_playing(song.get_playing());
-        });
+        model.connect_playing_local(clone!(@weak widget.root as root => move |song| {
+            SongWidget::set_playing(&root, song.get_playing());
+        }));
 
         Self { widget, model }
     }
 
     pub fn connect_play_pressed<F: Fn(&SongModel) + 'static>(&self, f: F) {
-        let model_clone = self.model.clone();
         self.widget
             .play_button
-            .connect_clicked(move |_| f(&model_clone));
+            .connect_clicked(clone!(@weak self.model as model => move |_| f(&model)));
     }
 }
 

@@ -24,22 +24,22 @@ impl Login {
         model: LoginModel,
     ) -> Self {
         let model = Rc::new(model);
-        let weak_model = Rc::downgrade(&model);
-        login_btn.connect_clicked(move |_| {
-            let username = username.get_text().as_str().to_string();
-            let password = password.get_text().as_str().to_string();
-            if let Some(m) = weak_model.upgrade() {
-                m.login(username, password);
-            }
-        });
+        login_btn.connect_clicked(
+            clone!(@weak username, @weak password,  @weak model => move |_| {
+                let username = username.get_text().as_str().to_string();
+                let password = password.get_text().as_str().to_string();
+                model.login(username, password);
+            }),
+        );
 
-        let parent_clone = parent.clone();
-        dialog.connect_delete_event(move |_, _| {
-            if let Some(app) = parent_clone.get_application().as_ref() {
-                app.quit();
-            }
-            gtk::Inhibit(true)
-        });
+        dialog.connect_delete_event(
+            clone!(@weak parent => @default-return gtk::Inhibit(false), move |_, _| {
+                if let Some(app) = parent.get_application().as_ref() {
+                    app.quit();
+                }
+                gtk::Inhibit(true)
+            }),
+        );
 
         Self {
             dialog,

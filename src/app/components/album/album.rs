@@ -60,10 +60,11 @@ impl Album {
     }
 
     pub fn connect_album_pressed<F: Fn(&AlbumModel) + 'static>(&self, f: F) {
-        let model_clone = self.model.clone();
         self.widget
             .cover_btn
-            .connect_clicked(move |_| f(&model_clone));
+            .connect_clicked(clone!(@weak self.model as model => move |_| {
+                f(&model);
+            }));
     }
 }
 

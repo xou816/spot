@@ -1,3 +1,5 @@
+#[macro_use(clone)]
+extern crate glib;
 use gio::prelude::*;
 use gtk::prelude::*;
 use gtk::SettingsExt;
