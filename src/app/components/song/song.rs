@@ -7,7 +7,7 @@ use gtk::{MenuButtonExt, WidgetExt};
 
 #[derive(Gladis, Clone)]
 struct SongWidget {
-    root: gtk::Box,
+    root: gtk::Widget,
     song_index: gtk::Label,
     song_title: gtk::Label,
     song_artist: gtk::Label,
@@ -77,6 +77,6 @@ impl Song {
 
 impl Component for Song {
     fn get_root_widget(&self) -> &gtk::Widget {
-        self.widget.root.upcast_ref()
+        &self.widget.root
     }
 }
