@@ -30,6 +30,22 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.1.2" date="2021-01-25">
+      <description>
+        <p>
+          New features:
+        </p>
+        <ul>
+          <li>improved playlist widget, added menu to jump from "Now playing" to related albums</li>
+          <li>added in-app notifications for <i>some</i> errors</li>
+        </ul>
+        <p>Fixes:</p>
+        <ul>
+          <li>fixed an issue where songs would be skipped in a playlist when autoplaying</li>
+          <li>fixed character encoding in search queries</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.1" date="2021-01-17">
       <description>
         <p>Notables changes: symbolic icons everyhere (thanks gabmus!), shuffle play, logout</p>
