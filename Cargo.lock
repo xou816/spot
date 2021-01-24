@@ -3105,6 +3105,7 @@ name = "spot"
 version = "0.1.1"
 dependencies = [
  "async-std",
+ "form_urlencoded",
  "futures 0.3.12",
  "futures01",
  "gdk",
