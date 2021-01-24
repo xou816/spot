@@ -1,5 +1,7 @@
+use form_urlencoded::Serializer;
 use futures::future::BoxFuture;
 use isahc::config::Configurable;
+use isahc::http::Uri;
 use isahc::{AsyncReadResponseExt, HttpClient, Request};
 use serde_json::from_str;
 use std::convert::AsRef;
@@ -13,7 +15,7 @@ use super::cache::{CacheExpiry, CacheFile, CacheManager, CachePolicy};
 use crate::app::credentials::Credentials;
 use crate::app::models::*;
 
-const SPOTIFY_API: &str = "https://api.spotify.com/v1";
+const SPOTIFY_HOST: &str = "api.spotify.com";
 
 pub trait SpotifyApiClient {
     fn get_artist(&self, id: &str) -> BoxFuture<Option<ArtistDescription>>;
@@ -27,49 +29,6 @@ pub trait SpotifyApiClient {
         limit: u32,
     ) -> BoxFuture<Option<Vec<AlbumDescription>>>;
     fn update_credentials(&self, credentials: Credentials);
-}
-
-#[cfg(test)]
-pub mod tests {
-
-    use super::*;
-
-    pub struct TestSpotifyApiClient {}
-
-    impl TestSpotifyApiClient {
-        pub fn new() -> Self {
-            Self {}
-        }
-    }
-
-    impl SpotifyApiClient for TestSpotifyApiClient {
-        fn get_artist(&self, _id: &str) -> BoxFuture<Option<ArtistDescription>> {
-            Box::pin(async { None })
-        }
-
-        fn get_album(&self, _id: &str) -> BoxFuture<Option<AlbumDescription>> {
-            Box::pin(async { None })
-        }
-
-        fn get_saved_albums(
-            &self,
-            _offset: u32,
-            _limit: u32,
-        ) -> BoxFuture<Option<Vec<AlbumDescription>>> {
-            Box::pin(async { None })
-        }
-
-        fn search_albums(
-            &self,
-            _query: &str,
-            _offset: u32,
-            _limit: u32,
-        ) -> BoxFuture<Option<Vec<AlbumDescription>>> {
-            Box::pin(async { None })
-        }
-
-        fn update_credentials(&self, _credentials: Credentials) {}
-    }
 }
 
 pub struct CachedSpotifyClient {
@@ -158,12 +117,28 @@ impl CachedSpotifyClient {
         )
     }
 
+    fn uri(&self, path: String, query: Option<String>) -> Result<Uri, isahc::http::Error> {
+        let path_and_query = match query {
+            None => path,
+            Some(query) => format!("{}?{}", path, query),
+        };
+        Uri::builder()
+            .scheme("https")
+            .authority(SPOTIFY_HOST)
+            .path_and_query(&path_and_query[..])
+            .build()
+    }
+
+    fn make_query_params() -> Serializer<'static, String> {
+        Serializer::new(String::new())
+    }
+
     async fn get_artist_no_cache(&self, id: &str) -> Option<String> {
         let request = {
             let creds = self.credentials.lock().ok()?;
             let creds = creds.as_ref()?;
 
-            let uri = format!("{}/artists/{}", SPOTIFY_API, id);
+            let uri = self.uri(format!("/v1/artists/{}", id), None).ok()?;
             Request::get(uri)
                 .header("Authorization", format!("Bearer {}", &creds.token))
                 .body(())
@@ -179,10 +154,14 @@ impl CachedSpotifyClient {
             let creds = self.credentials.lock().ok()?;
             let creds = creds.as_ref()?;
 
-            let uri = format!(
-                "{}/artists/{}/albums?include_groups=album&country=from_token",
-                SPOTIFY_API, id
-            );
+            let query = Self::make_query_params()
+                .append_pair("include_groups", "album")
+                .append_pair("country", "from_token")
+                .finish();
+
+            let uri = self
+                .uri(format!("/v1/artists/{}/albums", id), Some(query))
+                .ok()?;
             Request::get(uri)
                 .header("Authorization", format!("Bearer {}", &creds.token))
                 .body(())
@@ -198,7 +177,7 @@ impl CachedSpotifyClient {
             let creds = self.credentials.lock().ok()?;
             let creds = creds.as_ref()?;
 
-            let uri = format!("{}/albums/{}", SPOTIFY_API, id);
+            let uri = self.uri(format!("/v1/albums/{}", id), None).ok()?;
             Request::get(uri)
                 .header("Authorization", format!("Bearer {}", &creds.token))
                 .body(())
@@ -214,10 +193,12 @@ impl CachedSpotifyClient {
             let creds = self.credentials.lock().ok()?;
             let creds = creds.as_ref()?;
 
-            let uri = format!(
-                "{}/me/albums?offset={}&limit={}",
-                SPOTIFY_API, offset, limit
-            );
+            let query = Self::make_query_params()
+                .append_pair("offset", &offset.to_string()[..])
+                .append_pair("limit", &limit.to_string()[..])
+                .finish();
+
+            let uri = self.uri("/v1/me/albums".to_string(), Some(query)).ok()?;
             Request::get(uri)
                 .header("Authorization", format!("Bearer {}", &creds.token))
                 .body(())
@@ -239,11 +220,10 @@ impl CachedSpotifyClient {
                 limit: 5,
                 offset: 0,
             };
-            let uri = format!(
-                "{}/search?{}&market=from_token",
-                SPOTIFY_API,
-                query.into_query_string()
-            );
+
+            let uri = self
+                .uri("/v1/search".to_string(), Some(query.into_query_string()))
+                .ok()?;
 
             Request::get(uri)
                 .header("Authorization", format!("Bearer {}", token))
@@ -363,5 +343,53 @@ impl SpotifyApiClient for CachedSpotifyClient {
                     .collect::<Vec<AlbumDescription>>(),
             )
         })
+    }
+}
+
+#[cfg(test)]
+pub mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_search_query() {
+        let query = SearchQuery {
+            query: "test".to_string(),
+            types: vec![SearchType::Album, SearchType::Artist],
+            limit: 5,
+            offset: 0,
+        };
+
+        assert_eq!(
+            query.into_query_string(),
+            "type=album,artist&q=test&offset=0&limit=5&market=from_token"
+        );
+    }
+
+    #[test]
+    fn test_search_query_spaces_and_stuff() {
+        let query = SearchQuery {
+            query: "test??? wow".to_string(),
+            types: vec![SearchType::Album],
+            limit: 5,
+            offset: 0,
+        };
+
+        assert_eq!(
+            query.into_query_string(),
+            "type=album&q=test+wow&offset=0&limit=5&market=from_token"
+        );
+    }
+
+    #[test]
+    fn test_search_query_encoding() {
+        let query = SearchQuery {
+            query: "кириллица".to_string(),
+            types: vec![SearchType::Album],
+            limit: 5,
+            offset: 0,
+        };
+
+        assert_eq!(query.into_query_string(), "type=album&q=%D0%BA%D0%B8%D1%80%D0%B8%D0%BB%D0%BB%D0%B8%D1%86%D0%B0&offset=0&limit=5&market=from_token");
     }
 }

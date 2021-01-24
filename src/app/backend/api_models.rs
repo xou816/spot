@@ -1,3 +1,4 @@
+use form_urlencoded::Serializer;
 use regex::Regex;
 use serde::Deserialize;
 use std::convert::Into;
@@ -34,12 +35,16 @@ impl SearchQuery {
         types.pop();
 
         let re = Regex::new(r"(\W|\s)+").unwrap();
-        let query = re.replace_all(&self.query[..], "+");
+        let query = re.replace_all(&self.query[..], " ");
 
-        format!(
-            "q={}&type={}&offset={}&limit={}",
-            query, types, self.offset, self.limit
-        )
+        let serialized = Serializer::new(String::new())
+            .append_pair("q", query.as_ref())
+            .append_pair("offset", &self.offset.to_string()[..])
+            .append_pair("limit", &self.limit.to_string()[..])
+            .append_pair("market", "from_token")
+            .finish();
+
+        format!("type={}&{}", types, serialized)
     }
 }
 

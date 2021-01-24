@@ -4,7 +4,8 @@
     "version": "2.0.0",
     "options": {
         "env": {
-            "RUST_BACKTRACE": "1"
+            "RUST_BACKTRACE": "1",
+            "https_proxy": "localhost:8080"
         }
     },
     "tasks": [

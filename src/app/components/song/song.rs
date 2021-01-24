@@ -33,7 +33,6 @@ impl SongWidget {
 
 pub struct Song {
     widget: SongWidget,
-    model: SongModel,
 }
 
 impl Song {
@@ -61,7 +60,7 @@ impl Song {
             SongWidget::set_playing(&root, song.get_playing());
         }));
 
-        Self { widget, model }
+        Self { widget }
     }
 
     pub fn set_actions(&self, actions: Option<&gio::ActionGroup>) {
