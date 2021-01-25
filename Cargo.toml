@@ -39,7 +39,7 @@ version = "0.3.12"
 features = ["compat"]
 
 [dependencies.serde]
-version = "^1.0.119"
+version = "^1.0.122"
 features = ["derive"]
 
 [dependencies.serde_json]
