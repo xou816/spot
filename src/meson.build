@@ -69,6 +69,8 @@ sources = files(
 './app/components/search/search.rs',
 './app/components/mod.rs',
 './app/components/notification.rs',
+'./app/dbus/generated.rs',
+'./app/dbus/mod.rs',
 './app/loader.rs',
 './app/list_store.rs',
 './app/credentials.rs',

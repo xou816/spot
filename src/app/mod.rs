@@ -13,6 +13,8 @@ pub mod backend;
 use backend::api::CachedSpotifyClient;
 use backend::Command;
 
+pub mod dbus;
+
 pub mod gtypes;
 
 pub mod models;

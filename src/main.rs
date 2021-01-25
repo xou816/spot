@@ -8,6 +8,7 @@ mod app;
 mod config;
 
 use crate::app::backend;
+use crate::app::dbus;
 use crate::app::dispatch::{spawn_task_handler, DispatchLoop};
 use crate::app::{App, AppAction};
 
@@ -26,6 +27,8 @@ fn main() {
     let worker = spawn_task_handler(&context);
 
     let player_sender = backend::start_player_service(sender.clone());
+
+    dbus::start_dbus_service(sender.clone());
 
     context.spawn_local(
         App::new_from_builder(&builder, sender.clone(), worker, player_sender).start(dispatch_loop),
