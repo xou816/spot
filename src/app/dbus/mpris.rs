@@ -1,14 +1,84 @@
-#![allow(non_snake_case)] 
+#![allow(non_snake_case)]
 
 use futures::channel::mpsc::Sender;
-use zbus::dbus_interface;
+use zbus::{dbus_interface, Interface};
 use zbus::fdo::{Error, Result};
+use zvariant::{Dict, Str, Signature, Value};
+use std::convert::Into;
+use zvariant::Type;
 
 use crate::app::AppAction;
 
-pub struct SpotMpris(pub Sender<AppAction>);
-pub struct SpotMprisPlayer(pub Sender<AppAction>);
+fn boxed_value<'a, V: Into<Value<'a>>>(v: V) -> Value<'a> {
+    Value::new(v.into())
+}
 
+#[derive(Clone, Copy, Debug)]
+enum PlaybackStatus {
+    Playing,
+    Paused,
+    Stopped
+}
+
+impl Type for PlaybackStatus {
+    fn signature() -> Signature<'static> {
+        Str::signature()
+    }
+}
+
+impl From<PlaybackStatus> for Value<'_> {
+
+    fn from(status: PlaybackStatus) -> Self {
+        match status {
+            PlaybackStatus::Playing => "Playing".into(),
+            PlaybackStatus::Paused => "Paused".into(),
+            PlaybackStatus::Stopped => "Stopped".into()
+        }
+    }
+}
+
+struct TrackMetadata {
+    artist: Vec<String>,
+    title: String
+}
+
+impl Type for TrackMetadata {
+    fn signature() -> Signature<'static> {
+        Signature::from_str_unchecked("a{sv}")
+    }
+}
+
+impl <'a> From<&'a TrackMetadata> for Value<'a> {
+
+    fn from(meta: &'a TrackMetadata) -> Self {
+        let mut d = Dict::new(Str::signature(), Value::signature());
+        d.append("xesam:title".into(), boxed_value(&meta.title)).unwrap();
+        d.append("xesam:artist".into(), boxed_value(&meta.artist)).unwrap();
+        d.append("xesam:albumArtist".into(), boxed_value(&meta.artist)).unwrap();
+        Value::Dict(d)
+    }
+}
+
+
+pub struct SpotMpris(pub Sender<AppAction>);
+
+pub struct SpotMprisPlayer {
+    track: TrackMetadata,
+    status: PlaybackStatus
+}
+
+impl SpotMprisPlayer {
+
+    pub fn new() -> Self {
+        Self {
+            track: TrackMetadata {
+                title: "test".to_string(),
+                artist: vec!["test2".to_string()],
+            },
+            status: PlaybackStatus::Paused
+        }
+    }
+}
 
 #[dbus_interface(interface = "org.mpris.MediaPlayer2")]
 impl SpotMpris {
@@ -42,8 +112,8 @@ impl SpotMpris {
 
     /// Identity property
     #[dbus_interface(property)]
-    fn identity(&self) -> String {
-        "Spot".to_string()
+    fn identity(&self) -> &'static str {
+        "Spot"
     }
 
     /// SupportedMimeTypes property
@@ -77,8 +147,9 @@ impl SpotMprisPlayer {
     }
 
     /// Play method
-    fn play(&self) -> Result<()> {
-        Err(Error::NotSupported("Not implemented".to_string()))
+    fn play(&mut self) -> Result<()> {
+        self.status = PlaybackStatus::Playing;
+        Ok(())
     }
 
     /// PlayPause method
@@ -154,11 +225,8 @@ impl SpotMprisPlayer {
 
     /// Metadata property
     #[dbus_interface(property)]
-    fn metadata(&self) -> std::collections::HashMap<&str, zvariant::Value> {
-        let mut meta = std::collections::HashMap::new();
-        meta.insert("xesam:albumArtist", "test".into());
-        meta.insert("xesam:title", "test".into());
-        meta
+    fn metadata(&self) -> &TrackMetadata {
+        &self.track
     }
 
     /// MinimumRate property
@@ -169,10 +237,9 @@ impl SpotMprisPlayer {
 
     /// PlaybackStatus property
     #[dbus_interface(property)]
-    fn playback_status(&self) -> &'static str {
-        "Playing"
+    fn playback_status(&self) -> PlaybackStatus {
+        self.status
     }
-
     /// Position property
     #[dbus_interface(property)]
     fn position(&self) -> i64 {

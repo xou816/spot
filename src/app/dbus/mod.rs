@@ -20,7 +20,7 @@ fn register_dbus_service(
 
     let mut object_server = zbus::ObjectServer::new(&connection);
     object_server.at(&"/org/mpris/MediaPlayer2".try_into()?, SpotMpris(appaction_sender.clone()))?;
-    object_server.at(&"/org/mpris/MediaPlayer2".try_into()?, SpotMprisPlayer(appaction_sender))?;
+    object_server.at(&"/org/mpris/MediaPlayer2".try_into()?, SpotMprisPlayer::new())?;
     Ok(object_server)
 }
 
