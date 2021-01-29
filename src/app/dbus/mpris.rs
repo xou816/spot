@@ -188,6 +188,8 @@ impl SpotMprisPlayer {
     #[dbus_interface(property)]
     pub fn metadata(&self) -> TrackMetadata {
         self.state.current_track().unwrap_or(TrackMetadata {
+            id: String::new(),
+            length: 0,
             title: "Not playing".to_string(),
             artist: vec![],
         })

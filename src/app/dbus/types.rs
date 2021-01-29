@@ -32,6 +32,8 @@ impl From<PlaybackStatus> for Value<'_> {
 
 #[derive(Clone)]
 pub struct TrackMetadata {
+    pub id: String,
+    pub length: u64,
     pub artist: Vec<String>,
     pub title: String,
 }
@@ -45,6 +47,10 @@ impl Type for TrackMetadata {
 impl From<TrackMetadata> for Value<'_> {
     fn from(meta: TrackMetadata) -> Self {
         let mut d = Dict::new(Str::signature(), Value::signature());
+        d.append("mpris:trackid".into(), boxed_value(meta.id))
+            .unwrap();
+        d.append("mpris:length".into(), boxed_value(meta.length))
+            .unwrap();
         d.append("xesam:title".into(), boxed_value(meta.title))
             .unwrap();
         d.append("xesam:artist".into(), boxed_value(meta.artist.clone()))

@@ -41,7 +41,15 @@ impl ConnectionWrapper {
 
     fn make_track_meta(&self) -> Option<TrackMetadata> {
         self.app_model.get_state().current_song().map(
-            |SongDescription { title, artists, .. }| TrackMetadata {
+            |SongDescription {
+                 id,
+                 title,
+                 artists,
+                 duration,
+                 ..
+             }| TrackMetadata {
+                id: format!("/dev/alextren/Spot/Track/{}", id),
+                length: duration as u64,
                 title,
                 artist: artists.into_iter().map(|a| a.name).collect(),
             },
