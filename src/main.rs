@@ -10,7 +10,7 @@ mod config;
 use crate::app::backend;
 use crate::app::dbus;
 use crate::app::dispatch::{spawn_task_handler, DispatchLoop};
-use crate::app::{App, AppAction};
+use crate::app::{App, AppAction, components::PlayerNotifier};
 
 fn main() {
     setup_gtk();
@@ -27,11 +27,15 @@ fn main() {
     let worker = spawn_task_handler(&context);
 
     let player_sender = backend::start_player_service(sender.clone());
+    let conn = dbus::start_dbus_server(sender.clone()).expect("could not start server");
 
-    dbus::start_dbus_service(sender.clone());
+    let mut extra: Vec<Box<dyn crate::app::components::EventListener>> = vec![
+        Box::new(PlayerNotifier::new(player_sender)),
+        Box::new(conn)
+    ];
 
     context.spawn_local(
-        App::new_from_builder(&builder, sender.clone(), worker, player_sender).start(dispatch_loop),
+        App::new_from_builder(&builder, sender.clone(), worker, &mut extra).start(dispatch_loop),
     );
 
     let window = make_window(&builder);

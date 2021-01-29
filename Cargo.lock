@@ -2083,6 +2083,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "nix"
+version = "0.19.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b2ccba0cfe4fdf15982d1674c69b1fd80bad427d293849982668dfe454bd61f2"
+dependencies = [
+ "bitflags",
+ "cc",
+ "cfg-if 1.0.0",
+ "libc",
+]
+
+[[package]]
 name = "nom"
 version = "5.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2425,6 +2437,12 @@ dependencies = [
  "wepoll-sys",
  "winapi 0.3.9",
 ]
+
+[[package]]
+name = "pollster"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a0c427c464eaca5923b642b3b346792b9c98edd91026aa6a753435e42d2a07b"
 
 [[package]]
 name = "ppv-lite86"
@@ -2903,8 +2921,8 @@ dependencies = [
  "rand 0.8.2",
  "serde",
  "sha2 0.9.2",
- "zbus",
- "zbus_macros",
+ "zbus 1.8.0",
+ "zbus_macros 1.8.0",
  "zvariant",
  "zvariant_derive",
 ]
@@ -3124,7 +3142,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio-core",
- "zbus",
+ "zbus 2.0.0-beta",
  "zvariant",
  "zvariant_derive",
 ]
@@ -3893,13 +3911,38 @@ dependencies = [
  "fastrand",
  "futures 0.3.12",
  "nb-connect",
- "nix",
+ "nix 0.17.0",
  "once_cell",
  "polling",
  "scoped-tls 1.0.0",
  "serde",
  "serde_repr",
- "zbus_macros",
+ "zbus_macros 1.8.0",
+ "zvariant",
+]
+
+[[package]]
+name = "zbus"
+version = "2.0.0-beta"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "af79db7390577a815660d03f7c4975519dfaa36c8d13f42d7fcff3a6d8000e12"
+dependencies = [
+ "async-io",
+ "async-lock",
+ "byteorder",
+ "derivative",
+ "enumflags2",
+ "fastrand",
+ "futures-core",
+ "futures-sink",
+ "futures-util",
+ "nix 0.19.1",
+ "once_cell",
+ "pollster",
+ "scoped-tls 1.0.0",
+ "serde",
+ "serde_repr",
+ "zbus_macros 2.0.0-beta",
  "zvariant",
 ]
 
@@ -3908,6 +3951,18 @@ name = "zbus_macros"
 version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "87cc141cda72384bef359badf1808e391d3968f9299e8f3c3cbb78dafa1e0930"
+dependencies = [
+ "proc-macro-crate",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "zbus_macros"
+version = "2.0.0-beta"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "af34a6cffc3b48f8d009f174a743f1282856535011e16ec832a030fe2b926106"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",

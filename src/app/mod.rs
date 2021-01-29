@@ -11,7 +11,6 @@ use components::*;
 
 pub mod backend;
 use backend::api::CachedSpotifyClient;
-use backend::Command;
 
 pub mod dbus;
 
@@ -43,7 +42,7 @@ impl App {
         builder: &gtk::Builder,
         sender: Sender<AppAction>,
         worker: Worker,
-        command_sender: Sender<Command>,
+        extra_listeners: &mut Vec<Box<dyn EventListener>>
     ) -> Self {
         let state = AppState::new();
         let dispatcher = Box::new(ActionDispatcherImpl::new(sender, worker.clone()));
@@ -51,7 +50,7 @@ impl App {
         let model = AppModel::new(state, spotify_client);
         let model = Rc::new(model);
 
-        let components: Vec<Box<dyn EventListener>> = vec![
+        let mut components: Vec<Box<dyn EventListener>> = vec![
             App::make_playback(
                 builder,
                 Rc::clone(&model),
@@ -61,16 +60,12 @@ impl App {
             App::make_login(builder, dispatcher.box_clone()),
             App::make_navigation(builder, Rc::clone(&model), dispatcher.box_clone(), worker),
             App::make_search_bar(builder, dispatcher.box_clone()),
-            App::make_player_notifier(command_sender),
             App::make_user_menu(builder, Rc::clone(&model), dispatcher.box_clone()),
             App::make_notification(builder, dispatcher),
         ];
+        components.append(extra_listeners);
 
         App::new(model, components)
-    }
-
-    fn make_player_notifier(sender: Sender<Command>) -> Box<PlayerNotifier> {
-        Box::new(PlayerNotifier::new(sender))
     }
 
     fn make_navigation(

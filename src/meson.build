@@ -71,6 +71,7 @@ sources = files(
 './app/components/notification.rs',
 './app/dbus/mpris.rs',
 './app/dbus/mod.rs',
+'./app/dbus/types.rs',
 './app/loader.rs',
 './app/list_store.rs',
 './app/credentials.rs',
