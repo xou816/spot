@@ -112,10 +112,15 @@ impl SpotMprisPlayer {
         )
     }
 
-    pub fn notify_metadata(&self) -> zbus::Result<()> {
+    pub fn notify_metadata_and_prev_next(&self) -> zbus::Result<()> {
         let invalidated: Vec<String> = vec![];
         let mut changed = std::collections::HashMap::new();
         changed.insert("Metadata", zvariant::Value::from(self.metadata()));
+        changed.insert("CanGoNext", zvariant::Value::from(self.can_go_next()));
+        changed.insert(
+            "CanGoPrevious",
+            zvariant::Value::from(self.can_go_previous()),
+        );
         ObjectServer::local_node_emit_signal(
             None,
             "org.freedesktop.DBus.Properties",
@@ -153,12 +158,12 @@ impl SpotMprisPlayer {
 
     #[dbus_interface(property)]
     pub fn can_go_next(&self) -> bool {
-        true
+        self.state.has_next()
     }
 
     #[dbus_interface(property)]
     pub fn can_go_previous(&self) -> bool {
-        true
+        self.state.has_prev()
     }
 
     #[dbus_interface(property)]

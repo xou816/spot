@@ -64,6 +64,8 @@ impl From<TrackMetadata> for Value<'_> {
 struct MprisState {
     status: PlaybackStatus,
     metadata: Option<TrackMetadata>,
+    has_prev: bool,
+    has_next: bool,
 }
 
 #[derive(Clone)]
@@ -74,6 +76,8 @@ impl SharedMprisState {
         Self(Arc::new(Mutex::new(MprisState {
             status: PlaybackStatus::Stopped,
             metadata: None,
+            has_prev: false,
+            has_next: false,
         })))
     }
 
@@ -88,6 +92,26 @@ impl SharedMprisState {
         self.0.lock().ok().and_then(|s| s.metadata.clone()) // clone :(
     }
 
+    pub fn has_prev(&self) -> bool {
+        self.0.lock().ok().map(|s| s.has_prev).unwrap_or(false)
+    }
+
+    pub fn has_next(&self) -> bool {
+        self.0.lock().ok().map(|s| s.has_next).unwrap_or(false)
+    }
+
+    pub fn set_has_prev(&self, has_prev: bool) {
+        if let Ok(mut state) = self.0.lock() {
+            (*state).has_prev = has_prev;
+        }
+    }
+
+    pub fn set_has_next(&self, has_next: bool) {
+        if let Ok(mut state) = self.0.lock() {
+            (*state).has_next = has_next;
+        }
+    }
+
     pub fn set_current_track(&self, track: Option<TrackMetadata>) {
         if let Ok(mut state) = self.0.lock() {
             (*state).metadata = track;
@@ -100,16 +124,6 @@ impl SharedMprisState {
                 PlaybackStatus::Playing
             } else {
                 PlaybackStatus::Paused
-            }
-        }
-    }
-
-    pub fn toggle_playing(&self) {
-        if let Ok(mut state) = self.0.lock() {
-            let current = state.status;
-            (*state).status = match current {
-                PlaybackStatus::Playing => PlaybackStatus::Paused,
-                _ => PlaybackStatus::Playing,
             }
         }
     }

@@ -128,9 +128,11 @@ impl AppState {
                 if self.is_playing {
                     self.is_playing = false;
                     vec![AppEvent::TrackPaused]
-                } else {
+                } else if self.current_song_id.is_some() {
                     self.is_playing = true;
                     vec![AppEvent::TrackResumed]
+                } else {
+                    vec![]
                 }
             }
             AppAction::ToggleShuffle => {
@@ -142,7 +144,10 @@ impl AppState {
                 if next.is_some() {
                     self.is_playing = true;
                     self.current_song_id = next.clone();
-                    vec![AppEvent::TrackChanged(next.unwrap())]
+                    vec![
+                        AppEvent::TrackChanged(next.unwrap()),
+                        AppEvent::TrackResumed,
+                    ]
                 } else {
                     vec![]
                 }
@@ -152,7 +157,10 @@ impl AppState {
                 if prev.is_some() {
                     self.is_playing = true;
                     self.current_song_id = prev.clone();
-                    vec![AppEvent::TrackChanged(prev.unwrap())]
+                    vec![
+                        AppEvent::TrackChanged(prev.unwrap()),
+                        AppEvent::TrackResumed,
+                    ]
                 } else {
                     vec![]
                 }
@@ -160,7 +168,7 @@ impl AppState {
             AppAction::Load(id) => {
                 self.is_playing = true;
                 self.current_song_id = Some(id.clone());
-                vec![AppEvent::TrackChanged(id)]
+                vec![AppEvent::TrackChanged(id), AppEvent::TrackResumed]
             }
             AppAction::LoadPlaylist(tracks) => {
                 self.playlist.update(tracks, None);
@@ -207,7 +215,7 @@ impl AppState {
         }
     }
 
-    fn prev_song(&self) -> Option<&SongDescription> {
+    pub fn prev_song(&self) -> Option<&SongDescription> {
         self.current_song_id.as_ref().and_then(|id| {
             self.playlist
                 .songs()
@@ -217,7 +225,7 @@ impl AppState {
         })
     }
 
-    fn next_song(&self) -> Option<&SongDescription> {
+    pub fn next_song(&self) -> Option<&SongDescription> {
         self.current_song_id.as_ref().and_then(|id| {
             self.playlist
                 .songs()

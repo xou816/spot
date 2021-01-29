@@ -215,7 +215,6 @@ impl EventListener for Playback {
             }
             AppEvent::TrackChanged(_) => {
                 self.update_current_info();
-                self.toggle_playing();
             }
             AppEvent::SeekSynced(pos) => {
                 self.sync_seek(*pos);

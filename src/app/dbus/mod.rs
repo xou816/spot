@@ -55,6 +55,11 @@ impl ConnectionWrapper {
             },
         )
     }
+
+    fn has_prev_next(&self) -> (bool, bool) {
+        let state = self.app_model.get_state();
+        (state.prev_song().is_some(), state.next_song().is_some())
+    }
 }
 
 impl EventListener for ConnectionWrapper {
@@ -79,8 +84,11 @@ impl EventListener for ConnectionWrapper {
             AppEvent::TrackChanged(_) => {
                 self.with_player(|player| {
                     let meta = self.make_track_meta();
+                    let (has_prev, has_next) = self.has_prev_next();
                     player.state.set_current_track(meta);
-                    player.notify_metadata()?;
+                    player.state.set_has_prev(has_prev);
+                    player.state.set_has_next(has_next);
+                    player.notify_metadata_and_prev_next()?;
                     Ok(())
                 })
                 .unwrap();
