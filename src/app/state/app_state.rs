@@ -195,6 +195,19 @@ impl AppState {
             .and_then(|id| self.playlist.songs().iter().position(|song| song.id == *id))
     }
 
+    pub fn current_song(&self) -> Option<SongDescription> {
+        if let Some(current_song_id) = self.current_song_id.as_ref() {
+            self
+                .playlist
+                .songs()
+                .iter()
+                .find(|song| song.id == *current_song_id)
+                .cloned()
+        } else {
+            None
+        }
+    }
+
     fn prev_song(&self) -> Option<&SongDescription> {
         self.current_song_id.as_ref().and_then(|id| {
             self.playlist

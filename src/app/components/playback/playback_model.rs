@@ -27,17 +27,7 @@ impl PlaybackModel {
     }
 
     pub fn current_song(&self) -> Option<SongDescription> {
-        let state = self.state();
-        if let Some(current_song_id) = state.current_song_id.as_ref() {
-            state
-                .playlist
-                .songs()
-                .iter()
-                .find(|song| song.id == *current_song_id)
-                .cloned()
-        } else {
-            None
-        }
+        self.state().current_song()
     }
 
     pub fn play_next_song(&self) {

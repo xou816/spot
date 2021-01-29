@@ -67,7 +67,10 @@ impl SpotMpris {
 #[dbus_interface(interface = "org.mpris.MediaPlayer2.Player")]
 impl SpotMprisPlayer {
     pub fn next(&self) -> Result<()> {
-        Err(Error::NotSupported("Not implemented".to_string()))
+        self.sender
+            .clone()
+            .try_send(AppAction::Next)
+            .map_err(|_| Error::Failed("Could not send action".to_string()))
     }
 
     pub fn open_uri(&self, Uri: &str) -> Result<()> {
@@ -88,7 +91,7 @@ impl SpotMprisPlayer {
         self.sender
             .clone()
             .try_send(AppAction::TogglePlay)
-            .map_err(|_| zbus::fdo::Error::Failed("Could not send action".to_string()))
+            .map_err(|_| Error::Failed("Could not send action".to_string()))
     }
 
 
@@ -110,8 +113,26 @@ impl SpotMprisPlayer {
         )
     }
 
+    pub fn notify_metadata(&self) -> zbus::Result<()> {
+        let invalidated: Vec<String> = vec![];
+        let mut changed = std::collections::HashMap::new();
+        changed.insert(
+            "Metadata",
+            zvariant::Value::from(self.metadata()),
+        );
+        ObjectServer::local_node_emit_signal(
+            None,
+            "org.freedesktop.DBus.Properties",
+            "PropertiesChanged",
+            &("org.mpris.MediaPlayer2.Player", changed, invalidated),
+        )
+    }
+
     fn previous(&self) -> Result<()> {
-        Err(Error::NotSupported("Not implemented".to_string()))
+        self.sender
+            .clone()
+            .try_send(AppAction::Previous)
+            .map_err(|_| zbus::fdo::Error::Failed("Could not send action".to_string()))
     }
 
     pub fn seek(&self, Offset: i64) -> Result<()> {
@@ -136,17 +157,17 @@ impl SpotMprisPlayer {
 
     #[dbus_interface(property)]
     pub fn can_go_next(&self) -> bool {
-        false
+        true
     }
 
     #[dbus_interface(property)]
     pub fn can_go_previous(&self) -> bool {
-        false
+        true
     }
 
     #[dbus_interface(property)]
     pub fn can_pause(&self) -> bool {
-        false
+        true
     }
 
     #[dbus_interface(property)]

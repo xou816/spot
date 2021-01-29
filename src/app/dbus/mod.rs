@@ -1,10 +1,11 @@
 use futures::channel::mpsc::Sender;
-use std::convert::{TryInto};
+use std::convert::TryInto;
+use std::rc::Rc;
 use std::thread;
 use zbus::fdo;
 
 use crate::app::components::EventListener;
-use crate::app::{AppAction, AppEvent};
+use crate::app::{models::SongDescription, AppAction, AppEvent, AppModel};
 
 mod mpris;
 pub use mpris::*;
@@ -12,18 +13,38 @@ pub use mpris::*;
 mod types;
 use types::*;
 
-pub struct ConnectionWrapper(zbus::ObjectServer);
+// This one wraps a connection and reads the app state
+pub struct ConnectionWrapper {
+    object_server: zbus::ObjectServer,
+    app_model: Rc<AppModel>,
+}
 
 impl ConnectionWrapper {
-    fn new(connection: zbus::Connection, player: SpotMprisPlayer) -> Result<Self, zbus::Error> {
+    fn new(
+        connection: zbus::Connection,
+        player: SpotMprisPlayer,
+        app_model: Rc<AppModel>,
+    ) -> Result<Self, zbus::Error> {
         let object_server = register_mpris(&connection, player)?;
-        Ok(Self(object_server))
+        Ok(Self {
+            object_server,
+            app_model,
+        })
     }
 
     fn with_player<F: Fn(&SpotMprisPlayer) -> zbus::Result<()>>(&self, f: F) -> zbus::Result<()> {
-        self.0.with(
+        self.object_server.with(
             &"/org/mpris/MediaPlayer2".try_into()?,
             |iface: &SpotMprisPlayer| f(iface),
+        )
+    }
+
+    fn make_track_meta(&self) -> Option<TrackMetadata> {
+        self.app_model.get_state().current_song().map(
+            |SongDescription { title, artists, .. }| TrackMetadata {
+                title,
+                artist: artists.into_iter().map(|a| a.name).collect(),
+            },
         )
     }
 }
@@ -47,6 +68,15 @@ impl EventListener for ConnectionWrapper {
                 })
                 .unwrap();
             }
+            AppEvent::TrackChanged(_) => {
+                self.with_player(|player| {
+                    let meta = self.make_track_meta();
+                    player.state.set_current_track(meta);
+                    player.notify_metadata()?;
+                    Ok(())
+                })
+                .unwrap();
+            }
             _ => {}
         }
     }
@@ -56,17 +86,16 @@ fn register_mpris(
     connection: &zbus::Connection,
     player: SpotMprisPlayer,
 ) -> Result<zbus::ObjectServer, zbus::Error> {
-
     let mut object_server = zbus::ObjectServer::new(&connection);
     object_server.at(&"/org/mpris/MediaPlayer2".try_into()?, SpotMpris)?;
-    object_server.at(
-        &"/org/mpris/MediaPlayer2".try_into()?,
-        player,
-    )?;
+    object_server.at(&"/org/mpris/MediaPlayer2".try_into()?, player)?;
     Ok(object_server)
 }
 
-pub fn start_dbus_server(sender: Sender<AppAction>) -> Result<ConnectionWrapper, zbus::Error> {
+pub fn start_dbus_server(
+    app_model: Rc<AppModel>,
+    sender: Sender<AppAction>,
+) -> Result<ConnectionWrapper, zbus::Error> {
     let state = SharedMprisState::new();
 
     let connection = zbus::Connection::new_session()?;
@@ -88,7 +117,6 @@ pub fn start_dbus_server(sender: Sender<AppAction>) -> Result<ConnectionWrapper,
             }
         }
     });
-    
     let player = SpotMprisPlayer::new(state, sender);
-    ConnectionWrapper::new(connection, player)
+    ConnectionWrapper::new(connection, player, app_model)
 }

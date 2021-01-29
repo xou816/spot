@@ -82,6 +82,12 @@ impl SharedMprisState {
         self.0.lock().ok().and_then(|s| s.metadata.clone()) // clone :(
     }
 
+    pub fn set_current_track(&self, track: Option<TrackMetadata>) {
+        if let Ok(mut state) = self.0.lock() {
+            (*state).metadata = track;
+        }
+    }
+
     pub fn set_playing(&self, playing: bool) {
         if let Ok(mut state) = self.0.lock() {
             (*state).status = if playing {

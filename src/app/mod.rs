@@ -42,15 +42,14 @@ impl App {
         builder: &gtk::Builder,
         sender: Sender<AppAction>,
         worker: Worker,
-        extra_listeners: &mut Vec<Box<dyn EventListener>>
     ) -> Self {
         let state = AppState::new();
-        let dispatcher = Box::new(ActionDispatcherImpl::new(sender, worker.clone()));
+        let dispatcher = Box::new(ActionDispatcherImpl::new(sender.clone(), worker.clone()));
         let spotify_client = Arc::new(CachedSpotifyClient::new());
         let model = AppModel::new(state, spotify_client);
         let model = Rc::new(model);
 
-        let mut components: Vec<Box<dyn EventListener>> = vec![
+        let components: Vec<Box<dyn EventListener>> = vec![
             App::make_playback(
                 builder,
                 Rc::clone(&model),
@@ -62,10 +61,19 @@ impl App {
             App::make_search_bar(builder, dispatcher.box_clone()),
             App::make_user_menu(builder, Rc::clone(&model), dispatcher.box_clone()),
             App::make_notification(builder, dispatcher),
+            App::make_player_notifier(sender.clone()),
+            App::make_dbus(Rc::clone(&model), sender),
         ];
-        components.append(extra_listeners);
 
         App::new(model, components)
+    }
+
+    fn make_player_notifier(sender: Sender<AppAction>) -> Box<impl EventListener> {
+        Box::new(PlayerNotifier::new(backend::start_player_service(sender)))
+    }
+
+    fn make_dbus(app_model: Rc<AppModel>, sender: Sender<AppAction>) -> Box<impl EventListener> {
+        Box::new(dbus::start_dbus_server(app_model, sender).expect("could not start server"))
     }
 
     fn make_navigation(
