@@ -197,8 +197,7 @@ impl AppState {
 
     pub fn current_song(&self) -> Option<SongDescription> {
         if let Some(current_song_id) = self.current_song_id.as_ref() {
-            self
-                .playlist
+            self.playlist
                 .songs()
                 .iter()
                 .find(|song| song.id == *current_song_id)

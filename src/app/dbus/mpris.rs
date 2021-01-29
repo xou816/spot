@@ -94,7 +94,6 @@ impl SpotMprisPlayer {
             .map_err(|_| Error::Failed("Could not send action".to_string()))
     }
 
-
     // #[dbus_interface(signal_changed)]
     // pub fn emit_$prop_changed() -> zbus::Result<()>;
 
@@ -116,10 +115,7 @@ impl SpotMprisPlayer {
     pub fn notify_metadata(&self) -> zbus::Result<()> {
         let invalidated: Vec<String> = vec![];
         let mut changed = std::collections::HashMap::new();
-        changed.insert(
-            "Metadata",
-            zvariant::Value::from(self.metadata()),
-        );
+        changed.insert("Metadata", zvariant::Value::from(self.metadata()));
         ObjectServer::local_node_emit_signal(
             None,
             "org.freedesktop.DBus.Properties",
