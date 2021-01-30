@@ -180,8 +180,9 @@ impl App {
         dispatcher: Box<dyn ActionDispatcher>,
     ) -> Box<UserMenu> {
         let button: gtk::MenuButton = builder.get_object("user").unwrap();
+        let about: gtk::AboutDialog = builder.get_object("about").unwrap();
         let model = UserMenuModel::new(app_model, dispatcher);
-        let user_menu = UserMenu::new(button, model);
+        let user_menu = UserMenu::new(button, about, model);
         Box::new(user_menu)
     }
 
