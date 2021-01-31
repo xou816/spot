@@ -1,4 +1,5 @@
 #![allow(non_snake_case)]
+#![allow(unused_variables)]
 
 use futures::channel::mpsc::Sender;
 use std::convert::Into;
@@ -78,13 +79,11 @@ impl SpotMprisPlayer {
     }
 
     pub fn pause(&self) -> Result<()> {
-        // self.sender.clone().try_send(AppAction::TogglePlay)?;
-        Ok(())
+        Err(Error::NotSupported("Not implemented".to_string()))
     }
 
     pub fn play(&self) -> Result<()> {
-        // self.sender.clone().try_send(AppAction::TogglePlay)?;
-        Ok(())
+        Err(Error::NotSupported("Not implemented".to_string()))
     }
 
     pub fn play_pause(&self) -> Result<()> {
@@ -93,9 +92,6 @@ impl SpotMprisPlayer {
             .try_send(AppAction::TogglePlay)
             .map_err(|_| Error::Failed("Could not send action".to_string()))
     }
-
-    // #[dbus_interface(signal_changed)]
-    // pub fn emit_$prop_changed() -> zbus::Result<()>;
 
     pub fn notify_playback_status(&self) -> zbus::Result<()> {
         let invalidated: Vec<String> = vec![];
