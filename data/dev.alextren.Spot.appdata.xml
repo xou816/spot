@@ -19,6 +19,7 @@
       <li>album search</li>
       <li>artist view</li>
       <li>credentials management with Secret Service</li>
+      <li>MPRIS integration</li>
 	  </ul>
 	</description>
   <screenshots>
@@ -29,7 +30,18 @@
       <image>https://raw.githubusercontent.com/xou816/spot/master/data/appstream/2.png</image>
     </screenshot>
   </screenshots>
-  <releases>
+  <releases>    
+    <release version="0.1.3" date="2021-01-31">
+      <description>
+        <p>
+          New features:
+        </p>
+        <ul>
+          <li>minimal MPRIS integration</li>
+          <li>"About" dialog</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.2" date="2021-01-25">
       <description>
         <p>
