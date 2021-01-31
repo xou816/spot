@@ -5,7 +5,7 @@
     "options": {
         "env": {
             "RUST_BACKTRACE": "1",
-            "https_proxy": "localhost:8080"
+            //"https_proxy": "localhost:8080"
         }
     },
     "tasks": [

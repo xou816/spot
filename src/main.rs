@@ -24,12 +24,9 @@ fn main() {
     let dispatch_loop = DispatchLoop::new();
     let sender = dispatch_loop.make_dispatcher();
 
-    let worker = spawn_task_handler(&context);
-
-    let player_sender = backend::start_player_service(sender.clone());
-
     context.spawn_local(
-        App::new_from_builder(&builder, sender.clone(), worker, player_sender).start(dispatch_loop),
+        App::new_from_builder(&builder, sender.clone(), spawn_task_handler(&context))
+            .start(dispatch_loop),
     );
 
     let window = make_window(&builder);

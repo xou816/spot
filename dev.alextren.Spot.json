@@ -13,12 +13,12 @@
         "--socket=fallback-x11",
         "--socket=wayland",
         "--socket=pulseaudio",
-        "--talk-name=org.freedesktop.secrets"
+        "--talk-name=org.freedesktop.secrets",
+        "--own-name=org.mpris.MediaPlayer2.Spot"
     ],
     "build-options" : {
         "append-path" : "/usr/lib/sdk/rust-stable/bin",
         "env" : {
-            "CARGO_HOME" : "/run/build/spot/cargo",
             "RUST_BACKTRACE" : "full",
             "RUST_LOG" : "spot=debug"
         }
