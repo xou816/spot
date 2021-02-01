@@ -51,7 +51,7 @@ version = "^1.0.3"
 features = ["json"]
 
 [dependencies.rand]
-version = "^0.8.2"
+version = "^0.8.3"
 features = ["small_rng"] 
 
 [dependencies]
