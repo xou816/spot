@@ -83,6 +83,7 @@ impl App {
         worker: Worker,
     ) -> Box<Navigation> {
         let back_btn: gtk::Button = builder.get_object("nav_back").unwrap();
+        let leaflet: libhandy::Leaflet = builder.get_object("leaflet").unwrap();
         let navigation_stack: gtk::Stack = builder.get_object("navigation_stack").unwrap();
         let home_stack_sidebar: gtk::StackSidebar =
             builder.get_object("home_stack_sidebar").unwrap();
@@ -111,6 +112,7 @@ impl App {
             NowPlayingFactory::new(Rc::clone(&app_model), dispatcher.box_clone());
         Box::new(Navigation::new(
             model,
+            leaflet,
             back_btn,
             navigation_stack,
             home_stack_sidebar,
@@ -144,6 +146,7 @@ impl App {
         let play_button: gtk::Button = builder.get_object("play_pause").unwrap();
         let shuffle_button: gtk::ToggleButton = builder.get_object("shuffle").unwrap();
         let image: gtk::Image = builder.get_object("playing_image").unwrap();
+        let image_small: gtk::Image = builder.get_object("playing_image_small").unwrap();
         let current_song_info: gtk::Label = builder.get_object("current_song_info").unwrap();
         let next: gtk::Button = builder.get_object("next").unwrap();
         let prev: gtk::Button = builder.get_object("prev").unwrap();
@@ -154,6 +157,7 @@ impl App {
             play_button,
             shuffle_button,
             image,
+            image_small,
             current_song_info,
             seek_bar,
             track_duration,

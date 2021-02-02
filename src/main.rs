@@ -3,6 +3,7 @@ extern crate glib;
 use gio::prelude::*;
 use gtk::prelude::*;
 use gtk::SettingsExt;
+use libhandy;
 
 mod app;
 mod config;
@@ -47,6 +48,7 @@ fn main() {
 
 fn setup_gtk() {
     gtk::init().unwrap_or_else(|_| panic!("Failed to initialize GTK"));
+    libhandy::init();
 
     let res = gio::Resource::load(config::PKGDATADIR.to_owned() + "/spot.gresource")
         .expect("Could not load resources");
@@ -57,8 +59,8 @@ fn setup_gtk() {
         .set_property_gtk_application_prefer_dark_theme(true);
 }
 
-fn make_window(builder: &gtk::Builder) -> gtk::ApplicationWindow {
-    let window: gtk::ApplicationWindow = builder.get_object("window").unwrap();
+fn make_window(builder: &gtk::Builder) -> libhandy::ApplicationWindow {
+    let window: libhandy::ApplicationWindow = builder.get_object("window").unwrap();
 
     let provider = gtk::CssProvider::new();
     provider.load_from_resource("/dev/alextren/Spot/app.css");

@@ -43,6 +43,7 @@ pub struct PlaybackWidget {
     play_button: gtk::Button,
     shuffle_button: gtk::ToggleButton,
     current_song_image: gtk::Image,
+    current_song_image_small: gtk::Image,
     current_song_info: gtk::Label,
     seek_bar: gtk::Scale,
     track_duration: gtk::Label,
@@ -55,6 +56,7 @@ impl PlaybackWidget {
         play_button: gtk::Button,
         shuffle_button: gtk::ToggleButton,
         current_song_image: gtk::Image,
+        current_song_image_small: gtk::Image,
         current_song_info: gtk::Label,
         seek_bar: gtk::Scale,
         track_duration: gtk::Label,
@@ -67,6 +69,7 @@ impl PlaybackWidget {
             play_button,
             shuffle_button,
             current_song_image,
+            current_song_image_small,
             current_song_info,
             seek_bar,
             track_duration,
@@ -189,12 +192,16 @@ impl Playback {
             let label = format!("<b>{}</b>\n{}", title.as_str(), artist.as_str());
             self.widget.current_song_info.set_label(&label[..]);
 
-            let image = self.widget.current_song_image.clone();
+            let image1 = self.widget.current_song_image.downgrade();
+            let image2 = self.widget.current_song_image_small.downgrade();
             if let Some(url) = song.art {
                 self.worker.send_local_task(async move {
                     let loader = ImageLoader::new();
                     let result = loader.load_remote(&url, "jpg", 48, 48).await;
-                    image.set_from_pixbuf(result.as_ref());
+                    if let (Some(image1), Some(image2)) = (image1.upgrade(), image2.upgrade()) {
+                        image1.set_from_pixbuf(result.as_ref());
+                        image2.set_from_pixbuf(result.as_ref());
+                    }
                 });
             }
 
