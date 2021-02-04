@@ -65,3 +65,4 @@ form_urlencoded = "^1.0.0"
 zbus = "^2.0.0-beta"
 zvariant = "^2.5.0"
 zvariant_derive = "^2.5.0"
+libhandy = { git = "https://gitlab.gnome.org/World/Rust/libhandy-rs" }

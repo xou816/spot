@@ -1642,6 +1642,48 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1482821306169ec4d07f6aca392a4681f66c75c9918aa49641a2595db64053cb"
 
 [[package]]
+name = "libhandy"
+version = "0.7.1"
+source = "git+https://gitlab.gnome.org/World/Rust/libhandy-rs#abb3c6b61beacca09f291b0e29d8b78d7588e545"
+dependencies = [
+ "bitflags",
+ "gdk",
+ "gdk-pixbuf",
+ "gdk-pixbuf-sys",
+ "gdk-sys",
+ "gio",
+ "gio-sys",
+ "glib",
+ "glib-sys",
+ "gobject-sys",
+ "gtk",
+ "gtk-sys",
+ "lazy_static",
+ "libc",
+ "libhandy-sys",
+ "pango",
+]
+
+[[package]]
+name = "libhandy-sys"
+version = "0.7.0"
+source = "git+https://gitlab.gnome.org/World/Rust/libhandy-rs#abb3c6b61beacca09f291b0e29d8b78d7588e545"
+dependencies = [
+ "gdk",
+ "gdk-pixbuf-sys",
+ "gdk-sys",
+ "gio",
+ "gio-sys",
+ "glib-sys",
+ "gobject-sys",
+ "gtk-sys",
+ "libc",
+ "pango-sys",
+ "pkg-config",
+ "system-deps",
+]
+
+[[package]]
 name = "libloading"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3132,6 +3174,7 @@ dependencies = [
  "glib",
  "gtk",
  "isahc",
+ "libhandy",
  "librespot",
  "protobuf",
  "rand 0.8.3",

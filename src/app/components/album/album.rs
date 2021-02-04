@@ -32,14 +32,16 @@ impl Album {
     pub fn new(album_model: &AlbumModel, worker: Worker) -> Self {
         let widget = AlbumWidget::new();
 
-        let image = widget.cover_image.clone();
-        let revealer = widget.revealer.clone();
+        let image = widget.cover_image.downgrade();
+        let revealer = widget.revealer.downgrade();
         if let Some(url) = album_model.cover_url() {
             worker.send_local_task(async move {
-                let loader = ImageLoader::new();
-                let result = loader.load_remote(&url, "jpg", 180, 180).await;
-                image.set_from_pixbuf(result.as_ref());
-                revealer.set_reveal_child(true);
+                if let (Some(image), Some(revealer)) = (image.upgrade(), revealer.upgrade()) {
+                    let loader = ImageLoader::new();
+                    let result = loader.load_remote(&url, "jpg", 200, 200).await;
+                    image.set_from_pixbuf(result.as_ref());
+                    revealer.set_reveal_child(true);
+                }
             });
         }
 

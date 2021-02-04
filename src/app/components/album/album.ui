@@ -32,8 +32,8 @@
                 <property name="relief">none</property>
                 <child>
                   <object class="GtkImage" id="cover_image">
-                    <property name="width-request">180</property>
-                    <property name="height-request">180</property>
+                    <property name="width-request">200</property>
+                    <property name="height-request">200</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="icon-name">media-playback-start-symbolic</property>

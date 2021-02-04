@@ -1,5 +1,7 @@
 use gtk::prelude::*;
 use gtk::{ButtonExt, ContainerExt, StackExt};
+use libhandy::LeafletExt;
+use libhandy::NavigationDirection;
 use std::rc::Rc;
 
 use crate::app::components::{
@@ -13,6 +15,7 @@ use super::{home::HomeComponent, NavigationModel};
 
 pub struct Navigation {
     model: Rc<NavigationModel>,
+    leaflet: libhandy::Leaflet,
     navigation_stack: gtk::Stack,
     home_stack_sidebar: gtk::StackSidebar,
     back_button: gtk::Button,
@@ -27,6 +30,7 @@ pub struct Navigation {
 impl Navigation {
     pub fn new(
         model: NavigationModel,
+        leaflet: libhandy::Leaflet,
         back_button: gtk::Button,
         navigation_stack: gtk::Stack,
         home_stack_sidebar: gtk::StackSidebar,
@@ -37,15 +41,23 @@ impl Navigation {
         now_playing_factory: NowPlayingFactory,
     ) -> Self {
         let model = Rc::new(model);
-        let weak_model = Rc::downgrade(&model);
-        back_button.connect_clicked(move |_| {
-            if let Some(m) = weak_model.upgrade() {
-                m.go_back()
-            }
-        });
+
+        Self::connect_back_button(&back_button, &leaflet, &model);
+
+        leaflet.connect_property_folded_notify(
+            clone!(@weak back_button, @weak model => move |leaflet| {
+                Self::update_back_button(&back_button, &leaflet, &model);
+            }),
+        );
+        leaflet.connect_property_visible_child_name_notify(
+            clone!(@weak back_button, @weak model => move |leaflet| {
+                Self::update_back_button(&back_button, &leaflet, &model);
+            }),
+        );
 
         Self {
             model,
+            leaflet,
             navigation_stack,
             home_stack_sidebar,
             back_button,
@@ -58,6 +70,39 @@ impl Navigation {
         }
     }
 
+    fn update_back_button(
+        back_button: &gtk::Button,
+        leaflet: &libhandy::Leaflet,
+        model: &Rc<NavigationModel>,
+    ) {
+        let is_main = leaflet
+            .get_visible_child_name()
+            .map(|s| s.as_str() == "main")
+            .unwrap_or(false);
+        back_button.set_sensitive(leaflet.get_folded() && is_main || model.can_go_back());
+    }
+
+    fn connect_back_button(
+        back_button: &gtk::Button,
+        leaflet: &libhandy::Leaflet,
+        model: &Rc<NavigationModel>,
+    ) {
+        back_button.connect_clicked(clone!(@weak leaflet, @weak model => move |_| {
+            let is_main = leaflet.get_visible_child_name().map(|s| s.as_str() == "main").unwrap_or(false);
+            let folded = leaflet.get_folded();
+            let can_go_back = model.can_go_back();
+            match (folded && is_main, can_go_back) {
+                (_, true) => {
+                    model.go_back();
+                }
+                (true, false) => {
+                    leaflet.navigate(NavigationDirection::Back);
+                }
+                (false, false) => {}
+            }
+        }));
+    }
+
     fn make_home(&self) -> Box<dyn ListenerComponent> {
         let home = HomeComponent::new(
             self.home_stack_sidebar.clone(),
@@ -65,12 +110,12 @@ impl Navigation {
             self.now_playing_factory.make_now_playing(),
         );
 
-        let weak_model = Rc::downgrade(&self.model);
-        home.connect_navigated(move || {
-            if let Some(m) = weak_model.upgrade() {
-                m.go_home();
-            }
-        });
+        home.connect_navigated(
+            clone!(@weak self.model as model, @weak self.leaflet as leaflet => move || {
+                leaflet.navigate(NavigationDirection::Forward);
+                model.go_home();
+            }),
+        );
 
         Box::new(home)
     }
@@ -120,8 +165,8 @@ impl Navigation {
         }
     }
 
-    fn update_back_button(&self) {
-        self.back_button.set_sensitive(self.model.can_go_back());
+    fn do_update_back_button(&self) {
+        Self::update_back_button(&self.back_button, &self.leaflet, &self.model);
     }
 }
 
@@ -130,19 +175,19 @@ impl EventListener for Navigation {
         match event {
             AppEvent::Started => {
                 self.push_screen(&ScreenName::Home);
-                self.update_back_button();
+                self.do_update_back_button();
             }
             AppEvent::BrowserEvent(BrowserEvent::NavigationPushed(name)) => {
                 self.push_screen(name);
-                self.update_back_button();
+                self.do_update_back_button();
             }
             AppEvent::BrowserEvent(BrowserEvent::NavigationPopped) => {
                 self.pop();
-                self.update_back_button();
+                self.do_update_back_button();
             }
             AppEvent::BrowserEvent(BrowserEvent::NavigationPoppedTo(name)) => {
                 self.pop_to(name);
-                self.update_back_button();
+                self.do_update_back_button();
             }
             _ => {}
         };

@@ -1,5 +1,6 @@
 pkgdatadir = join_paths(get_option('prefix'), get_option('datadir'), meson.project_name())
 gnome = import('gnome')
+dependency('libhandy-1')
 
 gnome.compile_resources('spot',
   'spot.gresource.xml',
