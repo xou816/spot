@@ -49,6 +49,11 @@ impl Navigation {
                 Self::update_back_button(&back_button, &leaflet, &model);
             }),
         );
+        leaflet.connect_property_visible_child_name_notify(
+            clone!(@weak back_button, @weak model => move |leaflet| {
+                Self::update_back_button(&back_button, &leaflet, &model);
+            }),
+        );
 
         Self {
             model,
@@ -70,7 +75,11 @@ impl Navigation {
         leaflet: &libhandy::Leaflet,
         model: &Rc<NavigationModel>,
     ) {
-        back_button.set_sensitive(leaflet.get_folded() || model.can_go_back());
+        let is_main = leaflet
+            .get_visible_child_name()
+            .map(|s| s.as_str() == "main")
+            .unwrap_or(false);
+        back_button.set_sensitive(leaflet.get_folded() && is_main || model.can_go_back());
     }
 
     fn connect_back_button(
@@ -79,9 +88,10 @@ impl Navigation {
         model: &Rc<NavigationModel>,
     ) {
         back_button.connect_clicked(clone!(@weak leaflet, @weak model => move |_| {
+            let is_main = leaflet.get_visible_child_name().map(|s| s.as_str() == "main").unwrap_or(false);
             let folded = leaflet.get_folded();
             let can_go_back = model.can_go_back();
-            match (folded, can_go_back) {
+            match (folded && is_main, can_go_back) {
                 (_, true) => {
                     model.go_back();
                 }

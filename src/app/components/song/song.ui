@@ -33,6 +33,8 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="label" translatable="yes">Title</property>
+        <property name="ellipsize">middle</property>
+        <property name="max-width-chars">50</property>
         <style>
           <class name="song__title"/>
         </style>
@@ -48,6 +50,8 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="label" translatable="yes">Artist</property>
+        <property name="ellipsize">middle</property>
+        <property name="max-width-chars">35</property>
         <style>
           <class name="song__artist"/>
         </style>

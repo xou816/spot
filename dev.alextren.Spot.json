@@ -36,10 +36,28 @@
     ],
     "modules" : [
         {
+            "name" : "libhandy-1",
+            "buildsystem" : "meson",
+            "builddir" : true,
+            "config-opts" : [
+                "-Dexamples=false",
+                "-Dtests=false"
+            ],
+            "sources" : [
+                {
+                    "type" : "git",
+                    "url" : "https://gitlab.gnome.org/GNOME/libhandy.git"
+                }
+            ]
+        },
+        {
             "name" : "spot",
             "builddir" : true,
             "buildsystem" : "meson",
-            "config-opts" : ["-Doffline=false", "-Dbuildtype=debug"],
+            "config-opts" : [
+                "-Doffline=false",
+                "-Dbuildtype=debug"
+            ],
             "sources" : [
                 {
                     "type" : "dir",

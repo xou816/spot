@@ -2,6 +2,7 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
+  <requires lib="libhandy" version="0.0"/>
   <!-- interface-css-provider-path details.css -->
   <object class="GtkScrolledWindow" id="root">
     <property name="visible">True</property>
@@ -13,58 +14,38 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <child>
-          <object class="GtkBox">
+          <object class="HdyClamp">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="halign">center</property>
-            <property name="margin-start">16</property>
-            <property name="margin-end">16</property>
-            <property name="margin-top">16</property>
-            <property name="margin-bottom">16</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">8</property>
+            <property name="maximum-size">900</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-start">8</property>
-                <property name="margin-end">8</property>
-                <property name="margin-top">8</property>
-                <property name="margin-bottom">8</property>
-                <property name="spacing">16</property>
-                <child>
-                  <object class="GtkImage" id="album_art">
-                    <property name="width-request">100</property>
-                    <property name="height-request">100</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="icon-name">emblem-music-symbolic</property>
-                    <style>
-                      <class name="details__album-art"/>
-                    </style>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
+                <property name="margin-start">16</property>
+                <property name="margin-end">16</property>
+                <property name="margin-top">16</property>
+                <property name="margin-bottom">16</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">8</property>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="valign">center</property>
-                    <property name="orientation">vertical</property>
+                    <property name="margin-start">8</property>
+                    <property name="margin-end">8</property>
+                    <property name="margin-top">8</property>
+                    <property name="margin-bottom">8</property>
+                    <property name="spacing">16</property>
                     <child>
-                      <object class="GtkLabel" id="album_label">
+                      <object class="GtkImage" id="album_art">
+                        <property name="width-request">100</property>
+                        <property name="height-request">100</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="halign">start</property>
-                        <property name="label" translatable="yes">Album</property>
-                        <property name="wrap">True</property>
-                        <property name="xalign">0</property>
+                        <property name="icon-name">emblem-music-symbolic</property>
                         <style>
-                          <class name="details__album-label"/>
+                          <class name="details__album-art"/>
                         </style>
                       </object>
                       <packing>
@@ -74,79 +55,104 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLinkButton" id="artist_button">
-                        <property name="label" translatable="yes">Artist</property>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="valign">center</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkLabel" id="album_label">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="label" translatable="yes">Album</property>
+                            <property name="wrap">True</property>
+                            <property name="xalign">0</property>
+                            <style>
+                              <class name="details__album-label"/>
+                            </style>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLinkButton" id="artist_button">
+                            <property name="label" translatable="yes">Artist</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">True</property>
+                            <property name="halign">start</property>
+                            <property name="valign">start</property>
+                            <property name="relief">none</property>
+                            <style>
+                              <class name="details__more"/>
+                            </style>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="like_button">
+                        <property name="label" translatable="yes">♥</property>
+                        <property name="width-request">35</property>
+                        <property name="height-request">35</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
-                        <property name="halign">start</property>
-                        <property name="valign">start</property>
-                        <property name="relief">none</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="relief">half</property>
                         <style>
-                          <class name="details__more"/>
+                          <class name="circular"/>
+                          <class name="details__like"/>
                         </style>
                       </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">2</property>
+                        <property name="position">3</property>
                       </packing>
                     </child>
                   </object>
                   <packing>
-                    <property name="expand">True</property>
+                    <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">1</property>
+                    <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton" id="like_button">
-                    <property name="label" translatable="yes">♥</property>
-                    <property name="width-request">35</property>
-                    <property name="height-request">35</property>
+                  <object class="GtkListBox" id="album_tracks">
                     <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">True</property>
-                    <property name="halign">center</property>
-                    <property name="valign">center</property>
-                    <property name="relief">half</property>
+                    <property name="can-focus">False</property>
+                    <property name="valign">start</property>
+                    <property name="margin-start">8</property>
+                    <property name="margin-end">8</property>
+                    <property name="selection-mode">none</property>
+                    <property name="activate-on-single-click">False</property>
                     <style>
-                      <class name="circular"/>
-                      <class name="details__like"/>
+                      <class name="details__songs"/>
                     </style>
                   </object>
                   <packing>
                     <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">3</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
                   </packing>
                 </child>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkListBox" id="album_tracks">
-                <property name="width-request">500</property>
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="valign">start</property>
-                <property name="margin-start">8</property>
-                <property name="margin-end">8</property>
-                <property name="selection-mode">none</property>
-                <property name="activate-on-single-click">False</property>
-                <style>
-                  <class name="details__songs"/>
-                </style>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
             </child>
           </object>
         </child>

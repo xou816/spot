@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.1 -->
+<!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
   <object class="GtkPopover" id="popover1">
@@ -121,9 +121,7 @@
           <object class="GtkScrolledWindow">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="halign">start</property>
             <property name="vscrollbar-policy">never</property>
-            <property name="propagate-natural-width">True</property>
             <child>
               <object class="GtkViewport">
                 <property name="visible">True</property>
@@ -134,6 +132,8 @@
                     <property name="height-request">200</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="hexpand">True</property>
                     <property name="orientation">vertical</property>
                     <property name="max-children-per-line">1</property>
                     <property name="selection-mode">none</property>
