@@ -31,7 +31,11 @@ jobs:
     - name: Install libhandy
       run: |
         wget -O libhandy-1-dev.deb http://mirrors.kernel.org/ubuntu/pool/universe/libh/libhandy-1/libhandy-1-dev_1.0.0-2_amd64.deb
+        wget -O gir1.2-handy-1.deb http://mirrors.kernel.org/ubuntu/pool/main/libh/libhandy-1/gir1.2-handy-1_1.0.0-2_amd64.deb
+        wget -O libhandy-1.deb http://mirrors.kernel.org/ubuntu/pool/main/libh/libhandy-1/libhandy-1-0_1.0.0-2_amd64.deb
+        sudo apt install -y ./libhandy-1.deb
         sudo apt install -y ./libhandy-1-dev.deb
+        sudo apt install -y ./gir1.2-handy-1.deb
 
     - name: Build
       run: meson target -Dbuildtype=debug -Doffline=false && ninja -C target
