@@ -30,7 +30,17 @@
       <image>https://raw.githubusercontent.com/xou816/spot/master/data/appstream/2.png</image>
     </screenshot>
   </screenshots>
-  <releases>    
+  <releases>        
+    <release version="0.1.4" date="2021-02-04">
+      <description>
+        <p>
+          New features:
+        </p>
+        <ul>
+          <li>adaptive UI with libhandy</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.3" date="2021-01-31">
       <description>
         <p>
