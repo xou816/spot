@@ -2,7 +2,7 @@ name: spot-snapshots
 
 on:
   push:
-    branches: [test-ci]
+    branches: [master]
 
 jobs:
   flatpak-builder:
