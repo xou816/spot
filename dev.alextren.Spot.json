@@ -20,7 +20,8 @@
         "append-path" : "/usr/lib/sdk/rust-stable/bin",
         "env" : {
             "RUST_BACKTRACE" : "full",
-            "RUST_LOG" : "spot=debug"
+            "RUST_LOG" : "spot=debug",
+            "CARGO_HOME" : "/run/build/spot/cargo"
         }
     },
     "cleanup" : [
@@ -55,14 +56,15 @@
             "builddir" : true,
             "buildsystem" : "meson",
             "config-opts" : [
-                "-Doffline=false",
+                "-Doffline=true",
                 "-Dbuildtype=debug"
             ],
             "sources" : [
                 {
                     "type" : "dir",
                     "path" : "."
-                }
+                },
+                "cargo-sources.json"
             ]
         }
     ]
