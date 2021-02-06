@@ -13,6 +13,8 @@ pub enum AppAction {
     LoadPlaylist(Vec<SongDescription>),
     Start,
     TryLogin(String, String),
+    RefreshToken,
+    SetRefreshedToken(String),
     SetLoginSuccess(credentials::Credentials),
     Logout,
     Next,
@@ -41,6 +43,7 @@ pub enum AppEvent {
     TrackResumed,
     TrackSeeked(u32),
     SeekSynced(u32),
+    FreshTokenRequested,
     LoginStarted(String, String),
     LoginCompleted(credentials::Credentials),
     LogoutCompleted,
@@ -178,6 +181,10 @@ impl AppState {
                 self.user = Some(credentials.username.clone());
                 vec![AppEvent::LoginCompleted(credentials)]
             }
+            AppAction::RefreshToken => vec![AppEvent::FreshTokenRequested],
+            AppAction::SetRefreshedToken(_) => vec![AppEvent::NotificationShown(
+                "Connection refreshed".to_string(),
+            )],
             AppAction::Logout => {
                 self.user = None;
                 vec![AppEvent::LogoutCompleted]

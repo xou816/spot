@@ -23,6 +23,7 @@ pub enum Command {
     PlayerResume,
     PlayerPause,
     PlayerSeek(u32),
+    RefreshToken,
 }
 
 struct AppPlayerDelegate {
@@ -44,6 +45,13 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
         self.sender
             .clone()
             .try_send(AppAction::SetLoginSuccess(credentials))
+            .unwrap();
+    }
+
+    fn refresh_successful(&self, token: String) {
+        self.sender
+            .clone()
+            .try_send(AppAction::SetRefreshedToken(token))
             .unwrap();
     }
 

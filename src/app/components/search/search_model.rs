@@ -1,6 +1,7 @@
 use std::ops::Deref;
 use std::rc::Rc;
 
+use crate::app::backend::api::SpotifyApiError;
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
 use crate::app::state::{AppAction, AppModel, BrowserAction};
@@ -28,8 +29,11 @@ impl SearchResultsModel {
         if let Some(query) = self.get_query() {
             let query = query.to_owned();
             self.dispatcher.dispatch_async(Box::pin(async move {
-                let albums = api.search_albums(&query[..], 0, 5).await?;
-                Some(BrowserAction::SetSearchResults(albums).into())
+                match api.search_albums(&query[..], 0, 5).await {
+                    Ok(albums) => Some(BrowserAction::SetSearchResults(albums).into()),
+                    Err(SpotifyApiError::InvalidToken) => Some(AppAction::RefreshToken),
+                    _ => None,
+                }
             }))
         }
     }

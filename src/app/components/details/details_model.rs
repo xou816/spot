@@ -3,6 +3,7 @@ use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
+use crate::app::backend::api::SpotifyApiError;
 use crate::app::components::PlaylistModel;
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
@@ -30,8 +31,11 @@ impl DetailsModel {
     pub fn load_album_info(&self, id: String) {
         let api = self.app_model.get_spotify();
         self.dispatcher.dispatch_async(Box::pin(async move {
-            let album = api.get_album(&id).await?;
-            Some(BrowserAction::SetDetails(album).into())
+            match api.get_album(&id).await {
+                Ok(album) => Some(BrowserAction::SetDetails(album).into()),
+                Err(SpotifyApiError::InvalidToken) => Some(AppAction::RefreshToken),
+                _ => None
+            }
         }));
     }
 

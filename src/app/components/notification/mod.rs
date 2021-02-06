@@ -1,4 +1,5 @@
 use gtk::prelude::*;
+use std::rc::Rc;
 
 use crate::app::components::EventListener;
 use crate::app::{ActionDispatcher, AppAction, AppEvent};
@@ -18,6 +19,7 @@ impl NotificationModel {
 }
 
 pub struct Notification {
+    model: Rc<NotificationModel>,
     root: gtk::Box,
     content: gtk::Label,
 }
@@ -29,11 +31,23 @@ impl Notification {
         content: gtk::Label,
         close_btn: gtk::Button,
     ) -> Self {
-        close_btn.connect_clicked(move |_| model.close());
+        let model = Rc::new(model);
+        close_btn.connect_clicked(clone!(@weak model => move |_| model.close()));
 
-        Self { root, content }
+        Self {
+            model,
+            root,
+            content,
+        }
     }
     fn show(&self, content: &str) {
+        glib::timeout_add_local(
+            4000,
+            clone!(@weak self.model as model => @default-return glib::Continue(false), move || {
+                model.close();
+                glib::Continue(false)
+            }),
+        );
         self.content.set_text(content);
         self.root
             .get_style_context()

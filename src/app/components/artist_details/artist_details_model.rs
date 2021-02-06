@@ -1,3 +1,4 @@
+use crate::app::backend::api::SpotifyApiError;
 use crate::app::models::*;
 use crate::app::{ActionDispatcher, AppAction, AppModel, BrowserAction, ListStore};
 use std::ops::Deref;
@@ -29,8 +30,11 @@ impl ArtistDetailsModel {
     pub fn load_artist_details(&self, id: String) {
         let api = self.app_model.get_spotify();
         self.dispatcher.dispatch_async(Box::pin(async move {
-            let artist = api.get_artist(&id[..]).await?;
-            Some(BrowserAction::SetArtistDetails(artist).into())
+            match api.get_artist(&id[..]).await {
+                Ok(artist) => Some(BrowserAction::SetArtistDetails(artist).into()),
+                Err(SpotifyApiError::InvalidToken) => Some(AppAction::RefreshToken),
+                _ => None
+            }
         }));
     }
 

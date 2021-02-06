@@ -57,6 +57,7 @@ features = ["small_rng"]
 [dependencies]
 secret-service = "^2.0.1"
 gdk-pixbuf = "^0.9.0"
+libhandy = { git = "https://gitlab.gnome.org/World/Rust/libhandy-rs" }
 gladis = "^0.4.0"
 ref_filter_map = "^1.0.1"
 regex = "^1.4.3"
@@ -65,4 +66,4 @@ form_urlencoded = "^1.0.0"
 zbus = "^2.0.0-beta"
 zvariant = "^2.5.0"
 zvariant_derive = "^2.5.0"
-libhandy = { git = "https://gitlab.gnome.org/World/Rust/libhandy-rs" }
+thiserror = "^1.0.23"

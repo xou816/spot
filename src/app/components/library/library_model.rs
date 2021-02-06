@@ -2,9 +2,10 @@ use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
+use crate::app::backend::api::SpotifyApiError;
 use crate::app::models::*;
 use crate::app::state::{LibraryState, ScreenName};
-use crate::app::{ActionDispatcher, AppModel, BrowserAction, ListStore};
+use crate::app::{ActionDispatcher, AppAction, AppModel, BrowserAction, ListStore};
 
 pub struct LibraryModel {
     app_model: Rc<AppModel>,
@@ -35,7 +36,7 @@ impl LibraryModel {
         let batch_size = self.batch_size;
 
         self.dispatcher.dispatch_async(Box::pin(async move {
-            let albums = api.get_saved_albums(0, batch_size).await?;
+            let albums = api.get_saved_albums(0, batch_size).await.ok()?;
             Some(BrowserAction::SetContent(albums).into())
         }));
     }
@@ -47,11 +48,11 @@ impl LibraryModel {
         let batch_size = self.batch_size;
 
         self.dispatcher.dispatch_async(Box::pin(async move {
-            let albums = api
-                .get_saved_albums(offset, batch_size)
-                .await
-                .unwrap_or_else(Vec::new);
-            Some(BrowserAction::AppendContent(albums).into())
+            match api.get_saved_albums(offset, batch_size).await {
+                Ok(albums) => Some(BrowserAction::AppendContent(albums).into()),
+                Err(SpotifyApiError::InvalidToken) => Some(AppAction::RefreshToken),
+                _ => None,
+            }
         }));
     }
 

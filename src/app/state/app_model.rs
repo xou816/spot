@@ -40,8 +40,14 @@ impl AppModel {
     }
 
     pub fn update_state(&self, message: AppAction) -> Vec<AppEvent> {
-        if let AppAction::SetLoginSuccess(ref creds) = message {
-            self.services.spotify_api.update_credentials(creds.clone());
+        match message {
+            AppAction::SetLoginSuccess(ref creds) => {
+                self.services.spotify_api.update_credentials(creds.clone())
+            }
+            AppAction::SetRefreshedToken(ref token) => {
+                self.services.spotify_api.update_token(token.clone())
+            }
+            _ => {}
         }
 
         let mut state = self.state.borrow_mut();
