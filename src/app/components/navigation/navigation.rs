@@ -4,14 +4,11 @@ use libhandy::LeafletExt;
 use libhandy::NavigationDirection;
 use std::rc::Rc;
 
-use crate::app::components::{
-    ArtistDetailsFactory, BrowserFactory, DetailsFactory, EventListener, ListenerComponent,
-    NowPlayingFactory, SearchFactory,
-};
+use crate::app::components::{EventListener, ListenerComponent};
 use crate::app::state::ScreenName;
 use crate::app::{AppEvent, BrowserEvent};
 
-use super::{home::HomeComponent, NavigationModel};
+use super::{factory::ScreenFactory, home::HomePane, NavigationModel};
 
 pub struct Navigation {
     model: Rc<NavigationModel>,
@@ -19,11 +16,7 @@ pub struct Navigation {
     navigation_stack: gtk::Stack,
     home_stack_sidebar: gtk::StackSidebar,
     back_button: gtk::Button,
-    browser_factory: BrowserFactory,
-    details_factory: DetailsFactory,
-    search_factory: SearchFactory,
-    artist_details_factory: ArtistDetailsFactory,
-    now_playing_factory: NowPlayingFactory,
+    screen_factory: ScreenFactory,
     children: Vec<Box<dyn ListenerComponent>>,
 }
 
@@ -34,11 +27,7 @@ impl Navigation {
         back_button: gtk::Button,
         navigation_stack: gtk::Stack,
         home_stack_sidebar: gtk::StackSidebar,
-        browser_factory: BrowserFactory,
-        details_factory: DetailsFactory,
-        search_factory: SearchFactory,
-        artist_details_factory: ArtistDetailsFactory,
-        now_playing_factory: NowPlayingFactory,
+        screen_factory: ScreenFactory,
     ) -> Self {
         let model = Rc::new(model);
 
@@ -61,11 +50,7 @@ impl Navigation {
             navigation_stack,
             home_stack_sidebar,
             back_button,
-            browser_factory,
-            details_factory,
-            search_factory,
-            artist_details_factory,
-            now_playing_factory,
+            screen_factory,
             children: vec![],
         }
     }
@@ -104,10 +89,10 @@ impl Navigation {
     }
 
     fn make_home(&self) -> Box<dyn ListenerComponent> {
-        let home = HomeComponent::new(
+        let home = HomePane::new(
             self.home_stack_sidebar.clone(),
-            self.browser_factory.make_browser(),
-            self.now_playing_factory.make_now_playing(),
+            self.screen_factory.make_library(),
+            self.screen_factory.make_now_playing(),
         );
 
         home.connect_navigated(
@@ -125,12 +110,13 @@ impl Navigation {
 
         let component: Box<dyn ListenerComponent> = match name {
             ScreenName::Home => self.make_home(),
-            ScreenName::Details(id) => Box::new(self.details_factory.make_details(id.to_owned())),
-            ScreenName::Search => Box::new(self.search_factory.make_search_results()),
-            ScreenName::Artist(id) => Box::new(
-                self.artist_details_factory
-                    .make_artist_details(id.to_owned()),
-            ),
+            ScreenName::Details(id) => {
+                Box::new(self.screen_factory.make_album_details(id.to_owned()))
+            }
+            ScreenName::Search => Box::new(self.screen_factory.make_search_results()),
+            ScreenName::Artist(id) => {
+                Box::new(self.screen_factory.make_artist_details(id.to_owned()))
+            }
         };
 
         let widget = component.get_root_widget();

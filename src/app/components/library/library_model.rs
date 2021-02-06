@@ -2,44 +2,17 @@ use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use super::Browser;
-use crate::app::dispatch::Worker;
 use crate::app::models::*;
 use crate::app::state::{LibraryState, ScreenName};
 use crate::app::{ActionDispatcher, AppModel, BrowserAction, ListStore};
 
-pub struct BrowserFactory {
-    worker: Worker,
-    app_model: Rc<AppModel>,
-    dispatcher: Box<dyn ActionDispatcher>,
-}
-
-impl BrowserFactory {
-    pub fn new(
-        worker: Worker,
-        app_model: Rc<AppModel>,
-        dispatcher: Box<dyn ActionDispatcher>,
-    ) -> Self {
-        Self {
-            worker,
-            app_model,
-            dispatcher,
-        }
-    }
-
-    pub fn make_browser(&self) -> Browser {
-        let model = BrowserModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        Browser::new(self.worker.clone(), model)
-    }
-}
-
-pub struct BrowserModel {
+pub struct LibraryModel {
     app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>,
     batch_size: u32,
 }
 
-impl BrowserModel {
+impl LibraryModel {
     pub fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
         Self {
             app_model,

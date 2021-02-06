@@ -4,21 +4,21 @@ use gtk::ScrolledWindowExt;
 
 use std::rc::{Rc, Weak};
 
-use super::BrowserModel;
+use super::LibraryModel;
 use crate::app::components::{Album, Component, EventListener};
 use crate::app::dispatch::Worker;
 use crate::app::models::AlbumModel;
 use crate::app::AppEvent;
 
 #[derive(Clone, Gladis)]
-struct BrowserWidget {
+struct LibraryWidget {
     pub scrolled_window: gtk::ScrolledWindow,
     pub flowbox: gtk::FlowBox,
 }
 
-impl BrowserWidget {
+impl LibraryWidget {
     fn new() -> Self {
-        Self::from_resource(resource!("/components/browser.ui")).unwrap()
+        Self::from_resource(resource!("/components/library.ui")).unwrap()
     }
 
     fn root(&self) -> &gtk::Widget {
@@ -26,17 +26,17 @@ impl BrowserWidget {
     }
 }
 
-pub struct Browser {
-    widget: BrowserWidget,
+pub struct Library {
+    widget: LibraryWidget,
     worker: Worker,
-    model: Rc<BrowserModel>,
+    model: Rc<LibraryModel>,
 }
 
-impl Browser {
-    pub fn new(worker: Worker, model: BrowserModel) -> Self {
+impl Library {
+    pub fn new(worker: Worker, model: LibraryModel) -> Self {
         let model = Rc::new(model);
 
-        let widget = BrowserWidget::new();
+        let widget = LibraryWidget::new();
 
         let weak_model = Rc::downgrade(&model);
         widget.scrolled_window.connect_edge_reached(move |_, pos| {
@@ -65,7 +65,7 @@ impl Browser {
     }
 }
 
-impl EventListener for Browser {
+impl EventListener for Library {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
             AppEvent::Started => {
@@ -80,7 +80,7 @@ impl EventListener for Browser {
     }
 }
 
-impl Component for Browser {
+impl Component for Library {
     fn get_root_widget(&self) -> &gtk::Widget {
         self.widget.root()
     }
@@ -89,7 +89,7 @@ impl Component for Browser {
 fn create_album_for(
     album_model: &AlbumModel,
     worker: Worker,
-    model: Weak<BrowserModel>,
+    model: Weak<LibraryModel>,
 ) -> gtk::FlowBoxChild {
     let child = gtk::FlowBoxChild::new();
 

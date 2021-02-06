@@ -18,6 +18,7 @@
   opacity: 0;
 }
 
-row:hover .song__menu--enabled, .song__menu--enabled:checked {
+/* row:hover .song__menu--enabled, .song__menu--enabled:checked */
+.song__menu--enabled {
   opacity: 1;
 }

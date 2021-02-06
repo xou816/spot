@@ -4,7 +4,8 @@ use gtk::LinkButtonExt;
 use std::rc::Rc;
 
 use super::DetailsModel;
-use crate::app::components::{screen_add_css_provider, Component, EventListener, PlaylistFactory};
+
+use crate::app::components::{screen_add_css_provider, Component, EventListener, Playlist};
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
 use crate::app::{AppEvent, BrowserEvent};
@@ -39,19 +40,14 @@ pub struct Details {
 }
 
 impl Details {
-    pub fn new(
-        id: String,
-        model: DetailsModel,
-        worker: Worker,
-        playlist_factory: &PlaylistFactory,
-    ) -> Self {
+    pub fn new(id: String, model: DetailsModel, worker: Worker) -> Self {
         if model.get_album_info().is_none() {
             model.load_album_info(id);
         }
 
         let model = Rc::new(model);
         let widget = DetailsWidget::new();
-        let playlist = Box::new(playlist_factory.make_custom_playlist(widget.album_tracks.clone()));
+        let playlist = Box::new(Playlist::new(widget.album_tracks.clone(), model.clone()));
 
         Self {
             model,

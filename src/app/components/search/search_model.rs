@@ -1,35 +1,9 @@
-use super::SearchResults;
-use crate::app::dispatch::{ActionDispatcher, Worker};
-use crate::app::models::*;
-use crate::app::state::{AppAction, AppModel, BrowserAction};
 use std::ops::Deref;
 use std::rc::Rc;
 
-pub struct SearchFactory {
-    app_model: Rc<AppModel>,
-    dispatcher: Box<dyn ActionDispatcher>,
-    worker: Worker,
-}
-
-impl SearchFactory {
-    pub fn new(
-        app_model: Rc<AppModel>,
-        dispatcher: Box<dyn ActionDispatcher>,
-        worker: Worker,
-    ) -> Self {
-        Self {
-            app_model,
-            dispatcher,
-            worker,
-        }
-    }
-
-    pub fn make_search_results(&self) -> SearchResults {
-        let model =
-            SearchResultsModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        SearchResults::new(model, self.worker.clone())
-    }
-}
+use crate::app::dispatch::ActionDispatcher;
+use crate::app::models::*;
+use crate::app::state::{AppAction, AppModel, BrowserAction};
 
 pub struct SearchResultsModel {
     app_model: Rc<AppModel>,
@@ -37,7 +11,7 @@ pub struct SearchResultsModel {
 }
 
 impl SearchResultsModel {
-    fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
+    pub fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
         Self {
             app_model,
             dispatcher,

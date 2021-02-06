@@ -1,5 +1,5 @@
-mod playback;
-mod playback_model;
+mod playback_control;
+pub use playback_control::*;
 
-pub use playback::*;
-pub use playback_model::*;
+mod playback_info;
+pub use playback_info::*;

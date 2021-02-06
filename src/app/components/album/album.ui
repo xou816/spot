@@ -65,7 +65,9 @@
         <property name="label" translatable="yes">Album</property>
         <property name="justify">center</property>
         <property name="wrap">True</property>
+        <property name="ellipsize">end</property>
         <property name="max-width-chars">22</property>
+        <property name="lines">2</property>
         <style>
           <class name="album__title"/>
         </style>

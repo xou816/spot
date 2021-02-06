@@ -1,7 +1,7 @@
 use gtk::prelude::*;
 use gtk::{ListBoxExt, StackExt, StackSidebarExt};
 
-use crate::app::components::{Browser, Component, EventListener, NowPlaying};
+use crate::app::components::{Component, EventListener, Library, NowPlaying};
 use crate::app::AppEvent;
 
 fn find_listbox_descendant(w: &gtk::Widget) -> Option<gtk::ListBox> {
@@ -14,16 +14,16 @@ fn find_listbox_descendant(w: &gtk::Widget) -> Option<gtk::ListBox> {
     }
 }
 
-pub struct HomeComponent {
+pub struct HomePane {
     stack: gtk::Stack,
     stack_sidebar: gtk::StackSidebar,
     components: Vec<Box<dyn EventListener>>,
 }
 
-impl HomeComponent {
+impl HomePane {
     pub fn new(
         stack_sidebar: gtk::StackSidebar,
-        library: Browser,
+        library: Library,
         now_playing: NowPlaying,
     ) -> Self {
         let stack = gtk::Stack::new();
@@ -50,7 +50,7 @@ impl HomeComponent {
     }
 }
 
-impl Component for HomeComponent {
+impl Component for HomePane {
     fn get_root_widget(&self) -> &gtk::Widget {
         self.stack.upcast_ref()
     }
@@ -60,7 +60,7 @@ impl Component for HomeComponent {
     }
 }
 
-impl EventListener for HomeComponent {
+impl EventListener for HomePane {
     fn on_event(&mut self, event: &AppEvent) {
         self.broadcast_event(event);
     }

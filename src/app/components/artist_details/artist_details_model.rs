@@ -1,37 +1,7 @@
 use crate::app::models::*;
-use crate::app::{ActionDispatcher, AppAction, AppModel, BrowserAction, ListStore, Worker};
+use crate::app::{ActionDispatcher, AppAction, AppModel, BrowserAction, ListStore};
 use std::ops::Deref;
 use std::rc::Rc;
-
-use super::ArtistDetails;
-
-pub struct ArtistDetailsFactory {
-    app_model: Rc<AppModel>,
-    dispatcher: Box<dyn ActionDispatcher>,
-    worker: Worker,
-}
-
-impl ArtistDetailsFactory {
-    pub fn new(
-        app_model: Rc<AppModel>,
-        dispatcher: Box<dyn ActionDispatcher>,
-        worker: Worker,
-    ) -> Self {
-        Self {
-            app_model,
-            dispatcher,
-            worker,
-        }
-    }
-
-    pub fn make_artist_details(&self, id: String) -> ArtistDetails {
-        let model = ArtistDetailsModel {
-            app_model: Rc::clone(&self.app_model),
-            dispatcher: self.dispatcher.box_clone(),
-        };
-        ArtistDetails::new(id, model, self.worker.clone())
-    }
-}
 
 pub struct ArtistDetailsModel {
     app_model: Rc<AppModel>,
@@ -39,6 +9,13 @@ pub struct ArtistDetailsModel {
 }
 
 impl ArtistDetailsModel {
+    pub fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
+        Self {
+            app_model,
+            dispatcher,
+        }
+    }
+
     pub fn get_artist_name(&self) -> Option<impl Deref<Target = String> + '_> {
         self.app_model
             .map_state_opt(|s| s.browser_state.artist_state()?.artist.as_ref())

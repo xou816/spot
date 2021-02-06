@@ -1,41 +1,13 @@
+use ref_filter_map::*;
+use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use crate::app::components::PlaylistFactory;
-use crate::app::dispatch::{ActionDispatcher, Worker};
+use crate::app::components::PlaylistModel;
+use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
-use crate::app::state::BrowserAction;
-use crate::app::{AppAction, AppModel};
-
-use super::Details;
-
-pub struct DetailsFactory {
-    app_model: Rc<AppModel>,
-    dispatcher: Box<dyn ActionDispatcher>,
-    worker: Worker,
-    playlist_factory: PlaylistFactory,
-}
-
-impl DetailsFactory {
-    pub fn new(
-        app_model: Rc<AppModel>,
-        dispatcher: Box<dyn ActionDispatcher>,
-        worker: Worker,
-        playlist_factory: PlaylistFactory,
-    ) -> Self {
-        Self {
-            app_model,
-            dispatcher,
-            worker,
-            playlist_factory,
-        }
-    }
-
-    pub fn make_details(&self, id: String) -> Details {
-        let model = DetailsModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        Details::new(id, model, self.worker.clone(), &self.playlist_factory)
-    }
-}
+use crate::app::state::{BrowserAction, BrowserEvent, DetailsState};
+use crate::app::{AppAction, AppEvent, AppModel, AppState};
 
 pub struct DetailsModel {
     app_model: Rc<AppModel>,
@@ -43,7 +15,7 @@ pub struct DetailsModel {
 }
 
 impl DetailsModel {
-    fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
+    pub fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
         Self {
             app_model,
             dispatcher,
@@ -69,5 +41,48 @@ impl DetailsModel {
             self.dispatcher
                 .dispatch(AppAction::ViewArtist(artist.to_owned()));
         }
+    }
+}
+
+impl DetailsModel {
+    fn state(&self) -> Ref<'_, AppState> {
+        self.app_model.get_state()
+    }
+
+    fn details_state(&self) -> Option<Ref<'_, DetailsState>> {
+        self.app_model
+            .map_state_opt(|s| s.browser_state.details_state())
+    }
+}
+
+impl PlaylistModel for DetailsModel {
+    fn current_song_id(&self) -> Option<String> {
+        self.state().current_song_id.clone()
+    }
+
+    fn songs(&self) -> Option<Ref<'_, Vec<SongDescription>>> {
+        ref_filter_map(self.details_state()?, |s| Some(&s.content.as_ref()?.songs))
+    }
+
+    fn play_song(&self, id: String) {
+        let full_state = self.app_model.get_state();
+        let is_in_playlist = full_state.playlist.songs().iter().any(|s| s.id.eq(&id));
+        if let (Some(songs), false) = (self.songs(), is_in_playlist) {
+            self.dispatcher
+                .dispatch(AppAction::LoadPlaylist(songs.clone()));
+        }
+        self.dispatcher.dispatch(AppAction::Load(id));
+    }
+
+    fn should_refresh_songs(&self, event: &AppEvent) -> bool {
+        matches!(event, AppEvent::BrowserEvent(BrowserEvent::DetailsLoaded))
+    }
+
+    fn actions_for(&self, _: String) -> Option<gio::ActionGroup> {
+        None
+    }
+
+    fn menu_for(&self, _: String) -> Option<gio::MenuModel> {
+        None
     }
 }
