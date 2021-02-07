@@ -18,13 +18,16 @@ pub trait PlaylistModel {
     fn menu_for(&self, id: String) -> Option<gio::MenuModel>;
 }
 
-pub struct Playlist {
+pub struct Playlist<Model> {
     list_model: ListStore<SongModel>,
-    model: Rc<dyn PlaylistModel>,
+    model: Rc<Model>,
 }
 
-impl Playlist {
-    pub fn new(listbox: gtk::ListBox, model: Rc<dyn PlaylistModel>) -> Self {
+impl<Model> Playlist<Model>
+where
+    Model: PlaylistModel + 'static,
+{
+    pub fn new(listbox: gtk::ListBox, model: Rc<Model>) -> Self {
         let list_model = ListStore::new();
 
         listbox.set_selection_mode(gtk::SelectionMode::None);
@@ -121,7 +124,10 @@ impl Playlist {
     }
 }
 
-impl EventListener for Playlist {
+impl<Model> EventListener for Playlist<Model>
+where
+    Model: PlaylistModel + 'static,
+{
     fn on_event(&mut self, event: &AppEvent) {
         match event {
             AppEvent::TrackChanged(_) => {

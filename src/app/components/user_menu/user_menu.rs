@@ -8,9 +8,7 @@ use crate::app::AppEvent;
 
 pub struct UserMenu {
     user_button: gtk::MenuButton,
-    about: gtk::AboutDialog,
     model: Rc<UserMenuModel>,
-    configured: bool,
 }
 
 impl UserMenu {
@@ -29,38 +27,27 @@ impl UserMenu {
             }),
         );
 
-        Self {
-            user_button,
-            about,
-            model,
-            configured: false,
-        }
-    }
+        let action_group = SimpleActionGroup::new();
 
-    fn configure_actions_if_needed(&mut self) {
-        if !self.configured {
-            let action_group = SimpleActionGroup::new();
+        action_group.add_action(&{
+            let logout = SimpleAction::new("logout", None);
+            logout.connect_activate(clone!(@weak model => move |_, _| {
+                model.logout();
+            }));
+            logout
+        });
 
-            action_group.add_action(&{
-                let logout = SimpleAction::new("logout", None);
-                logout.connect_activate(clone!(@weak self.model as model => move |_, _| {
-                    model.logout();
-                }));
-                logout
-            });
+        action_group.add_action(&{
+            let about_action = SimpleAction::new("about", None);
+            about_action.connect_activate(clone!(@weak about => move |_, _| {
+                about.show_all();
+            }));
+            about_action
+        });
 
-            action_group.add_action(&{
-                let about = SimpleAction::new("about", None);
-                about.connect_activate(clone!(@weak self.about as about => move |_, _| {
-                    about.show_all();
-                }));
-                about
-            });
+        user_button.insert_action_group("menu", Some(&action_group));
 
-            self.user_button
-                .insert_action_group("menu", Some(&action_group));
-            self.configured = true;
-        }
+        Self { user_button, model }
     }
 
     fn update_menu(&self) {
@@ -80,8 +67,7 @@ impl UserMenu {
 impl EventListener for UserMenu {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::LoginCompleted(_) => {
-                self.configure_actions_if_needed();
+            AppEvent::LoginCompleted(_) | AppEvent::Started => {
                 self.update_menu();
             }
             _ => {}

@@ -78,7 +78,8 @@ impl ImageLoader {
                     loader.write_all(&buffer[..]).ok()?;
                     self.cache
                         .write_cache_file(&resource[..], &buffer[..], CacheExpiry::Never)
-                        .await;
+                        .await
+                        .ok()?;
                 }
             }
         };

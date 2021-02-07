@@ -26,6 +26,7 @@ use crate::app::credentials;
 #[derive(Debug)]
 pub enum SpotifyError {
     LoginFailed,
+    TokenFailed,
     PlayerNotReady,
 }
 
@@ -35,6 +36,7 @@ impl fmt::Display for SpotifyError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::LoginFailed => write!(f, "Login failed!"),
+            Self::TokenFailed => write!(f, "Token retrieval failed!"),
             Self::PlayerNotReady => write!(f, "Player is not responding."),
         }
     }
@@ -43,12 +45,14 @@ impl fmt::Display for SpotifyError {
 pub trait SpotifyPlayerDelegate {
     fn end_of_track_reached(&self);
     fn login_successful(&self, credentials: credentials::Credentials);
+    fn refresh_successful(&self, token: String);
     fn report_error(&self, error: SpotifyError);
     fn notify_playback_state(&self, position: u32);
 }
 
 pub struct SpotifyPlayer {
     player: RefCell<Option<Player>>,
+    session: RefCell<Option<Session>>,
     delegate: Rc<dyn SpotifyPlayerDelegate>,
 }
 
@@ -56,12 +60,14 @@ impl SpotifyPlayer {
     pub fn new(delegate: Rc<dyn SpotifyPlayerDelegate>) -> Self {
         Self {
             player: RefCell::new(None),
+            session: RefCell::new(None),
             delegate,
         }
     }
 
     async fn handle(&self, action: Command, handle: &Handle) -> Result<(), SpotifyError> {
         let mut player = self.player.borrow_mut();
+        let mut session = self.session.borrow_mut();
         match action {
             Command::PlayerResume => {
                 let player = player.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
@@ -83,19 +89,25 @@ impl SpotifyPlayer {
                 player.load(track, true, 0);
                 Ok(())
             }
-            Command::Login(username, password) => {
-                let session =
-                    create_session(username.clone(), password.clone(), handle.clone()).await?;
+            Command::RefreshToken => {
+                let session = session.as_mut().ok_or(SpotifyError::PlayerNotReady)?;
                 let token = get_access_token(&session).await?;
+                self.delegate.refresh_successful(token);
+                Ok(())
+            }
+            Command::Login(username, password) => {
+                let new_session =
+                    create_session(username.clone(), password.clone(), handle.clone()).await?;
+                let token = get_access_token(&new_session).await?;
                 let credentials = credentials::Credentials {
                     username,
                     password,
                     token,
-                    country: session.country(),
+                    country: new_session.country(),
                 };
                 self.delegate.login_successful(credentials);
 
-                let new_player = create_player(session);
+                let new_player = create_player(new_session.clone());
                 handle.spawn(player_subscribe_to_playing_event(
                     &new_player,
                     Rc::downgrade(&self.delegate),
@@ -105,6 +117,7 @@ impl SpotifyPlayer {
                     Rc::downgrade(&self.delegate),
                 ));
                 player.replace(new_player);
+                session.replace(new_session);
 
                 Ok(())
             }
@@ -142,7 +155,7 @@ async fn get_access_token(session: &Session) -> Result<String, SpotifyError> {
         .await;
     token
         .map(|t| t.access_token)
-        .map_err(|_| SpotifyError::LoginFailed)
+        .map_err(|_| SpotifyError::TokenFailed)
 }
 
 async fn create_session(

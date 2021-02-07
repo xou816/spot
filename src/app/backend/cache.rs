@@ -1,6 +1,7 @@
 use async_std::fs;
 use async_std::io;
-use std::convert::TryInto;
+use std::convert::{From, TryInto};
+use std::future::Future;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
 
@@ -123,13 +124,15 @@ impl CacheManager {
 }
 
 impl CacheManager {
-    pub async fn set_expiry_for(&self, resource: &str, expiry: Duration) -> Option<()> {
-        let meta_file = self.cache_meta_path(resource).unwrap();
+    pub async fn set_expiry_for(&self, resource: &str, expiry: Duration) -> io::Result<()> {
+        let meta_file = self
+            .cache_meta_path(resource)
+            .ok_or(io::Error::from(io::ErrorKind::NotFound))?;
         let content = expiry.as_secs().to_be_bytes().to_owned();
 
-        fs::write(&meta_file, content).await.ok()?;
+        fs::write(&meta_file, content).await?;
 
-        Some(())
+        Ok(())
     }
 
     pub async fn write_cache_file(
@@ -137,14 +140,68 @@ impl CacheManager {
         resource: &str,
         content: &[u8],
         expiry: CacheExpiry,
-    ) -> Option<()> {
-        let file = self.cache_path(resource)?;
-        fs::write(&file, content).await.ok()?;
+    ) -> io::Result<()> {
+        let file = self
+            .cache_path(resource)
+            .ok_or(io::Error::from(io::ErrorKind::NotFound))?;
+        fs::write(&file, content).await?;
 
         if let CacheExpiry::AtUnixTimestamp(ts) = expiry {
             self.set_expiry_for(resource, ts).await?;
         }
 
-        Some(())
+        Ok(())
+    }
+}
+
+pub struct CacheRequest<'a, S> {
+    cache: &'a CacheManager,
+    resource: S,
+    policy: CachePolicy,
+}
+
+impl<'a, S> CacheRequest<'a, S>
+where
+    S: AsRef<str> + 'a,
+{
+    pub fn for_resource(cache: &'a CacheManager, resource: S, policy: CachePolicy) -> Self {
+        Self {
+            cache,
+            resource,
+            policy,
+        }
+    }
+
+    pub async fn get(&self) -> Option<String> {
+        match self
+            .cache
+            .read_cache_file(self.resource.as_ref(), self.policy)
+            .await
+        {
+            CacheFile::File(buffer) => String::from_utf8(buffer).ok(),
+            _ => None,
+        }
+    }
+
+    pub async fn or_else_try_write<O, F, E>(
+        &self,
+        fresh: F,
+        expiry: CacheExpiry,
+    ) -> Result<String, E>
+    where
+        O: Future<Output = Result<String, E>>,
+        F: FnOnce() -> O,
+        E: From<io::Error>,
+    {
+        match self.get().await {
+            Some(text) => Ok(text),
+            None => {
+                let fresh = fresh().await?;
+                self.cache
+                    .write_cache_file(self.resource.as_ref(), fresh.as_bytes(), expiry)
+                    .await?;
+                Ok(fresh)
+            }
+        }
     }
 }

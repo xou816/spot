@@ -50,12 +50,8 @@ impl App {
         let model = Rc::new(model);
 
         let components: Vec<Box<dyn EventListener>> = vec![
-            App::make_playback(
-                builder,
-                Rc::clone(&model),
-                dispatcher.box_clone(),
-                worker.clone(),
-            ),
+            App::make_playback_control(builder, Rc::clone(&model), dispatcher.box_clone()),
+            App::make_playback_info(builder, Rc::clone(&model), worker.clone()),
             App::make_login(builder, dispatcher.box_clone()),
             App::make_navigation(builder, Rc::clone(&model), dispatcher.box_clone(), worker),
             App::make_search_bar(builder, dispatcher.box_clone()),
@@ -89,38 +85,18 @@ impl App {
             builder.get_object("home_stack_sidebar").unwrap();
 
         let model = NavigationModel::new(Rc::clone(&app_model), dispatcher.box_clone());
-        let browser_factory = BrowserFactory::new(
-            worker.clone(),
-            Rc::clone(&app_model),
-            dispatcher.box_clone(),
-        );
-        let playlist_factory = PlaylistFactory::new(Rc::clone(&app_model), dispatcher.box_clone());
-        let details_factory = DetailsFactory::new(
-            Rc::clone(&app_model),
-            dispatcher.box_clone(),
-            worker.clone(),
-            playlist_factory,
-        );
-        let search_factory = SearchFactory::new(
+        let screen_factory = ScreenFactory::new(
             Rc::clone(&app_model),
             dispatcher.box_clone(),
             worker.clone(),
         );
-        let artist_details_factory =
-            ArtistDetailsFactory::new(Rc::clone(&app_model), dispatcher.box_clone(), worker);
-        let now_playing_factory =
-            NowPlayingFactory::new(Rc::clone(&app_model), dispatcher.box_clone());
         Box::new(Navigation::new(
             model,
             leaflet,
             back_btn,
             navigation_stack,
             home_stack_sidebar,
-            browser_factory,
-            details_factory,
-            search_factory,
-            artist_details_factory,
-            now_playing_factory,
+            screen_factory,
         ))
     }
 
@@ -137,36 +113,48 @@ impl App {
         ))
     }
 
-    fn make_playback(
+    fn make_playback_info(
         builder: &gtk::Builder,
         app_model: Rc<AppModel>,
-        dispatcher: Box<dyn ActionDispatcher>,
         worker: Worker,
-    ) -> Box<Playback> {
-        let play_button: gtk::Button = builder.get_object("play_pause").unwrap();
-        let shuffle_button: gtk::ToggleButton = builder.get_object("shuffle").unwrap();
+    ) -> Box<PlaybackInfo> {
         let image: gtk::Image = builder.get_object("playing_image").unwrap();
         let image_small: gtk::Image = builder.get_object("playing_image_small").unwrap();
         let current_song_info: gtk::Label = builder.get_object("current_song_info").unwrap();
+
+        let model = PlaybackInfoModel::new(app_model);
+        Box::new(PlaybackInfo::new(
+            model,
+            worker,
+            image,
+            image_small,
+            current_song_info,
+        ))
+    }
+
+    fn make_playback_control(
+        builder: &gtk::Builder,
+        app_model: Rc<AppModel>,
+        dispatcher: Box<dyn ActionDispatcher>,
+    ) -> Box<PlaybackControl> {
+        let play_button: gtk::Button = builder.get_object("play_pause").unwrap();
+        let shuffle_button: gtk::ToggleButton = builder.get_object("shuffle").unwrap();
         let next: gtk::Button = builder.get_object("next").unwrap();
         let prev: gtk::Button = builder.get_object("prev").unwrap();
         let seek_bar: gtk::Scale = builder.get_object("seek_bar").unwrap();
         let track_duration: gtk::Label = builder.get_object("track_duration").unwrap();
 
-        let widget = PlaybackWidget::new(
+        let widget = PlaybackControlWidget::new(
             play_button,
             shuffle_button,
-            image,
-            image_small,
-            current_song_info,
             seek_bar,
             track_duration,
             next,
             prev,
         );
 
-        let model = PlaybackModel::new(app_model, dispatcher);
-        Box::new(Playback::new(model, worker, widget))
+        let model = PlaybackControlModel::new(app_model, dispatcher);
+        Box::new(PlaybackControl::new(model, widget))
     }
 
     fn make_search_bar(

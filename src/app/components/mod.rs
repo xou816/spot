@@ -23,8 +23,8 @@ pub use login::*;
 mod player_notifier;
 pub use player_notifier::PlayerNotifier;
 
-mod browser;
-pub use browser::*;
+mod library;
+pub use library::*;
 
 mod details;
 pub use details::*;
@@ -34,9 +34,6 @@ pub use search::*;
 
 mod album;
 use album::*;
-
-mod song;
-use song::*;
 
 mod artist_details;
 pub use artist_details::*;
@@ -49,6 +46,8 @@ pub use user_menu::*;
 
 mod notification;
 pub use notification::*;
+
+mod utils;
 
 pub fn screen_add_css_provider(resource: &str) {
     let provider = gtk::CssProvider::new();

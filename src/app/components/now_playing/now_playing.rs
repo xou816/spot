@@ -2,8 +2,10 @@ use gladis::Gladis;
 use gtk::prelude::*;
 use std::rc::Rc;
 
-use crate::app::components::{Component, EventListener, PlaylistFactory};
-use crate::app::{ActionDispatcher, AppEvent, AppModel};
+use crate::app::components::{Component, EventListener, Playlist};
+use crate::app::AppEvent;
+
+use super::NowPlayingModel;
 
 #[derive(Clone, Gladis)]
 struct NowPlayingWidget {
@@ -17,31 +19,15 @@ impl NowPlayingWidget {
     }
 }
 
-pub struct NowPlayingFactory {
-    // will change
-    playlist_factory: PlaylistFactory,
-}
-
-impl NowPlayingFactory {
-    pub fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
-        let playlist_factory = PlaylistFactory::new(app_model, dispatcher);
-        Self { playlist_factory }
-    }
-
-    pub fn make_now_playing(&self) -> NowPlaying {
-        NowPlaying::new(self.playlist_factory.clone())
-    }
-}
-
 pub struct NowPlaying {
     widget: NowPlayingWidget,
     children: Vec<Box<dyn EventListener>>,
 }
 
 impl NowPlaying {
-    pub fn new(playlist_factory: PlaylistFactory) -> Self {
+    pub fn new(model: NowPlayingModel) -> Self {
         let widget = NowPlayingWidget::new();
-        let playlist = playlist_factory.make_current_playlist(widget.listbox.clone());
+        let playlist = Playlist::new(widget.listbox.clone(), Rc::new(model));
         Self {
             widget,
             children: vec![Box::new(playlist)],

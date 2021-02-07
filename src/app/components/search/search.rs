@@ -1,35 +1,14 @@
-use super::SearchResultsModel;
-use crate::app::components::{Album, Component, EventListener};
-use crate::app::dispatch::Worker;
-use crate::app::models::AlbumModel;
-use crate::app::state::{AppEvent, BrowserEvent};
 use gio::prelude::*;
 use gladis::Gladis;
 use gtk::prelude::*;
-use std::cell::Cell;
 use std::rc::Rc;
 
-struct Debouncer(Rc<Cell<Option<glib::source::SourceId>>>);
+use crate::app::components::{utils::Debouncer, Album, Component, EventListener};
+use crate::app::dispatch::Worker;
+use crate::app::models::AlbumModel;
+use crate::app::state::{AppEvent, BrowserEvent};
 
-impl Debouncer {
-    fn new() -> Self {
-        Self(Rc::new(Cell::new(None)))
-    }
-
-    fn debounce<F: Fn() + 'static>(&self, interval_ms: u32, f: F) {
-        let source_clone = Rc::downgrade(&self.0);
-        let new_source = glib::timeout_add_local(interval_ms, move || {
-            f();
-            if let Some(cell) = source_clone.upgrade() {
-                cell.set(None);
-            }
-            glib::Continue(false)
-        });
-        if let Some(previous_source) = self.0.replace(Some(new_source)) {
-            glib::source_remove(previous_source);
-        }
-    }
-}
+use super::SearchResultsModel;
 
 #[derive(Gladis, Clone)]
 struct SearchResultsWidget {

@@ -2,44 +2,18 @@ use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use super::Browser;
-use crate::app::dispatch::Worker;
+use crate::app::backend::api::SpotifyApiError;
 use crate::app::models::*;
 use crate::app::state::{LibraryState, ScreenName};
-use crate::app::{ActionDispatcher, AppModel, BrowserAction, ListStore};
+use crate::app::{ActionDispatcher, AppAction, AppModel, BrowserAction, ListStore};
 
-pub struct BrowserFactory {
-    worker: Worker,
-    app_model: Rc<AppModel>,
-    dispatcher: Box<dyn ActionDispatcher>,
-}
-
-impl BrowserFactory {
-    pub fn new(
-        worker: Worker,
-        app_model: Rc<AppModel>,
-        dispatcher: Box<dyn ActionDispatcher>,
-    ) -> Self {
-        Self {
-            worker,
-            app_model,
-            dispatcher,
-        }
-    }
-
-    pub fn make_browser(&self) -> Browser {
-        let model = BrowserModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        Browser::new(self.worker.clone(), model)
-    }
-}
-
-pub struct BrowserModel {
+pub struct LibraryModel {
     app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>,
     batch_size: u32,
 }
 
-impl BrowserModel {
+impl LibraryModel {
     pub fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
         Self {
             app_model,
@@ -62,7 +36,7 @@ impl BrowserModel {
         let batch_size = self.batch_size;
 
         self.dispatcher.dispatch_async(Box::pin(async move {
-            let albums = api.get_saved_albums(0, batch_size).await?;
+            let albums = api.get_saved_albums(0, batch_size).await.ok()?;
             Some(BrowserAction::SetContent(albums).into())
         }));
     }
@@ -74,11 +48,11 @@ impl BrowserModel {
         let batch_size = self.batch_size;
 
         self.dispatcher.dispatch_async(Box::pin(async move {
-            let albums = api
-                .get_saved_albums(offset, batch_size)
-                .await
-                .unwrap_or_else(Vec::new);
-            Some(BrowserAction::AppendContent(albums).into())
+            match api.get_saved_albums(offset, batch_size).await {
+                Ok(albums) => Some(BrowserAction::AppendContent(albums).into()),
+                Err(SpotifyApiError::InvalidToken) => Some(AppAction::RefreshToken),
+                _ => None,
+            }
         }));
     }
 
