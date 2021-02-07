@@ -26,6 +26,7 @@ use crate::app::credentials;
 #[derive(Debug)]
 pub enum SpotifyError {
     LoginFailed,
+    TokenFailed,
     PlayerNotReady,
 }
 
@@ -35,6 +36,7 @@ impl fmt::Display for SpotifyError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::LoginFailed => write!(f, "Login failed!"),
+            Self::TokenFailed => write!(f, "Token retrieval failed!"),
             Self::PlayerNotReady => write!(f, "Player is not responding."),
         }
     }
@@ -153,7 +155,7 @@ async fn get_access_token(session: &Session) -> Result<String, SpotifyError> {
         .await;
     token
         .map(|t| t.access_token)
-        .map_err(|_| SpotifyError::LoginFailed)
+        .map_err(|_| SpotifyError::TokenFailed)
 }
 
 async fn create_session(

@@ -1,6 +1,6 @@
 use async_std::fs;
 use async_std::io;
-use std::convert::{TryInto, From};
+use std::convert::{From, TryInto};
 use std::future::Future;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};

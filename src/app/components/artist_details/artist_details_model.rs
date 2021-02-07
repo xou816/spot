@@ -33,7 +33,7 @@ impl ArtistDetailsModel {
             match api.get_artist(&id[..]).await {
                 Ok(artist) => Some(BrowserAction::SetArtistDetails(artist).into()),
                 Err(SpotifyApiError::InvalidToken) => Some(AppAction::RefreshToken),
-                _ => None
+                _ => None,
             }
         }));
     }

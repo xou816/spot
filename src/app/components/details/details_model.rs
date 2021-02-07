@@ -34,7 +34,7 @@ impl DetailsModel {
             match api.get_album(&id).await {
                 Ok(album) => Some(BrowserAction::SetDetails(album).into()),
                 Err(SpotifyApiError::InvalidToken) => Some(AppAction::RefreshToken),
-                _ => None
+                _ => None,
             }
         }));
     }

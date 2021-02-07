@@ -47,10 +47,7 @@ impl UserMenu {
 
         user_button.insert_action_group("menu", Some(&action_group));
 
-        Self {
-            user_button,
-            model,
-        }
+        Self { user_button, model }
     }
 
     fn update_menu(&self) {
