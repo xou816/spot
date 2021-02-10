@@ -32,7 +32,7 @@ impl DetailsModel {
         let api = self.app_model.get_spotify();
         self.dispatcher.dispatch_async(Box::pin(async move {
             match api.get_album(&id).await {
-                Ok(album) => Some(BrowserAction::SetDetails(album).into()),
+                Ok(album) => Some(BrowserAction::SetAlbumDetails(album).into()),
                 Err(SpotifyApiError::InvalidToken) => Some(AppAction::RefreshToken),
                 _ => None,
             }
@@ -79,7 +79,10 @@ impl PlaylistModel for DetailsModel {
     }
 
     fn should_refresh_songs(&self, event: &AppEvent) -> bool {
-        matches!(event, AppEvent::BrowserEvent(BrowserEvent::DetailsLoaded))
+        matches!(
+            event,
+            AppEvent::BrowserEvent(BrowserEvent::AlbumDetailsLoaded)
+        )
     }
 
     fn actions_for(&self, _: String) -> Option<gio::ActionGroup> {

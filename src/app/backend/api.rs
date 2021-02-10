@@ -25,6 +25,11 @@ pub trait SpotifyApiClient {
         offset: u32,
         limit: u32,
     ) -> BoxFuture<SpotifyResult<Vec<AlbumDescription>>>;
+    fn get_saved_playlists(
+        &self,
+        offset: u32,
+        limit: u32,
+    ) -> BoxFuture<SpotifyResult<Vec<PlaylistDescription>>>;
     fn search_albums(
         &self,
         query: &str,
@@ -191,6 +196,32 @@ impl CachedSpotifyClient {
         self.send(request).await
     }
 
+    async fn get_saved_playlists_no_cache(
+        &self,
+        offset: u32,
+        limit: u32,
+    ) -> Result<String, SpotifyApiError> {
+        let request = {
+            let token = self.token.lock().unwrap();
+            let token = token.as_ref().ok_or(SpotifyApiError::NoToken)?;
+
+            let query = Self::make_query_params()
+                .append_pair("offset", &offset.to_string()[..])
+                .append_pair("limit", &limit.to_string()[..])
+                .finish();
+
+            let uri = self
+                .uri("/v1/me/playlists".to_string(), Some(query))
+                .unwrap();
+            Request::get(uri)
+                .header("Authorization", format!("Bearer {}", &token))
+                .body(())
+                .unwrap()
+        };
+
+        self.send(request).await
+    }
+
     async fn search_no_cache(&self, query: String) -> Result<String, SpotifyApiError> {
         let request = {
             let token = self.token.lock().unwrap();
@@ -247,6 +278,34 @@ impl SpotifyApiClient for CachedSpotifyClient {
                 .into_iter()
                 .map(|saved| saved.album.into())
                 .collect::<Vec<AlbumDescription>>();
+
+            Ok(albums)
+        })
+    }
+
+    fn get_saved_playlists(
+        &self,
+        offset: u32,
+        limit: u32,
+    ) -> BoxFuture<SpotifyResult<Vec<PlaylistDescription>>> {
+        Box::pin(async move {
+            let cache_request =
+                self.cache_request(format!("net/me_playlists_{}_{}.json", offset, limit), None);
+
+            let text = cache_request
+                .or_else_try_write(
+                    || self.get_saved_playlists_no_cache(offset, limit),
+                    CacheExpiry::expire_in_seconds(3600),
+                )
+                .await?;
+
+            let page = from_str::<Page<Playlist>>(&text)?;
+
+            let albums = page
+                .items
+                .into_iter()
+                .map(|playlist| playlist.into())
+                .collect::<Vec<PlaylistDescription>>();
 
             Ok(albums)
         })

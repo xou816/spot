@@ -13,6 +13,18 @@ impl From<AlbumDescription> for AlbumModel {
     }
 }
 
+impl From<&PlaylistDescription> for AlbumModel {
+    fn from(playlist: &PlaylistDescription) -> Self {
+        AlbumModel::new("", &playlist.title, &playlist.art, &playlist.id)
+    }
+}
+
+impl From<PlaylistDescription> for AlbumModel {
+    fn from(playlist: PlaylistDescription) -> Self {
+        Self::from(&playlist)
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct ArtistRef {
     pub id: String,
@@ -51,6 +63,14 @@ impl PartialEq for AlbumDescription {
 }
 
 impl Eq for AlbumDescription {}
+
+#[derive(Clone, Debug)]
+pub struct PlaylistDescription {
+    pub id: String,
+    pub title: String,
+    pub art: String,
+    pub songs: Vec<SongDescription>,
+}
 
 #[derive(Clone, Debug)]
 pub struct SongDescription {

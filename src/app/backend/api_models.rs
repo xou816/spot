@@ -3,7 +3,7 @@ use regex::Regex;
 use serde::Deserialize;
 use std::convert::Into;
 
-use crate::app::{AlbumDescription, AlbumRef, ArtistRef, SongDescription};
+use crate::app::models::*;
 
 pub enum SearchType {
     Artist,
@@ -53,6 +53,58 @@ pub struct Page<T> {
     pub items: Vec<T>,
 }
 
+trait WithImages {
+    fn images(&self) -> &[Image];
+
+    fn best_image<T: PartialOrd, F: Fn(&Image) -> T>(&self, criterion: F) -> Option<&Image> {
+        let mut ords = self
+            .images()
+            .iter()
+            .map(|image| (criterion(image), image))
+            .collect::<Vec<(T, &Image)>>();
+
+        ords.sort_by(|a, b| (a.0).partial_cmp(&b.0).unwrap());
+        Some(ords.first()?.1)
+    }
+
+    fn best_image_for_width(&self, width: i32) -> Option<&Image> {
+        self.best_image(|i| (width - i.width.unwrap_or(0) as i32).abs())
+    }
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct Playlist {
+    pub id: String,
+    pub name: String,
+    pub images: Vec<Image>,
+}
+
+impl WithImages for Playlist {
+    fn images(&self) -> &[Image] {
+        &self.images[..]
+    }
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct DetailedPlaylist {
+    pub id: String,
+    pub name: String,
+    pub images: Vec<Image>,
+    pub tracks: Vec<PlaylistTrack>,
+}
+
+impl WithImages for DetailedPlaylist {
+    fn images(&self) -> &[Image] {
+        &self.images[..]
+    }
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct PlaylistTrack {
+    pub is_local: bool,
+    pub track: TrackItem,
+}
+
 #[derive(Deserialize, Debug, Clone)]
 pub struct SavedAlbum {
     pub album: Album,
@@ -67,28 +119,17 @@ pub struct Album {
     pub images: Vec<Image>,
 }
 
-impl Album {
-    fn best_image<T: PartialOrd, F: Fn(&Image) -> T>(&self, criterion: F) -> Option<&Image> {
-        let mut ords = self
-            .images
-            .iter()
-            .map(|image| (criterion(image), image))
-            .collect::<Vec<(T, &Image)>>();
-
-        ords.sort_by(|a, b| (a.0).partial_cmp(&b.0).unwrap());
-        Some(ords.first()?.1)
-    }
-
-    fn best_image_for_width(&self, width: i32) -> Option<&Image> {
-        self.best_image(|i| (width - i.width as i32).abs())
+impl WithImages for Album {
+    fn images(&self) -> &[Image] {
+        &self.images[..]
     }
 }
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Image {
     pub url: String,
-    pub height: u32,
-    pub width: u32,
+    pub height: Option<u32>,
+    pub width: Option<u32>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -176,6 +217,18 @@ impl Into<AlbumDescription> for Album {
             artists,
             art,
             songs,
+        }
+    }
+}
+
+impl Into<PlaylistDescription> for Playlist {
+    fn into(self) -> PlaylistDescription {
+        let art = self.best_image_for_width(200).unwrap().url.clone();
+        PlaylistDescription {
+            id: self.id,
+            title: self.name,
+            art,
+            songs: vec![],
         }
     }
 }

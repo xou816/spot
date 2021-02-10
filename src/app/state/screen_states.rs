@@ -6,7 +6,7 @@ use std::borrow::Cow;
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ScreenName {
     Home,
-    Details(String),
+    AlbumDetails(String),
     Search,
     Artist(String),
 }
@@ -15,7 +15,7 @@ impl ScreenName {
     pub fn identifier(&self) -> Cow<str> {
         match self {
             Self::Home => Cow::Borrowed("home"),
-            Self::Details(s) => Cow::Owned(format!("album_{}", s)),
+            Self::AlbumDetails(s) => Cow::Owned(format!("album_{}", s)),
             Self::Search => Cow::Borrowed("search"),
             Self::Artist(s) => Cow::Owned(format!("artist_{}", s)),
         }
@@ -31,7 +31,7 @@ pub struct DetailsState {
 impl DetailsState {
     pub fn new(id: String) -> Self {
         Self {
-            name: ScreenName::Details(id),
+            name: ScreenName::AlbumDetails(id),
             content: None,
         }
     }
@@ -43,9 +43,9 @@ impl UpdatableState for DetailsState {
 
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
-            BrowserAction::SetDetails(album) => {
+            BrowserAction::SetAlbumDetails(album) => {
                 self.content = Some(album);
-                vec![BrowserEvent::DetailsLoaded]
+                vec![BrowserEvent::AlbumDetailsLoaded]
             }
             _ => vec![],
         }
@@ -88,35 +88,39 @@ impl UpdatableState for ArtistState {
 }
 
 #[derive(Clone)]
-pub struct LibraryState {
+pub struct HomeState {
     pub name: ScreenName,
-    pub page: u32,
+    pub albums_page: u32,
     pub albums: ListStore<AlbumModel>,
+    pub playlists_page: u32,
+    pub playlists: ListStore<AlbumModel>,
 }
 
-impl Default for LibraryState {
+impl Default for HomeState {
     fn default() -> Self {
         Self {
             name: ScreenName::Home,
-            page: 0,
+            albums_page: 0,
             albums: ListStore::new(),
+            playlists_page: 0,
+            playlists: ListStore::new(),
         }
     }
 }
 
-impl UpdatableState for LibraryState {
+impl UpdatableState for HomeState {
     type Action = BrowserAction;
     type Event = BrowserEvent;
 
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
-            BrowserAction::SetContent(content) => {
+            BrowserAction::SetLibraryContent(content) => {
                 let converted = content
                     .iter()
                     .map(|a| a.into())
                     .collect::<Vec<AlbumModel>>();
                 if !self.albums.eq(&converted, |a, b| a.uri() == b.uri()) {
-                    self.page = 1;
+                    self.albums_page = 1;
                     self.albums.remove_all();
                     for album in converted {
                         self.albums.append(album);
@@ -126,12 +130,35 @@ impl UpdatableState for LibraryState {
                     vec![]
                 }
             }
-            BrowserAction::AppendContent(content) => {
-                self.page += 1;
+            BrowserAction::AppendLibraryContent(content) => {
+                self.albums_page += 1;
                 for album in content {
                     self.albums.append(album.into());
                 }
                 vec![BrowserEvent::LibraryUpdated]
+            }
+            BrowserAction::SetPlaylistsContent(content) => {
+                let converted = content
+                    .iter()
+                    .map(|a| a.into())
+                    .collect::<Vec<AlbumModel>>();
+                if !self.playlists.eq(&converted, |a, b| a.uri() == b.uri()) {
+                    self.playlists_page = 1;
+                    self.playlists.remove_all();
+                    for playlist in converted {
+                        self.playlists.append(playlist);
+                    }
+                    vec![BrowserEvent::SavedPlaylistsUpdated]
+                } else {
+                    vec![]
+                }
+            }
+            BrowserAction::AppendPlaylistsContent(content) => {
+                self.playlists_page += 1;
+                for playlist in content {
+                    self.playlists.append(playlist.into());
+                }
+                vec![BrowserEvent::SavedPlaylistsUpdated]
             }
             _ => vec![],
         }

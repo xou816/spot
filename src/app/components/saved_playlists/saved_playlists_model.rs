@@ -7,13 +7,13 @@ use crate::app::models::*;
 use crate::app::state::HomeState;
 use crate::app::{ActionDispatcher, AppAction, AppModel, BrowserAction, ListStore};
 
-pub struct LibraryModel {
+pub struct SavedPlaylistsModel {
     app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>,
     batch_size: u32,
 }
 
-impl LibraryModel {
+impl SavedPlaylistsModel {
     pub fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
         Self {
             app_model,
@@ -28,25 +28,28 @@ impl LibraryModel {
     }
 
     pub fn get_list_store(&self) -> Option<impl Deref<Target = ListStore<AlbumModel>> + '_> {
-        Some(Ref::map(self.state()?, |s| &s.albums))
+        Some(Ref::map(self.state()?, |s| &s.playlists))
     }
 
-    pub fn refresh_saved_albums(&self) {
+    pub fn refresh_saved_playlists(&self) {
         let api = self.app_model.get_spotify();
         let batch_size = self.batch_size;
 
         self.dispatcher.dispatch_async(Box::pin(async move {
-            match api.get_saved_albums(0, batch_size).await {
-                Ok(albums) => Some(BrowserAction::SetLibraryContent(albums).into()),
+            match api.get_saved_playlists(0, batch_size).await {
+                Ok(playlists) => Some(BrowserAction::SetPlaylistsContent(playlists).into()),
                 Err(SpotifyApiError::InvalidToken) => Some(AppAction::RefreshToken),
-                _ => None,
+                Err(err) => {
+                    println!("{:?}", err);
+                    None
+                }
             }
         }));
     }
 
-    pub fn load_more_albums(&self) {
+    pub fn load_more_playlists(&self) {
         let api = self.app_model.get_spotify();
-        let page = self.state().map(|s| s.albums_page).unwrap_or(0);
+        let page = self.state().map(|s| s.playlists_page).unwrap_or(0);
         let offset = page * self.batch_size;
         let batch_size = self.batch_size;
         let current_len = self.get_list_store().unwrap().len() as u32;
@@ -55,16 +58,11 @@ impl LibraryModel {
         }
 
         self.dispatcher.dispatch_async(Box::pin(async move {
-            match api.get_saved_albums(offset, batch_size).await {
-                Ok(albums) => Some(BrowserAction::AppendLibraryContent(albums).into()),
+            match api.get_saved_playlists(offset, batch_size).await {
+                Ok(playlists) => Some(BrowserAction::AppendPlaylistsContent(playlists).into()),
                 Err(SpotifyApiError::InvalidToken) => Some(AppAction::RefreshToken),
                 _ => None,
             }
         }));
-    }
-
-    pub fn open_album(&self, album_id: &str) {
-        self.dispatcher
-            .dispatch(AppAction::ViewAlbum(album_id.to_owned()));
     }
 }
