@@ -1,4 +1,4 @@
-use super::{ArtistState, DetailsState, LibraryState, ScreenName, SearchState, UpdatableState};
+use super::{ArtistState, DetailsState, HomeState, ScreenName, SearchState, UpdatableState};
 use crate::app::models::*;
 use crate::app::state::AppAction;
 use std::convert::Into;
@@ -6,9 +6,11 @@ use std::iter::Iterator;
 
 #[derive(Clone, Debug)]
 pub enum BrowserAction {
-    SetContent(Vec<AlbumDescription>),
-    AppendContent(Vec<AlbumDescription>),
-    SetDetails(AlbumDescription),
+    SetLibraryContent(Vec<AlbumDescription>),
+    AppendLibraryContent(Vec<AlbumDescription>),
+    SetPlaylistsContent(Vec<PlaylistDescription>),
+    AppendPlaylistsContent(Vec<PlaylistDescription>),
+    SetAlbumDetails(AlbumDescription),
     Search(String),
     SetSearchResults(Vec<AlbumDescription>),
     SetArtistDetails(ArtistDescription),
@@ -26,7 +28,8 @@ impl Into<AppAction> for BrowserAction {
 #[derive(Eq, PartialEq, Clone, Debug)]
 pub enum BrowserEvent {
     LibraryUpdated,
-    DetailsLoaded,
+    SavedPlaylistsUpdated,
+    AlbumDetailsLoaded,
     SearchUpdated,
     SearchResultsUpdated,
     ArtistDetailsUpdated,
@@ -37,8 +40,8 @@ pub enum BrowserEvent {
 
 #[derive(Clone)]
 pub enum BrowserScreen {
-    Library(LibraryState),
-    Details(DetailsState),
+    Home(HomeState),
+    AlbumDetails(DetailsState),
     Search(SearchState),
     Artist(ArtistState),
 }
@@ -46,8 +49,10 @@ pub enum BrowserScreen {
 impl BrowserScreen {
     fn from_name(name: &ScreenName) -> Self {
         match name {
-            ScreenName::Home => BrowserScreen::Library(Default::default()),
-            ScreenName::Details(id) => BrowserScreen::Details(DetailsState::new(id.to_string())),
+            ScreenName::Home => BrowserScreen::Home(Default::default()),
+            ScreenName::AlbumDetails(id) => {
+                BrowserScreen::AlbumDetails(DetailsState::new(id.to_string()))
+            }
             ScreenName::Search => BrowserScreen::Search(Default::default()),
             ScreenName::Artist(id) => BrowserScreen::Artist(ArtistState::new(id.to_string())),
         }
@@ -55,8 +60,8 @@ impl BrowserScreen {
 
     fn state(&mut self) -> &mut dyn UpdatableState<Action = BrowserAction, Event = BrowserEvent> {
         match self {
-            Self::Library(state) => state,
-            Self::Details(state) => state,
+            Self::Home(state) => state,
+            Self::AlbumDetails(state) => state,
             Self::Search(state) => state,
             Self::Artist(state) => state,
         }
@@ -68,8 +73,8 @@ impl NamedScreen for BrowserScreen {
 
     fn name(&self) -> &Self::Name {
         match self {
-            Self::Library(state) => &state.name,
-            Self::Details(state) => &state.name,
+            Self::Home(state) => &state.name,
+            Self::AlbumDetails(state) => &state.name,
             Self::Search(state) => &state.name,
             Self::Artist(state) => &state.name,
         }
@@ -160,7 +165,7 @@ pub struct BrowserState {
 impl BrowserState {
     pub fn new() -> Self {
         Self {
-            navigation: NavStack::new(BrowserScreen::Library(Default::default())),
+            navigation: NavStack::new(BrowserScreen::Home(Default::default())),
         }
     }
 
@@ -176,16 +181,16 @@ impl BrowserState {
         self.navigation.count()
     }
 
-    pub fn library_state(&self) -> Option<&LibraryState> {
+    pub fn home_state(&self) -> Option<&HomeState> {
         self.navigation.iter_rev().find_map(|screen| match screen {
-            BrowserScreen::Library(state) => Some(state),
+            BrowserScreen::Home(state) => Some(state),
             _ => None,
         })
     }
 
     pub fn details_state(&self) -> Option<&DetailsState> {
         self.navigation.iter_rev().find_map(|screen| match screen {
-            BrowserScreen::Details(state) => Some(state),
+            BrowserScreen::AlbumDetails(state) => Some(state),
             _ => None,
         })
     }

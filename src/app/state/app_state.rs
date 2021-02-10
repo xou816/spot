@@ -27,7 +27,7 @@ pub enum AppAction {
 impl AppAction {
     #[allow(non_snake_case)]
     pub fn ViewAlbum(id: String) -> Self {
-        BrowserAction::NavigationPush(ScreenName::Details(id)).into()
+        BrowserAction::NavigationPush(ScreenName::AlbumDetails(id)).into()
     }
 
     #[allow(non_snake_case)]

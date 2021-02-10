@@ -16,7 +16,7 @@ use crate::app::{App, AppAction};
 fn main() {
     setup_gtk();
 
-    let app = gtk::Application::new(Some("dev.alextren.Spot"), Default::default()).unwrap();
+    let app = gtk::Application::new(Some("dev.alextren.SpotDev"), Default::default()).unwrap();
     let builder = gtk::Builder::from_resource("/dev/alextren/Spot/window.ui");
 
     let context = glib::MainContext::default();

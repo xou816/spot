@@ -92,6 +92,7 @@ impl Navigation {
         let home = HomePane::new(
             self.home_stack_sidebar.clone(),
             self.screen_factory.make_library(),
+            self.screen_factory.make_saved_playlists(),
             self.screen_factory.make_now_playing(),
         );
 
@@ -110,7 +111,7 @@ impl Navigation {
 
         let component: Box<dyn ListenerComponent> = match name {
             ScreenName::Home => self.make_home(),
-            ScreenName::Details(id) => {
+            ScreenName::AlbumDetails(id) => {
                 Box::new(self.screen_factory.make_album_details(id.to_owned()))
             }
             ScreenName::Search => Box::new(self.screen_factory.make_search_results()),

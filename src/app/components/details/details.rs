@@ -103,7 +103,7 @@ impl Component for Details {
 impl EventListener for Details {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::BrowserEvent(BrowserEvent::DetailsLoaded) => self.update_details(),
+            AppEvent::BrowserEvent(BrowserEvent::AlbumDetailsLoaded) => self.update_details(),
             _ => {}
         }
         self.broadcast_event(event);

@@ -47,6 +47,9 @@ pub use user_menu::*;
 mod notification;
 pub use notification::*;
 
+mod saved_playlists;
+pub use saved_playlists::*;
+
 mod utils;
 
 pub fn screen_add_css_provider(resource: &str) {
