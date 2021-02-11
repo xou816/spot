@@ -267,3 +267,42 @@ impl UpdatableState for SearchState {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_next_page_no_next() {
+        let mut artist_state = ArtistState::new("id".to_owned());
+        artist_state.update_with(BrowserAction::SetArtistDetails(ArtistDescription {
+            name: "Foo".to_owned(),
+            albums: vec![],
+            top_tracks: vec![],
+        }));
+
+        let next = artist_state.next_page();
+        assert_eq!(false, next.is_some());
+    }
+
+    #[test]
+    fn test_next_page_more() {
+        let fake_album = AlbumDescription {
+            id: "".to_owned(),
+            title: "".to_owned(),
+            artists: vec![],
+            art: "".to_owned(),
+            songs: vec![],
+        };
+        let mut artist_state = ArtistState::new("id".to_owned());
+        artist_state.update_with(BrowserAction::SetArtistDetails(ArtistDescription {
+            name: "Foo".to_owned(),
+            albums: (0..20).map(|_| fake_album.clone()).collect(),
+            top_tracks: vec![],
+        }));
+
+        let next = artist_state.next_page();
+        assert_eq!(Some(("id".to_owned(), 20, 20)), next);
+    }
+}
