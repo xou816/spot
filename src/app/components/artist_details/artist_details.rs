@@ -1,8 +1,9 @@
 use gladis::Gladis;
 use gtk::prelude::*;
+use gtk::ScrolledWindowExt;
 use std::rc::Rc;
 
-use crate::app::components::{Album, Component, EventListener};
+use crate::app::components::{screen_add_css_provider, Album, Component, EventListener, Playlist};
 use crate::app::models::*;
 use crate::app::{AppEvent, BrowserEvent, Worker};
 
@@ -10,13 +11,15 @@ use super::ArtistDetailsModel;
 
 #[derive(Clone, Gladis)]
 struct ArtistDetailsWidget {
-    pub root: gtk::Widget,
+    pub root: gtk::ScrolledWindow,
     pub artist_name: gtk::Label,
-    pub artist_albums: gtk::FlowBox,
+    pub top_tracks: gtk::ListBox,
+    pub artist_releases: gtk::FlowBox,
 }
 
 impl ArtistDetailsWidget {
     fn new() -> Self {
+        screen_add_css_provider(resource!("/components/artist_details.css"));
         Self::from_resource(resource!("/components/artist_details.ui")).unwrap()
     }
 }
@@ -24,6 +27,7 @@ impl ArtistDetailsWidget {
 pub struct ArtistDetails {
     model: Rc<ArtistDetailsModel>,
     widget: ArtistDetailsWidget,
+    children: Vec<Box<dyn EventListener>>,
 }
 
 impl ArtistDetails {
@@ -31,11 +35,18 @@ impl ArtistDetails {
         let widget = ArtistDetailsWidget::new();
         let model = Rc::new(model);
 
+        let weak_model = Rc::downgrade(&model);
+        widget.root.connect_edge_reached(move |_, pos| {
+            if let (gtk::PositionType::Bottom, Some(model)) = (pos, weak_model.upgrade()) {
+                model.load_more();
+            }
+        });
+
         if let Some(store) = model.get_list_store() {
             let model_clone = Rc::clone(&model);
 
             widget
-                .artist_albums
+                .artist_releases
                 .bind_model(Some(store.unsafe_store()), move |item| {
                     let item = item.downcast_ref::<AlbumModel>().unwrap();
                     let child = gtk::FlowBoxChild::new();
@@ -54,7 +65,13 @@ impl ArtistDetails {
 
         model.load_artist_details(id);
 
-        Self { widget, model }
+        let playlist = Box::new(Playlist::new(widget.top_tracks.clone(), Rc::clone(&model)));
+
+        Self {
+            widget,
+            model,
+            children: vec![playlist],
+        }
     }
 
     fn update_details(&self) {
@@ -66,7 +83,11 @@ impl ArtistDetails {
 
 impl Component for ArtistDetails {
     fn get_root_widget(&self) -> &gtk::Widget {
-        &self.widget.root
+        self.widget.root.upcast_ref()
+    }
+
+    fn get_children(&mut self) -> Option<&mut Vec<Box<dyn EventListener>>> {
+        Some(&mut self.children)
     }
 }
 
@@ -78,5 +99,6 @@ impl EventListener for ArtistDetails {
             }
             _ => {}
         }
+        self.broadcast_event(event);
     }
 }

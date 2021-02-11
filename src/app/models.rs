@@ -108,4 +108,5 @@ impl SongDescription {
 pub struct ArtistDescription {
     pub name: String,
     pub albums: Vec<AlbumDescription>,
+    pub top_tracks: Vec<SongDescription>,
 }

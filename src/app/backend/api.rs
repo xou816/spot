@@ -37,6 +37,12 @@ pub trait SpotifyApiClient {
         offset: u32,
         limit: u32,
     ) -> BoxFuture<SpotifyResult<Vec<AlbumDescription>>>;
+    fn get_artist_albums(
+        &self,
+        id: &str,
+        offset: u32,
+        limit: u32,
+    ) -> BoxFuture<SpotifyResult<Vec<AlbumDescription>>>;
     fn update_token(&self, token: String);
 }
 
@@ -136,18 +142,46 @@ impl CachedSpotifyClient {
         self.send(request).await
     }
 
-    async fn get_artist_albums_no_cache(&self, id: &str) -> Result<String, SpotifyApiError> {
+    async fn get_artist_albums_no_cache(
+        &self,
+        id: &str,
+        offset: u32,
+        limit: u32,
+    ) -> Result<String, SpotifyApiError> {
         let request = {
             let token = self.token.lock().unwrap();
             let token = token.as_ref().ok_or(SpotifyApiError::NoToken)?;
 
             let query = Self::make_query_params()
-                .append_pair("include_groups", "album")
+                .append_pair("include_groups", "album,single")
                 .append_pair("country", "from_token")
+                .append_pair("offset", &offset.to_string()[..])
+                .append_pair("limit", &limit.to_string()[..])
                 .finish();
 
             let uri = self
                 .uri(format!("/v1/artists/{}/albums", id), Some(query))
+                .unwrap();
+            Request::get(uri)
+                .header("Authorization", format!("Bearer {}", &token))
+                .body(())
+                .unwrap()
+        };
+
+        self.send(request).await
+    }
+
+    async fn get_artist_top_tracks_no_cache(&self, id: &str) -> Result<String, SpotifyApiError> {
+        let request = {
+            let token = self.token.lock().unwrap();
+            let token = token.as_ref().ok_or(SpotifyApiError::NoToken)?;
+
+            let query = Self::make_query_params()
+                .append_pair("market", "from_token")
+                .finish();
+
+            let uri = self
+                .uri(format!("/v1/artists/{}/top-tracks", id), Some(query))
                 .unwrap();
             Request::get(uri)
                 .header("Authorization", format!("Bearer {}", &token))
@@ -361,6 +395,36 @@ impl SpotifyApiClient for CachedSpotifyClient {
         })
     }
 
+    fn get_artist_albums(
+        &self,
+        id: &str,
+        offset: u32,
+        limit: u32,
+    ) -> BoxFuture<SpotifyResult<Vec<AlbumDescription>>> {
+        let id = id.to_owned();
+
+        Box::pin(async move {
+            let req = self.cache_request(
+                format!("net/artist_albums_{}_{}_{}.json", id, offset, limit),
+                None,
+            );
+            let albums = req.or_else_try_write(
+                || self.get_artist_albums_no_cache(&id[..], offset, limit),
+                CacheExpiry::expire_in_hours(24),
+            );
+
+            let albums: Page<Album> = from_str(&albums.await?)?;
+
+            let albums = albums
+                .items
+                .into_iter()
+                .map(|a| a.into())
+                .collect::<Vec<AlbumDescription>>();
+
+            Ok(albums)
+        })
+    }
+
     fn get_artist(&self, id: &str) -> BoxFuture<Result<ArtistDescription, SpotifyApiError>> {
         let id = id.to_owned();
 
@@ -371,24 +435,22 @@ impl SpotifyApiClient for CachedSpotifyClient {
                 CacheExpiry::expire_in_hours(24),
             );
 
-            let req = self.cache_request(format!("net/artist_albums_{}.json", id), None);
-            let albums = req.or_else_try_write(
-                || self.get_artist_albums_no_cache(&id[..]),
+            let albums = self.get_artist_albums(&id, 0, 20).await?;
+
+            let req = self.cache_request(format!("net/artist_top_tracks_{}.json", id), None);
+            let top_tracks = req.or_else_try_write(
+                || self.get_artist_top_tracks_no_cache(&id[..]),
                 CacheExpiry::expire_in_hours(24),
             );
 
             let artist: Artist = from_str(&artist.await?)?;
-            let albums: Page<Album> = from_str(&albums.await?)?;
-
-            let albums = albums
-                .items
-                .into_iter()
-                .map(|a| a.into())
-                .collect::<Vec<AlbumDescription>>();
+            let top_tracks: TopTracks = from_str(&top_tracks.await?)?;
+            let top_tracks: Vec<SongDescription> = top_tracks.into();
 
             let result = ArtistDescription {
                 name: artist.name,
                 albums,
+                top_tracks,
             };
             Ok(result)
         })

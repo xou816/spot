@@ -18,6 +18,7 @@ pub enum BrowserAction {
     Search(String),
     SetSearchResults(Vec<AlbumDescription>),
     SetArtistDetails(ArtistDescription),
+    AppendArtistReleases(Vec<AlbumDescription>),
     NavigationPush(ScreenName),
     NavigationPop,
     NavigationPopTo(ScreenName),

@@ -5,7 +5,7 @@ label.details__album-label {
 
 .details__more label {
   font-size: 16px;
-  color: white;
+  color: @theme_text_color;
 }
 
 .details .details__album-art {

@@ -2,6 +2,7 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
+  <!-- interface-css-provider-path artist_details.css -->
   <object class="GtkScrolledWindow" id="root">
     <property name="visible">True</property>
     <property name="can-focus">True</property>
@@ -37,8 +38,11 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">1</property>
+                    <property name="position">0</property>
                   </packing>
+                </child>
+                <child>
+                  <placeholder/>
                 </child>
               </object>
               <packing>
@@ -53,7 +57,36 @@
                 <property name="can-focus">True</property>
                 <property name="expanded">True</property>
                 <child>
-                  <object class="GtkFlowBox" id="artist_albums">
+                  <object class="GtkListBox" id="top_tracks">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="selection-mode">none</property>
+                    <style>
+                      <class name="artist__top-tracks"/>
+                    </style>
+                  </object>
+                </child>
+                <child type="label">
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Top tracks</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkExpander">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="expanded">True</property>
+                <child>
+                  <object class="GtkFlowBox" id="artist_releases">
                     <property name="height-request">100</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
@@ -67,19 +100,22 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Albums</property>
+                    <property name="label" translatable="yes">Releases</property>
                   </object>
                 </child>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>
         </child>
       </object>
     </child>
+    <style>
+      <class name="artist"/>
+    </style>
   </object>
 </interface>

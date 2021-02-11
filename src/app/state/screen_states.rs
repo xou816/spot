@@ -87,16 +87,33 @@ impl UpdatableState for PlaylistDetailsState {
 #[derive(Clone)]
 pub struct ArtistState {
     pub name: ScreenName,
+    artist_id: String,
     pub artist: Option<String>,
+    pub page: u32,
     pub albums: ListStore<AlbumModel>,
+    pub top_tracks: Vec<SongDescription>,
 }
 
 impl ArtistState {
     pub fn new(id: String) -> Self {
         Self {
-            name: ScreenName::Artist(id),
+            name: ScreenName::Artist(id.clone()),
+            artist_id: id,
             artist: None,
+            page: 0,
             albums: ListStore::new(),
+            top_tracks: vec![],
+        }
+    }
+
+    pub fn next_page(&self) -> Option<(String, u32, u32)> {
+        let batch_size = 20;
+        let offset = self.page * batch_size;
+        let current_len = self.albums.len() as u32;
+        if current_len < offset {
+            None
+        } else {
+            Some((self.artist_id.clone(), offset, batch_size))
         }
     }
 }
@@ -107,11 +124,29 @@ impl UpdatableState for ArtistState {
 
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
-            BrowserAction::SetArtistDetails(details) => {
-                self.artist = Some(details.name);
-                for album in details.albums {
+            BrowserAction::SetArtistDetails(ArtistDescription {
+                name,
+                albums,
+                mut top_tracks,
+            }) => {
+                self.artist = Some(name);
+
+                self.page = 1;
+                self.albums.remove_all();
+                for album in albums {
                     self.albums.append(album.into());
                 }
+
+                top_tracks.truncate(5);
+                self.top_tracks = top_tracks;
+
+                vec![BrowserEvent::ArtistDetailsUpdated]
+            }
+            BrowserAction::AppendArtistReleases(albums) => {
+                for album in albums {
+                    self.albums.append(album.into());
+                }
+                self.page += 1;
                 vec![BrowserEvent::ArtistDetailsUpdated]
             }
             _ => vec![],

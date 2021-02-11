@@ -151,6 +151,11 @@ pub struct Tracks<Item> {
     pub items: Vec<Item>,
 }
 
+#[derive(Deserialize, Debug, Clone)]
+pub struct TopTracks {
+    pub tracks: Vec<TrackItem>,
+}
+
 impl<Item> Default for Tracks<Item> {
     fn default() -> Self {
         Self { items: vec![] }
@@ -173,11 +178,27 @@ pub struct SearchResults {
 
 impl Into<Vec<SongDescription>> for DetailedPlaylist {
     fn into(self) -> Vec<SongDescription> {
-        self.tracks
+        let items = self
+            .tracks
             .items
             .into_iter()
             .filter(|t| !t.is_local)
             .map(|item| item.track)
+            .collect::<Vec<TrackItem>>();
+        Tracks { items }.into()
+    }
+}
+
+impl Into<Vec<SongDescription>> for TopTracks {
+    fn into(self) -> Vec<SongDescription> {
+        Tracks { items: self.tracks }.into()
+    }
+}
+
+impl Into<Vec<SongDescription>> for Tracks<TrackItem> {
+    fn into(self) -> Vec<SongDescription> {
+        self.items
+            .into_iter()
             .map(
                 |TrackItem {
                      album,
