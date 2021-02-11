@@ -281,11 +281,13 @@ impl Into<AlbumDescription> for Album {
 impl Into<PlaylistDescription> for Playlist {
     fn into(self) -> PlaylistDescription {
         let art = self.best_image_for_width(200).unwrap().url.clone();
+        let PlaylistOwner { id, display_name } = self.owner;
         PlaylistDescription {
             id: self.id,
             title: self.name,
             art,
             songs: vec![],
+            owner: UserRef { id, display_name },
         }
     }
 }
@@ -294,11 +296,13 @@ impl Into<PlaylistDescription> for DetailedPlaylist {
     fn into(self) -> PlaylistDescription {
         let songs: Vec<SongDescription> = self.clone().into();
         let art = self.best_image_for_width(200).unwrap().url.clone();
+        let PlaylistOwner { id, display_name } = self.owner;
         PlaylistDescription {
             id: self.id,
             title: self.name,
             art,
             songs,
+            owner: UserRef { id, display_name },
         }
     }
 }
