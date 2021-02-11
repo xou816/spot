@@ -9,6 +9,7 @@ pub enum ScreenName {
     AlbumDetails(String),
     Search,
     Artist(String),
+    PlaylistDetails(String),
 }
 
 impl ScreenName {
@@ -18,6 +19,7 @@ impl ScreenName {
             Self::AlbumDetails(s) => Cow::Owned(format!("album_{}", s)),
             Self::Search => Cow::Borrowed("search"),
             Self::Artist(s) => Cow::Owned(format!("artist_{}", s)),
+            Self::PlaylistDetails(s) => Cow::Owned(format!("playlist_{}", s)),
         }
     }
 }
@@ -46,6 +48,36 @@ impl UpdatableState for DetailsState {
             BrowserAction::SetAlbumDetails(album) => {
                 self.content = Some(album);
                 vec![BrowserEvent::AlbumDetailsLoaded]
+            }
+            _ => vec![],
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct PlaylistDetailsState {
+    pub name: ScreenName,
+    pub content: Option<PlaylistDescription>,
+}
+
+impl PlaylistDetailsState {
+    pub fn new(id: String) -> Self {
+        Self {
+            name: ScreenName::PlaylistDetails(id),
+            content: None,
+        }
+    }
+}
+
+impl UpdatableState for PlaylistDetailsState {
+    type Action = BrowserAction;
+    type Event = BrowserEvent;
+
+    fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
+        match action {
+            BrowserAction::SetPlaylistDetails(playlist) => {
+                self.content = Some(playlist);
+                vec![BrowserEvent::PlaylistDetailsLoaded]
             }
             _ => vec![],
         }

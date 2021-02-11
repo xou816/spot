@@ -77,6 +77,13 @@ pub struct Playlist {
     pub id: String,
     pub name: String,
     pub images: Vec<Image>,
+    pub owner: PlaylistOwner,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct PlaylistOwner {
+    pub id: String,
+    pub display_name: String,
 }
 
 impl WithImages for Playlist {
@@ -90,7 +97,8 @@ pub struct DetailedPlaylist {
     pub id: String,
     pub name: String,
     pub images: Vec<Image>,
-    pub tracks: Vec<PlaylistTrack>,
+    pub tracks: Tracks<PlaylistTrack>,
+    pub owner: PlaylistOwner,
 }
 
 impl WithImages for DetailedPlaylist {
@@ -113,7 +121,7 @@ pub struct SavedAlbum {
 #[derive(Deserialize, Debug, Clone)]
 pub struct Album {
     pub id: String,
-    pub tracks: Option<Tracks>,
+    pub tracks: Option<Tracks<TrackItem>>,
     pub artists: Vec<Artist>,
     pub name: String,
     pub images: Vec<Image>,
@@ -139,11 +147,11 @@ pub struct Artist {
 }
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct Tracks {
-    pub items: Vec<TrackItem>,
+pub struct Tracks<Item> {
+    pub items: Vec<Item>,
 }
 
-impl Default for Tracks {
+impl<Item> Default for Tracks<Item> {
     fn default() -> Self {
         Self { items: vec![] }
     }
@@ -161,6 +169,55 @@ pub struct TrackItem {
 #[derive(Deserialize, Debug, Clone)]
 pub struct SearchResults {
     pub albums: Option<Page<Album>>,
+}
+
+impl Into<Vec<SongDescription>> for DetailedPlaylist {
+    fn into(self) -> Vec<SongDescription> {
+        self.tracks
+            .items
+            .into_iter()
+            .filter(|t| !t.is_local)
+            .map(|item| item.track)
+            .map(
+                |TrackItem {
+                     album,
+                     artists,
+                     id,
+                     name,
+                     duration_ms,
+                 }| {
+                    let artists = artists
+                        .into_iter()
+                        .map(|a| ArtistRef {
+                            id: a.id,
+                            name: a.name,
+                        })
+                        .collect::<Vec<ArtistRef>>();
+
+                    let album = album.unwrap();
+                    let art = album.best_image_for_width(200).unwrap().url.clone();
+                    let Album {
+                        id: album_id,
+                        name: album_name,
+                        ..
+                    } = album;
+                    let album_ref = AlbumRef {
+                        id: album_id,
+                        name: album_name,
+                    };
+
+                    SongDescription {
+                        id,
+                        title: name,
+                        artists,
+                        album: album_ref,
+                        duration: duration_ms as u32,
+                        art: Some(art),
+                    }
+                },
+            )
+            .collect()
+    }
 }
 
 impl Into<Vec<SongDescription>> for Album {
@@ -229,6 +286,19 @@ impl Into<PlaylistDescription> for Playlist {
             title: self.name,
             art,
             songs: vec![],
+        }
+    }
+}
+
+impl Into<PlaylistDescription> for DetailedPlaylist {
+    fn into(self) -> PlaylistDescription {
+        let songs: Vec<SongDescription> = self.clone().into();
+        let art = self.best_image_for_width(200).unwrap().url.clone();
+        PlaylistDescription {
+            id: self.id,
+            title: self.name,
+            art,
+            songs,
         }
     }
 }

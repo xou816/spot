@@ -10,6 +10,9 @@
     <!-- details -->
     <file alias="components/details.css">app/components/details/details.css</file>
     <file alias="components/details.ui">app/components/details/details.ui</file>
+    <!-- playlist details -->
+    <file alias="components/playlist_details.css">app/components/playlist_details/playlist_details.css</file>
+    <file alias="components/playlist_details.ui">app/components/playlist_details/playlist_details.ui</file>
     <!-- artist details -->
     <file alias="components/artist_details.ui">app/components/artist_details/artist_details.ui</file>
     <!-- library -->

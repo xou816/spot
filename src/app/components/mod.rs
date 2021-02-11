@@ -1,4 +1,5 @@
-use crate::app::AppEvent;
+use crate::app::backend::api::SpotifyApiError;
+use crate::app::{AppAction, AppEvent};
 use gtk::prelude::*;
 
 #[macro_export]
@@ -50,7 +51,20 @@ pub use notification::*;
 mod saved_playlists;
 pub use saved_playlists::*;
 
+mod playlist_details;
+pub use playlist_details::*;
+
 mod utils;
+
+pub fn handle_error(err: SpotifyApiError) -> AppAction {
+    match err {
+        SpotifyApiError::InvalidToken => AppAction::RefreshToken,
+        _ => {
+            println!("Error: {:?}", err);
+            AppAction::ShowNotification("An error occured. Check logs for details!".to_string())
+        }
+    }
+}
 
 pub fn screen_add_css_provider(resource: &str) {
     let provider = gtk::CssProvider::new();

@@ -20,6 +20,7 @@ pub type SpotifyResult<T> = Result<T, SpotifyApiError>;
 pub trait SpotifyApiClient {
     fn get_artist(&self, id: &str) -> BoxFuture<SpotifyResult<ArtistDescription>>;
     fn get_album(&self, id: &str) -> BoxFuture<SpotifyResult<AlbumDescription>>;
+    fn get_playlist(&self, id: &str) -> BoxFuture<SpotifyResult<PlaylistDescription>>;
     fn get_saved_albums(
         &self,
         offset: u32,
@@ -163,6 +164,21 @@ impl CachedSpotifyClient {
             let token = token.as_ref().ok_or(SpotifyApiError::NoToken)?;
 
             let uri = self.uri(format!("/v1/albums/{}", id), None).unwrap();
+            Request::get(uri)
+                .header("Authorization", format!("Bearer {}", &token))
+                .body(())
+                .unwrap()
+        };
+
+        self.send(request).await
+    }
+
+    async fn get_playlist_no_cache(&self, id: &str) -> Result<String, SpotifyApiError> {
+        let request = {
+            let token = self.token.lock().unwrap();
+            let token = token.as_ref().ok_or(SpotifyApiError::NoToken)?;
+
+            let uri = self.uri(format!("/v1/playlists/{}", id), None).unwrap();
             Request::get(uri)
                 .header("Authorization", format!("Bearer {}", &token))
                 .body(())
@@ -325,6 +341,23 @@ impl SpotifyApiClient for CachedSpotifyClient {
                 .await?;
 
             Ok(from_str::<Album>(&text)?.into())
+        })
+    }
+
+    fn get_playlist(&self, id: &str) -> BoxFuture<SpotifyResult<PlaylistDescription>> {
+        let id = id.to_owned();
+
+        Box::pin(async move {
+            let cache_request = self.cache_request(format!("net/playlist_{}.json", id), None);
+
+            let text = cache_request
+                .or_else_try_write(
+                    || self.get_playlist_no_cache(&id[..]),
+                    CacheExpiry::expire_in_hours(6),
+                )
+                .await?;
+
+            Ok(from_str::<DetailedPlaylist>(&text)?.into())
         })
     }
 
