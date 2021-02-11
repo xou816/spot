@@ -15,7 +15,12 @@ impl From<AlbumDescription> for AlbumModel {
 
 impl From<&PlaylistDescription> for AlbumModel {
     fn from(playlist: &PlaylistDescription) -> Self {
-        AlbumModel::new("", &playlist.title, &playlist.art, &playlist.id)
+        AlbumModel::new(
+            &playlist.owner.display_name,
+            &playlist.title,
+            &playlist.art,
+            &playlist.id,
+        )
     }
 }
 
@@ -23,6 +28,12 @@ impl From<PlaylistDescription> for AlbumModel {
     fn from(playlist: PlaylistDescription) -> Self {
         Self::from(&playlist)
     }
+}
+
+#[derive(Clone, Debug)]
+pub struct UserRef {
+    pub id: String,
+    pub display_name: String,
 }
 
 #[derive(Clone, Debug)]
@@ -70,6 +81,7 @@ pub struct PlaylistDescription {
     pub title: String,
     pub art: String,
     pub songs: Vec<SongDescription>,
+    pub owner: UserRef,
 }
 
 #[derive(Clone, Debug)]
