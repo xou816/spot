@@ -1,0 +1,26 @@
+.playlist_details label.playlist_details__name {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.playlist_details .playlist_details__art {
+  border-radius: 8px;
+}
+
+.playlist_details {
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.playlist_details--loaded {
+  opacity: 1;
+}
+
+list.playlist_details__songs {
+  padding: 8px;
+  border-radius: 8px;
+}
+
+list.playlist_details__songs row {
+  border-radius: 4px;
+}

@@ -98,7 +98,7 @@ fn create_album_for(
 
     album.connect_album_pressed(move |a| {
         if let (Some(model), Some(id)) = (model.upgrade(), a.uri()) {
-            // TODO
+            model.open_playlist(id);
         }
     });
 

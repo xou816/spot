@@ -1,4 +1,7 @@
-use super::{ArtistState, DetailsState, HomeState, ScreenName, SearchState, UpdatableState};
+use super::{
+    ArtistState, DetailsState, HomeState, PlaylistDetailsState, ScreenName, SearchState,
+    UpdatableState,
+};
 use crate::app::models::*;
 use crate::app::state::AppAction;
 use std::convert::Into;
@@ -11,6 +14,7 @@ pub enum BrowserAction {
     SetPlaylistsContent(Vec<PlaylistDescription>),
     AppendPlaylistsContent(Vec<PlaylistDescription>),
     SetAlbumDetails(AlbumDescription),
+    SetPlaylistDetails(PlaylistDescription),
     Search(String),
     SetSearchResults(Vec<AlbumDescription>),
     SetArtistDetails(ArtistDescription),
@@ -30,6 +34,7 @@ pub enum BrowserEvent {
     LibraryUpdated,
     SavedPlaylistsUpdated,
     AlbumDetailsLoaded,
+    PlaylistDetailsLoaded,
     SearchUpdated,
     SearchResultsUpdated,
     ArtistDetailsUpdated,
@@ -44,6 +49,7 @@ pub enum BrowserScreen {
     AlbumDetails(DetailsState),
     Search(SearchState),
     Artist(ArtistState),
+    PlaylistDetails(PlaylistDetailsState),
 }
 
 impl BrowserScreen {
@@ -55,6 +61,9 @@ impl BrowserScreen {
             }
             ScreenName::Search => BrowserScreen::Search(Default::default()),
             ScreenName::Artist(id) => BrowserScreen::Artist(ArtistState::new(id.to_string())),
+            ScreenName::PlaylistDetails(id) => {
+                BrowserScreen::PlaylistDetails(PlaylistDetailsState::new(id.to_string()))
+            }
         }
     }
 
@@ -64,6 +73,7 @@ impl BrowserScreen {
             Self::AlbumDetails(state) => state,
             Self::Search(state) => state,
             Self::Artist(state) => state,
+            Self::PlaylistDetails(state) => state,
         }
     }
 }
@@ -77,6 +87,7 @@ impl NamedScreen for BrowserScreen {
             Self::AlbumDetails(state) => &state.name,
             Self::Search(state) => &state.name,
             Self::Artist(state) => &state.name,
+            Self::PlaylistDetails(state) => &state.name,
         }
     }
 }
@@ -205,6 +216,13 @@ impl BrowserState {
     pub fn artist_state(&self) -> Option<&ArtistState> {
         self.navigation.iter_rev().find_map(|screen| match screen {
             BrowserScreen::Artist(state) => Some(state),
+            _ => None,
+        })
+    }
+
+    pub fn playlist_details_state(&self) -> Option<&PlaylistDetailsState> {
+        self.navigation.iter_rev().find_map(|screen| match screen {
+            BrowserScreen::PlaylistDetails(state) => Some(state),
             _ => None,
         })
     }

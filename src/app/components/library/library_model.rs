@@ -63,8 +63,7 @@ impl LibraryModel {
         }));
     }
 
-    pub fn open_album(&self, album_id: &str) {
-        self.dispatcher
-            .dispatch(AppAction::ViewAlbum(album_id.to_owned()));
+    pub fn open_album(&self, album_id: String) {
+        self.dispatcher.dispatch(AppAction::ViewAlbum(album_id));
     }
 }

@@ -118,6 +118,9 @@ impl Navigation {
             ScreenName::Artist(id) => {
                 Box::new(self.screen_factory.make_artist_details(id.to_owned()))
             }
+            ScreenName::PlaylistDetails(id) => {
+                Box::new(self.screen_factory.make_playlist_details(id.to_owned()))
+            }
         };
 
         let widget = component.get_root_widget();
