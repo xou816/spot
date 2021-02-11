@@ -39,7 +39,7 @@ impl SavedPlaylistsModel {
         self.dispatcher.dispatch_async(Box::pin(async move {
             match api.get_saved_playlists(0, batch_size).await {
                 Ok(playlists) => Some(BrowserAction::SetPlaylistsContent(playlists).into()),
-                Err(err) => Some(handle_error(err)),
+                Err(err) => handle_error(err),
             }
         }));
     }

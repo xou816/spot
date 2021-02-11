@@ -56,12 +56,15 @@ pub use playlist_details::*;
 
 mod utils;
 
-pub fn handle_error(err: SpotifyApiError) -> AppAction {
+pub fn handle_error(err: SpotifyApiError) -> Option<AppAction> {
     match err {
-        SpotifyApiError::InvalidToken => AppAction::RefreshToken,
+        SpotifyApiError::InvalidToken => Some(AppAction::RefreshToken),
+        SpotifyApiError::NoToken => None,
         _ => {
             println!("Error: {:?}", err);
-            AppAction::ShowNotification("An error occured. Check logs for details!".to_string())
+            Some(AppAction::ShowNotification(
+                "An error occured. Check logs for details!".to_string(),
+            ))
         }
     }
 }

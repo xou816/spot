@@ -32,7 +32,7 @@ impl PlaylistDetailsModel {
         self.dispatcher.dispatch_async(Box::pin(async move {
             match api.get_playlist(&id).await {
                 Ok(playlist) => Some(BrowserAction::SetPlaylistDetails(playlist).into()),
-                Err(err) => Some(handle_error(err)),
+                Err(err) => handle_error(err),
             }
         }));
     }

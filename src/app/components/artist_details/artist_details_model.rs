@@ -36,7 +36,7 @@ impl ArtistDetailsModel {
         self.dispatcher.dispatch_async(Box::pin(async move {
             match api.get_artist(&id[..]).await {
                 Ok(artist) => Some(BrowserAction::SetArtistDetails(artist).into()),
-                Err(err) => Some(handle_error(err)),
+                Err(err) => handle_error(err),
             }
         }));
     }
@@ -56,7 +56,7 @@ impl ArtistDetailsModel {
                 self.dispatcher.dispatch_async(Box::pin(async move {
                     match api.get_artist_albums(&id, offset, batch_size).await {
                         Ok(albums) => Some(BrowserAction::AppendArtistReleases(albums).into()),
-                        Err(err) => Some(handle_error(err)),
+                        Err(err) => handle_error(err),
                     }
                 }));
             }
