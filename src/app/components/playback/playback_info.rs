@@ -6,20 +6,30 @@ use crate::app::components::EventListener;
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
 use crate::app::models::*;
-use crate::app::AppEvent;
-use crate::app::AppModel;
+use crate::app::state::{BrowserAction, ScreenName};
+use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel};
 
 pub struct PlaybackInfoModel {
     app_model: Rc<AppModel>,
+    dispatcher: Box<dyn ActionDispatcher>,
 }
 
 impl PlaybackInfoModel {
-    pub fn new(app_model: Rc<AppModel>) -> Self {
-        Self { app_model }
+    pub fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
+        Self {
+            app_model,
+            dispatcher,
+        }
     }
 
-    pub fn current_song(&self) -> Option<SongDescription> {
+    fn current_song(&self) -> Option<SongDescription> {
         self.app_model.get_state().current_song()
+    }
+
+    fn go_home(&self) {
+        self.dispatcher.dispatch(AppAction::ViewNowPlaying);
+        self.dispatcher
+            .dispatch(BrowserAction::NavigationPopTo(ScreenName::Home).into());
     }
 }
 
@@ -35,11 +45,15 @@ impl PlaybackInfo {
     pub fn new(
         model: PlaybackInfoModel,
         worker: Worker,
+        now_playing: gtk::Button,
+        now_playing_small: gtk::Button,
         current_song_image: gtk::Image,
         current_song_image_small: gtk::Image,
         current_song_info: gtk::Label,
     ) -> Self {
         let model = Rc::new(model);
+        now_playing.connect_clicked(clone!(@weak model => move |_| model.go_home()));
+        now_playing_small.connect_clicked(clone!(@weak model => move |_| model.go_home()));
         Self {
             model,
             worker,

@@ -22,6 +22,7 @@ pub enum AppAction {
     BrowserAction(BrowserAction),
     ShowNotification(String),
     HideNotification,
+    ViewNowPlaying,
 }
 
 impl AppAction {
@@ -57,6 +58,7 @@ pub enum AppEvent {
     BrowserEvent(BrowserEvent),
     NotificationShown(String),
     NotificationHidden,
+    NowPlayingShown,
 }
 
 pub struct ShuffledSongs {
@@ -206,6 +208,7 @@ impl AppState {
                 .collect(),
             AppAction::ShowNotification(c) => vec![AppEvent::NotificationShown(c)],
             AppAction::HideNotification => vec![AppEvent::NotificationHidden],
+            AppAction::ViewNowPlaying => vec![AppEvent::NowPlayingShown],
         }
     }
 

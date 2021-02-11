@@ -51,7 +51,12 @@ impl App {
 
         let components: Vec<Box<dyn EventListener>> = vec![
             App::make_playback_control(builder, Rc::clone(&model), dispatcher.box_clone()),
-            App::make_playback_info(builder, Rc::clone(&model), worker.clone()),
+            App::make_playback_info(
+                builder,
+                Rc::clone(&model),
+                dispatcher.box_clone(),
+                worker.clone(),
+            ),
             App::make_login(builder, dispatcher.box_clone()),
             App::make_navigation(builder, Rc::clone(&model), dispatcher.box_clone(), worker),
             App::make_search_bar(builder, dispatcher.box_clone()),
@@ -116,16 +121,21 @@ impl App {
     fn make_playback_info(
         builder: &gtk::Builder,
         app_model: Rc<AppModel>,
+        dispatcher: Box<dyn ActionDispatcher>,
         worker: Worker,
     ) -> Box<PlaybackInfo> {
+        let now_playing: gtk::Button = builder.get_object("now_playing").unwrap();
+        let now_playing_small: gtk::Button = builder.get_object("now_playing_small").unwrap();
         let image: gtk::Image = builder.get_object("playing_image").unwrap();
         let image_small: gtk::Image = builder.get_object("playing_image_small").unwrap();
         let current_song_info: gtk::Label = builder.get_object("current_song_info").unwrap();
 
-        let model = PlaybackInfoModel::new(app_model);
+        let model = PlaybackInfoModel::new(app_model, dispatcher);
         Box::new(PlaybackInfo::new(
             model,
             worker,
+            now_playing,
+            now_playing_small,
             image,
             image_small,
             current_song_info,

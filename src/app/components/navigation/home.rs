@@ -72,6 +72,9 @@ impl Component for HomePane {
 
 impl EventListener for HomePane {
     fn on_event(&mut self, event: &AppEvent) {
+        if let AppEvent::NowPlayingShown = event {
+            self.stack.set_visible_child_name("now_playing");
+        }
         self.broadcast_event(event);
     }
 }

@@ -1,10 +1,11 @@
-.details label.details__album-label {
+label.details__album-label {
   font-size: 20px;
   font-weight: bold;
 }
 
-.details label.details__artist-label {
+.details__more label {
   font-size: 16px;
+  color: white;
 }
 
 .details .details__album-art {

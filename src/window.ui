@@ -195,52 +195,70 @@
               <object class="HdySqueezer">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="margin-start">6</property>
+                <property name="margin-end">6</property>
                 <property name="homogeneous">True</property>
                 <child>
-                  <object class="GtkBox">
+                  <object class="GtkButton" id="now_playing">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="halign">start</property>
+                    <property name="valign">center</property>
+                    <property name="relief">none</property>
                     <child>
-                      <object class="GtkImage" id="playing_image">
-                        <property name="width-request">40</property>
-                        <property name="height-request">40</property>
+                      <object class="GtkBox">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="icon-name">emblem-music-symbolic</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <child>
+                          <object class="GtkImage" id="playing_image">
+                            <property name="width-request">40</property>
+                            <property name="height-request">40</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="icon-name">emblem-music-symbolic</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="current_song_info">
+                            <property name="width-request">100</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="margin-start">12</property>
+                            <property name="margin-end">12</property>
+                            <property name="hexpand">True</property>
+                            <property name="label" translatable="yes">No song playing</property>
+                            <property name="use-markup">True</property>
+                            <property name="wrap">True</property>
+                            <property name="ellipsize">middle</property>
+                            <property name="lines">2</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
                       </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="current_song_info">
-                        <property name="width-request">90</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="halign">start</property>
-                        <property name="margin-start">12</property>
-                        <property name="margin-end">12</property>
-                        <property name="hexpand">True</property>
-                        <property name="label" translatable="yes">No song playing</property>
-                        <property name="use-markup">True</property>
-                        <property name="wrap">True</property>
-                        <property name="ellipsize">middle</property>
-                        <property name="lines">2</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
                     </child>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkBox">
+                  <object class="GtkButton" id="now_playing_small">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="halign">start</property>
+                    <property name="valign">center</property>
+                    <property name="relief">none</property>
                     <child>
                       <object class="GtkImage" id="playing_image_small">
                         <property name="width-request">40</property>
@@ -249,11 +267,6 @@
                         <property name="can-focus">False</property>
                         <property name="icon-name">emblem-music-symbolic</property>
                       </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
                     </child>
                   </object>
                 </child>
@@ -410,6 +423,8 @@
                 <property name="receives-default">False</property>
                 <property name="halign">center</property>
                 <property name="valign">center</property>
+                <property name="margin-start">6</property>
+                <property name="margin-end">6</property>
                 <child>
                   <object class="GtkImage">
                     <property name="visible">True</property>
