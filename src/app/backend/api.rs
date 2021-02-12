@@ -31,12 +31,12 @@ pub trait SpotifyApiClient {
         offset: u32,
         limit: u32,
     ) -> BoxFuture<SpotifyResult<Vec<PlaylistDescription>>>;
-    fn search_albums(
+    fn search(
         &self,
         query: &str,
         offset: u32,
         limit: u32,
-    ) -> BoxFuture<SpotifyResult<Vec<AlbumDescription>>>;
+    ) -> BoxFuture<SpotifyResult<SearchResults>>;
     fn get_artist_albums(
         &self,
         id: &str,
@@ -272,16 +272,21 @@ impl CachedSpotifyClient {
         self.send(request).await
     }
 
-    async fn search_no_cache(&self, query: String) -> Result<String, SpotifyApiError> {
+    async fn search_no_cache(
+        &self,
+        query: String,
+        offset: u32,
+        limit: u32,
+    ) -> Result<String, SpotifyApiError> {
         let request = {
             let token = self.token.lock().unwrap();
             let token = token.as_ref().ok_or(SpotifyApiError::NoToken)?;
 
             let query = SearchQuery {
                 query,
-                types: vec![SearchType::Album],
-                limit: 5,
-                offset: 0,
+                types: vec![SearchType::Album, SearchType::Artist],
+                limit,
+                offset,
             };
 
             let uri = self
@@ -456,27 +461,36 @@ impl SpotifyApiClient for CachedSpotifyClient {
         })
     }
 
-    fn search_albums(
+    fn search(
         &self,
         query: &str,
-        _offset: u32,
-        _limit: u32,
-    ) -> BoxFuture<SpotifyResult<Vec<AlbumDescription>>> {
+        offset: u32,
+        limit: u32,
+    ) -> BoxFuture<SpotifyResult<SearchResults>> {
         let query = query.to_owned();
 
         Box::pin(async move {
-            let text = self.search_no_cache(query).await?;
+            let text = self.search_no_cache(query, offset, limit).await?;
 
-            let results = from_str::<SearchResults>(&text)?;
+            let results = from_str::<RawSearchResults>(&text)?;
 
-            match results.albums {
-                Some(albums) => Ok(albums
-                    .items
-                    .into_iter()
-                    .map(|saved| saved.into())
-                    .collect::<Vec<AlbumDescription>>()),
-                None => Ok(vec![]),
-            }
+            let albums = results
+                .albums
+                .unwrap_or(Page::empty())
+                .items
+                .into_iter()
+                .map(|saved| saved.into())
+                .collect::<Vec<AlbumDescription>>();
+
+            let artists = results
+                .artists
+                .unwrap_or(Page::empty())
+                .items
+                .into_iter()
+                .map(|saved| saved.into())
+                .collect::<Vec<ArtistSummary>>();
+
+            Ok(SearchResults { albums, artists })
         })
     }
 }

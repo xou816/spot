@@ -53,6 +53,12 @@ pub struct Page<T> {
     pub items: Vec<T>,
 }
 
+impl<T> Page<T> {
+    pub fn empty() -> Self {
+        Page { items: vec![] }
+    }
+}
+
 trait WithImages {
     fn images(&self) -> &[Image];
 
@@ -144,6 +150,17 @@ pub struct Image {
 pub struct Artist {
     pub id: String,
     pub name: String,
+    pub images: Option<Vec<Image>>,
+}
+
+impl WithImages for Artist {
+    fn images(&self) -> &[Image] {
+        if let Some(ref images) = self.images {
+            images
+        } else {
+            &[]
+        }
+    }
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -172,8 +189,17 @@ pub struct TrackItem {
 }
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct SearchResults {
+pub struct RawSearchResults {
     pub albums: Option<Page<Album>>,
+    pub artists: Option<Page<Artist>>,
+}
+
+impl Into<ArtistSummary> for Artist {
+    fn into(self) -> ArtistSummary {
+        let photo = self.best_image_for_width(200).map(|i| &i.url).cloned();
+        let Artist { id, name, .. } = self;
+        ArtistSummary { id, name, photo }
+    }
 }
 
 impl Into<Vec<SongDescription>> for DetailedPlaylist {

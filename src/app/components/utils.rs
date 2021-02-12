@@ -1,3 +1,4 @@
+use gtk::prelude::*;
 use std::cell::Cell;
 use std::rc::Rc;
 
@@ -52,4 +53,20 @@ impl Debouncer {
             glib::source_remove(previous_source);
         }
     }
+}
+
+pub fn wrap_flowbox_item<
+    Model: glib::IsA<glib::Object>,
+    Widget: glib::IsA<gtk::Widget>,
+    F: Fn(&Model) -> Widget,
+>(
+    item: &glib::Object,
+    f: F,
+) -> gtk::Widget {
+    let item = item.downcast_ref::<Model>().unwrap();
+    let widget = f(item);
+    let child = gtk::FlowBoxChild::new();
+    child.add(&widget);
+    child.show_all();
+    child.upcast::<gtk::Widget>()
 }

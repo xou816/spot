@@ -1,9 +1,11 @@
+use std::borrow::Cow;
+use std::cmp::PartialEq;
+
 use super::{BrowserAction, BrowserEvent, UpdatableState};
 use crate::app::models::*;
 use crate::app::ListStore;
-use std::borrow::Cow;
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug)]
 pub enum ScreenName {
     Home,
     AlbumDetails(String),
@@ -23,6 +25,14 @@ impl ScreenName {
         }
     }
 }
+
+impl PartialEq for ScreenName {
+    fn eq(&self, other: &Self) -> bool {
+        self.identifier() == other.identifier()
+    }
+}
+
+impl Eq for ScreenName {}
 
 #[derive(Clone)]
 pub struct DetailsState {
@@ -237,6 +247,7 @@ pub struct SearchState {
     pub name: ScreenName,
     pub query: String,
     pub album_results: Vec<AlbumDescription>,
+    pub artist_results: Vec<ArtistSummary>,
 }
 
 impl Default for SearchState {
@@ -245,6 +256,7 @@ impl Default for SearchState {
             name: ScreenName::Search,
             query: "".to_owned(),
             album_results: vec![],
+            artist_results: vec![],
         }
     }
 }
@@ -260,7 +272,8 @@ impl UpdatableState for SearchState {
                 vec![BrowserEvent::SearchUpdated]
             }
             BrowserAction::SetSearchResults(results) => {
-                self.album_results = results;
+                self.album_results = results.albums;
+                self.artist_results = results.artists;
                 vec![BrowserEvent::SearchResultsUpdated]
             }
             _ => vec![],

@@ -2,7 +2,7 @@ use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use crate::app::backend::api::SpotifyApiError;
+use crate::app::components::handle_error;
 use crate::app::models::*;
 use crate::app::state::HomeState;
 use crate::app::{ActionDispatcher, AppAction, AppModel, BrowserAction, ListStore};
@@ -38,8 +38,7 @@ impl LibraryModel {
         self.dispatcher.dispatch_async(Box::pin(async move {
             match api.get_saved_albums(0, batch_size).await {
                 Ok(albums) => Some(BrowserAction::SetLibraryContent(albums).into()),
-                Err(SpotifyApiError::InvalidToken) => Some(AppAction::RefreshToken),
-                _ => None,
+                Err(err) => handle_error(err),
             }
         }));
     }
@@ -57,8 +56,7 @@ impl LibraryModel {
         self.dispatcher.dispatch_async(Box::pin(async move {
             match api.get_saved_albums(offset, batch_size).await {
                 Ok(albums) => Some(BrowserAction::AppendLibraryContent(albums).into()),
-                Err(SpotifyApiError::InvalidToken) => Some(AppAction::RefreshToken),
-                _ => None,
+                Err(err) => handle_error(err),
             }
         }));
     }

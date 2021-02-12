@@ -49,6 +49,12 @@ pub struct AlbumRef {
 }
 
 #[derive(Clone, Debug)]
+pub struct SearchResults {
+    pub albums: Vec<AlbumDescription>,
+    pub artists: Vec<ArtistSummary>,
+}
+
+#[derive(Clone, Debug)]
 pub struct AlbumDescription {
     pub id: String,
     pub title: String,
@@ -109,4 +115,11 @@ pub struct ArtistDescription {
     pub name: String,
     pub albums: Vec<AlbumDescription>,
     pub top_tracks: Vec<SongDescription>,
+}
+
+#[derive(Clone, Debug)]
+pub struct ArtistSummary {
+    pub id: String,
+    pub name: String,
+    pub photo: Option<String>,
 }

@@ -16,7 +16,7 @@ pub enum BrowserAction {
     SetAlbumDetails(AlbumDescription),
     SetPlaylistDetails(PlaylistDescription),
     Search(String),
-    SetSearchResults(Vec<AlbumDescription>),
+    SetSearchResults(SearchResults),
     SetArtistDetails(ArtistDescription),
     AppendArtistReleases(Vec<AlbumDescription>),
     NavigationPush(ScreenName),
