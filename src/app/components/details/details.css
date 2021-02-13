@@ -14,6 +14,7 @@ label.details__album-label {
 
 .details .details__like {
   font-size: 18px;
+  font-weight: bold;
 }
 
 .details__more {

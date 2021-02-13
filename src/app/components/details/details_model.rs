@@ -3,8 +3,7 @@ use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use crate::app::backend::api::SpotifyApiError;
-use crate::app::components::PlaylistModel;
+use crate::app::components::{handle_error, PlaylistModel};
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
 use crate::app::state::{BrowserAction, BrowserEvent, DetailsState};
@@ -33,8 +32,7 @@ impl DetailsModel {
         self.dispatcher.dispatch_async(Box::pin(async move {
             match api.get_album(&id).await {
                 Ok(album) => Some(BrowserAction::SetAlbumDetails(album).into()),
-                Err(SpotifyApiError::InvalidToken) => Some(AppAction::RefreshToken),
-                _ => None,
+                Err(err) => handle_error(err),
             }
         }));
     }
@@ -44,6 +42,29 @@ impl DetailsModel {
             let artist = &album.artists.first().unwrap().id;
             self.dispatcher
                 .dispatch(AppAction::ViewArtist(artist.to_owned()));
+        }
+    }
+
+    pub fn toggle_save_album(&self) {
+        if let Some(album) = self.get_album_info() {
+            let id = album.id.clone();
+            let is_liked = album.is_liked;
+
+            let api = self.app_model.get_spotify();
+
+            self.dispatcher.dispatch_async(Box::pin(async move {
+                if !is_liked {
+                    match api.save_album(&id).await {
+                        Ok(album) => Some(BrowserAction::SaveAlbum(album).into()),
+                        Err(err) => handle_error(err),
+                    }
+                } else {
+                    match api.remove_saved_album(&id).await {
+                        Ok(_) => Some(BrowserAction::UnsaveAlbum(id).into()),
+                        Err(err) => handle_error(err),
+                    }
+                }
+            }));
         }
     }
 }

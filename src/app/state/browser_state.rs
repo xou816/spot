@@ -22,6 +22,8 @@ pub enum BrowserAction {
     NavigationPush(ScreenName),
     NavigationPop,
     NavigationPopTo(ScreenName),
+    SaveAlbum(AlbumDescription),
+    UnsaveAlbum(String),
 }
 
 impl Into<AppAction> for BrowserAction {
@@ -42,6 +44,8 @@ pub enum BrowserEvent {
     NavigationPushed(ScreenName),
     NavigationPopped,
     NavigationPoppedTo(ScreenName),
+    AlbumSaved(String),
+    AlbumUnsaved(String),
 }
 
 #[derive(Clone)]
@@ -113,6 +117,10 @@ where
 {
     fn new(initial: Screen) -> Self {
         Self(vec![initial])
+    }
+
+    fn iter_mut(&mut self) -> std::slice::IterMut<'_, Screen> {
+        self.0.iter_mut()
     }
 
     fn iter_rev(&self) -> impl Iterator<Item = &Screen> {
@@ -270,7 +278,12 @@ impl UpdatableState for BrowserState {
                 self.navigation.pop();
                 vec![BrowserEvent::NavigationPopped]
             }
-            _ => self.navigation.current_mut().state().update_with(action),
+            _ => self
+                .navigation
+                .iter_mut()
+                .map(|screen| screen.state().update_with(action.clone()))
+                .flatten()
+                .collect(),
         }
     }
 }

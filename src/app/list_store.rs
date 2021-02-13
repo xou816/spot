@@ -31,6 +31,14 @@ where
         self.store.append(&element);
     }
 
+    pub fn insert(&mut self, position: u32, element: GType) {
+        self.store.insert(position, &element);
+    }
+
+    pub fn remove(&mut self, position: u32) {
+        self.store.remove(position);
+    }
+
     pub fn get(&self, index: u32) -> GType {
         self.store
             .get_object(index)

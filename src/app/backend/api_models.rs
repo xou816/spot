@@ -321,6 +321,7 @@ impl Into<AlbumDescription> for Album {
             artists,
             art,
             songs,
+            is_liked: false,
         }
     }
 }

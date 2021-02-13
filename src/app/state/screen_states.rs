@@ -59,6 +59,23 @@ impl UpdatableState for DetailsState {
                 self.content = Some(album);
                 vec![BrowserEvent::AlbumDetailsLoaded]
             }
+            BrowserAction::SaveAlbum(album) => {
+                let id = album.id;
+                if let Some(mut album) = self.content.as_mut() {
+                    album.is_liked = true;
+                    vec![BrowserEvent::AlbumSaved(id)]
+                } else {
+                    vec![]
+                }
+            }
+            BrowserAction::UnsaveAlbum(id) => {
+                if let Some(mut album) = self.content.as_mut() {
+                    album.is_liked = false;
+                    vec![BrowserEvent::AlbumUnsaved(id)]
+                } else {
+                    vec![]
+                }
+            }
             _ => vec![],
         }
     }
@@ -95,11 +112,63 @@ impl UpdatableState for PlaylistDetailsState {
 }
 
 #[derive(Clone)]
+pub struct Pagination<T>
+where
+    T: Clone,
+{
+    pub data: T,
+    pub next_offset: Option<u32>,
+    pub batch_size: u32,
+}
+
+impl<T> Pagination<T>
+where
+    T: Clone,
+{
+    fn new(data: T, batch_size: u32) -> Self {
+        Self {
+            data,
+            next_offset: Some(0),
+            batch_size,
+        }
+    }
+
+    fn reset(&mut self, new_length: u32) {
+        self.next_offset = if new_length >= self.batch_size {
+            Some(self.batch_size)
+        } else {
+            None
+        }
+    }
+
+    fn update(&mut self, new_length: u32) {
+        if let Some(offset) = self.next_offset.take() {
+            self.next_offset = if new_length >= offset + self.batch_size {
+                Some(offset + self.batch_size)
+            } else {
+                None
+            }
+        }
+    }
+
+    fn decrement(&mut self) {
+        if let Some(offset) = self.next_offset.take() {
+            self.next_offset = Some(offset - 1);
+        }
+    }
+
+    fn increment(&mut self) {
+        if let Some(offset) = self.next_offset.take() {
+            self.next_offset = Some(offset + 1);
+        }
+    }
+}
+
+#[derive(Clone)]
 pub struct ArtistState {
     pub name: ScreenName,
-    artist_id: String,
     pub artist: Option<String>,
-    pub page: u32,
+    pub next_page: Pagination<String>,
     pub albums: ListStore<AlbumModel>,
     pub top_tracks: Vec<SongDescription>,
 }
@@ -108,22 +177,10 @@ impl ArtistState {
     pub fn new(id: String) -> Self {
         Self {
             name: ScreenName::Artist(id.clone()),
-            artist_id: id,
             artist: None,
-            page: 0,
+            next_page: Pagination::new(id, 20),
             albums: ListStore::new(),
             top_tracks: vec![],
-        }
-    }
-
-    pub fn next_page(&self) -> Option<(String, u32, u32)> {
-        let batch_size = 20;
-        let offset = self.page * batch_size;
-        let current_len = self.albums.len() as u32;
-        if current_len < offset {
-            None
-        } else {
-            Some((self.artist_id.clone(), offset, batch_size))
         }
     }
 }
@@ -141,11 +198,11 @@ impl UpdatableState for ArtistState {
             }) => {
                 self.artist = Some(name);
 
-                self.page = 1;
                 self.albums.remove_all();
                 for album in albums {
                     self.albums.append(album.into());
                 }
+                self.next_page.reset(self.albums.len() as u32);
 
                 top_tracks.truncate(5);
                 self.top_tracks = top_tracks;
@@ -156,7 +213,7 @@ impl UpdatableState for ArtistState {
                 for album in albums {
                     self.albums.append(album.into());
                 }
-                self.page += 1;
+                self.next_page.update(self.albums.len() as u32);
                 vec![BrowserEvent::ArtistDetailsUpdated]
             }
             _ => vec![],
@@ -167,9 +224,9 @@ impl UpdatableState for ArtistState {
 #[derive(Clone)]
 pub struct HomeState {
     pub name: ScreenName,
-    pub albums_page: u32,
+    pub next_albums_page: Pagination<()>,
     pub albums: ListStore<AlbumModel>,
-    pub playlists_page: u32,
+    pub next_playlists_page: Pagination<()>,
     pub playlists: ListStore<AlbumModel>,
 }
 
@@ -177,9 +234,9 @@ impl Default for HomeState {
     fn default() -> Self {
         Self {
             name: ScreenName::Home,
-            albums_page: 0,
+            next_albums_page: Pagination::new((), 20),
             albums: ListStore::new(),
-            playlists_page: 0,
+            next_playlists_page: Pagination::new((), 20),
             playlists: ListStore::new(),
         }
     }
@@ -197,22 +254,50 @@ impl UpdatableState for HomeState {
                     .map(|a| a.into())
                     .collect::<Vec<AlbumModel>>();
                 if !self.albums.eq(&converted, |a, b| a.uri() == b.uri()) {
-                    self.albums_page = 1;
                     self.albums.remove_all();
                     for album in converted {
                         self.albums.append(album);
                     }
+                    self.next_albums_page.reset(self.albums.len() as u32);
                     vec![BrowserEvent::LibraryUpdated]
                 } else {
                     vec![]
                 }
             }
             BrowserAction::AppendLibraryContent(content) => {
-                self.albums_page += 1;
                 for album in content {
                     self.albums.append(album.into());
                 }
+                self.next_albums_page.update(self.albums.len() as u32);
                 vec![BrowserEvent::LibraryUpdated]
+            }
+            BrowserAction::SaveAlbum(album) => {
+                let album_id = album.id.clone();
+                let already_present = self
+                    .albums
+                    .iter()
+                    .find(|a| a.uri().as_ref() == Some(&album_id))
+                    .is_some();
+                if already_present {
+                    vec![]
+                } else {
+                    self.albums.insert(0, album.into());
+                    self.next_albums_page.increment();
+                    vec![BrowserEvent::LibraryUpdated]
+                }
+            }
+            BrowserAction::UnsaveAlbum(id) => {
+                let position = self
+                    .albums
+                    .iter()
+                    .position(|a| a.uri().as_ref() == Some(&id));
+                if let Some(position) = position {
+                    self.albums.remove(position as u32);
+                    self.next_albums_page.decrement();
+                    vec![BrowserEvent::LibraryUpdated]
+                } else {
+                    vec![]
+                }
             }
             BrowserAction::SetPlaylistsContent(content) => {
                 let converted = content
@@ -220,21 +305,21 @@ impl UpdatableState for HomeState {
                     .map(|a| a.into())
                     .collect::<Vec<AlbumModel>>();
                 if !self.playlists.eq(&converted, |a, b| a.uri() == b.uri()) {
-                    self.playlists_page = 1;
                     self.playlists.remove_all();
                     for playlist in converted {
                         self.playlists.append(playlist);
                     }
+                    self.next_playlists_page.reset(self.playlists.len() as u32);
                     vec![BrowserEvent::SavedPlaylistsUpdated]
                 } else {
                     vec![]
                 }
             }
             BrowserAction::AppendPlaylistsContent(content) => {
-                self.playlists_page += 1;
                 for playlist in content {
                     self.playlists.append(playlist.into());
                 }
+                self.next_playlists_page.update(self.playlists.len() as u32);
                 vec![BrowserEvent::SavedPlaylistsUpdated]
             }
             _ => vec![],
@@ -295,8 +380,8 @@ mod tests {
             top_tracks: vec![],
         }));
 
-        let next = artist_state.next_page();
-        assert_eq!(false, next.is_some());
+        let next = artist_state.next_page;
+        assert_eq!(None, next.next_offset);
     }
 
     #[test]
@@ -307,6 +392,7 @@ mod tests {
             artists: vec![],
             art: "".to_owned(),
             songs: vec![],
+            is_liked: false,
         };
         let mut artist_state = ArtistState::new("id".to_owned());
         artist_state.update_with(BrowserAction::SetArtistDetails(ArtistDescription {
@@ -315,7 +401,7 @@ mod tests {
             top_tracks: vec![],
         }));
 
-        let next = artist_state.next_page();
-        assert_eq!(Some(("id".to_owned(), 20, 20)), next);
+        let next = artist_state.next_page;
+        assert_eq!(Some(20), next.next_offset);
     }
 }

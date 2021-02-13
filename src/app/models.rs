@@ -61,6 +61,7 @@ pub struct AlbumDescription {
     pub artists: Vec<ArtistRef>,
     pub art: String,
     pub songs: Vec<SongDescription>,
+    pub is_liked: bool,
 }
 
 impl AlbumDescription {

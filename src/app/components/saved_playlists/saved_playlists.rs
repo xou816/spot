@@ -41,7 +41,7 @@ impl SavedPlaylists {
         let weak_model = Rc::downgrade(&model);
         widget.scrolled_window.connect_edge_reached(move |_, pos| {
             if let (gtk::PositionType::Bottom, Some(model)) = (pos, weak_model.upgrade()) {
-                model.load_more_playlists();
+                let _ = model.load_more_playlists();
             }
         });
 
@@ -69,11 +69,11 @@ impl EventListener for SavedPlaylists {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
             AppEvent::Started => {
-                self.model.refresh_saved_playlists();
+                let _ = self.model.refresh_saved_playlists();
                 self.bind_flowbox(self.model.get_list_store().unwrap().unsafe_store())
             }
             AppEvent::LoginCompleted(_) => {
-                self.model.refresh_saved_playlists();
+                let _ = self.model.refresh_saved_playlists();
             }
             _ => {}
         }

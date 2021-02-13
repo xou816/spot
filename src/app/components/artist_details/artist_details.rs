@@ -38,7 +38,7 @@ impl ArtistDetails {
         let weak_model = Rc::downgrade(&model);
         widget.root.connect_edge_reached(move |_, pos| {
             if let (gtk::PositionType::Bottom, Some(model)) = (pos, weak_model.upgrade()) {
-                model.load_more();
+                let _ = model.load_more();
             }
         });
 

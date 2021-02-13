@@ -49,6 +49,12 @@ impl Details {
         let widget = DetailsWidget::new();
         let playlist = Box::new(Playlist::new(widget.album_tracks.clone(), model.clone()));
 
+        widget
+            .like_button
+            .connect_clicked(clone!(@weak model => move |_| {
+                model.toggle_save_album();
+            }));
+
         Self {
             model,
             worker,
@@ -57,17 +63,22 @@ impl Details {
         }
     }
 
+    fn update_liked(&self) {
+        if let Some(info) = self.model.get_album_info() {
+            let is_liked = info.is_liked;
+            self.widget
+                .like_button
+                .set_label(if is_liked { "♥" } else { "♡" });
+        }
+    }
+
     fn update_details(&self) {
         if let Some(info) = self.model.get_album_info() {
             let album = &info.title[..];
             let artist = &info.artists_name();
             let art = info.art.clone();
-            let is_liked = false;
 
             self.widget.album_label.set_label(album);
-            self.widget
-                .like_button
-                .set_label(if is_liked { "♥" } else { "♡" });
             self.widget.artist_button.set_label(artist);
 
             let weak_model = Rc::downgrade(&self.model);
@@ -103,7 +114,14 @@ impl Component for Details {
 impl EventListener for Details {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::BrowserEvent(BrowserEvent::AlbumDetailsLoaded) => self.update_details(),
+            AppEvent::BrowserEvent(BrowserEvent::AlbumDetailsLoaded) => {
+                self.update_details();
+                self.update_liked();
+            }
+            AppEvent::BrowserEvent(BrowserEvent::AlbumSaved(_))
+            | AppEvent::BrowserEvent(BrowserEvent::AlbumUnsaved(_)) => {
+                self.update_liked();
+            }
             _ => {}
         }
         self.broadcast_event(event);

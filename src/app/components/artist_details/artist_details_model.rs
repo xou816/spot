@@ -46,21 +46,23 @@ impl ArtistDetailsModel {
             .dispatch(AppAction::ViewAlbum(id.to_string()));
     }
 
-    pub fn load_more(&self) {
+    pub fn load_more(&self) -> Option<()> {
         let api = self.app_model.get_spotify();
-        let state = self
-            .app_model
-            .map_state_opt(|s| s.browser_state.artist_state());
-        if let Some(state) = state {
-            if let Some((id, offset, batch_size)) = state.next_page() {
-                self.dispatcher.dispatch_async(Box::pin(async move {
-                    match api.get_artist_albums(&id, offset, batch_size).await {
-                        Ok(albums) => Some(BrowserAction::AppendArtistReleases(albums).into()),
-                        Err(err) => handle_error(err),
-                    }
-                }));
+        let state = self.app_model.get_state();
+        let next_page = &state.browser_state.artist_state()?.next_page;
+
+        let id = next_page.data.clone();
+        let batch_size = next_page.batch_size;
+        let offset = next_page.next_offset?;
+
+        self.dispatcher.dispatch_async(Box::pin(async move {
+            match api.get_artist_albums(&id, offset, batch_size).await {
+                Ok(albums) => Some(BrowserAction::AppendArtistReleases(albums).into()),
+                Err(err) => handle_error(err),
             }
-        }
+        }));
+
+        Some(())
     }
 }
 

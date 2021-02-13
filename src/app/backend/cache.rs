@@ -1,8 +1,10 @@
 use async_std::fs;
 use async_std::io;
+use async_std::path::PathBuf;
+use async_std::prelude::*;
+use regex::Regex;
 use std::convert::{From, TryInto};
 use std::future::Future;
-use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
 
 pub enum CacheFile {
@@ -61,18 +63,19 @@ impl CacheManager {
             glib::mkdir_with_parents(path, mask);
         }
 
-        Some(Self { root })
+        Some(Self { root: root.into() })
     }
 
     fn cache_path(&self, resource: &str) -> Option<PathBuf> {
         let cache_dir = glib::get_user_cache_dir()?;
-        glib::build_filenamev(&[cache_dir.as_path(), Path::new(resource)])
+        glib::build_filenamev(&[cache_dir.as_path(), std::path::Path::new(resource)])
+            .map(|p| p.into())
     }
 
     fn cache_meta_path(&self, resource: &str) -> Option<PathBuf> {
         let cache_dir = glib::get_user_cache_dir()?;
         let full = format!("{}.{}", resource, "expiry");
-        glib::build_filenamev(&[cache_dir.as_path(), Path::new(&full)])
+        glib::build_filenamev(&[cache_dir.as_path(), std::path::Path::new(&full)]).map(|p| p.into())
     }
 }
 
@@ -124,13 +127,39 @@ impl CacheManager {
 }
 
 impl CacheManager {
+    async fn set_expiry_for_path(&self, path: &PathBuf, expiry: Duration) -> io::Result<()> {
+        let content = expiry.as_secs().to_be_bytes().to_owned();
+        fs::write(path, content).await
+    }
+
     pub async fn set_expiry_for(&self, resource: &str, expiry: Duration) -> io::Result<()> {
         let meta_file = self
             .cache_meta_path(resource)
             .ok_or(io::Error::from(io::ErrorKind::NotFound))?;
-        let content = expiry.as_secs().to_be_bytes().to_owned();
+        self.set_expiry_for_path(&meta_file, expiry).await
+    }
 
-        fs::write(&meta_file, content).await?;
+    pub async fn set_expired(&self, resource: &str) -> io::Result<()> {
+        self.set_expiry_for(resource, Duration::new(0, 0)).await
+    }
+
+    pub async fn set_expired_pattern(&self, dir: &str, regex: &Regex) -> io::Result<()> {
+        let dir_path = self
+            .cache_path(dir)
+            .ok_or(io::Error::from(io::ErrorKind::NotFound))?;
+
+        let mut entries = fs::read_dir(dir_path).await?;
+        while let Some(Ok(entry)) = entries.next().await {
+            let matches = entry
+                .file_name()
+                .to_str()
+                .map(|s| regex.is_match(s))
+                .unwrap_or(false);
+            if matches {
+                self.set_expiry_for_path(&entry.path(), Duration::new(0, 0))
+                    .await?;
+            }
+        }
 
         Ok(())
     }

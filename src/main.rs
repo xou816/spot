@@ -1,5 +1,8 @@
 #[macro_use(clone)]
 extern crate glib;
+#[macro_use]
+extern crate lazy_static;
+
 use gio::prelude::*;
 use gtk::prelude::*;
 use gtk::SettingsExt;

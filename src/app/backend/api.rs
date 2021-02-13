@@ -3,6 +3,7 @@ use futures::future::BoxFuture;
 use isahc::config::Configurable;
 use isahc::http::{StatusCode, Uri};
 use isahc::{AsyncReadResponseExt, HttpClient, Request};
+use regex::Regex;
 use serde_json::from_str;
 use std::convert::{AsRef, Into};
 use std::sync::Mutex;
@@ -13,36 +14,50 @@ use super::api_models::*;
 use super::cache::{CacheExpiry, CacheManager, CachePolicy, CacheRequest};
 use crate::app::models::*;
 
+lazy_static! {
+    static ref ME_ALBUMS_CACHE: Regex = Regex::new(r"^me_albums_\w+_\w+\.json.expiry$").unwrap();
+}
+
 const SPOTIFY_HOST: &str = "api.spotify.com";
 
 pub type SpotifyResult<T> = Result<T, SpotifyApiError>;
 
 pub trait SpotifyApiClient {
     fn get_artist(&self, id: &str) -> BoxFuture<SpotifyResult<ArtistDescription>>;
+
     fn get_album(&self, id: &str) -> BoxFuture<SpotifyResult<AlbumDescription>>;
+
     fn get_playlist(&self, id: &str) -> BoxFuture<SpotifyResult<PlaylistDescription>>;
+
     fn get_saved_albums(
         &self,
         offset: u32,
         limit: u32,
     ) -> BoxFuture<SpotifyResult<Vec<AlbumDescription>>>;
+
+    fn save_album(&self, id: &str) -> BoxFuture<SpotifyResult<AlbumDescription>>;
+    fn remove_saved_album(&self, id: &str) -> BoxFuture<SpotifyResult<()>>;
+
     fn get_saved_playlists(
         &self,
         offset: u32,
         limit: u32,
     ) -> BoxFuture<SpotifyResult<Vec<PlaylistDescription>>>;
+
     fn search(
         &self,
         query: &str,
         offset: u32,
         limit: u32,
     ) -> BoxFuture<SpotifyResult<SearchResults>>;
+
     fn get_artist_albums(
         &self,
         id: &str,
         offset: u32,
         limit: u32,
     ) -> BoxFuture<SpotifyResult<Vec<AlbumDescription>>>;
+
     fn update_token(&self, token: String);
 }
 
@@ -115,31 +130,53 @@ impl CachedSpotifyClient {
         Serializer::new(String::new())
     }
 
-    async fn send<T>(&self, req: Request<T>) -> Result<String, SpotifyApiError>
+    async fn send_req<B, F>(&self, make_request: F) -> Result<String, SpotifyApiError>
     where
-        T: Into<isahc::AsyncBody>,
+        B: Into<isahc::AsyncBody>,
+        F: FnOnce(&String) -> Request<B>,
     {
-        let mut result = self.client.send_async(req).await?;
+        let request = {
+            let token = self.token.lock().unwrap();
+            let token = token.as_ref().ok_or(SpotifyApiError::NoToken)?;
+            make_request(token)
+        };
+
+        let mut result = self.client.send_async(request).await?;
         match result.status() {
             StatusCode::UNAUTHORIZED => Err(SpotifyApiError::InvalidToken),
             _ => Ok(result.text().await?),
+        }
+    }
+
+    async fn send_req_no_response<B, F>(&self, make_request: F) -> Result<(), SpotifyApiError>
+    where
+        B: Into<isahc::AsyncBody>,
+        F: FnOnce(&String) -> Request<B>,
+    {
+        let request = {
+            let token = self.token.lock().unwrap();
+            let token = token.as_ref().ok_or(SpotifyApiError::NoToken)?;
+            make_request(token)
+        };
+
+        let result = self.client.send_async(request).await?;
+        match result.status() {
+            StatusCode::UNAUTHORIZED => Err(SpotifyApiError::InvalidToken),
+            _ => Ok(()),
         }
     }
 }
 
 impl CachedSpotifyClient {
     async fn get_artist_no_cache(&self, id: &str) -> Result<String, SpotifyApiError> {
-        let request = {
-            let token = self.token.lock().unwrap();
-            let token = token.as_ref().ok_or(SpotifyApiError::NoToken)?;
+        self.send_req(|token| {
             let uri = self.uri(format!("/v1/artists/{}", id), None).unwrap();
             Request::get(uri)
-                .header("Authorization", format!("Bearer {}", &token))
+                .header("Authorization", format!("Bearer {}", token))
                 .body(())
                 .unwrap()
-        };
-
-        self.send(request).await
+        })
+        .await
     }
 
     async fn get_artist_albums_no_cache(
@@ -148,10 +185,7 @@ impl CachedSpotifyClient {
         offset: u32,
         limit: u32,
     ) -> Result<String, SpotifyApiError> {
-        let request = {
-            let token = self.token.lock().unwrap();
-            let token = token.as_ref().ok_or(SpotifyApiError::NoToken)?;
-
+        self.send_req(|token| {
             let query = Self::make_query_params()
                 .append_pair("include_groups", "album,single")
                 .append_pair("country", "from_token")
@@ -166,16 +200,12 @@ impl CachedSpotifyClient {
                 .header("Authorization", format!("Bearer {}", &token))
                 .body(())
                 .unwrap()
-        };
-
-        self.send(request).await
+        })
+        .await
     }
 
     async fn get_artist_top_tracks_no_cache(&self, id: &str) -> Result<String, SpotifyApiError> {
-        let request = {
-            let token = self.token.lock().unwrap();
-            let token = token.as_ref().ok_or(SpotifyApiError::NoToken)?;
-
+        self.send_req(|token| {
             let query = Self::make_query_params()
                 .append_pair("market", "from_token")
                 .finish();
@@ -187,39 +217,68 @@ impl CachedSpotifyClient {
                 .header("Authorization", format!("Bearer {}", &token))
                 .body(())
                 .unwrap()
-        };
+        })
+        .await
+    }
 
-        self.send(request).await
+    async fn is_album_saved(&self, id: &str) -> Result<String, SpotifyApiError> {
+        self.send_req(|token| {
+            let query = Self::make_query_params().append_pair("ids", id).finish();
+            let uri = self
+                .uri("/v1/me/albums/contains".to_string(), Some(query))
+                .unwrap();
+            Request::get(uri)
+                .header("Authorization", format!("Bearer {}", &token))
+                .body(())
+                .unwrap()
+        })
+        .await
+    }
+
+    async fn raw_save_album(&self, id: &str) -> Result<(), SpotifyApiError> {
+        self.send_req_no_response(|token| {
+            let query = Self::make_query_params().append_pair("ids", id).finish();
+            let uri = self.uri("/v1/me/albums".to_string(), Some(query)).unwrap();
+            Request::put(uri)
+                .header("Authorization", format!("Bearer {}", &token))
+                .body(())
+                .unwrap()
+        })
+        .await
+    }
+
+    async fn raw_remove_saved_album(&self, id: &str) -> Result<(), SpotifyApiError> {
+        self.send_req_no_response(|token| {
+            let query = Self::make_query_params().append_pair("ids", id).finish();
+            let uri = self.uri("/v1/me/albums".to_string(), Some(query)).unwrap();
+            Request::delete(uri)
+                .header("Authorization", format!("Bearer {}", &token))
+                .body(())
+                .unwrap()
+        })
+        .await
     }
 
     async fn get_album_no_cache(&self, id: &str) -> Result<String, SpotifyApiError> {
-        let request = {
-            let token = self.token.lock().unwrap();
-            let token = token.as_ref().ok_or(SpotifyApiError::NoToken)?;
-
+        self.send_req(|token| {
             let uri = self.uri(format!("/v1/albums/{}", id), None).unwrap();
             Request::get(uri)
                 .header("Authorization", format!("Bearer {}", &token))
                 .body(())
                 .unwrap()
-        };
-
-        self.send(request).await
+        })
+        .await
     }
 
     async fn get_playlist_no_cache(&self, id: &str) -> Result<String, SpotifyApiError> {
-        let request = {
-            let token = self.token.lock().unwrap();
-            let token = token.as_ref().ok_or(SpotifyApiError::NoToken)?;
-
+        self.send_req(|token| {
             let uri = self.uri(format!("/v1/playlists/{}", id), None).unwrap();
             Request::get(uri)
                 .header("Authorization", format!("Bearer {}", &token))
                 .body(())
                 .unwrap()
-        };
-
-        self.send(request).await
+        })
+        .await
     }
 
     async fn get_saved_albums_no_cache(
@@ -227,10 +286,7 @@ impl CachedSpotifyClient {
         offset: u32,
         limit: u32,
     ) -> Result<String, SpotifyApiError> {
-        let request = {
-            let token = self.token.lock().unwrap();
-            let token = token.as_ref().ok_or(SpotifyApiError::NoToken)?;
-
+        self.send_req(|token| {
             let query = Self::make_query_params()
                 .append_pair("offset", &offset.to_string()[..])
                 .append_pair("limit", &limit.to_string()[..])
@@ -241,9 +297,8 @@ impl CachedSpotifyClient {
                 .header("Authorization", format!("Bearer {}", &token))
                 .body(())
                 .unwrap()
-        };
-
-        self.send(request).await
+        })
+        .await
     }
 
     async fn get_saved_playlists_no_cache(
@@ -251,10 +306,7 @@ impl CachedSpotifyClient {
         offset: u32,
         limit: u32,
     ) -> Result<String, SpotifyApiError> {
-        let request = {
-            let token = self.token.lock().unwrap();
-            let token = token.as_ref().ok_or(SpotifyApiError::NoToken)?;
-
+        self.send_req(|token| {
             let query = Self::make_query_params()
                 .append_pair("offset", &offset.to_string()[..])
                 .append_pair("limit", &limit.to_string()[..])
@@ -267,9 +319,8 @@ impl CachedSpotifyClient {
                 .header("Authorization", format!("Bearer {}", &token))
                 .body(())
                 .unwrap()
-        };
-
-        self.send(request).await
+        })
+        .await
     }
 
     async fn search_no_cache(
@@ -278,10 +329,7 @@ impl CachedSpotifyClient {
         offset: u32,
         limit: u32,
     ) -> Result<String, SpotifyApiError> {
-        let request = {
-            let token = self.token.lock().unwrap();
-            let token = token.as_ref().ok_or(SpotifyApiError::NoToken)?;
-
+        self.send_req(|token| {
             let query = SearchQuery {
                 query,
                 types: vec![SearchType::Album, SearchType::Artist],
@@ -297,9 +345,8 @@ impl CachedSpotifyClient {
                 .header("Authorization", format!("Bearer {}", &token))
                 .body(())
                 .unwrap()
-        };
-
-        self.send(request).await
+        })
+        .await
     }
 }
 
@@ -370,16 +417,60 @@ impl SpotifyApiClient for CachedSpotifyClient {
         let id = id.to_owned();
 
         Box::pin(async move {
-            let cache_request = self.cache_request(format!("net/album_{}.json", id), None);
-
-            let text = cache_request
+            let album = self
+                .cache_request(format!("net/album_{}.json", id), None)
                 .or_else_try_write(
                     || self.get_album_no_cache(&id[..]),
                     CacheExpiry::expire_in_hours(24),
                 )
                 .await?;
+            let mut album: AlbumDescription = from_str::<Album>(&album)?.into();
 
-            Ok(from_str::<Album>(&text)?.into())
+            let liked = self
+                .cache_request(format!("net/album_liked_{}.json", id), None)
+                .or_else_try_write(
+                    || self.is_album_saved(&id[..]),
+                    CacheExpiry::expire_in_hours(2),
+                )
+                .await?;
+            let liked = from_str::<Vec<bool>>(&liked)?;
+
+            album.is_liked = liked[0];
+
+            Ok(album)
+        })
+    }
+
+    fn save_album(&self, id: &str) -> BoxFuture<SpotifyResult<AlbumDescription>> {
+        let id = id.to_owned();
+
+        Box::pin(async move {
+            self.cache
+                .set_expired(&format!("net/album_liked_{}.json", id))
+                .await
+                .unwrap_or(());
+            self.cache
+                .set_expired_pattern("net", &*ME_ALBUMS_CACHE)
+                .await
+                .unwrap_or(());
+            self.raw_save_album(&id[..]).await?;
+            self.get_album(&id[..]).await
+        })
+    }
+
+    fn remove_saved_album(&self, id: &str) -> BoxFuture<SpotifyResult<()>> {
+        let id = id.to_owned();
+
+        Box::pin(async move {
+            self.cache
+                .set_expired(&format!("net/album_liked_{}.json", id))
+                .await
+                .unwrap_or(());
+            self.cache
+                .set_expired_pattern("net", &*ME_ALBUMS_CACHE)
+                .await
+                .unwrap_or(());
+            self.raw_remove_saved_album(&id[..]).await
         })
     }
 
