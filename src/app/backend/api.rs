@@ -67,6 +67,8 @@ pub enum SpotifyApiError {
     InvalidToken,
     #[error("No token")]
     NoToken,
+    #[error("Request failed with status {0}")]
+    BadStatus(u16),
     #[error(transparent)]
     ClientError(#[from] isahc::Error),
     #[error(transparent)]
@@ -144,7 +146,8 @@ impl CachedSpotifyClient {
         let mut result = self.client.send_async(request).await?;
         match result.status() {
             StatusCode::UNAUTHORIZED => Err(SpotifyApiError::InvalidToken),
-            _ => Ok(result.text().await?),
+            s if s.is_success() => Ok(result.text().await?),
+            s => Err(SpotifyApiError::BadStatus(s.as_u16())),
         }
     }
 
