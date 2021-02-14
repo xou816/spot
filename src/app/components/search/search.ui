@@ -22,7 +22,7 @@
             <property name="halign">start</property>
             <property name="label" translatable="yes">Search results</property>
             <style>
-              <class name="title"/>
+              <class name="large-title"/>
             </style>
           </object>
           <packing>

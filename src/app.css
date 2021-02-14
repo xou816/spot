@@ -1,8 +1,3 @@
-label.title {
-  font-size: 22px;
-  font-weight: bold;
-}
-
 .notification {
   opacity: 0;
   transition: opacity 0.3s ease;

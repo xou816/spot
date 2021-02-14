@@ -7,3 +7,12 @@ list.artist__top-tracks {
 list.artist__top-tracks row {
   border-radius: 4px;
 }
+
+.artist {
+  transition: opacity .3s ease;
+  opacity: 0;
+}
+
+.artist__loaded {
+  opacity: 1;
+}

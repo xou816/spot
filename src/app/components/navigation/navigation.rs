@@ -89,12 +89,7 @@ impl Navigation {
     }
 
     fn make_home(&self) -> Box<dyn ListenerComponent> {
-        let home = HomePane::new(
-            self.home_stack_sidebar.clone(),
-            self.screen_factory.make_library(),
-            self.screen_factory.make_saved_playlists(),
-            self.screen_factory.make_now_playing(),
-        );
+        let home = HomePane::new(self.home_stack_sidebar.clone(), &self.screen_factory);
 
         home.connect_navigated(
             clone!(@weak self.model as model, @weak self.leaflet as leaflet => move || {

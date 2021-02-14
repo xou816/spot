@@ -76,6 +76,8 @@ impl ArtistDetails {
 
     fn update_details(&self) {
         if let Some(name) = self.model.get_artist_name() {
+            let context = self.widget.root.get_style_context();
+            context.add_class("artist__loaded");
             self.widget.artist_name.set_text(&name);
         }
     }

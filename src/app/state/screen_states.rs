@@ -234,9 +234,9 @@ impl Default for HomeState {
     fn default() -> Self {
         Self {
             name: ScreenName::Home,
-            next_albums_page: Pagination::new((), 20),
+            next_albums_page: Pagination::new((), 30),
             albums: ListStore::new(),
-            next_playlists_page: Pagination::new((), 20),
+            next_playlists_page: Pagination::new((), 30),
             playlists: ListStore::new(),
         }
     }

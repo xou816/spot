@@ -1,7 +1,7 @@
 use gtk::prelude::*;
 use gtk::{ListBoxExt, StackExt, StackSidebarExt};
 
-use crate::app::components::{Component, EventListener, Library, NowPlaying, SavedPlaylists};
+use crate::app::components::{Component, EventListener, ScreenFactory};
 use crate::app::AppEvent;
 
 fn find_listbox_descendant(w: &gtk::Widget) -> Option<gtk::ListBox> {
@@ -21,12 +21,11 @@ pub struct HomePane {
 }
 
 impl HomePane {
-    pub fn new(
-        stack_sidebar: gtk::StackSidebar,
-        library: Library,
-        saved_playlists: SavedPlaylists,
-        now_playing: NowPlaying,
-    ) -> Self {
+    pub fn new(stack_sidebar: gtk::StackSidebar, screen_factory: &ScreenFactory) -> Self {
+        let library = screen_factory.make_library();
+        let saved_playlists = screen_factory.make_saved_playlists();
+        let now_playing = screen_factory.make_now_playing();
+
         let stack = gtk::Stack::new();
         stack.set_transition_type(gtk::StackTransitionType::Crossfade);
         stack.add_titled(library.get_root_widget(), "library", "Library");
