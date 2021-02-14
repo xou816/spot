@@ -1,4 +1,4 @@
-use futures::channel::mpsc::Sender;
+use futures::channel::mpsc::UnboundedSender;
 use librespot::core::spotify_id::SpotifyId;
 
 use crate::app::backend::Command;
@@ -6,11 +6,11 @@ use crate::app::components::EventListener;
 use crate::app::AppEvent;
 
 pub struct PlayerNotifier {
-    sender: Sender<Command>,
+    sender: UnboundedSender<Command>,
 }
 
 impl PlayerNotifier {
-    pub fn new(sender: Sender<Command>) -> Self {
+    pub fn new(sender: UnboundedSender<Command>) -> Self {
         Self { sender }
     }
 }
@@ -30,7 +30,9 @@ impl EventListener for PlayerNotifier {
         };
 
         if let Some(command) = command {
-            let _ = self.sender.clone().try_send(command);
+            self.sender.unbounded_send(command).unwrap_or_else(|_| {
+                println!("Could not send message to player");
+            });
         }
     }
 }

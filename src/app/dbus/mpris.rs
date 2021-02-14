@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 #![allow(unused_variables)]
 
-use futures::channel::mpsc::Sender;
+use futures::channel::mpsc::UnboundedSender;
 use std::convert::Into;
 use zbus::dbus_interface;
 use zbus::fdo::{Error, Result};
@@ -15,11 +15,11 @@ pub struct SpotMpris;
 #[derive(Clone)]
 pub struct SpotMprisPlayer {
     pub state: SharedMprisState,
-    sender: Sender<AppAction>,
+    sender: UnboundedSender<AppAction>,
 }
 
 impl SpotMprisPlayer {
-    pub fn new(state: SharedMprisState, sender: Sender<AppAction>) -> Self {
+    pub fn new(state: SharedMprisState, sender: UnboundedSender<AppAction>) -> Self {
         Self { state, sender }
     }
 }
@@ -67,10 +67,9 @@ impl SpotMpris {
 
 #[dbus_interface(interface = "org.mpris.MediaPlayer2.Player")]
 impl SpotMprisPlayer {
-    pub fn next(&self) -> Result<()> {
+    pub fn next(&mut self) -> Result<()> {
         self.sender
-            .clone()
-            .try_send(AppAction::Next)
+            .unbounded_send(AppAction::Next)
             .map_err(|_| Error::Failed("Could not send action".to_string()))
     }
 
@@ -86,10 +85,9 @@ impl SpotMprisPlayer {
         Err(Error::NotSupported("Not implemented".to_string()))
     }
 
-    pub fn play_pause(&self) -> Result<()> {
+    pub fn play_pause(&mut self) -> Result<()> {
         self.sender
-            .clone()
-            .try_send(AppAction::TogglePlay)
+            .unbounded_send(AppAction::TogglePlay)
             .map_err(|_| Error::Failed("Could not send action".to_string()))
     }
 
@@ -125,10 +123,9 @@ impl SpotMprisPlayer {
         )
     }
 
-    fn previous(&self) -> Result<()> {
+    fn previous(&mut self) -> Result<()> {
         self.sender
-            .clone()
-            .try_send(AppAction::Previous)
+            .unbounded_send(AppAction::Previous)
             .map_err(|_| zbus::fdo::Error::Failed("Could not send action".to_string()))
     }
 

@@ -1,7 +1,8 @@
-use futures::channel::mpsc::{channel, Receiver, Sender};
+use futures::channel::mpsc::{unbounded, UnboundedReceiver, UnboundedSender};
 use futures::future::Future;
 use futures::future::{BoxFuture, LocalBoxFuture};
 use futures::stream::StreamExt;
+use std::cell::RefCell;
 use std::pin::Pin;
 
 use super::AppAction;
@@ -9,61 +10,42 @@ use super::AppAction;
 pub trait ActionDispatcher {
     fn dispatch(&self, action: AppAction);
     fn dispatch_local_async(&self, action: LocalBoxFuture<'static, Option<AppAction>>);
-    fn dispatch_local_many_async(&self, actions: LocalBoxFuture<'static, Vec<AppAction>>);
     fn dispatch_async(&self, action: BoxFuture<'static, Option<AppAction>>);
-    fn dispatch_many_async(&self, actions: BoxFuture<'static, Vec<AppAction>>);
     fn box_clone(&self) -> Box<dyn ActionDispatcher>;
 }
 
 #[derive(Clone)]
 pub struct ActionDispatcherImpl {
-    sender: Sender<AppAction>,
+    sender: RefCell<UnboundedSender<AppAction>>,
     worker: Worker,
 }
 
 impl ActionDispatcherImpl {
-    pub fn new(sender: Sender<AppAction>, worker: Worker) -> Self {
+    pub fn new(sender: UnboundedSender<AppAction>, worker: Worker) -> Self {
+        let sender = RefCell::new(sender);
         Self { sender, worker }
     }
 }
 
 impl ActionDispatcher for ActionDispatcherImpl {
     fn dispatch(&self, action: AppAction) {
-        self.sender.clone().try_send(action).unwrap();
+        self.sender.borrow_mut().unbounded_send(action).unwrap();
     }
 
     fn dispatch_local_async(&self, action: LocalBoxFuture<'static, Option<AppAction>>) {
-        let mut clone = self.sender.clone();
+        let clone = self.sender.borrow().clone();
         self.worker.send_local_task(async move {
             if let Some(action) = action.await {
-                clone.try_send(action).unwrap();
-            }
-        });
-    }
-
-    fn dispatch_local_many_async(&self, actions: LocalBoxFuture<'static, Vec<AppAction>>) {
-        let sender = self.sender.clone();
-        self.worker.send_local_task(async move {
-            for action in actions.await {
-                sender.clone().try_send(action).unwrap();
+                clone.unbounded_send(action).unwrap();
             }
         });
     }
 
     fn dispatch_async(&self, action: BoxFuture<'static, Option<AppAction>>) {
-        let mut clone = self.sender.clone();
+        let clone = self.sender.borrow().clone();
         self.worker.send_task(async move {
             if let Some(action) = action.await {
-                clone.try_send(action).unwrap();
-            }
-        });
-    }
-
-    fn dispatch_many_async(&self, actions: BoxFuture<'static, Vec<AppAction>>) {
-        let sender = self.sender.clone();
-        self.worker.send_task(async move {
-            for action in actions.await {
-                sender.clone().try_send(action).unwrap();
+                clone.unbounded_send(action).unwrap();
             }
         });
     }
@@ -74,17 +56,17 @@ impl ActionDispatcher for ActionDispatcherImpl {
 }
 
 pub struct DispatchLoop {
-    receiver: Receiver<AppAction>,
-    sender: Sender<AppAction>,
+    receiver: UnboundedReceiver<AppAction>,
+    sender: UnboundedSender<AppAction>,
 }
 
 impl DispatchLoop {
     pub fn new() -> Self {
-        let (sender, receiver) = channel::<AppAction>(0);
+        let (sender, receiver) = unbounded::<AppAction>();
         Self { receiver, sender }
     }
 
-    pub fn make_dispatcher(&self) -> Sender<AppAction> {
+    pub fn make_dispatcher(&self) -> UnboundedSender<AppAction> {
         self.sender.clone()
     }
 
@@ -102,30 +84,39 @@ pub type FutureTask = Pin<Box<dyn Future<Output = ()> + Send>>;
 pub type FutureLocalTask = Pin<Box<dyn Future<Output = ()>>>;
 
 pub fn spawn_task_handler(context: &glib::MainContext) -> Worker {
-    let (future_local_sender, future_local_receiver) = channel::<FutureLocalTask>(0);
+    let (future_local_sender, future_local_receiver) = unbounded::<FutureLocalTask>();
     context.spawn_local_with_priority(
-        glib::source::PRIORITY_HIGH_IDLE,
+        glib::source::PRIORITY_DEFAULT_IDLE,
         future_local_receiver.for_each(|t| t),
     );
 
-    let (future_sender, future_receiver) = channel::<FutureTask>(0);
+    let (future_sender, future_receiver) = unbounded::<FutureTask>();
     context.spawn_with_priority(
         glib::source::PRIORITY_HIGH,
         future_receiver.for_each_concurrent(2, |t| t),
     );
 
-    Worker(future_local_sender, future_sender)
+    Worker(RefCell::new(InternalWorker(
+        future_local_sender,
+        future_sender,
+    )))
 }
 
 #[derive(Clone)]
-pub struct Worker(Sender<FutureLocalTask>, Sender<FutureTask>);
+struct InternalWorker(
+    UnboundedSender<FutureLocalTask>,
+    UnboundedSender<FutureTask>,
+);
+
+#[derive(Clone)]
+pub struct Worker(RefCell<InternalWorker>);
 
 impl Worker {
     pub fn send_local_task<T: Future<Output = ()> + 'static>(&self, task: T) -> Option<()> {
-        self.0.clone().try_send(Box::pin(task)).ok()
+        self.0.borrow_mut().0.unbounded_send(Box::pin(task)).ok()
     }
 
     pub fn send_task<T: Future<Output = ()> + Send + 'static>(&self, task: T) -> Option<()> {
-        self.1.clone().try_send(Box::pin(task)).ok()
+        self.0.borrow_mut().1.unbounded_send(Box::pin(task)).ok()
     }
 }

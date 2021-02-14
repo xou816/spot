@@ -1,4 +1,4 @@
-use futures::channel::mpsc::Sender;
+use futures::channel::mpsc::UnboundedSender;
 use std::convert::TryInto;
 use std::rc::Rc;
 use std::thread;
@@ -110,7 +110,7 @@ fn register_mpris(
 
 pub fn start_dbus_server(
     app_model: Rc<AppModel>,
-    sender: Sender<AppAction>,
+    sender: UnboundedSender<AppAction>,
 ) -> Result<ConnectionWrapper, zbus::Error> {
     let state = SharedMprisState::new();
 

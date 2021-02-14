@@ -35,11 +35,10 @@ fn main() {
 
     let window = make_window(&builder);
     app.connect_activate(move |app| {
-        let mut sender = sender.clone();
         window.set_application(Some(app));
         app.add_window(&window);
         window.present();
-        sender.try_send(AppAction::Start).unwrap();
+        sender.unbounded_send(AppAction::Start).unwrap();
     });
 
     context.invoke_local(move || {
@@ -59,7 +58,7 @@ fn setup_gtk() {
 
     gtk::Settings::get_default()
         .unwrap()
-        .set_property_gtk_application_prefer_dark_theme(true);
+        .set_property_gtk_application_prefer_dark_theme(false);
 }
 
 fn make_window(builder: &gtk::Builder) -> libhandy::ApplicationWindow {

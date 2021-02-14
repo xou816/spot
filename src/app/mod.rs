@@ -1,4 +1,4 @@
-use futures::channel::mpsc::Sender;
+use futures::channel::mpsc::UnboundedSender;
 use gtk::prelude::*;
 use std::rc::Rc;
 use std::sync::Arc;
@@ -40,7 +40,7 @@ impl App {
 
     pub fn new_from_builder(
         builder: &gtk::Builder,
-        sender: Sender<AppAction>,
+        sender: UnboundedSender<AppAction>,
         worker: Worker,
     ) -> Self {
         let state = AppState::new();
@@ -69,11 +69,14 @@ impl App {
         App::new(model, components)
     }
 
-    fn make_player_notifier(sender: Sender<AppAction>) -> Box<impl EventListener> {
+    fn make_player_notifier(sender: UnboundedSender<AppAction>) -> Box<impl EventListener> {
         Box::new(PlayerNotifier::new(backend::start_player_service(sender)))
     }
 
-    fn make_dbus(app_model: Rc<AppModel>, sender: Sender<AppAction>) -> Box<impl EventListener> {
+    fn make_dbus(
+        app_model: Rc<AppModel>,
+        sender: UnboundedSender<AppAction>,
+    ) -> Box<impl EventListener> {
         Box::new(dbus::start_dbus_server(app_model, sender).expect("could not start server"))
     }
 

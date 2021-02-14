@@ -1,4 +1,4 @@
-use futures::channel::mpsc::Receiver;
+use futures::channel::mpsc::UnboundedReceiver;
 use futures::compat::Future01CompatExt;
 use futures::stream::StreamExt;
 use futures01::future::Future as OldFuture;
@@ -124,7 +124,11 @@ impl SpotifyPlayer {
         }
     }
 
-    pub async fn start(self, handle: Handle, receiver: Receiver<Command>) -> Result<(), ()> {
+    pub async fn start(
+        self,
+        handle: Handle,
+        receiver: UnboundedReceiver<Command>,
+    ) -> Result<(), ()> {
         let _self = &self;
         let handle = &handle;
         receiver
