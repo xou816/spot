@@ -401,7 +401,12 @@ mod tests {
             top_tracks: vec![],
         }));
 
-        let next = artist_state.next_page;
+        let next = &artist_state.next_page;
         assert_eq!(Some(20), next.next_offset);
+
+        artist_state.update_with(BrowserAction::AppendArtistReleases(vec![]));
+
+        let next = &artist_state.next_page;
+        assert_eq!(None, next.next_offset);
     }
 }
