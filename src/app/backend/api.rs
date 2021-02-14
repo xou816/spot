@@ -165,7 +165,8 @@ impl CachedSpotifyClient {
         let result = self.client.send_async(request).await?;
         match result.status() {
             StatusCode::UNAUTHORIZED => Err(SpotifyApiError::InvalidToken),
-            _ => Ok(()),
+            s if s.is_success() => Ok(()),
+            s => Err(SpotifyApiError::BadStatus(s.as_u16())),
         }
     }
 }
