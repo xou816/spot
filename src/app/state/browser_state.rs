@@ -48,7 +48,6 @@ pub enum BrowserEvent {
     AlbumUnsaved(String),
 }
 
-#[derive(Clone)]
 pub enum BrowserScreen {
     Home(HomeState),
     AlbumDetails(DetailsState),
@@ -113,7 +112,7 @@ struct NavStack<Screen>(Vec<Screen>);
 
 impl<Screen> NavStack<Screen>
 where
-    Screen: NamedScreen + Clone,
+    Screen: NamedScreen,
 {
     fn new(initial: Screen) -> Self {
         Self(vec![initial])

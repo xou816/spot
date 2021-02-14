@@ -34,7 +34,6 @@ impl PartialEq for ScreenName {
 
 impl Eq for ScreenName {}
 
-#[derive(Clone)]
 pub struct DetailsState {
     pub name: ScreenName,
     pub content: Option<AlbumDescription>,
@@ -81,7 +80,6 @@ impl UpdatableState for DetailsState {
     }
 }
 
-#[derive(Clone)]
 pub struct PlaylistDetailsState {
     pub name: ScreenName,
     pub content: Option<PlaylistDescription>,
@@ -111,20 +109,13 @@ impl UpdatableState for PlaylistDetailsState {
     }
 }
 
-#[derive(Clone)]
-pub struct Pagination<T>
-where
-    T: Clone,
-{
+pub struct Pagination<T> {
     pub data: T,
     pub next_offset: Option<u32>,
     pub batch_size: u32,
 }
 
-impl<T> Pagination<T>
-where
-    T: Clone,
-{
+impl<T> Pagination<T> {
     fn new(data: T, batch_size: u32) -> Self {
         Self {
             data,
@@ -164,7 +155,6 @@ where
     }
 }
 
-#[derive(Clone)]
 pub struct ArtistState {
     pub name: ScreenName,
     pub artist: Option<String>,
@@ -221,7 +211,6 @@ impl UpdatableState for ArtistState {
     }
 }
 
-#[derive(Clone)]
 pub struct HomeState {
     pub name: ScreenName,
     pub next_albums_page: Pagination<()>,
@@ -327,7 +316,6 @@ impl UpdatableState for HomeState {
     }
 }
 
-#[derive(Clone)]
 pub struct SearchState {
     pub name: ScreenName,
     pub query: String,
