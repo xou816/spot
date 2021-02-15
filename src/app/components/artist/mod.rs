@@ -1,4 +1,3 @@
-use futures::executor::block_on;
 use gladis::Gladis;
 use gtk::prelude::*;
 use gtk::ButtonExt;
@@ -7,6 +6,7 @@ use libhandy::AvatarExt;
 use crate::app::components::Component;
 use crate::app::loader::ImageLoader;
 use crate::app::models::ArtistModel;
+use crate::app::Worker;
 
 #[derive(Gladis, Clone)]
 struct ArtistWidget {
@@ -28,17 +28,19 @@ pub struct Artist {
 }
 
 impl Artist {
-    pub fn new(artist_model: &ArtistModel) -> Self {
+    pub fn new(artist_model: &ArtistModel, worker: Worker) -> Self {
         let widget = ArtistWidget::new();
 
-        let url = artist_model.image_url();
-        widget.avatar.set_image_load_func(Some(Box::new(move |_| {
-            let url = url.as_ref()?;
-            block_on(async move {
-                let loader = ImageLoader::new();
-                loader.load_remote(url, "jpg", 200, 200).await
-            })
-        })));
+        if let Some(url) = artist_model.image_url() {
+            let avatar = widget.avatar.downgrade();
+            worker.send_local_task(async move {
+                if let Some(avatar) = avatar.upgrade() {
+                    let loader = ImageLoader::new();
+                    let pixbuf = loader.load_remote(&url, "jpg", 200, 200).await;
+                    avatar.set_image_load_func(Some(Box::new(move |_| pixbuf.clone())));
+                }
+            });
+        }
 
         artist_model
             .bind_property("artist", &widget.artist, "label")
