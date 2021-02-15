@@ -188,9 +188,11 @@ fn player_end_of_track_event(
 ) -> impl OldFuture<Item = (), Error = ()> {
     player
         .get_player_event_channel()
-        .filter(|event| match event {
-            PlayerEvent::EndOfTrack { .. } | PlayerEvent::Stopped { .. } => true,
-            _ => false,
+        .filter(|event| {
+            matches!(
+                event,
+                PlayerEvent::EndOfTrack { .. } | PlayerEvent::Stopped { .. }
+            )
         })
         .for_each(move |_| {
             delegate.upgrade().ok_or(())?.end_of_track_reached();

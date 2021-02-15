@@ -571,7 +571,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
 
             let albums = results
                 .albums
-                .unwrap_or(Page::empty())
+                .unwrap_or_else(Page::empty)
                 .items
                 .into_iter()
                 .map(|saved| saved.into())
@@ -579,7 +579,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
 
             let artists = results
                 .artists
-                .unwrap_or(Page::empty())
+                .unwrap_or_else(Page::empty)
                 .items
                 .into_iter()
                 .map(|saved| saved.into())

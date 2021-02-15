@@ -265,8 +265,7 @@ impl UpdatableState for HomeState {
                 let already_present = self
                     .albums
                     .iter()
-                    .find(|a| a.uri().as_ref() == Some(&album_id))
-                    .is_some();
+                    .any(|a| a.uri().as_ref() == Some(&album_id));
                 if already_present {
                     vec![]
                 } else {

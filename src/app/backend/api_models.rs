@@ -272,10 +272,8 @@ impl Into<Vec<SongDescription>> for Album {
         let art = self.best_image_for_width(200).unwrap().url.clone();
         let items = self.tracks.unwrap_or_default().items;
 
-        let album_ref = AlbumRef {
-            id: self.id.clone(),
-            name: self.name.clone(),
-        };
+        let Album { id, name, .. } = self;
+        let album_ref = AlbumRef { id, name };
 
         items
             .into_iter()

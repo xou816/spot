@@ -93,11 +93,8 @@ impl App {
             builder.get_object("home_stack_sidebar").unwrap();
 
         let model = NavigationModel::new(Rc::clone(&app_model), dispatcher.box_clone());
-        let screen_factory = ScreenFactory::new(
-            Rc::clone(&app_model),
-            dispatcher.box_clone(),
-            worker.clone(),
-        );
+        let screen_factory =
+            ScreenFactory::new(Rc::clone(&app_model), dispatcher.box_clone(), worker);
         Box::new(Navigation::new(
             model,
             leaflet,

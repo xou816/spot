@@ -6,7 +6,6 @@ extern crate lazy_static;
 use gio::prelude::*;
 use gtk::prelude::*;
 use gtk::SettingsExt;
-use libhandy;
 
 mod app;
 mod config;

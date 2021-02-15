@@ -135,7 +135,7 @@ impl CacheManager {
     pub async fn set_expiry_for(&self, resource: &str, expiry: Duration) -> io::Result<()> {
         let meta_file = self
             .cache_meta_path(resource)
-            .ok_or(io::Error::from(io::ErrorKind::NotFound))?;
+            .ok_or_else(|| io::Error::from(io::ErrorKind::NotFound))?;
         self.set_expiry_for_path(&meta_file, expiry).await
     }
 
@@ -146,7 +146,7 @@ impl CacheManager {
     pub async fn set_expired_pattern(&self, dir: &str, regex: &Regex) -> io::Result<()> {
         let dir_path = self
             .cache_path(dir)
-            .ok_or(io::Error::from(io::ErrorKind::NotFound))?;
+            .ok_or_else(|| io::Error::from(io::ErrorKind::NotFound))?;
 
         let mut entries = fs::read_dir(dir_path).await?;
         while let Some(Ok(entry)) = entries.next().await {
@@ -172,7 +172,7 @@ impl CacheManager {
     ) -> io::Result<()> {
         let file = self
             .cache_path(resource)
-            .ok_or(io::Error::from(io::ErrorKind::NotFound))?;
+            .ok_or_else(|| io::Error::from(io::ErrorKind::NotFound))?;
         fs::write(&file, content).await?;
 
         if let CacheExpiry::AtUnixTimestamp(ts) = expiry {
