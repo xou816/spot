@@ -34,6 +34,13 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.1.7" date="2021-02-15">
+      <description>
+        <p>
+          Hotfix for a crash in search results
+        </p>
+      </description>
+    </release>
     <release version="0.1.6" date="2021-02-15">
       <description>
         <p>
