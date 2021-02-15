@@ -34,6 +34,17 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.1.6" date="2021-02-15">
+      <description>
+        <p>
+          New features:
+        </p>
+        <ul>
+          <li>search results now include artists</li>
+          <li>albums can be saved and unsaved from the library</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.5" date="2021-02-11">
       <description>
         <p>
