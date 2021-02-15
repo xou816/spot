@@ -57,7 +57,7 @@ fn setup_gtk() {
 
     gtk::Settings::get_default()
         .unwrap()
-        .set_property_gtk_application_prefer_dark_theme(false);
+        .set_property_gtk_application_prefer_dark_theme(true);
 }
 
 fn make_window(builder: &gtk::Builder) -> libhandy::ApplicationWindow {
