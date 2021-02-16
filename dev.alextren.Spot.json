@@ -19,10 +19,11 @@
     "build-options" : {
         "append-path" : "/usr/lib/sdk/rust-stable/bin",
         "env" : {
+            "CARGO_HOME" : "/run/build/spot/cargo",
             "RUST_BACKTRACE" : "full",
-            "RUST_LOG" : "spot=debug",
-            "CARGO_HOME" : "/run/build/spot/cargo"
-        }
+            "RUST_LOG" : "spot=debug"
+        },
+        "strip": false
     },
     "cleanup" : [
         "/include",
