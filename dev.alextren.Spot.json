@@ -23,7 +23,8 @@
             "RUST_BACKTRACE" : "full",
             "RUST_LOG" : "spot=debug"
         },
-        "strip": false
+        "strip": false,
+        "no-debuginfo": true
     },
     "cleanup" : [
         "/include",
