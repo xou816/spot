@@ -21,6 +21,9 @@
             <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="label" translatable="yes">Search results</property>
+            <property name="wrap">True</property>
+            <property name="ellipsize">start</property>
+            <property name="lines">2</property>
             <style>
               <class name="large-title"/>
             </style>
