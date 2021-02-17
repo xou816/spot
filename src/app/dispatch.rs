@@ -92,8 +92,8 @@ pub fn spawn_task_handler(context: &glib::MainContext) -> Worker {
 
     let (future_sender, future_receiver) = unbounded::<FutureTask>();
     context.spawn_with_priority(
-        glib::source::PRIORITY_HIGH,
-        future_receiver.for_each_concurrent(2, |t| t),
+        glib::source::PRIORITY_DEFAULT_IDLE,
+        future_receiver.for_each(|t| t),
     );
 
     Worker(RefCell::new(InternalWorker(
