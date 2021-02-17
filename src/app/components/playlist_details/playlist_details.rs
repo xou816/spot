@@ -57,18 +57,19 @@ impl PlaylistDetails {
     fn update_details(&self) {
         if let Some(info) = self.model.get_playlist_info() {
             let title = &info.title[..];
-            let art = info.art.clone();
 
             self.widget.name_label.set_label(title);
 
             let widget = self.widget.clone();
-            self.worker.send_local_task(async move {
-                let pixbuf = ImageLoader::new()
-                    .load_remote(&art[..], "jpg", 100, 100)
-                    .await;
-                widget.art.set_from_pixbuf(pixbuf.as_ref());
-                widget.set_loaded();
-            });
+            if let Some(art) = info.art.clone() {
+                self.worker.send_local_task(async move {
+                    let pixbuf = ImageLoader::new()
+                        .load_remote(&art[..], "jpg", 100, 100)
+                        .await;
+                    widget.art.set_from_pixbuf(pixbuf.as_ref());
+                    widget.set_loaded();
+                });
+            }
         }
     }
 }

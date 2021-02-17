@@ -43,6 +43,8 @@ impl Album {
                     revealer.set_reveal_child(true);
                 }
             });
+        } else {
+            widget.revealer.set_reveal_child(true);
         }
 
         album_model

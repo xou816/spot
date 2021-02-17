@@ -76,7 +76,6 @@ impl Details {
         if let Some(info) = self.model.get_album_info() {
             let album = &info.title[..];
             let artist = &info.artists_name();
-            let art = info.art.clone();
 
             self.widget.album_label.set_label(album);
             self.widget.artist_button.set_label(artist);
@@ -90,13 +89,15 @@ impl Details {
             });
 
             let widget = self.widget.clone();
-            self.worker.send_local_task(async move {
-                let pixbuf = ImageLoader::new()
-                    .load_remote(&art[..], "jpg", 100, 100)
-                    .await;
-                widget.album_art.set_from_pixbuf(pixbuf.as_ref());
-                widget.set_loaded();
-            });
+            if let Some(art) = info.art.clone() {
+                self.worker.send_local_task(async move {
+                    let pixbuf = ImageLoader::new()
+                        .load_remote(&art[..], "jpg", 100, 100)
+                        .await;
+                    widget.album_art.set_from_pixbuf(pixbuf.as_ref());
+                    widget.set_loaded();
+                });
+            }
         }
     }
 }

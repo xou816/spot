@@ -59,7 +59,7 @@ pub struct AlbumDescription {
     pub id: String,
     pub title: String,
     pub artists: Vec<ArtistRef>,
-    pub art: String,
+    pub art: Option<String>,
     pub songs: Vec<SongDescription>,
     pub is_liked: bool,
 }
@@ -86,7 +86,7 @@ impl Eq for AlbumDescription {}
 pub struct PlaylistDescription {
     pub id: String,
     pub title: String,
-    pub art: String,
+    pub art: Option<String>,
     pub songs: Vec<SongDescription>,
     pub owner: UserRef,
 }

@@ -377,7 +377,7 @@ mod tests {
             id: "".to_owned(),
             title: "".to_owned(),
             artists: vec![],
-            art: "".to_owned(),
+            art: Some("".to_owned()),
             songs: vec![],
             is_liked: false,
         };

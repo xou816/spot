@@ -27,16 +27,18 @@
             <property name="transition-type">crossfade</property>
             <child>
               <object class="GtkButton" id="cover_btn">
+                <property name="width-request">200</property>
+                <property name="height-request">200</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <property name="relief">none</property>
                 <child>
                   <object class="GtkImage" id="cover_image">
-                    <property name="width-request">200</property>
-                    <property name="height-request">200</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
                     <property name="icon-name">media-playback-start-symbolic</property>
                   </object>
                 </child>

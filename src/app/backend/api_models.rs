@@ -311,7 +311,7 @@ impl Into<AlbumDescription> for Album {
             })
             .collect::<Vec<ArtistRef>>();
         let songs: Vec<SongDescription> = self.clone().into();
-        let art = self.best_image_for_width(200).unwrap().url.clone();
+        let art = self.best_image_for_width(200).map(|i| i.url.clone());
 
         AlbumDescription {
             id: self.id,
@@ -326,7 +326,7 @@ impl Into<AlbumDescription> for Album {
 
 impl Into<PlaylistDescription> for Playlist {
     fn into(self) -> PlaylistDescription {
-        let art = self.best_image_for_width(200).unwrap().url.clone();
+        let art = self.best_image_for_width(200).map(|i| i.url.clone());
         let PlaylistOwner { id, display_name } = self.owner;
         PlaylistDescription {
             id: self.id,
@@ -341,7 +341,7 @@ impl Into<PlaylistDescription> for Playlist {
 impl Into<PlaylistDescription> for DetailedPlaylist {
     fn into(self) -> PlaylistDescription {
         let songs: Vec<SongDescription> = self.clone().into();
-        let art = self.best_image_for_width(200).unwrap().url.clone();
+        let art = self.best_image_for_width(200).map(|i| i.url.clone());
         let PlaylistOwner { id, display_name } = self.owner;
         PlaylistDescription {
             id: self.id,

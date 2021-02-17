@@ -15,13 +15,13 @@ glib_wrapper! {
 // Constructor for new instances. This simply calls glib::Object::new() with
 // initial values for our two properties and then returns the new instance
 impl AlbumModel {
-    pub fn new(artist: &str, album: &str, cover: &str, uri: &str) -> AlbumModel {
+    pub fn new(artist: &str, album: &str, cover: &Option<String>, uri: &str) -> AlbumModel {
         glib::Object::new(
             Self::static_type(),
             &[
                 ("artist", &artist),
                 ("album", &album),
-                ("cover", &cover),
+                ("cover", cover),
                 ("uri", &uri),
             ],
         )
