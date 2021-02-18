@@ -116,7 +116,7 @@ impl WithImages for DetailedPlaylist {
 #[derive(Deserialize, Debug, Clone)]
 pub struct PlaylistTrack {
     pub is_local: bool,
-    pub track: TrackItem,
+    pub track: Option<TrackItem>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -208,8 +208,7 @@ impl Into<Vec<SongDescription>> for DetailedPlaylist {
             .tracks
             .items
             .into_iter()
-            .filter(|t| !t.is_local)
-            .map(|item| item.track)
+            .filter_map(|PlaylistTrack { is_local, track }| track.filter(|_| !is_local))
             .collect::<Vec<TrackItem>>();
         Tracks { items }.into()
     }
