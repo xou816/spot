@@ -118,6 +118,19 @@
     },
     {
         "type": "file",
+        "url": "https://static.crates.io/crates/alsa/alsa-0.2.2.crate",
+        "sha256": "b4a0d4ebc8b23041c5de9bc9aee13b4bad844a589479701f31a5934cfe4aeb32",
+        "dest": "cargo/vendor",
+        "dest-filename": "alsa-0.2.2.crate"
+    },
+    {
+        "type": "file",
+        "url": "data:%7B%22package%22%3A%20%22b4a0d4ebc8b23041c5de9bc9aee13b4bad844a589479701f31a5934cfe4aeb32%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/alsa-0.2.2",
+        "dest-filename": ".cargo-checksum.json"
+    },
+    {
+        "type": "file",
         "url": "https://static.crates.io/crates/alsa-sys/alsa-sys-0.1.2.crate",
         "sha256": "b0edcbbf9ef68f15ae1b620f722180b82a98b6f0628d30baa6b8d2a5abc87d58",
         "dest": "cargo/vendor",
@@ -413,6 +426,19 @@
         "type": "file",
         "url": "data:%7B%22package%22%3A%20%22f59bbe95d4e52a6398ec21238d31577f2b28a9d86807f06ca59d191d8440d0bb%22%2C%20%22files%22%3A%20%7B%7D%7D",
         "dest": "cargo/vendor/bit-vec-0.5.1",
+        "dest-filename": ".cargo-checksum.json"
+    },
+    {
+        "type": "file",
+        "url": "https://static.crates.io/crates/bitflags/bitflags-0.9.1.crate",
+        "sha256": "4efd02e230a02e18f92fc2735f44597385ed02ad8f831e7c1c1156ee5e1ab3a5",
+        "dest": "cargo/vendor",
+        "dest-filename": "bitflags-0.9.1.crate"
+    },
+    {
+        "type": "file",
+        "url": "data:%7B%22package%22%3A%20%224efd02e230a02e18f92fc2735f44597385ed02ad8f831e7c1c1156ee5e1ab3a5%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/bitflags-0.9.1",
         "dest-filename": ".cargo-checksum.json"
     },
     {
@@ -2507,6 +2533,19 @@
         "type": "file",
         "url": "data:%7B%22package%22%3A%20%2242550d9fb7b6684a6d404d9fa7250c2eb2646df731d1c06afc06dcee9e1bcf88%22%2C%20%22files%22%3A%20%7B%7D%7D",
         "dest": "cargo/vendor/net2-0.2.33",
+        "dest-filename": ".cargo-checksum.json"
+    },
+    {
+        "type": "file",
+        "url": "https://static.crates.io/crates/nix/nix-0.9.0.crate",
+        "sha256": "a2c5afeb0198ec7be8569d666644b574345aad2e95a53baf3a532da3e0f3fb32",
+        "dest": "cargo/vendor",
+        "dest-filename": "nix-0.9.0.crate"
+    },
+    {
+        "type": "file",
+        "url": "data:%7B%22package%22%3A%20%22a2c5afeb0198ec7be8569d666644b574345aad2e95a53baf3a532da3e0f3fb32%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/nix-0.9.0",
         "dest-filename": ".cargo-checksum.json"
     },
     {

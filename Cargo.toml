@@ -22,8 +22,7 @@ features = ["v2_60"]
 
 [dependencies.librespot]
 version = "0.1.3"
-features = ["pulseaudio-backend"]
-#path = "../librespot"
+features = ["alsa-backend", "pulseaudio-backend"]
 
 [dependencies.protobuf]
 version = "2.8.1"

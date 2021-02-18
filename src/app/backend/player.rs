@@ -176,7 +176,8 @@ async fn create_session(
 }
 
 fn create_player(session: Session) -> Player {
-    let backend = audio_backend::find(None).unwrap();
+    let preferred = std::env::var("AUDIO_BACKEND").unwrap_or_else(|_| "pulseaudio".to_string());
+    let backend = audio_backend::find(Some(preferred)).unwrap();
     let player_config = PlayerConfig::default();
     let (new_player, _) = Player::new(player_config, session, None, move || backend(None));
     new_player
