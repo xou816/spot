@@ -32,11 +32,9 @@ impl UserMenu {
                 gtk::Inhibit(true)
             }),
         );
-        about.connect_response(
-            clone!(@weak about => @default-return (), move |_, _| {
-                about.hide();
-            }),
-        );
+        about.connect_response(clone!(@weak about => @default-return (), move |_, _| {
+            about.hide();
+        }));
 
         let action_group = SimpleActionGroup::new();
 
