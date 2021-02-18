@@ -27,7 +27,8 @@ impl DetailsModel {
             .map_state_opt(|s| s.browser_state.details_state()?.content.as_ref())
     }
 
-    pub fn load_album_info(&self, id: String) {
+    pub fn load_album_info(&self, id: &str) {
+        let id = id.to_owned();
         let api = self.app_model.get_spotify();
         self.dispatcher.dispatch_async(Box::pin(async move {
             match api.get_album(&id).await {
@@ -102,7 +103,7 @@ impl PlaylistModel for DetailsModel {
     fn should_refresh_songs(&self, event: &AppEvent) -> bool {
         matches!(
             event,
-            AppEvent::BrowserEvent(BrowserEvent::AlbumDetailsLoaded)
+            AppEvent::BrowserEvent(BrowserEvent::AlbumDetailsLoaded(_))
         )
     }
 

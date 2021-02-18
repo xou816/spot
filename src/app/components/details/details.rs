@@ -33,6 +33,7 @@ impl DetailsWidget {
 }
 
 pub struct Details {
+    id: String,
     model: Rc<DetailsModel>,
     worker: Worker,
     widget: DetailsWidget,
@@ -42,7 +43,7 @@ pub struct Details {
 impl Details {
     pub fn new(id: String, model: DetailsModel, worker: Worker) -> Self {
         if model.get_album_info().is_none() {
-            model.load_album_info(id);
+            model.load_album_info(&id);
         }
 
         let model = Rc::new(model);
@@ -56,6 +57,7 @@ impl Details {
             }));
 
         Self {
+            id,
             model,
             worker,
             widget,
@@ -117,12 +119,14 @@ impl Component for Details {
 impl EventListener for Details {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::BrowserEvent(BrowserEvent::AlbumDetailsLoaded) => {
+            AppEvent::BrowserEvent(BrowserEvent::AlbumDetailsLoaded(id)) if *id == self.id => {
                 self.update_details();
                 self.update_liked();
             }
-            AppEvent::BrowserEvent(BrowserEvent::AlbumSaved(_))
-            | AppEvent::BrowserEvent(BrowserEvent::AlbumUnsaved(_)) => {
+            AppEvent::BrowserEvent(BrowserEvent::AlbumSaved(id))
+            | AppEvent::BrowserEvent(BrowserEvent::AlbumUnsaved(id))
+                if *id == self.id =>
+            {
                 self.update_liked();
             }
             _ => {}

@@ -36,7 +36,7 @@ impl Into<AppAction> for BrowserAction {
 pub enum BrowserEvent {
     LibraryUpdated,
     SavedPlaylistsUpdated,
-    AlbumDetailsLoaded,
+    AlbumDetailsLoaded(String),
     PlaylistDetailsLoaded,
     SearchUpdated,
     SearchResultsUpdated,
