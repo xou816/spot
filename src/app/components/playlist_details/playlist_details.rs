@@ -69,6 +69,8 @@ impl PlaylistDetails {
                     widget.art.set_from_pixbuf(pixbuf.as_ref());
                     widget.set_loaded();
                 });
+            } else {
+                widget.set_loaded();
             }
         }
     }
