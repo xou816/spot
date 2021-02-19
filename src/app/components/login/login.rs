@@ -29,9 +29,9 @@ fn handle_keypress(
         KEY_RETURN => {
             let username_text = username.get_text().as_str().to_string();
             let password_text = password.get_text().as_str().to_string();
-            if username_text.len() == 0 {
+            if username_text.is_empty() {
                 username.grab_focus();
-            } else if password_text.len() == 0 {
+            } else if password_text.is_empty() {
                 password.grab_focus();
             } else {
                 model.login(username_text, password_text);
