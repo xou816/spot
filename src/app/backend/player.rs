@@ -177,9 +177,10 @@ async fn create_session(
 
 fn create_player(session: Session) -> Player {
     let preferred = std::env::var("AUDIO_BACKEND").unwrap_or_else(|_| "pulseaudio".to_string());
+    let alsa_device = std::env::var("ALSA_DEVICE").ok();
     let backend = audio_backend::find(Some(preferred)).unwrap();
     let player_config = PlayerConfig::default();
-    let (new_player, _) = Player::new(player_config, session, None, move || backend(None));
+    let (new_player, _) = Player::new(player_config, session, None, move || backend(alsa_device));
     new_player
 }
 
