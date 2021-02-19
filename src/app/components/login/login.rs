@@ -1,8 +1,8 @@
+use gdk::EventKey;
 use gio::ApplicationExt;
+use glib::translate::ToGlib;
 use gtk::prelude::*;
 use gtk::{EntryExt, GtkWindowExt, WidgetExt};
-use gdk::EventKey;
-use glib::translate::ToGlib;
 use std::rc::Rc;
 
 use crate::app::components::EventListener;
@@ -19,22 +19,27 @@ pub struct Login {
     model: Rc<LoginModel>,
 }
 
-fn handle_keypress(username: gtk::Entry, password: gtk::Entry, model: Rc<LoginModel>, event: &EventKey) -> Inhibit {
+fn handle_keypress(
+    username: gtk::Entry,
+    password: gtk::Entry,
+    model: Rc<LoginModel>,
+    event: &EventKey
+) -> Inhibit {
     match event.get_keyval().to_glib() {
-    KEY_RETURN => {
-        let username_text = username.get_text().as_str().to_string();
-        let password_text = password.get_text().as_str().to_string();
-        if username_text.len() == 0 {
-            username.grab_focus();
-        } else if password_text.len() == 0 {
-            password.grab_focus();
-        } else {
-            model.login(username_text, password_text);
-        }
-        gtk::Inhibit(true)
-    },
-    _ => gtk::Inhibit(false),
-}
+        KEY_RETURN => {
+            let username_text = username.get_text().as_str().to_string();
+            let password_text = password.get_text().as_str().to_string();
+            if username_text.len() == 0 {
+                username.grab_focus();
+            } else if password_text.len() == 0 {
+                password.grab_focus();
+            } else {
+                model.login(username_text, password_text);
+            }
+            gtk::Inhibit(true)
+        },
+        _ => gtk::Inhibit(false),
+    }
 }
 
 impl Login {
