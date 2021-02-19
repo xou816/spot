@@ -2054,43 +2054,29 @@
         "dest-filename": ".cargo-checksum.json"
     },
     {
-        "type": "git",
-        "url": "https://gitlab.gnome.org/World/Rust/libhandy-rs",
-        "commit": "abb3c6b61beacca09f291b0e29d8b78d7588e545",
-        "dest": "cargo/vendor/libhandy"
-    },
-    {
-        "type": "shell",
-        "commands": [
-            "mv cargo/vendor/libhandy cargo/vendor/libhandy.repo",
-            "mv cargo/vendor/libhandy.repo/libhandy cargo/vendor/libhandy",
-            "rm -rf cargo/vendor/libhandy.repo"
-        ]
+        "type": "file",
+        "url": "https://static.crates.io/crates/libhandy/libhandy-0.7.1.crate",
+        "sha256": "d776bf5b92993b8006688652cda2683261317dcc82bb4d91d3996bda2f7019e0",
+        "dest": "cargo/vendor",
+        "dest-filename": "libhandy-0.7.1.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20null%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/libhandy",
+        "url": "data:%7B%22package%22%3A%20%22d776bf5b92993b8006688652cda2683261317dcc82bb4d91d3996bda2f7019e0%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/libhandy-0.7.1",
         "dest-filename": ".cargo-checksum.json"
     },
     {
-        "type": "git",
-        "url": "https://gitlab.gnome.org/World/Rust/libhandy-rs",
-        "commit": "abb3c6b61beacca09f291b0e29d8b78d7588e545",
-        "dest": "cargo/vendor/libhandy-sys"
-    },
-    {
-        "type": "shell",
-        "commands": [
-            "mv cargo/vendor/libhandy-sys cargo/vendor/libhandy-sys.repo",
-            "mv cargo/vendor/libhandy-sys.repo/libhandy-sys cargo/vendor/libhandy-sys",
-            "rm -rf cargo/vendor/libhandy-sys.repo"
-        ]
+        "type": "file",
+        "url": "https://static.crates.io/crates/libhandy-sys/libhandy-sys-0.7.0.crate",
+        "sha256": "0017044b92ade6704a301212feea9e754be62f58d39d01aae8fcf2c1a982e3d9",
+        "dest": "cargo/vendor",
+        "dest-filename": "libhandy-sys-0.7.0.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20null%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/libhandy-sys",
+        "url": "data:%7B%22package%22%3A%20%220017044b92ade6704a301212feea9e754be62f58d39d01aae8fcf2c1a982e3d9%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/libhandy-sys-0.7.0",
         "dest-filename": ".cargo-checksum.json"
     },
     {
@@ -5053,7 +5039,7 @@
     },
     {
         "type": "file",
-        "url": "data:%5Bsource.vendored-sources%5D%0Adirectory%20%3D%20%22cargo/vendor%22%0A%0A%5Bsource.crates-io%5D%0Areplace-with%20%3D%20%22vendored-sources%22%0A%0A%5Bsource.%22https%3A//gitlab.gnome.org/World/Rust/libhandy-rs%22%5D%0Agit%20%3D%20%22https%3A//gitlab.gnome.org/World/Rust/libhandy-rs%22%0Areplace-with%20%3D%20%22vendored-sources%22%0Abranch%20%3D%20%22master%22%0A",
+        "url": "data:%5Bsource.vendored-sources%5D%0Adirectory%20%3D%20%22cargo/vendor%22%0A%0A%5Bsource.crates-io%5D%0Areplace-with%20%3D%20%22vendored-sources%22%0A",
         "dest": "cargo",
         "dest-filename": "config"
     }

@@ -1662,7 +1662,8 @@ checksum = "1482821306169ec4d07f6aca392a4681f66c75c9918aa49641a2595db64053cb"
 [[package]]
 name = "libhandy"
 version = "0.7.1"
-source = "git+https://gitlab.gnome.org/World/Rust/libhandy-rs#abb3c6b61beacca09f291b0e29d8b78d7588e545"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d776bf5b92993b8006688652cda2683261317dcc82bb4d91d3996bda2f7019e0"
 dependencies = [
  "bitflags 1.2.1",
  "gdk",
@@ -1685,7 +1686,8 @@ dependencies = [
 [[package]]
 name = "libhandy-sys"
 version = "0.7.0"
-source = "git+https://gitlab.gnome.org/World/Rust/libhandy-rs#abb3c6b61beacca09f291b0e29d8b78d7588e545"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0017044b92ade6704a301212feea9e754be62f58d39d01aae8fcf2c1a982e3d9"
 dependencies = [
  "gdk",
  "gdk-pixbuf-sys",

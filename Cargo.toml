@@ -56,7 +56,7 @@ features = ["small_rng"]
 [dependencies]
 secret-service = "^2.0.1"
 gdk-pixbuf = "^0.9.0"
-libhandy = { git = "https://gitlab.gnome.org/World/Rust/libhandy-rs" }
+libhandy = "^0.7.1"
 gladis = "^0.4.0"
 ref_filter_map = "^1.0.1"
 regex = "^1.4.3"
