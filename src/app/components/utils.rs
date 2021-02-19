@@ -33,6 +33,7 @@ impl Clock {
     }
 }
 
+#[derive(Clone)]
 pub struct Debouncer(Rc<Cell<Option<glib::source::SourceId>>>);
 
 impl Debouncer {

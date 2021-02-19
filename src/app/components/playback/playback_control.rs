@@ -4,7 +4,10 @@ use gtk::{BinExt, ImageExt, LabelExt, RangeExt, ScaleExt};
 use std::ops::Deref;
 use std::rc::Rc;
 
-use crate::app::components::{utils::Clock, EventListener};
+use crate::app::components::{
+    utils::{Clock, Debouncer},
+    EventListener,
+};
 use crate::app::AppEvent;
 use crate::app::{ActionDispatcher, AppAction, AppModel, AppState};
 
@@ -87,6 +90,7 @@ impl PlaybackControlWidget {
 pub struct PlaybackControl {
     model: Rc<PlaybackControlModel>,
     widget: PlaybackControlWidget,
+    _debouncer: Debouncer,
     clock: Clock,
 }
 
@@ -98,9 +102,13 @@ impl PlaybackControl {
             .seek_bar
             .connect_format_value(|_, value| Self::format_duration(value));
 
+        let debouncer = Debouncer::new();
+        let debouncer_clone = debouncer.clone();
         widget.seek_bar.connect_change_value(
             clone!(@weak model => @default-return signal::Inhibit(false), move |_, _, requested| {
-                model.seek_to(requested as u32);
+                debouncer_clone.debounce(200, move || {
+                    model.seek_to(requested as u32);
+                });
                 signal::Inhibit(false)
             }),
         );
@@ -128,6 +136,7 @@ impl PlaybackControl {
         Self {
             model,
             widget,
+            _debouncer: debouncer,
             clock: Clock::new(),
         }
     }
