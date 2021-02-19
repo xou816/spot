@@ -479,7 +479,8 @@
     <property name="website">https://github.com/xou816/spot</property>
     <property name="authors">Alexandre Trendel
 Gabriele Musco
-Alistair Francis</property>
+Alistair Francis
+Douile</property>
     <property name="logo-icon-name">dev.alextren.Spot</property>
     <property name="license-type">mit-x11</property>
     <child internal-child="vbox">
