@@ -23,7 +23,7 @@ fn handle_keypress(
     username: gtk::Entry,
     password: gtk::Entry,
     model: Rc<LoginModel>,
-    event: &EventKey
+    event: &EventKey,
 ) -> Inhibit {
     match event.get_keyval().to_glib() {
         KEY_RETURN => {
@@ -37,7 +37,7 @@ fn handle_keypress(
                 model.login(username_text, password_text);
             }
             gtk::Inhibit(true)
-        },
+        }
         _ => gtk::Inhibit(false),
     }
 }
