@@ -27,7 +27,7 @@ impl UserMenu {
             }),
         );
 
-        about.connect_response(clone!(@weak about => @default-return (), move |_, _| {
+        about.connect_response(clone!(@weak about => move |_, _| {
             about.hide();
         }));
 
