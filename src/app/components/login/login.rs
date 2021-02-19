@@ -1,6 +1,8 @@
 use gio::ApplicationExt;
 use gtk::prelude::*;
 use gtk::{EntryExt, GtkWindowExt, WidgetExt};
+use gdk::EventKey;
+use glib::translate::ToGlib;
 use std::rc::Rc;
 
 use crate::app::components::EventListener;
@@ -9,10 +11,30 @@ use crate::app::AppEvent;
 
 use super::LoginModel;
 
+const KEY_RETURN: u32 = 65293;
+
 pub struct Login {
     dialog: gtk::Dialog,
     parent: gtk::Window,
     model: Rc<LoginModel>,
+}
+
+fn handle_keypress(username: gtk::Entry, password: gtk::Entry, model: Rc<LoginModel>, event: &EventKey) -> Inhibit {
+    match event.get_keyval().to_glib() {
+    KEY_RETURN => {
+        let username_text = username.get_text().as_str().to_string();
+        let password_text = password.get_text().as_str().to_string();
+        if username_text.len() == 0 {
+            username.grab_focus();
+        } else if password_text.len() == 0 {
+            password.grab_focus();
+        } else {
+            model.login(username_text, password_text);
+        }
+        gtk::Inhibit(true)
+    },
+    _ => gtk::Inhibit(false),
+}
 }
 
 impl Login {
@@ -30,6 +52,16 @@ impl Login {
                 let username = username.get_text().as_str().to_string();
                 let password = password.get_text().as_str().to_string();
                 model.login(username, password);
+            }),
+        );
+        username.connect_key_press_event(
+            clone!(@weak username, @weak password, @weak model => @default-return gtk::Inhibit(false), move |_, event | {
+                handle_keypress(username, password, model, event)
+            }),
+        );
+        password.connect_key_press_event(
+            clone!(@weak username, @weak password, @weak model => @default-return gtk::Inhibit(false), move |_, event | {
+                handle_keypress(username, password, model, event)
             }),
         );
 
