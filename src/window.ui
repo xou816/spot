@@ -349,7 +349,7 @@
                 <child>
                   <object class="GtkToggleButton" id="shuffle">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
+                    <property name="can-focus">True</property>
                     <property name="receives-default">False</property>
                     <property name="halign">end</property>
                     <property name="valign">center</property>
@@ -512,7 +512,7 @@ Douile</property>
     </child>
   </object>
   <object class="GtkDialog" id="login">
-    <property name="can-focus">True</property>
+    <property name="can-focus">False</property>
     <property name="title" translatable="yes">Spot</property>
     <property name="modal">True</property>
     <property name="window-position">center-on-parent</property>
@@ -522,7 +522,7 @@ Douile</property>
     <property name="transient-for">window</property>
     <child internal-child="vbox">
       <object class="GtkBox">
-        <property name="can-focus">True</property>
+        <property name="can-focus">False</property>
         <property name="margin-start">8</property>
         <property name="margin-end">8</property>
         <property name="margin-top">8</property>
