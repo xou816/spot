@@ -36,9 +36,9 @@ fn handle_keypress(
             } else {
                 model.login(username_text, password_text);
             }
-            gtk::Inhibit(true)
+            Inhibit(true)
         }
-        _ => gtk::Inhibit(false),
+        _ => Inhibit(false),
     }
 }
 
@@ -60,22 +60,22 @@ impl Login {
             }),
         );
         username.connect_key_press_event(
-            clone!(@weak username, @weak password, @weak model => @default-return gtk::Inhibit(false), move |_, event | {
+            clone!(@weak username, @weak password, @weak model => @default-return Inhibit(false), move |_, event | {
                 handle_keypress(username, password, model, event)
             }),
         );
         password.connect_key_press_event(
-            clone!(@weak username, @weak password, @weak model => @default-return gtk::Inhibit(false), move |_, event | {
+            clone!(@weak username, @weak password, @weak model => @default-return Inhibit(false), move |_, event | {
                 handle_keypress(username, password, model, event)
             }),
         );
 
         dialog.connect_delete_event(
-            clone!(@weak parent => @default-return gtk::Inhibit(false), move |_, _| {
+            clone!(@weak parent => @default-return Inhibit(false), move |_, _| {
                 if let Some(app) = parent.get_application().as_ref() {
                     app.quit();
                 }
-                gtk::Inhibit(true)
+                Inhibit(true)
             }),
         );
 
