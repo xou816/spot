@@ -1,5 +1,5 @@
 use gio::{ActionMapExt, SimpleAction, SimpleActionGroup};
-use gtk::{AboutDialogExt, MenuButtonExt, WidgetExt};
+use gtk::{AboutDialogExt, DialogExt, MenuButtonExt, WidgetExt};
 use std::rc::Rc;
 
 use super::UserMenuModel;
@@ -26,12 +26,10 @@ impl UserMenu {
                 gtk::Inhibit(true)
             }),
         );
-        about.connect_destroy_event(
-            clone!(@weak about => @default-return gtk::Inhibit(false), move |_, _| {
-                about.hide();
-                gtk::Inhibit(true)
-            }),
-        );
+
+        about.connect_response(clone!(@weak about => move |_, _| {
+            about.hide();
+        }));
 
         let action_group = SimpleActionGroup::new();
 
