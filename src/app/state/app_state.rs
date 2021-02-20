@@ -12,6 +12,7 @@ pub enum AppAction {
     Load(String),
     LoadPlaylist(Vec<SongDescription>),
     Start,
+    Raise,
     TryLogin(String, String),
     RefreshToken,
     SetRefreshedToken(String),
@@ -45,6 +46,7 @@ impl AppAction {
 #[derive(Clone, Debug)]
 pub enum AppEvent {
     Started,
+    Raised,
     TrackPaused,
     TrackResumed,
     TrackSeeked(u32),
@@ -209,6 +211,7 @@ impl AppState {
             AppAction::ShowNotification(c) => vec![AppEvent::NotificationShown(c)],
             AppAction::HideNotification => vec![AppEvent::NotificationHidden],
             AppAction::ViewNowPlaying => vec![AppEvent::NowPlayingShown],
+            AppAction::Raise => vec![AppEvent::Raised],
         }
     }
 

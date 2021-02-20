@@ -57,6 +57,9 @@ pub use saved_playlists::*;
 mod playlist_details;
 pub use playlist_details::*;
 
+mod window;
+pub use window::*;
+
 mod utils;
 
 pub fn handle_error(err: SpotifyApiError) -> Option<AppAction> {
