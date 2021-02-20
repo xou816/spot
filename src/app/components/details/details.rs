@@ -18,6 +18,7 @@ struct DetailsWidget {
     pub album_art: gtk::Image,
     pub like_button: gtk::Button,
     pub artist_button: gtk::LinkButton,
+    pub artist_button_label: gtk::Label,
 }
 
 impl DetailsWidget {
@@ -80,7 +81,7 @@ impl Details {
             let artist = &info.artists_name();
 
             self.widget.album_label.set_label(album);
-            self.widget.artist_button.set_label(artist);
+            self.widget.artist_button_label.set_label(artist);
 
             let weak_model = Rc::downgrade(&self.model);
             self.widget.artist_button.connect_activate_link(move |_| {

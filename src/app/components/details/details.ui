@@ -22,6 +22,7 @@
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="valign">start</property>
                 <property name="margin-start">16</property>
                 <property name="margin-end">16</property>
                 <property name="margin-top">16</property>
@@ -32,6 +33,7 @@
                   <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="valign">start</property>
                     <property name="margin-start">8</property>
                     <property name="margin-end">8</property>
                     <property name="margin-top">8</property>
@@ -80,13 +82,23 @@
                         </child>
                         <child>
                           <object class="GtkLinkButton" id="artist_button">
-                            <property name="label" translatable="yes">Artist</property>
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="receives-default">True</property>
                             <property name="halign">start</property>
                             <property name="valign">start</property>
                             <property name="relief">none</property>
+                            <child>
+                              <object class="GtkLabel" id="artist_button_label">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="hexpand">True</property>
+                                <property name="vexpand">True</property>
+                                <property name="label" translatable="yes">Artist</property>
+                                <property name="ellipsize">middle</property>
+                                <property name="xalign">0</property>
+                              </object>
+                            </child>
                             <style>
                               <class name="details__more"/>
                             </style>
