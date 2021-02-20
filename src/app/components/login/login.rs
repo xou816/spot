@@ -2,7 +2,7 @@ use gdk::EventKey;
 use gio::ApplicationExt;
 use glib::translate::ToGlib;
 use gtk::prelude::*;
-use gtk::{EntryExt, GtkWindowExt, WidgetExt};
+use gtk::{GtkWindowExt, WidgetExt};
 use std::rc::Rc;
 
 use crate::app::components::EventListener;
@@ -26,15 +26,7 @@ fn handle_keypress(
     event: &EventKey,
 ) -> Inhibit {
     if event.get_keyval().to_glib() == gdk::keyval_from_name(SUBMIT_KEY) {
-        let username_text = username.get_text().as_str().to_string();
-        let password_text = password.get_text().as_str().to_string();
-        if username_text.is_empty() {
-            username.grab_focus();
-        } else if password_text.is_empty() {
-            password.grab_focus();
-        } else {
-            model.login(username_text, password_text);
-        }
+        model.submit_login_form(username, password);
         Inhibit(true)
     } else {
         Inhibit(false)
@@ -53,9 +45,7 @@ impl Login {
         let model = Rc::new(model);
         login_btn.connect_clicked(
             clone!(@weak username, @weak password,  @weak model => move |_| {
-                let username = username.get_text().as_str().to_string();
-                let password = password.get_text().as_str().to_string();
-                model.login(username, password);
+                model.submit_login_form(username, password);
             }),
         );
         username.connect_key_press_event(
