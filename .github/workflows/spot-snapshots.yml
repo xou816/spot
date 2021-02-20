@@ -3,7 +3,7 @@ name: spot-snapshots
 on:
   push:
     branches: [master]
-  workflow_dispatch
+  workflow_dispatch:
 
 jobs:
   flatpak-builder:
