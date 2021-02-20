@@ -3194,7 +3194,7 @@ dependencies = [
 
 [[package]]
 name = "spot"
-version = "0.1.7"
+version = "0.1.8"
 dependencies = [
  "async-std",
  "form_urlencoded",
