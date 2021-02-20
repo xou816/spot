@@ -33,7 +33,17 @@
       <image>https://raw.githubusercontent.com/xou816/spot/master/data/appstream/3.png</image>
     </screenshot>
   </screenshots>
-  <releases>
+  <releases>    
+    <release version="0.1.8" date="2021-02-20">
+      <description>
+        <p>
+          New feature: the main window can now be closed without stopping playback. Use Quit or Ctrl+Q to exit the app.
+        </p>
+        <p>
+          This release fixes numerous issues, including: main window being too large and too tall for phones, startup crash for playlist without images, "About" dialog not closing in qtile, keyboard navigation being broken in the login dialog. Special thanks to Douile for contributing fixes for many of these isssues!
+        </p>
+      </description>
+    </release>
     <release version="0.1.7" date="2021-02-15">
       <description>
         <p>
