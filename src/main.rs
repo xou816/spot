@@ -16,9 +16,8 @@ use crate::app::dispatch::{spawn_task_handler, DispatchLoop};
 use crate::app::{App, AppAction};
 
 fn main() {
-    setup_gtk();
-
-    let app = gtk::Application::new(Some("dev.alextren.Spot"), Default::default()).unwrap();
+    startup();
+    let gtk_app = gtk::Application::new(Some("dev.alextren.Spot"), Default::default()).unwrap();
     let builder = gtk::Builder::from_resource("/dev/alextren/Spot/window.ui");
 
     let context = glib::MainContext::default();
@@ -26,28 +25,28 @@ fn main() {
 
     let dispatch_loop = DispatchLoop::new();
     let sender = dispatch_loop.make_dispatcher();
-
-    context.spawn_local(
-        App::new_from_builder(&builder, sender.clone(), spawn_task_handler(&context))
-            .start(dispatch_loop),
+    let app = App::new(
+        builder.clone(),
+        sender.clone(),
+        spawn_task_handler(&context),
     );
+    context.spawn_local(app.attach(dispatch_loop));
 
-    let window = make_window(&builder);
-    app.connect_activate(move |app| {
-        window.set_application(Some(app));
-        app.add_window(&window);
-        window.present();
+    gtk_app.connect_activate(move |gtk_app| {
+        let window: libhandy::ApplicationWindow = builder.get_object("window").unwrap();
+        window.set_application(Some(gtk_app));
+        gtk_app.add_window(&window);
         sender.unbounded_send(AppAction::Start).unwrap();
     });
 
     context.invoke_local(move || {
-        app.run(&std::env::args().collect::<Vec<_>>());
+        gtk_app.run(&std::env::args().collect::<Vec<_>>());
     });
 
     std::process::exit(0);
 }
 
-fn setup_gtk() {
+fn startup() {
     gtk::init().unwrap_or_else(|_| panic!("Failed to initialize GTK"));
     libhandy::init();
 
@@ -58,10 +57,6 @@ fn setup_gtk() {
     gtk::Settings::get_default()
         .unwrap()
         .set_property_gtk_application_prefer_dark_theme(true);
-}
-
-fn make_window(builder: &gtk::Builder) -> libhandy::ApplicationWindow {
-    let window: libhandy::ApplicationWindow = builder.get_object("window").unwrap();
 
     let provider = gtk::CssProvider::new();
     provider.load_from_resource("/dev/alextren/Spot/app.css");
@@ -71,6 +66,4 @@ fn make_window(builder: &gtk::Builder) -> libhandy::ApplicationWindow {
         &provider,
         gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
     );
-
-    window
 }

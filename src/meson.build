@@ -77,6 +77,7 @@ sources = files(
 './app/components/search/search_bar.rs',
 './app/components/search/mod.rs',
 './app/components/search/search.rs',
+'./app/components/window/mod.rs',
 './app/components/mod.rs',
 './app/loader.rs',
 './app/list_store.rs',

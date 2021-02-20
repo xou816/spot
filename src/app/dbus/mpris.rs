@@ -10,17 +10,14 @@ use zbus::ObjectServer;
 use super::types::*;
 use crate::app::AppAction;
 
-pub struct SpotMpris;
-
 #[derive(Clone)]
-pub struct SpotMprisPlayer {
-    pub state: SharedMprisState,
+pub struct SpotMpris {
     sender: UnboundedSender<AppAction>,
 }
 
-impl SpotMprisPlayer {
-    pub fn new(state: SharedMprisState, sender: UnboundedSender<AppAction>) -> Self {
-        Self { state, sender }
+impl SpotMpris {
+    pub fn new(sender: UnboundedSender<AppAction>) -> Self {
+        Self { sender }
     }
 }
 
@@ -31,7 +28,9 @@ impl SpotMpris {
     }
 
     fn raise(&self) -> Result<()> {
-        Err(Error::NotSupported("Not implemented".to_string()))
+        self.sender
+            .unbounded_send(AppAction::Raise)
+            .map_err(|_| Error::Failed("Could not send action".to_string()))
     }
 
     #[dbus_interface(property)]
@@ -62,6 +61,18 @@ impl SpotMpris {
     #[dbus_interface(property)]
     fn supported_uri_schemes(&self) -> Vec<String> {
         vec![]
+    }
+}
+
+#[derive(Clone)]
+pub struct SpotMprisPlayer {
+    pub state: SharedMprisState,
+    sender: UnboundedSender<AppAction>,
+}
+
+impl SpotMprisPlayer {
+    pub fn new(state: SharedMprisState, sender: UnboundedSender<AppAction>) -> Self {
+        Self { state, sender }
     }
 }
 

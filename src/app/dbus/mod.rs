@@ -14,18 +14,19 @@ mod types;
 use types::*;
 
 // This one wraps a connection and reads the app state
-pub struct ConnectionWrapper {
+pub struct AppPlaybackStateListener {
     object_server: zbus::ObjectServer,
     app_model: Rc<AppModel>,
 }
 
-impl ConnectionWrapper {
+impl AppPlaybackStateListener {
     fn new(
         connection: zbus::Connection,
+        mpris: SpotMpris,
         player: SpotMprisPlayer,
         app_model: Rc<AppModel>,
     ) -> Result<Self, zbus::Error> {
-        let object_server = register_mpris(&connection, player)?;
+        let object_server = register_mpris(&connection, mpris, player)?;
         Ok(Self {
             object_server,
             app_model,
@@ -62,7 +63,7 @@ impl ConnectionWrapper {
     }
 }
 
-impl EventListener for ConnectionWrapper {
+impl EventListener for AppPlaybackStateListener {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
             AppEvent::TrackPaused => {
@@ -100,10 +101,11 @@ impl EventListener for ConnectionWrapper {
 
 fn register_mpris(
     connection: &zbus::Connection,
+    mpris: SpotMpris,
     player: SpotMprisPlayer,
 ) -> Result<zbus::ObjectServer, zbus::Error> {
     let mut object_server = zbus::ObjectServer::new(&connection);
-    object_server.at(&"/org/mpris/MediaPlayer2".try_into()?, SpotMpris)?;
+    object_server.at(&"/org/mpris/MediaPlayer2".try_into()?, mpris)?;
     object_server.at(&"/org/mpris/MediaPlayer2".try_into()?, player)?;
     Ok(object_server)
 }
@@ -111,7 +113,7 @@ fn register_mpris(
 pub fn start_dbus_server(
     app_model: Rc<AppModel>,
     sender: UnboundedSender<AppAction>,
-) -> Result<ConnectionWrapper, zbus::Error> {
+) -> Result<AppPlaybackStateListener, zbus::Error> {
     let state = SharedMprisState::new();
 
     let connection = zbus::Connection::new_session()?;
@@ -120,19 +122,21 @@ pub fn start_dbus_server(
         fdo::RequestNameFlags::AllowReplacement.into(),
     )?;
 
-    let state_clone = state.clone();
-    let sender_clone = sender.clone();
+    let mpris = SpotMpris::new(sender.clone());
+    let player = SpotMprisPlayer::new(state, sender);
+
+    let mpris_clone = mpris.clone();
+    let player_clone = player.clone();
     let conn_clone = connection.clone();
 
     thread::spawn(move || {
-        let player = SpotMprisPlayer::new(state_clone, sender_clone);
-        let mut object_server = register_mpris(&conn_clone, player).unwrap();
+        let mut object_server = register_mpris(&conn_clone, mpris_clone, player_clone).unwrap();
         loop {
             if let Err(err) = object_server.try_handle_next() {
                 eprintln!("{}", err);
             }
         }
     });
-    let player = SpotMprisPlayer::new(state, sender);
-    ConnectionWrapper::new(connection, player, app_model)
+
+    AppPlaybackStateListener::new(connection, mpris, player, app_model)
 }

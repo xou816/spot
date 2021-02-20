@@ -29,44 +29,62 @@ pub mod credentials;
 pub mod loader;
 
 pub struct App {
+    builder: gtk::Builder,
     components: Vec<Box<dyn EventListener>>,
     model: Rc<AppModel>,
+    sender: UnboundedSender<AppAction>,
+    worker: Worker,
 }
 
 impl App {
-    fn new(model: Rc<AppModel>, components: Vec<Box<dyn EventListener>>) -> Self {
-        Self { model, components }
-    }
-
-    pub fn new_from_builder(
-        builder: &gtk::Builder,
-        sender: UnboundedSender<AppAction>,
-        worker: Worker,
-    ) -> Self {
+    pub fn new(builder: gtk::Builder, sender: UnboundedSender<AppAction>, worker: Worker) -> Self {
         let state = AppState::new();
-        let dispatcher = Box::new(ActionDispatcherImpl::new(sender.clone(), worker.clone()));
         let spotify_client = Arc::new(CachedSpotifyClient::new());
-        let model = AppModel::new(state, spotify_client);
-        let model = Rc::new(model);
+        let model = Rc::new(AppModel::new(state, spotify_client));
 
         let components: Vec<Box<dyn EventListener>> = vec![
-            App::make_playback_control(builder, Rc::clone(&model), dispatcher.box_clone()),
+            App::make_player_notifier(sender.clone()),
+            App::make_dbus(Rc::clone(&model), sender.clone()),
+        ];
+
+        Self {
+            builder,
+            model,
+            components,
+            sender,
+            worker,
+        }
+    }
+
+    fn add_ui_components(&mut self) {
+        let builder = &self.builder;
+        let model = &self.model;
+        let sender = &self.sender;
+        let worker = &self.worker;
+        let dispatcher = Box::new(ActionDispatcherImpl::new(sender.clone(), worker.clone()));
+
+        let mut components: Vec<Box<dyn EventListener>> = vec![
+            App::make_window(builder),
+            App::make_playback_control(builder, Rc::clone(model), dispatcher.box_clone()),
             App::make_playback_info(
                 builder,
-                Rc::clone(&model),
+                Rc::clone(model),
                 dispatcher.box_clone(),
                 worker.clone(),
             ),
             App::make_login(builder, dispatcher.box_clone()),
-            App::make_navigation(builder, Rc::clone(&model), dispatcher.box_clone(), worker),
+            App::make_navigation(
+                builder,
+                Rc::clone(model),
+                dispatcher.box_clone(),
+                worker.clone(),
+            ),
             App::make_search_bar(builder, dispatcher.box_clone()),
-            App::make_user_menu(builder, Rc::clone(&model), dispatcher.box_clone()),
+            App::make_user_menu(builder, Rc::clone(model), dispatcher.box_clone()),
             App::make_notification(builder, dispatcher),
-            App::make_player_notifier(sender.clone()),
-            App::make_dbus(Rc::clone(&model), sender),
         ];
 
-        App::new(model, components)
+        self.components.append(&mut components);
     }
 
     fn make_player_notifier(sender: UnboundedSender<AppAction>) -> Box<impl EventListener> {
@@ -78,6 +96,11 @@ impl App {
         sender: UnboundedSender<AppAction>,
     ) -> Box<impl EventListener> {
         Box::new(dbus::start_dbus_server(app_model, sender).expect("could not start server"))
+    }
+
+    fn make_window(builder: &gtk::Builder) -> Box<impl EventListener> {
+        let window: libhandy::ApplicationWindow = builder.get_object("window").unwrap();
+        Box::new(MainWindow::new(window))
     }
 
     fn make_navigation(
@@ -200,6 +223,10 @@ impl App {
     }
 
     fn handle(&mut self, message: AppAction) {
+        if let AppAction::Start = message {
+            self.add_ui_components();
+        }
+
         let events = self.model.update_state(message);
 
         for event in events.iter() {
@@ -209,7 +236,7 @@ impl App {
         }
     }
 
-    pub async fn start(mut self, dispatch_loop: DispatchLoop) {
+    pub async fn attach(mut self, dispatch_loop: DispatchLoop) {
         let app = &mut self;
         dispatch_loop
             .attach(move |action| {
