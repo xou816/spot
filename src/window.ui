@@ -191,18 +191,19 @@
                 <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
                 <child type="center">
-                  <object class="HdyClamp">
+                  <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hexpand">True</property>
-                    <property name="maximum-size">320</property>
-                    <property name="tightening-threshold">200</property>
+                    <property name="margin-start">10</property>
+                    <property name="margin-end">10</property>
+                    <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkBox">
+                      <object class="HdyClamp">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="hexpand">True</property>
-                        <property name="orientation">vertical</property>
+                        <property name="maximum-size">320</property>
+                        <property name="tightening-threshold">200</property>
                         <child>
                           <object class="GtkBox">
                             <property name="visible">True</property>
@@ -288,48 +289,42 @@
                               </packing>
                             </child>
                           </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="valign">center</property>
+                        <property name="hexpand">True</property>
+                        <child>
+                          <object class="GtkScale" id="seek_bar">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="show-fill-level">True</property>
+                            <property name="restrict-to-fill-level">False</property>
+                            <property name="fill-level">0</property>
+                            <property name="digits">0</property>
+                            <property name="draw-value">False</property>
+                            <property name="value-pos">left</property>
+                          </object>
                           <packing>
-                            <property name="expand">False</property>
+                            <property name="expand">True</property>
                             <property name="fill">True</property>
                             <property name="position">0</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkBox">
-                            <property name="visible">True</property>
+                          <object class="GtkLabel" id="track_duration">
+                            <property name="sensitive">False</property>
                             <property name="can-focus">False</property>
-                            <property name="valign">center</property>
-                            <property name="hexpand">True</property>
-                            <child>
-                              <object class="GtkScale" id="seek_bar">
-                                <property name="visible">True</property>
-                                <property name="can-focus">True</property>
-                                <property name="show-fill-level">True</property>
-                                <property name="restrict-to-fill-level">False</property>
-                                <property name="fill-level">0</property>
-                                <property name="round-digits">0</property>
-                                <property name="digits">0</property>
-                                <property name="draw-value">False</property>
-                                <property name="value-pos">left</property>
-                              </object>
-                              <packing>
-                                <property name="expand">True</property>
-                                <property name="fill">True</property>
-                                <property name="position">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkLabel" id="track_duration">
-                                <property name="sensitive">False</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">0:00</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
+                            <property name="label" translatable="yes">0:00</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -338,6 +333,11 @@
                           </packing>
                         </child>
                       </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
