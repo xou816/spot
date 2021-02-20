@@ -21,6 +21,8 @@ jobs:
         default: true
         components: rustfmt
 
+    - uses: Swatinem/rust-cache@v1
+
     - name: Install system dependencies
       run: |
         sudo apt update -q
