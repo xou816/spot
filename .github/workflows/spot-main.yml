@@ -1,6 +1,8 @@
 name: spot-main
 
-on:
+on:  
+  push:
+    branches: [master]
   pull_request:
     branches: [master]
 
@@ -20,6 +22,12 @@ jobs:
         profile: minimal
         default: true
         components: rustfmt
+         
+    - name: Check format
+      uses: actions-rs/cargo@v1
+      with:
+        command: fmt
+        args: --all -- --check
 
     - uses: Swatinem/rust-cache@v1
 

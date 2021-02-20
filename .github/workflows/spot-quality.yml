@@ -2,7 +2,6 @@ name: spot-quality
 
 on:
   push:
-  pull_request:
 
 jobs:
   ci-check:
@@ -15,7 +14,7 @@ jobs:
           toolchain: stable
           profile: minimal
           default: true
-          components: rustfmt, clippy
+          components: rustfmt
 
       - name: Format
         uses: actions-rs/cargo@v1
