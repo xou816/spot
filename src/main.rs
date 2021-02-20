@@ -4,6 +4,7 @@ extern crate glib;
 extern crate lazy_static;
 
 use gio::prelude::*;
+use gio::{ActionMapExt, SimpleAction};
 use gtk::prelude::*;
 use gtk::SettingsExt;
 
@@ -19,6 +20,14 @@ fn main() {
     startup();
     let gtk_app = gtk::Application::new(Some("dev.alextren.Spot"), Default::default()).unwrap();
     let builder = gtk::Builder::from_resource("/dev/alextren/Spot/window.ui");
+    let window: libhandy::ApplicationWindow = builder.get_object("window").unwrap();
+
+    let quit = SimpleAction::new("quit", None);
+    quit.connect_activate(clone!(@weak gtk_app => move |_, _| {
+        gtk_app.quit();
+    }));
+    gtk_app.add_action(&quit);
+    gtk_app.set_accels_for_action("app.quit", &["<Ctrl>Q"]);
 
     let context = glib::MainContext::default();
     context.push_thread_default();
@@ -33,7 +42,6 @@ fn main() {
     context.spawn_local(app.attach(dispatch_loop));
 
     gtk_app.connect_activate(move |gtk_app| {
-        let window: libhandy::ApplicationWindow = builder.get_object("window").unwrap();
         window.set_application(Some(gtk_app));
         gtk_app.add_window(&window);
         sender.unbounded_send(AppAction::Start).unwrap();
