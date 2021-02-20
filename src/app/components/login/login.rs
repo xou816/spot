@@ -2,7 +2,7 @@ use gdk::EventKey;
 use gio::ApplicationExt;
 use glib::translate::ToGlib;
 use gtk::prelude::*;
-use gtk::{GtkWindowExt, WidgetExt};
+use gtk::{EntryExt, GtkWindowExt, WidgetExt};
 use std::rc::Rc;
 
 use crate::app::components::EventListener;
@@ -19,20 +19,6 @@ pub struct Login {
     model: Rc<LoginModel>,
 }
 
-fn handle_keypress(
-    username: gtk::Entry,
-    password: gtk::Entry,
-    model: Rc<LoginModel>,
-    event: &EventKey,
-) -> Inhibit {
-    if event.get_keyval().to_glib() == gdk::keyval_from_name(SUBMIT_KEY) {
-        model.submit_login_form(username, password);
-        Inhibit(true)
-    } else {
-        Inhibit(false)
-    }
-}
-
 impl Login {
     pub fn new(
         parent: gtk::Window,
@@ -45,17 +31,17 @@ impl Login {
         let model = Rc::new(model);
         login_btn.connect_clicked(
             clone!(@weak username, @weak password,  @weak model => move |_| {
-                model.submit_login_form(username, password);
+                Login::submit_login_form(username, password, model);
             }),
         );
         username.connect_key_press_event(
             clone!(@weak username, @weak password, @weak model => @default-return Inhibit(false), move |_, event | {
-                handle_keypress(username, password, model, event)
+                Login::handle_keypress(username, password, model, event)
             }),
         );
         password.connect_key_press_event(
             clone!(@weak username, @weak password, @weak model => @default-return Inhibit(false), move |_, event | {
-                handle_keypress(username, password, model, event)
+                Login::handle_keypress(username, password, model, event)
             }),
         );
 
@@ -92,6 +78,32 @@ impl Login {
     fn hide_and_save_creds(&self, credentials: Credentials) {
         self.dialog.hide();
         self.model.save_for_autologin(credentials);
+    }
+
+    fn handle_keypress(
+        username: gtk::Entry,
+        password: gtk::Entry,
+        model: Rc<LoginModel>,
+        event: &EventKey,
+    ) -> Inhibit {
+        if event.get_keyval().to_glib() == gdk::keyval_from_name(SUBMIT_KEY) {
+            Login::submit_login_form(username, password, model);
+            Inhibit(true)
+        } else {
+            Inhibit(false)
+        }
+    }
+
+    fn submit_login_form(username: gtk::Entry, password: gtk::Entry, model: Rc<LoginModel>) {
+        let username_text = username.get_text().as_str().to_string();
+        let password_text = password.get_text().as_str().to_string();
+        if username_text.is_empty() {
+            username.grab_focus();
+        } else if password_text.is_empty() {
+            password.grab_focus();
+        } else {
+            model.login(username_text, password_text);
+        }
     }
 }
 
