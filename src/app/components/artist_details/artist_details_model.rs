@@ -1,12 +1,10 @@
-use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
 use crate::app::components::{handle_error, PlaylistModel};
 use crate::app::models::*;
-use crate::app::{
-    ActionDispatcher, AppAction, AppEvent, AppModel, BrowserAction, BrowserEvent, ListStore,
-};
+use crate::app::state::{BrowserAction, BrowserEvent, PlaybackAction, PlaybackEvent};
+use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, ListStore};
 
 pub struct ArtistDetailsModel {
     app_model: Rc<AppModel>,
@@ -23,12 +21,12 @@ impl ArtistDetailsModel {
 
     pub fn get_artist_name(&self) -> Option<impl Deref<Target = String> + '_> {
         self.app_model
-            .map_state_opt(|s| s.browser_state.artist_state()?.artist.as_ref())
+            .map_state_opt(|s| s.browser.artist_state()?.artist.as_ref())
     }
 
     pub fn get_list_store(&self) -> Option<impl Deref<Target = ListStore<AlbumModel>> + '_> {
         self.app_model
-            .map_state_opt(|s| Some(&s.browser_state.artist_state()?.albums))
+            .map_state_opt(|s| Some(&s.browser.artist_state()?.albums))
     }
 
     pub fn load_artist_details(&self, id: String) {
@@ -49,7 +47,7 @@ impl ArtistDetailsModel {
     pub fn load_more(&self) -> Option<()> {
         let api = self.app_model.get_spotify();
         let state = self.app_model.get_state();
-        let next_page = &state.browser_state.artist_state()?.next_page;
+        let next_page = &state.browser.artist_state()?.next_page;
 
         let id = next_page.data.clone();
         let batch_size = next_page.batch_size;
@@ -70,7 +68,7 @@ impl PlaylistModel for ArtistDetailsModel {
     fn songs(&self) -> Vec<SongModel> {
         let tracks = self
             .app_model
-            .map_state_opt(|s| Some(&s.browser_state.artist_state()?.top_tracks));
+            .map_state_opt(|s| Some(&s.browser.artist_state()?.top_tracks));
 
         match tracks {
             Some(tracks) => tracks
@@ -83,17 +81,17 @@ impl PlaylistModel for ArtistDetailsModel {
     }
 
     fn current_song_id(&self) -> Option<String> {
-        self.app_model.get_state().current_song_id.clone()
+        self.app_model.get_state().playback.current_song_id.clone()
     }
 
     fn play_song(&self, id: String) {
         let full_state = self.app_model.get_state();
-        let is_in_playlist = full_state.playlist.song(&id).is_some();
+        let is_in_playlist = full_state.playback.playlist.song(&id).is_some();
         // if !is_in_playlist {
         //     self.dispatcher
         //         .dispatch(AppAction::LoadPlaylist(self.songs().cloned().collect()));
         // }
-        self.dispatcher.dispatch(AppAction::Load(id));
+        self.dispatcher.dispatch(PlaybackAction::Load(id).into());
     }
 
     fn should_refresh_songs(&self, event: &AppEvent) -> bool {

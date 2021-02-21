@@ -1,4 +1,3 @@
-use ref_filter_map::*;
 use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
@@ -6,7 +5,7 @@ use std::rc::Rc;
 use crate::app::components::{handle_error, PlaylistModel};
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
-use crate::app::state::{BrowserAction, BrowserEvent, PlaylistDetailsState};
+use crate::app::state::{BrowserAction, BrowserEvent, PlaylistDetailsState, PlaybackAction};
 use crate::app::{AppAction, AppEvent, AppModel, AppState};
 
 pub struct PlaylistDetailsModel {
@@ -24,7 +23,7 @@ impl PlaylistDetailsModel {
 
     pub fn get_playlist_info(&self) -> Option<impl Deref<Target = PlaylistDescription> + '_> {
         self.app_model
-            .map_state_opt(|s| s.browser_state.playlist_details_state()?.content.as_ref())
+            .map_state_opt(|s| s.browser.playlist_details_state()?.content.as_ref())
     }
 
     pub fn load_playlist_info(&self, id: String) {
@@ -45,19 +44,19 @@ impl PlaylistDetailsModel {
 
     fn details_state(&self) -> Option<Ref<'_, PlaylistDetailsState>> {
         self.app_model
-            .map_state_opt(|s| s.browser_state.playlist_details_state())
+            .map_state_opt(|s| s.browser.playlist_details_state())
     }
 }
 
 impl PlaylistModel for PlaylistDetailsModel {
     fn current_song_id(&self) -> Option<String> {
-        self.state().current_song_id.clone()
+        self.state().playback.current_song_id.clone()
     }
 
     fn songs(&self) -> Vec<SongModel> {
         let songs = self.app_model.map_state_opt(|s| {
             Some(
-                &s.browser_state
+                &s.browser
                     .playlist_details_state()?
                     .content
                     .as_ref()?
@@ -75,13 +74,13 @@ impl PlaylistModel for PlaylistDetailsModel {
     }
 
     fn play_song(&self, id: String) {
-        let full_state = self.app_model.get_state();
-        let is_in_playlist = full_state.playlist.song(&id).is_some();
+        // let full_state = self.app_model.get_state();
+        // let is_in_playlist = full_state.playback.playlist.song(&id).is_some();
         // if !is_in_playlist {
         //     self.dispatcher
         //         .dispatch(AppAction::LoadPlaylist(self.songs().cloned().collect()));
         // }
-        self.dispatcher.dispatch(AppAction::Load(id));
+        self.dispatcher.dispatch(PlaybackAction::Load(id).into());
     }
 
     fn should_refresh_songs(&self, event: &AppEvent) -> bool {

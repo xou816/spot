@@ -6,7 +6,7 @@ use crate::app::components::EventListener;
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
 use crate::app::models::*;
-use crate::app::state::{BrowserAction, ScreenName};
+use crate::app::state::{BrowserAction, PlaybackEvent, ScreenName};
 use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel};
 
 pub struct PlaybackInfoModel {
@@ -89,7 +89,7 @@ impl PlaybackInfo {
 
 impl EventListener for PlaybackInfo {
     fn on_event(&mut self, event: &AppEvent) {
-        if let AppEvent::TrackChanged(_) = event {
+        if let AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) = event {
             self.update_current_info();
         }
     }

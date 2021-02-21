@@ -8,8 +8,8 @@ use crate::app::components::{
     utils::{Clock, Debouncer},
     EventListener,
 };
-use crate::app::AppEvent;
-use crate::app::{ActionDispatcher, AppAction, AppModel, AppState};
+use crate::app::state::{PlaybackAction, PlaybackEvent};
+use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState};
 
 pub struct PlaybackControlModel {
     app_model: Rc<AppModel>,
@@ -30,7 +30,7 @@ impl PlaybackControlModel {
 
     pub fn is_playing(&self) -> bool {
         let state = self.state();
-        state.is_playing && state.current_song_id.is_some()
+        state.playback.is_playing && state.playback.current_song_id.is_some()
     }
 
     pub fn current_song_duration(&self) -> Option<f64> {
@@ -38,23 +38,25 @@ impl PlaybackControlModel {
     }
 
     pub fn play_next_song(&self) {
-        self.dispatcher.dispatch(AppAction::Next);
+        self.dispatcher.dispatch(PlaybackAction::Next.into());
     }
 
     pub fn play_prev_song(&self) {
-        self.dispatcher.dispatch(AppAction::Previous);
+        self.dispatcher.dispatch(PlaybackAction::Previous.into());
     }
 
     pub fn toggle_playback(&self) {
-        self.dispatcher.dispatch(AppAction::TogglePlay);
+        self.dispatcher.dispatch(PlaybackAction::TogglePlay.into());
     }
 
     pub fn toggle_shuffle(&self) {
-        self.dispatcher.dispatch(AppAction::ToggleShuffle);
+        self.dispatcher
+            .dispatch(PlaybackAction::ToggleShuffle.into());
     }
 
     pub fn seek_to(&self, position: u32) {
-        self.dispatcher.dispatch(AppAction::Seek(position));
+        self.dispatcher
+            .dispatch(PlaybackAction::Seek(position).into());
     }
 }
 
@@ -200,13 +202,14 @@ impl PlaybackControl {
 impl EventListener for PlaybackControl {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::TrackPaused | AppEvent::TrackResumed => {
+            AppEvent::PlaybackEvent(PlaybackEvent::TrackPaused)
+            | AppEvent::PlaybackEvent(PlaybackEvent::TrackResumed) => {
                 self.toggle_playing();
             }
-            AppEvent::TrackChanged(_) => {
+            AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
                 self.update_current_info();
             }
-            AppEvent::SeekSynced(pos) => {
+            AppEvent::PlaybackEvent(PlaybackEvent::SeekSynced(pos)) => {
                 self.sync_seek(*pos);
             }
             _ => {}
