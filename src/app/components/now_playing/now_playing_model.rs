@@ -4,7 +4,8 @@ use std::cell::Ref;
 use std::rc::Rc;
 
 use crate::app::components::PlaylistModel;
-use crate::app::models::SongDescription;
+use crate::app::models::SongModel;
+use crate::app::state::PlayQueue;
 use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState};
 
 pub struct NowPlayingModel {
@@ -23,15 +24,22 @@ impl NowPlayingModel {
     fn state(&self) -> Ref<'_, AppState> {
         self.app_model.get_state()
     }
+
+    fn queue(&self) -> Ref<'_, PlayQueue> {
+        Ref::map(self.state(), |s| &s.playlist)
+    }
 }
 
 impl PlaylistModel for NowPlayingModel {
     fn current_song_id(&self) -> Option<String> {
         self.state().current_song_id.clone()
     }
-
-    fn songs(&self) -> Option<Ref<'_, Vec<SongDescription>>> {
-        Some(Ref::map(self.state(), |s| s.playlist.songs()))
+    fn songs(&self) -> Vec<SongModel> {
+        self.queue()
+            .songs()
+            .enumerate()
+            .map(|(i, s)| s.to_song_model(i))
+            .collect()
     }
 
     fn play_song(&self, id: String) {
@@ -43,8 +51,8 @@ impl PlaylistModel for NowPlayingModel {
     }
 
     fn actions_for(&self, id: String) -> Option<gio::ActionGroup> {
-        let songs = self.songs()?;
-        let song = songs.iter().find(|s| s.id.eq(&id))?;
+        let queue = self.queue();
+        let song = queue.song(&id)?;
         let group = SimpleActionGroup::new();
 
         let album_id = song.album.id.clone();
@@ -70,8 +78,8 @@ impl PlaylistModel for NowPlayingModel {
     }
 
     fn menu_for(&self, id: String) -> Option<gio::MenuModel> {
-        let songs = self.songs()?;
-        let song = songs.iter().find(|s| s.id.eq(&id))?;
+        let queue = self.queue();
+        let song = queue.song(&id)?;
 
         let menu = gio::Menu::new();
         menu.insert(0, Some("View album"), Some("song.view_album"));

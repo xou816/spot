@@ -1,7 +1,7 @@
 use crate::app::credentials;
 use crate::app::models::*;
 use crate::app::state::{BrowserAction, BrowserEvent, BrowserState, ScreenName, UpdatableState};
-use super::ShuffledSongs;
+use super::PlayQueue;
 
 #[derive(Clone, Debug)]
 pub enum AppAction {
@@ -66,7 +66,7 @@ pub enum AppEvent {
 pub struct AppState {
     pub is_playing: bool,
     pub current_song_id: Option<String>,
-    pub playlist: ShuffledSongs,
+    pub playlist: PlayQueue,
     pub browser_state: BrowserState,
     pub user: Option<String>,
 }
@@ -76,7 +76,7 @@ impl AppState {
         Self {
             is_playing: false,
             current_song_id: None,
-            playlist: ShuffledSongs::new(vec![]),
+            playlist: PlayQueue::new(&[]),
             browser_state: BrowserState::new(),
             user: None,
         }
@@ -96,7 +96,7 @@ impl AppState {
                 }
             }
             AppAction::ToggleShuffle => {
-                self.playlist.toggle_shuffle(self.song_index());
+                //self.playlist.toggle_shuffle(self.song_index());
                 vec![AppEvent::PlaylistChanged]
             }
             AppAction::Next => {
@@ -131,7 +131,7 @@ impl AppState {
                 vec![AppEvent::TrackChanged(id), AppEvent::TrackResumed]
             }
             AppAction::LoadPlaylist(tracks) => {
-                self.playlist.update(tracks, None);
+                self.playlist.set_tracks(&tracks, None);
                 vec![AppEvent::PlaylistChanged]
             }
             AppAction::SetLoginSuccess(credentials) => {
@@ -163,29 +163,18 @@ impl AppState {
         }
     }
 
-    fn song_index(&self) -> Option<usize> {
-        self.current_song_id
-            .as_ref()
-            .and_then(|id| self.playlist.songs().iter().position(|song| song.id == *id))
-    }
-
     pub fn current_song(&self) -> Option<SongDescription> {
-        if let Some(current_song_id) = self.current_song_id.as_ref() {
+        self.current_song_id.as_ref().and_then(|current_song_id| {
             self.playlist
-                .songs()
-                .iter()
-                .find(|song| song.id == *current_song_id)
+                .song(current_song_id)
                 .cloned()
-        } else {
-            None
-        }
+        })
     }
 
     pub fn prev_song(&self) -> Option<&SongDescription> {
         self.current_song_id.as_ref().and_then(|id| {
             self.playlist
                 .songs()
-                .iter()
                 .take_while(|&song| song.id != *id)
                 .last()
         })
@@ -195,7 +184,6 @@ impl AppState {
         self.current_song_id.as_ref().and_then(|id| {
             self.playlist
                 .songs()
-                .iter()
                 .skip_while(|&song| song.id != *id)
                 .nth(1)
         })
