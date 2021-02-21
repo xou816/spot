@@ -5,7 +5,7 @@ use std::rc::{Rc, Weak};
 
 use crate::app::components::{Component, EventListener, Song};
 use crate::app::models::SongModel;
-use crate::app::{AppEvent, ListStore, SongDescription};
+use crate::app::{state::PlaybackEvent, AppEvent, ListStore};
 
 pub trait PlaylistModel {
     fn songs(&self) -> Vec<SongModel>;
@@ -118,7 +118,7 @@ where
 {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::TrackChanged(_) => {
+            AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
                 self.update_list();
             }
             _ if self.model.should_refresh_songs(event) => self.reset_list(),

@@ -21,7 +21,7 @@ impl SearchResultsModel {
 
     pub fn get_query(&self) -> Option<impl Deref<Target = String> + '_> {
         self.app_model
-            .map_state_opt(|s| Some(&s.browser_state.search_state()?.query))
+            .map_state_opt(|s| Some(&s.browser.search_state()?.query))
     }
 
     pub fn fetch_results(&self) {
@@ -40,12 +40,12 @@ impl SearchResultsModel {
 
     pub fn get_album_results(&self) -> Option<impl Deref<Target = Vec<AlbumDescription>> + '_> {
         self.app_model
-            .map_state_opt(|s| Some(&s.browser_state.search_state()?.album_results))
+            .map_state_opt(|s| Some(&s.browser.search_state()?.album_results))
     }
 
     pub fn get_artist_results(&self) -> Option<impl Deref<Target = Vec<ArtistSummary>> + '_> {
         self.app_model
-            .map_state_opt(|s| Some(&s.browser_state.search_state()?.artist_results))
+            .map_state_opt(|s| Some(&s.browser.search_state()?.artist_results))
     }
 
     pub fn open_album(&self, id: &str) {

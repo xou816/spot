@@ -5,6 +5,7 @@ use std::thread;
 use zbus::fdo;
 
 use crate::app::components::EventListener;
+use crate::app::state::{PlaybackAction, PlaybackEvent};
 use crate::app::{models::SongDescription, AppAction, AppEvent, AppModel};
 
 mod mpris;
@@ -66,7 +67,7 @@ impl AppPlaybackStateListener {
 impl EventListener for AppPlaybackStateListener {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::TrackPaused => {
+            AppEvent::PlaybackEvent(PlaybackEvent::TrackPaused) => {
                 self.with_player(|player| {
                     player.state.set_playing(false);
                     player.notify_playback_status()?;
@@ -74,7 +75,7 @@ impl EventListener for AppPlaybackStateListener {
                 })
                 .unwrap();
             }
-            AppEvent::TrackResumed => {
+            AppEvent::PlaybackEvent(PlaybackEvent::TrackResumed) => {
                 self.with_player(|player| {
                     player.state.set_playing(true);
                     player.notify_playback_status()?;
@@ -82,7 +83,7 @@ impl EventListener for AppPlaybackStateListener {
                 })
                 .unwrap();
             }
-            AppEvent::TrackChanged(_) => {
+            AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
                 self.with_player(|player| {
                     let meta = self.make_track_meta();
                     let (has_prev, has_next) = self.has_prev_next();
