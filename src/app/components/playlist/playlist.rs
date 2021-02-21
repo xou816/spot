@@ -1,8 +1,6 @@
 use gio::prelude::*;
 use gtk::prelude::*;
 use gtk::ListBoxExt;
-
-use std::cell::Ref;
 use std::rc::{Rc, Weak};
 
 use crate::app::components::{Component, EventListener, Song};
@@ -10,7 +8,7 @@ use crate::app::models::SongModel;
 use crate::app::{AppEvent, ListStore, SongDescription};
 
 pub trait PlaylistModel {
-    fn songs(&self) -> Option<Ref<'_, Vec<SongDescription>>>;
+    fn songs(&self) -> Vec<SongModel>;
     fn current_song_id(&self) -> Option<String>;
     fn play_song(&self, id: String);
     fn should_refresh_songs(&self, event: &AppEvent) -> bool;
@@ -40,7 +38,7 @@ where
             let index = row.get_index() as u32;
             let song: SongModel = list_model_clone.get(index);
             if let Some(m) = weak_model.upgrade() {
-                m.play_song(song.get_uri());
+                m.play_song(song.get_id());
             }
         });
 
@@ -52,10 +50,8 @@ where
                 weak_model.clone(),
                 weak_model
                     .upgrade()
-                    .and_then(|m| m.actions_for(item.get_uri())),
-                weak_model
-                    .upgrade()
-                    .and_then(|m| m.menu_for(item.get_uri())),
+                    .and_then(|m| m.actions_for(item.get_id())),
+                weak_model.upgrade().and_then(|m| m.menu_for(item.get_id())),
             );
             row.show_all();
             row.upcast::<gtk::Widget>()
@@ -76,7 +72,7 @@ where
             .upgrade()
             .and_then(|model| {
                 let current_song_id = model.current_song_id();
-                current_song_id.as_ref().map(|s| s.eq(&item.get_uri()))
+                current_song_id.as_ref().map(|s| s.eq(&item.get_id()))
             })
             .unwrap_or(false);
 
@@ -89,20 +85,20 @@ where
         row
     }
 
-    fn song_is_current(&self, song: &SongDescription) -> bool {
+    fn song_is_current(&self, song: &SongModel) -> bool {
         let current_song_id = self.model.current_song_id();
         let current_song_id = current_song_id.as_ref();
 
-        current_song_id.map(|s| s.eq(&song.id)).unwrap_or(false)
+        current_song_id
+            .map(|s| s.eq(&song.get_id()))
+            .unwrap_or(false)
     }
 
     fn update_list(&self) {
-        if let Some(songs) = self.model.songs() {
-            for (i, song) in songs.iter().enumerate() {
-                let is_current = self.song_is_current(song);
-                let model_song = self.list_model.get(i as u32);
-                model_song.set_playing(is_current);
-            }
+        for (i, song) in self.model.songs().iter().enumerate() {
+            let is_current = self.song_is_current(&song);
+            let model_song = self.list_model.get(i as u32);
+            model_song.set_playing(is_current);
         }
     }
 
@@ -110,16 +106,8 @@ where
         let list_model = &mut self.list_model;
         list_model.remove_all();
 
-        if let Some(songs) = self.model.songs() {
-            for (i, song) in songs.iter().enumerate() {
-                let index = i as u32 + 1;
-                list_model.append(SongModel::new(
-                    index,
-                    &song.title,
-                    &song.artists_name(),
-                    &song.id,
-                ));
-            }
+        for song in self.model.songs() {
+            list_model.append(song);
         }
     }
 }

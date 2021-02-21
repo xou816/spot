@@ -16,14 +16,14 @@ glib_wrapper! {
 // Constructor for new instances. This simply calls glib::Object::new() with
 // initial values for our two properties and then returns the new instance
 impl SongModel {
-    pub fn new(index: u32, title: &str, artist: &str, uri: &str) -> SongModel {
+    pub fn new(id: &str, index: u32, title: &str, artist: &str) -> SongModel {
         glib::Object::new(
             Self::static_type(),
             &[
                 ("index", &index),
                 ("title", &title),
                 ("artist", &artist),
-                ("uri", &uri),
+                ("id", &id),
             ],
         )
         .expect("Failed to create")
@@ -44,8 +44,8 @@ impl SongModel {
             .unwrap()
     }
 
-    pub fn get_uri(&self) -> String {
-        self.get_property("uri")
+    pub fn get_id(&self) -> String {
+        self.get_property("id")
             .unwrap()
             .get::<&str>()
             .unwrap()
@@ -96,8 +96,8 @@ mod imp {
                 glib::ParamFlags::READWRITE,
             )
         }),
-        subclass::Property("uri", |uri| {
-            glib::ParamSpec::string(uri, "URI", "URI", None, glib::ParamFlags::READWRITE)
+        subclass::Property("id", |id| {
+            glib::ParamSpec::string(id, "id", "id", None, glib::ParamFlags::READWRITE)
         }),
         subclass::Property("playing", |playing| {
             glib::ParamSpec::boolean(
@@ -117,7 +117,7 @@ mod imp {
         index: RefCell<u32>,
         title: RefCell<Option<String>>,
         artist: RefCell<Option<String>>,
-        uri: RefCell<Option<String>>,
+        id: RefCell<Option<String>>,
         playing: RefCell<bool>,
     }
 
@@ -156,7 +156,7 @@ mod imp {
                 index: RefCell::new(1),
                 title: RefCell::new(None),
                 artist: RefCell::new(None),
-                uri: RefCell::new(None),
+                id: RefCell::new(None),
                 playing: RefCell::new(false),
             }
         }
@@ -192,11 +192,11 @@ mod imp {
                         .expect("type conformity checked by `Object::set_property`");
                     self.artist.replace(artist);
                 }
-                subclass::Property("uri", ..) => {
-                    let uri = value
+                subclass::Property("id", ..) => {
+                    let id = value
                         .get()
                         .expect("type conformity checked by `Object::set_property`");
-                    self.uri.replace(uri);
+                    self.id.replace(id);
                 }
                 subclass::Property("playing", ..) => {
                     let playing = value
@@ -218,7 +218,7 @@ mod imp {
                 subclass::Property("index", ..) => Ok(self.index.borrow().to_value()),
                 subclass::Property("title", ..) => Ok(self.title.borrow().to_value()),
                 subclass::Property("artist", ..) => Ok(self.artist.borrow().to_value()),
-                subclass::Property("uri", ..) => Ok(self.uri.borrow().to_value()),
+                subclass::Property("id", ..) => Ok(self.id.borrow().to_value()),
                 subclass::Property("playing", ..) => Ok(self.playing.borrow().to_value()),
                 _ => unimplemented!(),
             }
