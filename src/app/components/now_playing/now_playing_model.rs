@@ -30,6 +30,11 @@ impl NowPlayingModel {
     fn queue(&self) -> Ref<'_, PlaybackState> {
         Ref::map(self.state(), |s| &s.playback)
     }
+
+    pub fn toggle_shuffle(&self) {
+        self.dispatcher
+            .dispatch(PlaybackAction::ToggleShuffle.into());
+    }
 }
 
 impl PlaylistModel for NowPlayingModel {
