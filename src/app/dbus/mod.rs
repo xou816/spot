@@ -5,7 +5,7 @@ use std::thread;
 use zbus::fdo;
 
 use crate::app::components::EventListener;
-use crate::app::state::{PlaybackAction, PlaybackEvent};
+use crate::app::state::PlaybackEvent;
 use crate::app::{models::SongDescription, AppAction, AppEvent, AppModel};
 
 mod mpris;
@@ -42,25 +42,33 @@ impl AppPlaybackStateListener {
     }
 
     fn make_track_meta(&self) -> Option<TrackMetadata> {
-        self.app_model.get_state().current_song().map(
-            |SongDescription {
-                 id,
-                 title,
-                 artists,
-                 duration,
-                 ..
-             }| TrackMetadata {
-                id: format!("/dev/alextren/Spot/Track/{}", id),
-                length: duration as u64,
-                title,
-                artist: artists.into_iter().map(|a| a.name).collect(),
-            },
-        )
+        self.app_model
+            .get_state()
+            .playback
+            .current_song()
+            .cloned()
+            .map(
+                |SongDescription {
+                     id,
+                     title,
+                     artists,
+                     duration,
+                     ..
+                 }| TrackMetadata {
+                    id: format!("/dev/alextren/Spot/Track/{}", id),
+                    length: duration as u64,
+                    title,
+                    artist: artists.into_iter().map(|a| a.name).collect(),
+                },
+            )
     }
 
     fn has_prev_next(&self) -> (bool, bool) {
         let state = self.app_model.get_state();
-        (state.prev_song().is_some(), state.next_song().is_some())
+        (
+            state.playback.prev_song().is_some(),
+            state.playback.next_song().is_some(),
+        )
     }
 }
 

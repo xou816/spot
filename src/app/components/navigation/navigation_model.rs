@@ -27,8 +27,7 @@ impl NavigationModel {
     }
 
     pub fn visible_child_name(&self) -> impl Deref<Target = ScreenName> + '_ {
-        self.app_model
-            .map_state(|s| s.browser.current_screen())
+        self.app_model.map_state(|s| s.browser.current_screen())
     }
 
     pub fn can_go_back(&self) -> bool {

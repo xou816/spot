@@ -21,8 +21,7 @@ impl LibraryModel {
     }
 
     fn state(&self) -> Option<Ref<'_, HomeState>> {
-        self.app_model
-            .map_state_opt(|s| s.browser.home_state())
+        self.app_model.map_state_opt(|s| s.browser.home_state())
     }
 
     pub fn get_list_store(&self) -> Option<impl Deref<Target = ListStore<AlbumModel>> + '_> {

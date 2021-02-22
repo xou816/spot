@@ -5,8 +5,8 @@ use std::rc::Rc;
 use crate::app::components::{handle_error, PlaylistModel};
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
-use crate::app::state::{BrowserAction, BrowserEvent, PlaylistDetailsState, PlaybackAction};
-use crate::app::{AppAction, AppEvent, AppModel, AppState};
+use crate::app::state::{BrowserAction, BrowserEvent, PlaybackAction};
+use crate::app::{AppEvent, AppModel, AppState};
 
 pub struct PlaylistDetailsModel {
     app_model: Rc<AppModel>,
@@ -41,11 +41,6 @@ impl PlaylistDetailsModel {
     fn state(&self) -> Ref<'_, AppState> {
         self.app_model.get_state()
     }
-
-    fn details_state(&self) -> Option<Ref<'_, PlaylistDetailsState>> {
-        self.app_model
-            .map_state_opt(|s| s.browser.playlist_details_state())
-    }
 }
 
 impl PlaylistModel for PlaylistDetailsModel {
@@ -54,15 +49,9 @@ impl PlaylistModel for PlaylistDetailsModel {
     }
 
     fn songs(&self) -> Vec<SongModel> {
-        let songs = self.app_model.map_state_opt(|s| {
-            Some(
-                &s.browser
-                    .playlist_details_state()?
-                    .content
-                    .as_ref()?
-                    .songs,
-            )
-        });
+        let songs = self
+            .app_model
+            .map_state_opt(|s| Some(&s.browser.playlist_details_state()?.content.as_ref()?.songs));
         match songs {
             Some(songs) => songs
                 .iter()

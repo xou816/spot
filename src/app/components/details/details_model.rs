@@ -1,4 +1,3 @@
-use ref_filter_map::*;
 use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
@@ -6,7 +5,7 @@ use std::rc::Rc;
 use crate::app::components::{handle_error, PlaylistModel};
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
-use crate::app::state::{BrowserAction, BrowserEvent, DetailsState, PlaybackAction, PlaybackEvent};
+use crate::app::state::{BrowserAction, BrowserEvent, PlaybackAction};
 use crate::app::{AppAction, AppEvent, AppModel, AppState};
 
 pub struct DetailsModel {
@@ -73,10 +72,6 @@ impl DetailsModel {
 impl DetailsModel {
     fn state(&self) -> Ref<'_, AppState> {
         self.app_model.get_state()
-    }
-
-    fn details_state(&self) -> Option<Ref<'_, DetailsState>> {
-        self.app_model.map_state_opt(|s| s.browser.details_state())
     }
 }
 
