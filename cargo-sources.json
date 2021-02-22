@@ -1184,15 +1184,15 @@
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/form_urlencoded/form_urlencoded-1.0.0.crate",
-        "sha256": "ece68d15c92e84fa4f19d3780f1294e5ca82a78a6d515f1efaabcc144688be00",
+        "url": "https://static.crates.io/crates/form_urlencoded/form_urlencoded-1.0.1.crate",
+        "sha256": "5fc25a87fa4fd2094bffb06925852034d90a17f0d1e05197d4956d3555752191",
         "dest": "cargo/vendor",
-        "dest-filename": "form_urlencoded-1.0.0.crate"
+        "dest-filename": "form_urlencoded-1.0.1.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%22ece68d15c92e84fa4f19d3780f1294e5ca82a78a6d515f1efaabcc144688be00%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/form_urlencoded-1.0.0",
+        "url": "data:%7B%22package%22%3A%20%225fc25a87fa4fd2094bffb06925852034d90a17f0d1e05197d4956d3555752191%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/form_urlencoded-1.0.1",
         "dest-filename": ".cargo-checksum.json"
     },
     {
@@ -4135,28 +4135,28 @@
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/thiserror/thiserror-1.0.23.crate",
-        "sha256": "76cc616c6abf8c8928e2fdcc0dbfab37175edd8fb49a4641066ad1364fdab146",
+        "url": "https://static.crates.io/crates/thiserror/thiserror-1.0.24.crate",
+        "sha256": "e0f4a65597094d4483ddaed134f409b2cb7c1beccf25201a9f73c719254fa98e",
         "dest": "cargo/vendor",
-        "dest-filename": "thiserror-1.0.23.crate"
+        "dest-filename": "thiserror-1.0.24.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%2276cc616c6abf8c8928e2fdcc0dbfab37175edd8fb49a4641066ad1364fdab146%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/thiserror-1.0.23",
+        "url": "data:%7B%22package%22%3A%20%22e0f4a65597094d4483ddaed134f409b2cb7c1beccf25201a9f73c719254fa98e%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/thiserror-1.0.24",
         "dest-filename": ".cargo-checksum.json"
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/thiserror-impl/thiserror-impl-1.0.23.crate",
-        "sha256": "9be73a2caec27583d0046ef3796c3794f868a5bc813db689eed00c7631275cd1",
+        "url": "https://static.crates.io/crates/thiserror-impl/thiserror-impl-1.0.24.crate",
+        "sha256": "7765189610d8241a44529806d6fd1f2e0a08734313a35d5b3a556f92b381f3c0",
         "dest": "cargo/vendor",
-        "dest-filename": "thiserror-impl-1.0.23.crate"
+        "dest-filename": "thiserror-impl-1.0.24.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%229be73a2caec27583d0046ef3796c3794f868a5bc813db689eed00c7631275cd1%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/thiserror-impl-1.0.23",
+        "url": "data:%7B%22package%22%3A%20%227765189610d8241a44529806d6fd1f2e0a08734313a35d5b3a556f92b381f3c0%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/thiserror-impl-1.0.24",
         "dest-filename": ".cargo-checksum.json"
     },
     {
