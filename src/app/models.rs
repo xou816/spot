@@ -32,7 +32,12 @@ impl From<PlaylistDescription> for AlbumModel {
 
 impl SongDescription {
     pub fn to_song_model(&self, position: usize) -> SongModel {
-        SongModel::new(&self.id, (position + 1) as u32, &self.title, &self.artists_name())
+        SongModel::new(
+            &self.id,
+            (position + 1) as u32,
+            &self.title,
+            &self.artists_name(),
+        )
     }
 }
 

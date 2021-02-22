@@ -8,7 +8,7 @@ use zbus::fdo::{Error, Result};
 use zbus::ObjectServer;
 
 use super::types::*;
-use crate::app::{AppAction, state::PlaybackAction};
+use crate::app::{state::PlaybackAction, AppAction};
 
 #[derive(Clone)]
 pub struct SpotMpris {

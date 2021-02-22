@@ -1,5 +1,6 @@
 use gtk::prelude::*;
 use gtk::{ImageExt, LabelExt};
+use std::ops::Deref;
 use std::rc::Rc;
 
 use crate::app::components::EventListener;
@@ -22,8 +23,8 @@ impl PlaybackInfoModel {
         }
     }
 
-    fn current_song(&self) -> Option<SongDescription> {
-        self.app_model.get_state().current_song()
+    fn current_song(&self) -> Option<impl Deref<Target = SongDescription> + '_> {
+        self.app_model.map_state_opt(|s| s.playback.current_song())
     }
 
     fn go_home(&self) {
@@ -73,7 +74,7 @@ impl PlaybackInfo {
             let image1 = self.current_song_image.downgrade();
             let image2 = self.current_song_image_small.downgrade();
 
-            if let Some(url) = song.art {
+            if let Some(url) = song.art.clone() {
                 self.worker.send_local_task(async move {
                     let loader = ImageLoader::new();
                     let result = loader.load_remote(&url, "jpg", 48, 48).await;

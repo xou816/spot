@@ -6,7 +6,7 @@ use std::rc::Rc;
 use std::thread;
 use tokio_core::reactor::Core;
 
-use crate::app::state::{PlaybackAction};
+use crate::app::state::PlaybackAction;
 use crate::app::{credentials, AppAction};
 
 mod player;

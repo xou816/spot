@@ -1,5 +1,4 @@
 use crate::app::credentials;
-use crate::app::models::*;
 use crate::app::state::{
     browser_state::{BrowserAction, BrowserEvent, BrowserState},
     playback_state::{PlaybackAction, PlaybackEvent, PlaybackState},
@@ -102,17 +101,5 @@ impl AppState {
                 .map(AppEvent::BrowserEvent)
                 .collect(),
         }
-    }
-
-    pub fn current_song(&self) -> Option<SongDescription> {
-        self.playback.current_song()
-    }
-
-    pub fn prev_song(&self) -> Option<&SongDescription> {
-        self.playback.prev_song()
-    }
-
-    pub fn next_song(&self) -> Option<&SongDescription> {
-        self.playback.next_song()
     }
 }

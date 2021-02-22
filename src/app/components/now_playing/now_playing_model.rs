@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 use crate::app::components::PlaylistModel;
 use crate::app::models::SongModel;
-use crate::app::state::{PlayQueue, PlaybackAction, PlaybackEvent};
+use crate::app::state::{PlaybackAction, PlaybackEvent, PlaybackState};
 use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState};
 
 pub struct NowPlayingModel {
@@ -25,14 +25,14 @@ impl NowPlayingModel {
         self.app_model.get_state()
     }
 
-    fn queue(&self) -> Ref<'_, PlayQueue> {
-        Ref::map(self.state(), |s| &s.playback.playlist)
+    fn queue(&self) -> Ref<'_, PlaybackState> {
+        Ref::map(self.state(), |s| &s.playback)
     }
 }
 
 impl PlaylistModel for NowPlayingModel {
     fn current_song_id(&self) -> Option<String> {
-        self.state().playback.current_song_id.clone()
+        self.queue().current_song_id.clone()
     }
     fn songs(&self) -> Vec<SongModel> {
         self.queue()
@@ -47,7 +47,10 @@ impl PlaylistModel for NowPlayingModel {
     }
 
     fn should_refresh_songs(&self, event: &AppEvent) -> bool {
-        matches!(event, AppEvent::PlaybackEvent(PlaybackEvent::PlaylistChanged))
+        matches!(
+            event,
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaylistChanged)
+        )
     }
 
     fn actions_for(&self, id: String) -> Option<gio::ActionGroup> {

@@ -9,7 +9,7 @@ use crate::app::components::{
     EventListener,
 };
 use crate::app::state::{PlaybackAction, PlaybackEvent};
-use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState};
+use crate::app::{ActionDispatcher, AppEvent, AppModel, AppState};
 
 pub struct PlaybackControlModel {
     app_model: Rc<AppModel>,
@@ -29,12 +29,14 @@ impl PlaybackControlModel {
     }
 
     pub fn is_playing(&self) -> bool {
-        let state = self.state();
-        state.playback.is_playing && state.playback.current_song_id.is_some()
+        self.state().playback.is_playing()
     }
 
     pub fn current_song_duration(&self) -> Option<f64> {
-        self.state().current_song().map(|s| s.duration as f64)
+        self.state()
+            .playback
+            .current_song()
+            .map(|s| s.duration as f64)
     }
 
     pub fn play_next_song(&self) {
