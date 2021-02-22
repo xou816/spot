@@ -170,16 +170,16 @@ impl App {
         dispatcher: Box<dyn ActionDispatcher>,
     ) -> Box<PlaybackControl> {
         let play_button: gtk::Button = builder.get_object("play_pause").unwrap();
-        let shuffle_button: gtk::ToggleButton = builder.get_object("shuffle").unwrap();
         let next: gtk::Button = builder.get_object("next").unwrap();
         let prev: gtk::Button = builder.get_object("prev").unwrap();
         let seek_bar: gtk::Scale = builder.get_object("seek_bar").unwrap();
+        let track_position: gtk::Label = builder.get_object("track_position").unwrap();
         let track_duration: gtk::Label = builder.get_object("track_duration").unwrap();
 
         let widget = PlaybackControlWidget::new(
             play_button,
-            shuffle_button,
             seek_bar,
+            track_position,
             track_duration,
             next,
             prev,
