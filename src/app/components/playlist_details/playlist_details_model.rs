@@ -5,17 +5,19 @@ use std::rc::Rc;
 use crate::app::components::{handle_error, PlaylistModel};
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
-use crate::app::state::{BrowserAction, BrowserEvent, PlaybackAction};
+use crate::app::state::{BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource};
 use crate::app::{AppEvent, AppModel, AppState};
 
 pub struct PlaylistDetailsModel {
+    id: String,
     app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>,
 }
 
 impl PlaylistDetailsModel {
-    pub fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
+    pub fn new(id: String, app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
         Self {
+            id,
             app_model,
             dispatcher,
         }
@@ -26,8 +28,9 @@ impl PlaylistDetailsModel {
             .map_state_opt(|s| s.browser.playlist_details_state()?.content.as_ref())
     }
 
-    pub fn load_playlist_info(&self, id: String) {
+    pub fn load_playlist_info(&self) {
         let api = self.app_model.get_spotify();
+        let id = self.id.clone();
         self.dispatcher.dispatch_async(Box::pin(async move {
             match api.get_playlist(&id).await {
                 Ok(playlist) => Some(BrowserAction::SetPlaylistDetails(playlist).into()),
@@ -63,12 +66,16 @@ impl PlaylistModel for PlaylistDetailsModel {
     }
 
     fn play_song(&self, id: String) {
-        // let full_state = self.app_model.get_state();
-        // let is_in_playlist = full_state.playback.playlist.song(&id).is_some();
-        // if !is_in_playlist {
-        //     self.dispatcher
-        //         .dispatch(AppAction::LoadPlaylist(self.songs().cloned().collect()));
-        // }
+        let source = PlaylistSource::Playlist(self.id.clone());
+        if self.app_model.get_state().playback.source != source {
+            let songs = self.app_model.map_state_opt(|s| {
+                Some(&s.browser.playlist_details_state()?.content.as_ref()?.songs)
+            });
+            if let Some(songs) = songs {
+                self.dispatcher
+                    .dispatch(PlaybackAction::LoadPlaylist(source, songs.clone()).into());
+            }
+        }
         self.dispatcher.dispatch(PlaybackAction::Load(id).into());
     }
 

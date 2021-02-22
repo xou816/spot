@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use crate::app::components::{handle_error, PlaylistModel};
 use crate::app::models::*;
-use crate::app::state::{BrowserAction, BrowserEvent, PlaybackAction};
+use crate::app::state::{BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource};
 use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, ListStore};
 
 pub struct ArtistDetailsModel {
@@ -85,13 +85,15 @@ impl PlaylistModel for ArtistDetailsModel {
     }
 
     fn play_song(&self, id: String) {
-        let full_state = self.app_model.get_state();
-        let is_in_playlist = full_state.playback.song(&id).is_some();
-        // if !is_in_playlist {
-        //     self.dispatcher
-        //         .dispatch(AppAction::LoadPlaylist(self.songs().cloned().collect()));
-        // }
-        self.dispatcher.dispatch(PlaybackAction::Load(id).into());
+        let tracks = self
+            .app_model
+            .map_state_opt(|s| Some(&s.browser.artist_state()?.top_tracks));
+        if let Some(tracks) = tracks {
+            self.dispatcher.dispatch(
+                PlaybackAction::LoadPlaylist(PlaylistSource::None, tracks.clone()).into(),
+            );
+            self.dispatcher.dispatch(PlaybackAction::Load(id).into());
+        }
     }
 
     fn should_refresh_songs(&self, event: &AppEvent) -> bool {

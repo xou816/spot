@@ -60,9 +60,9 @@ where
         Self { list_model, model }
     }
 
-    fn create_row_for(
+    fn create_row_for<M: PlaylistModel>(
         item: &SongModel,
-        model: Weak<dyn PlaylistModel>,
+        model: Weak<M>,
         actions: Option<gio::ActionGroup>,
         menu: Option<gio::MenuModel>,
     ) -> gtk::ListBoxRow {
@@ -104,11 +104,7 @@ where
 
     fn reset_list(&mut self) {
         let list_model = &mut self.list_model;
-        list_model.remove_all();
-
-        for song in self.model.songs() {
-            list_model.append(song);
-        }
+        list_model.replace_all(self.model.songs());
     }
 }
 

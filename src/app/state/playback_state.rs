@@ -4,11 +4,31 @@ use std::collections::HashMap;
 use crate::app::models::SongDescription;
 use crate::app::state::{AppAction, AppEvent, UpdatableState};
 
+#[derive(Clone, Debug)]
+pub enum PlaylistSource {
+    Playlist(String),
+    Album(String),
+    None,
+}
+
+impl PartialEq for PlaylistSource {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (&Self::Playlist(ref a), &Self::Playlist(ref b)) => a == b,
+            (&Self::Album(ref a), &Self::Album(ref b)) => a == b,
+            _ => false,
+        }
+    }
+}
+
+impl Eq for PlaylistSource {}
+
 pub struct PlaybackState {
     rng: SmallRng,
     indexed_songs: HashMap<String, SongDescription>,
     running_order: Vec<String>,
     running_order_shuffled: Option<Vec<String>>,
+    pub source: PlaylistSource,
     is_playing: bool,
     pub current_song_id: Option<String>,
 }
@@ -53,30 +73,33 @@ impl PlaybackState {
             .and_then(|id| self.songs().skip_while(|&song| song.id != *id).nth(1))
     }
 
-    fn index_tracks(tracks: &[SongDescription]) -> HashMap<String, SongDescription> {
+    fn index_tracks(tracks: Vec<SongDescription>) -> HashMap<String, SongDescription> {
         let mut map: HashMap<String, SongDescription> = HashMap::with_capacity(tracks.len());
-        for track in tracks.iter() {
-            map.insert(track.id.clone(), track.clone());
+        for track in tracks.into_iter() {
+            map.insert(track.id.clone(), track);
         }
         map
     }
 
-    fn shuffle(&mut self, keep_index: Option<usize>) {
-        let mut shuffled = self.running_order.clone();
-        let mut final_list = if let Some(index) = keep_index {
-            vec![shuffled.remove(index)]
-        } else {
-            vec![]
-        };
-        shuffled.shuffle(&mut self.rng);
-        final_list.append(&mut shuffled);
+    fn shuffle(&mut self) {
+        let mut to_shuffle: Vec<String> = self
+            .running_order
+            .iter()
+            .filter(|&id| Some(id) != self.current_song_id.as_ref())
+            .cloned()
+            .collect();
+        let mut final_list: Vec<String> = self.current_song_id.iter().cloned().collect();
+        to_shuffle.shuffle(&mut self.rng);
+        final_list.append(&mut to_shuffle);
         self.running_order_shuffled = Some(final_list);
     }
 
-    fn set_tracks(&mut self, tracks: &[SongDescription], keep_index: Option<usize>) {
+    fn set_playlist(&mut self, source: PlaylistSource, tracks: Vec<SongDescription>) {
+        self.source = source;
+        self.running_order = tracks.iter().map(|t| t.id.clone()).collect();
         self.indexed_songs = Self::index_tracks(tracks);
         if self.is_shuffled() {
-            self.shuffle(keep_index);
+            self.shuffle();
         }
     }
 
@@ -112,9 +135,11 @@ impl PlaybackState {
         }
     }
 
-    fn toggle_shuffle(&mut self, keep_index: Option<usize>) {
+    fn toggle_shuffle(&mut self) {
         if !self.is_shuffled() {
-            self.shuffle(keep_index);
+            self.shuffle();
+        } else {
+            self.running_order_shuffled = None;
         }
     }
 }
@@ -126,6 +151,7 @@ impl Default for PlaybackState {
             indexed_songs: HashMap::new(),
             running_order: vec![],
             running_order_shuffled: None,
+            source: PlaylistSource::None,
             is_playing: false,
             current_song_id: None,
         }
@@ -139,7 +165,7 @@ pub enum PlaybackAction {
     Seek(u32),
     SyncSeek(u32),
     Load(String),
-    LoadPlaylist(Vec<SongDescription>),
+    LoadPlaylist(PlaylistSource, Vec<SongDescription>),
     Next,
     Previous,
 }
@@ -184,7 +210,7 @@ impl UpdatableState for PlaybackState {
                 }
             }
             PlaybackAction::ToggleShuffle => {
-                //self.playlist.toggle_shuffle(self.song_index());
+                self.toggle_shuffle();
                 vec![PlaybackEvent::PlaylistChanged]
             }
             PlaybackAction::Next => {
@@ -205,8 +231,8 @@ impl UpdatableState for PlaybackState {
                 self.play(&id);
                 vec![PlaybackEvent::TrackChanged(id), PlaybackEvent::TrackResumed]
             }
-            PlaybackAction::LoadPlaylist(tracks) => {
-                self.set_tracks(&tracks, None);
+            PlaybackAction::LoadPlaylist(source, tracks) => {
+                self.set_playlist(source, tracks);
                 vec![PlaybackEvent::PlaylistChanged]
             }
             PlaybackAction::Seek(pos) => vec![PlaybackEvent::TrackSeeked(pos)],
