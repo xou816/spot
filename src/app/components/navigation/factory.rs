@@ -39,8 +39,8 @@ impl ScreenFactory {
     }
 
     pub fn make_album_details(&self, id: String) -> Details {
-        let model = DetailsModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        Details::new(id, model, self.worker.clone())
+        let model = DetailsModel::new(id, Rc::clone(&self.app_model), self.dispatcher.box_clone());
+        Details::new(model, self.worker.clone())
     }
 
     pub fn make_search_results(&self) -> SearchResults {
@@ -57,7 +57,7 @@ impl ScreenFactory {
 
     pub fn make_playlist_details(&self, id: String) -> PlaylistDetails {
         let model =
-            PlaylistDetailsModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        PlaylistDetails::new(id, model, self.worker.clone())
+            PlaylistDetailsModel::new(id, Rc::clone(&self.app_model), self.dispatcher.box_clone());
+        PlaylistDetails::new(model, self.worker.clone())
     }
 }
