@@ -1388,6 +1388,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "805026a5d0141ffc30abb3be3173848ad46a1b1664fe632428479619a3644d77"
 
 [[package]]
+name = "hex"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "644f9158b2f133fd50f5fb3242878846d9eb792e445c893805ff0e3824006e35"
+
+[[package]]
 name = "hkdf"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1766,7 +1772,7 @@ dependencies = [
  "env_logger",
  "futures 0.1.30",
  "getopts",
- "hex",
+ "hex 0.3.2",
  "hyper",
  "librespot-audio",
  "librespot-connect",
@@ -2514,12 +2520,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pollster"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a0c427c464eaca5923b642b3b346792b9c98edd91026aa6a753435e42d2a07b"
-
-[[package]]
 name = "ppv-lite86"
 version = "0.2.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3072,6 +3072,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "sha1"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2579985fda508104f7587689507983eadd6a6e84dd35d6d115361f530916fa0d"
+
+[[package]]
 name = "sha2"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3219,7 +3225,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio-core",
- "zbus 2.0.0-beta",
+ "zbus 2.0.0-beta.2",
  "zvariant",
  "zvariant_derive",
 ]
@@ -4000,26 +4006,27 @@ dependencies = [
 
 [[package]]
 name = "zbus"
-version = "2.0.0-beta"
+version = "2.0.0-beta.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "af79db7390577a815660d03f7c4975519dfaa36c8d13f42d7fcff3a6d8000e12"
+checksum = "b50a2ffd6637b05dd587c1877b969705412da85e56f5231d7c15064e9e1ebf8b"
 dependencies = [
  "async-io",
  "async-lock",
  "byteorder",
  "derivative",
  "enumflags2",
- "fastrand",
  "futures-core",
  "futures-sink",
  "futures-util",
+ "hex 0.4.2",
  "nix 0.19.1",
  "once_cell",
- "pollster",
+ "rand 0.8.3",
  "scoped-tls 1.0.0",
  "serde",
  "serde_repr",
- "zbus_macros 2.0.0-beta",
+ "sha1",
+ "zbus_macros 2.0.0-beta.2",
  "zvariant",
 ]
 
@@ -4037,9 +4044,9 @@ dependencies = [
 
 [[package]]
 name = "zbus_macros"
-version = "2.0.0-beta"
+version = "2.0.0-beta.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "af34a6cffc3b48f8d009f174a743f1282856535011e16ec832a030fe2b926106"
+checksum = "f2adffa6284f0c9a5cf098bca0f3982540f525c73186ed5e54519c98b607c62e"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
