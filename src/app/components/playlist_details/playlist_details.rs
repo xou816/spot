@@ -37,9 +37,9 @@ pub struct PlaylistDetails {
 }
 
 impl PlaylistDetails {
-    pub fn new(id: String, model: PlaylistDetailsModel, worker: Worker) -> Self {
+    pub fn new(model: PlaylistDetailsModel, worker: Worker) -> Self {
         if model.get_playlist_info().is_none() {
-            model.load_playlist_info(id);
+            model.load_playlist_info();
         }
 
         let model = Rc::new(model);

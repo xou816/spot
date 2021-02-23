@@ -1,4 +1,3 @@
-use ref_filter_map::*;
 use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
@@ -6,17 +5,19 @@ use std::rc::Rc;
 use crate::app::components::{handle_error, PlaylistModel};
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
-use crate::app::state::{BrowserAction, BrowserEvent, PlaylistDetailsState};
-use crate::app::{AppAction, AppEvent, AppModel, AppState};
+use crate::app::state::{BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource};
+use crate::app::{AppEvent, AppModel, AppState};
 
 pub struct PlaylistDetailsModel {
+    id: String,
     app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>,
 }
 
 impl PlaylistDetailsModel {
-    pub fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
+    pub fn new(id: String, app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
         Self {
+            id,
             app_model,
             dispatcher,
         }
@@ -24,11 +25,12 @@ impl PlaylistDetailsModel {
 
     pub fn get_playlist_info(&self) -> Option<impl Deref<Target = PlaylistDescription> + '_> {
         self.app_model
-            .map_state_opt(|s| s.browser_state.playlist_details_state()?.content.as_ref())
+            .map_state_opt(|s| s.browser.playlist_details_state()?.content.as_ref())
     }
 
-    pub fn load_playlist_info(&self, id: String) {
+    pub fn load_playlist_info(&self) {
         let api = self.app_model.get_spotify();
+        let id = self.id.clone();
         self.dispatcher.dispatch_async(Box::pin(async move {
             match api.get_playlist(&id).await {
                 Ok(playlist) => Some(BrowserAction::SetPlaylistDetails(playlist).into()),
@@ -42,30 +44,39 @@ impl PlaylistDetailsModel {
     fn state(&self) -> Ref<'_, AppState> {
         self.app_model.get_state()
     }
-
-    fn details_state(&self) -> Option<Ref<'_, PlaylistDetailsState>> {
-        self.app_model
-            .map_state_opt(|s| s.browser_state.playlist_details_state())
-    }
 }
 
 impl PlaylistModel for PlaylistDetailsModel {
     fn current_song_id(&self) -> Option<String> {
-        self.state().current_song_id.clone()
+        self.state().playback.current_song_id.clone()
     }
 
-    fn songs(&self) -> Option<Ref<'_, Vec<SongDescription>>> {
-        ref_filter_map(self.details_state()?, |s| Some(&s.content.as_ref()?.songs))
+    fn songs(&self) -> Vec<SongModel> {
+        let songs = self
+            .app_model
+            .map_state_opt(|s| Some(&s.browser.playlist_details_state()?.content.as_ref()?.songs));
+        match songs {
+            Some(songs) => songs
+                .iter()
+                .enumerate()
+                .map(|(i, s)| s.to_song_model(i))
+                .collect(),
+            None => vec![],
+        }
     }
 
     fn play_song(&self, id: String) {
-        let full_state = self.app_model.get_state();
-        let is_in_playlist = full_state.playlist.songs().iter().any(|s| s.id.eq(&id));
-        if let (Some(songs), false) = (self.songs(), is_in_playlist) {
-            self.dispatcher
-                .dispatch(AppAction::LoadPlaylist(songs.clone()));
+        let source = PlaylistSource::Playlist(self.id.clone());
+        if self.app_model.get_state().playback.source != source {
+            let songs = self.app_model.map_state_opt(|s| {
+                Some(&s.browser.playlist_details_state()?.content.as_ref()?.songs)
+            });
+            if let Some(songs) = songs {
+                self.dispatcher
+                    .dispatch(PlaybackAction::LoadPlaylist(source, songs.clone()).into());
+            }
         }
-        self.dispatcher.dispatch(AppAction::Load(id));
+        self.dispatcher.dispatch(PlaybackAction::Load(id).into());
     }
 
     fn should_refresh_songs(&self, event: &AppEvent) -> bool {

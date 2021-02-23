@@ -31,6 +31,15 @@ where
         self.store.append(&element);
     }
 
+    pub fn replace_all(&mut self, content: Vec<GType>) {
+        let upcast_vec: Vec<glib::Object> = content
+            .into_iter()
+            .map(|e| e.upcast::<glib::Object>())
+            .collect();
+        self.store
+            .splice(0, self.store.get_n_items(), &upcast_vec[..]);
+    }
+
     pub fn insert(&mut self, position: u32, element: GType) {
         self.store.insert(position, &element);
     }

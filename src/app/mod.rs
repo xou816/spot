@@ -17,7 +17,6 @@ pub mod dbus;
 pub mod gtypes;
 
 pub mod models;
-use models::*;
 
 mod list_store;
 pub use list_store::*;

@@ -27,15 +27,14 @@ impl NavigationModel {
     }
 
     pub fn visible_child_name(&self) -> impl Deref<Target = ScreenName> + '_ {
-        self.app_model
-            .map_state(|s| s.browser_state.current_screen())
+        self.app_model.map_state(|s| s.browser.current_screen())
     }
 
     pub fn can_go_back(&self) -> bool {
-        self.app_model.get_state().browser_state.can_pop()
+        self.app_model.get_state().browser.can_pop()
     }
 
     pub fn children_count(&self) -> usize {
-        self.app_model.get_state().browser_state.count()
+        self.app_model.get_state().browser.count()
     }
 }

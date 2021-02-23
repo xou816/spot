@@ -8,7 +8,7 @@ use zbus::fdo::{Error, Result};
 use zbus::ObjectServer;
 
 use super::types::*;
-use crate::app::AppAction;
+use crate::app::{state::PlaybackAction, AppAction};
 
 #[derive(Clone)]
 pub struct SpotMpris {
@@ -80,7 +80,7 @@ impl SpotMprisPlayer {
 impl SpotMprisPlayer {
     pub fn next(&mut self) -> Result<()> {
         self.sender
-            .unbounded_send(AppAction::Next)
+            .unbounded_send(PlaybackAction::Next.into())
             .map_err(|_| Error::Failed("Could not send action".to_string()))
     }
 
@@ -98,7 +98,7 @@ impl SpotMprisPlayer {
 
     pub fn play_pause(&mut self) -> Result<()> {
         self.sender
-            .unbounded_send(AppAction::TogglePlay)
+            .unbounded_send(PlaybackAction::TogglePlay.into())
             .map_err(|_| Error::Failed("Could not send action".to_string()))
     }
 
@@ -136,7 +136,7 @@ impl SpotMprisPlayer {
 
     fn previous(&mut self) -> Result<()> {
         self.sender
-            .unbounded_send(AppAction::Previous)
+            .unbounded_send(PlaybackAction::Previous.into())
             .map_err(|_| zbus::fdo::Error::Failed("Could not send action".to_string()))
     }
 

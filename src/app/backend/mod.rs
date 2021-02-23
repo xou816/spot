@@ -6,8 +6,8 @@ use std::rc::Rc;
 use std::thread;
 use tokio_core::reactor::Core;
 
-use super::AppAction;
-use crate::app::credentials;
+use crate::app::state::PlaybackAction;
+use crate::app::{credentials, AppAction};
 
 mod player;
 pub use player::{SpotifyError, SpotifyPlayer, SpotifyPlayerDelegate};
@@ -42,7 +42,7 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
     fn end_of_track_reached(&self) {
         self.sender
             .borrow_mut()
-            .unbounded_send(AppAction::Next)
+            .unbounded_send(PlaybackAction::Next.into())
             .unwrap();
     }
 
@@ -70,7 +70,7 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
     fn notify_playback_state(&self, position: u32) {
         self.sender
             .borrow_mut()
-            .unbounded_send(AppAction::SyncSeek(position))
+            .unbounded_send(PlaybackAction::SyncSeek(position).into())
             .unwrap();
     }
 }

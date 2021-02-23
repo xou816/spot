@@ -94,6 +94,7 @@ sources = files(
 './app/state/app_model.rs',
 './app/state/browser_state.rs',
 './app/state/screen_states.rs',
+'./app/state/playback_state.rs',
 './app/state/app_state.rs',
 './app/state/mod.rs',
 './app/gtypes/album_model.rs',
