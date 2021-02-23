@@ -36,14 +36,8 @@ where
             .into_iter()
             .map(|e| e.upcast::<glib::Object>())
             .collect();
-        let now = std::time::SystemTime::now();
         self.store
             .splice(0, self.store.get_n_items(), &upcast_vec[..]);
-        println!(
-            "{:?} ({} items)",
-            now.elapsed().unwrap().as_millis(),
-            self.store.get_n_items()
-        );
     }
 
     pub fn insert(&mut self, position: u32, element: GType) {
