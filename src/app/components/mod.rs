@@ -1,13 +1,16 @@
-use crate::app::backend::api::SpotifyApiError;
-use crate::app::{AppAction, AppEvent};
-use gtk::prelude::*;
-
 #[macro_export]
 macro_rules! resource {
     ($resource:expr) => {
         concat!("/dev/alextren/Spot", $resource)
     };
 }
+
+use crate::app::backend::api::SpotifyApiError;
+use crate::app::{AppAction, AppEvent};
+
+use gtk::prelude::*;
+use std::cell::RefCell;
+use std::collections::HashSet;
 
 mod navigation;
 pub use navigation::*;
@@ -75,15 +78,25 @@ pub fn handle_error(err: SpotifyApiError) -> Option<AppAction> {
     }
 }
 
-pub fn screen_add_css_provider(resource: &str) {
-    let provider = gtk::CssProvider::new();
-    provider.load_from_resource(resource);
+thread_local!(static CSS_ADDED: RefCell<HashSet<&'static str>> = RefCell::new(HashSet::new()));
 
-    gtk::StyleContext::add_provider_for_screen(
-        &gdk::Screen::get_default().unwrap(),
-        &provider,
-        gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
-    );
+pub fn screen_add_css_provider(resource: &'static str) {
+    CSS_ADDED.with(|set| {
+        if set.borrow().contains(resource) {
+            return;
+        }
+
+        set.borrow_mut().insert(resource);
+
+        let provider = gtk::CssProvider::new();
+        provider.load_from_resource(resource);
+
+        gtk::StyleContext::add_provider_for_screen(
+            &gdk::Screen::get_default().unwrap(),
+            &provider,
+            gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+        );
+    });
 }
 
 pub trait EventListener {
