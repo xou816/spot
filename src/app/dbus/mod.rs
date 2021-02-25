@@ -56,7 +56,7 @@ impl AppPlaybackStateListener {
                      ..
                  }| TrackMetadata {
                     id: format!("/dev/alextren/Spot/Track/{}", id),
-                    length: duration as u64,
+                    length: 1000 * duration as u64,
                     title,
                     artist: artists.into_iter().map(|a| a.name).collect(),
                 },
@@ -99,6 +99,16 @@ impl EventListener for AppPlaybackStateListener {
                     player.state.set_has_prev(has_prev);
                     player.state.set_has_next(has_next);
                     player.notify_metadata_and_prev_next()?;
+                    Ok(())
+                })
+                .unwrap();
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::TrackSeeked(pos))
+            | AppEvent::PlaybackEvent(PlaybackEvent::SeekSynced(pos)) => {
+                self.with_player(|player| {
+                    let pos = 1000 * (*pos as u128);
+                    player.state.set_position(pos);
+                    player.seeked(pos as i64)?;
                     Ok(())
                 })
                 .unwrap();
