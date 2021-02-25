@@ -155,7 +155,9 @@ impl SharedMprisState {
 
     pub fn set_current_track(&self, track: Option<TrackMetadata>) {
         if let Ok(mut state) = self.0.lock() {
+            let playing = state.status == PlaybackStatus::Playing;
             (*state).metadata = track;
+            (*state).position.set(0, playing);
         }
     }
 
@@ -174,14 +176,19 @@ impl SharedMprisState {
         }
     }
 
-    pub fn set_playing(&self, playing: bool) {
+    pub fn set_playing(&self, status: PlaybackStatus) {
         if let Ok(mut state) = self.0.lock() {
-            if playing {
-                (*state).position.resume();
-                (*state).status = PlaybackStatus::Playing;
-            } else {
-                (*state).position.pause();
-                (*state).status = PlaybackStatus::Paused;
+            (*state).status = status;
+            match status {
+                PlaybackStatus::Playing => {
+                    (*state).position.resume();
+                }
+                PlaybackStatus::Paused => {
+                    (*state).position.pause();
+                }
+                PlaybackStatus::Stopped => {
+                    (*state).position.set(0, false);
+                }
             }
         }
     }
