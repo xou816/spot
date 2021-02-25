@@ -77,7 +77,7 @@ impl EventListener for AppPlaybackStateListener {
         match event {
             AppEvent::PlaybackEvent(PlaybackEvent::PlaybackPaused) => {
                 self.with_player(|player| {
-                    player.state.set_playing(false);
+                    player.state.set_playing(PlaybackStatus::Paused);
                     player.notify_playback_status()?;
                     Ok(())
                 })
@@ -85,7 +85,15 @@ impl EventListener for AppPlaybackStateListener {
             }
             AppEvent::PlaybackEvent(PlaybackEvent::PlaybackResumed) => {
                 self.with_player(|player| {
-                    player.state.set_playing(true);
+                    player.state.set_playing(PlaybackStatus::Playing);
+                    player.notify_playback_status()?;
+                    Ok(())
+                })
+                .unwrap();
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackStopped) => {
+                self.with_player(|player| {
+                    player.state.set_playing(PlaybackStatus::Stopped);
                     player.notify_playback_status()?;
                     Ok(())
                 })
