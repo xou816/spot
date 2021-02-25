@@ -84,13 +84,21 @@ impl PlaybackInfo {
                     }
                 });
             }
+        } else {
+            self.current_song_info.set_label("No song playing");
+            self.current_song_image
+                .set_from_icon_name(Some("emblem-music-symbolic"), gtk::IconSize::Button);
+            self.current_song_image_small
+                .set_from_icon_name(Some("emblem-music-symbolic"), gtk::IconSize::Button);
         }
     }
 }
 
 impl EventListener for PlaybackInfo {
     fn on_event(&mut self, event: &AppEvent) {
-        if let AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) = event {
+        if let AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_))
+        | AppEvent::PlaybackEvent(PlaybackEvent::PlaybackStopped) = event
+        {
             self.update_current_info();
         }
     }

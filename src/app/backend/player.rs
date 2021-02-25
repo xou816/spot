@@ -79,6 +79,11 @@ impl SpotifyPlayer {
                 player.pause();
                 Ok(())
             }
+            Command::PlayerStop => {
+                let player = player.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
+                player.stop();
+                Ok(())
+            }
             Command::PlayerSeek(position) => {
                 let player = player.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
                 player.seek(position);

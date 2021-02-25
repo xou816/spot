@@ -75,7 +75,7 @@ impl AppPlaybackStateListener {
 impl EventListener for AppPlaybackStateListener {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::PlaybackEvent(PlaybackEvent::TrackPaused) => {
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackPaused) => {
                 self.with_player(|player| {
                     player.state.set_playing(false);
                     player.notify_playback_status()?;
@@ -83,7 +83,7 @@ impl EventListener for AppPlaybackStateListener {
                 })
                 .unwrap();
             }
-            AppEvent::PlaybackEvent(PlaybackEvent::TrackResumed) => {
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackResumed) => {
                 self.with_player(|player| {
                     player.state.set_playing(true);
                     player.notify_playback_status()?;

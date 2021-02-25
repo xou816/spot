@@ -108,6 +108,11 @@ impl PlaybackState {
         self.is_playing = true;
     }
 
+    fn stop(&mut self) {
+        self.current_song_id = None;
+        self.is_playing = false;
+    }
+
     fn play_next(&mut self) -> Option<String> {
         let id = self.next_song().map(|next| next.id.clone());
         if let Some(id) = id.clone() {
@@ -178,12 +183,13 @@ impl Into<AppAction> for PlaybackAction {
 
 #[derive(Clone, Debug)]
 pub enum PlaybackEvent {
-    TrackPaused,
-    TrackResumed,
+    PlaybackPaused,
+    PlaybackResumed,
     TrackSeeked(u32),
     SeekSynced(u32),
     TrackChanged(String),
     PlaylistChanged,
+    PlaybackStopped,
 }
 
 impl Into<AppEvent> for PlaybackEvent {
@@ -201,9 +207,9 @@ impl UpdatableState for PlaybackState {
             PlaybackAction::TogglePlay => {
                 if let Some(playing) = self.toggle_play() {
                     if playing {
-                        vec![PlaybackEvent::TrackResumed]
+                        vec![PlaybackEvent::PlaybackResumed]
                     } else {
-                        vec![PlaybackEvent::TrackPaused]
+                        vec![PlaybackEvent::PlaybackPaused]
                     }
                 } else {
                     vec![]
@@ -215,21 +221,22 @@ impl UpdatableState for PlaybackState {
             }
             PlaybackAction::Next => {
                 if let Some(id) = self.play_next() {
-                    vec![PlaybackEvent::TrackChanged(id), PlaybackEvent::TrackResumed]
+                    vec![PlaybackEvent::TrackChanged(id), PlaybackEvent::PlaybackResumed]
                 } else {
-                    vec![]
+                    self.stop();
+                    vec![PlaybackEvent::PlaybackStopped]
                 }
             }
             PlaybackAction::Previous => {
                 if let Some(id) = self.play_prev() {
-                    vec![PlaybackEvent::TrackChanged(id), PlaybackEvent::TrackResumed]
+                    vec![PlaybackEvent::TrackChanged(id), PlaybackEvent::PlaybackResumed]
                 } else {
                     vec![]
                 }
             }
             PlaybackAction::Load(id) => {
                 self.play(&id);
-                vec![PlaybackEvent::TrackChanged(id), PlaybackEvent::TrackResumed]
+                vec![PlaybackEvent::TrackChanged(id), PlaybackEvent::PlaybackResumed]
             }
             PlaybackAction::LoadPlaylist(source, tracks) => {
                 self.set_playlist(source, tracks);
