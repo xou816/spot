@@ -153,7 +153,8 @@ impl SpotMprisPlayer {
     }
 
     #[dbus_interface(signal)]
-    fn seeked(&self, Position: i64) -> zbus::Result<()>;
+    #[rustfmt::skip]
+    pub fn seeked(&self, Position: i64) -> zbus::Result<()>;
 
     #[dbus_interface(property)]
     pub fn can_control(&self) -> bool {
@@ -212,7 +213,7 @@ impl SpotMprisPlayer {
 
     #[dbus_interface(property)]
     pub fn position(&self) -> i64 {
-        0i64
+        self.state.position() as i64
     }
 
     #[dbus_interface(property)]
