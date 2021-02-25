@@ -42,9 +42,13 @@ fn main() {
     context.spawn_local(app.attach(dispatch_loop));
 
     gtk_app.connect_activate(move |gtk_app| {
-        window.set_application(Some(gtk_app));
-        gtk_app.add_window(&window);
-        sender.unbounded_send(AppAction::Start).unwrap();
+        if let Some(existing_window) = gtk_app.get_active_window() {
+            existing_window.present();
+        } else {
+            window.set_application(Some(gtk_app));
+            gtk_app.add_window(&window);
+            sender.unbounded_send(AppAction::Start).unwrap();
+        }
     });
 
     context.invoke_local(move || {

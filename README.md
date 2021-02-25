@@ -51,5 +51,5 @@ Then, with meson:
 
 ```
 meson target -Dbuildtype=debug -Doffline=false --prefix="$HOME/.local"
-ninja -C target
+ninja install -C target
 ```
