@@ -23,6 +23,7 @@ pub enum Command {
     PlayerLoad(SpotifyId),
     PlayerResume,
     PlayerPause,
+    PlayerStop,
     PlayerSeek(u32),
     RefreshToken,
 }
