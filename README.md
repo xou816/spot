@@ -53,3 +53,5 @@ Then, with meson:
 meson target -Dbuildtype=debug -Doffline=false --prefix="$HOME/.local"
 ninja install -C target
 ```
+
+This will install a `.desktop` file among other things, and the spot executable will be put in `.local/bin` (you might want to add it to your path).
