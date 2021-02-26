@@ -2146,93 +2146,93 @@
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/librespot/librespot-0.1.3.crate",
-        "sha256": "c9de5f3110cf89c5b9ac715a895a0b2274d8dc449a93998d548714dae9b7290e",
+        "url": "https://static.crates.io/crates/librespot/librespot-0.1.6.crate",
+        "sha256": "ab9ce22dea20b7869ec5bd848435e7e8e0278c67852618e680762e56151cc566",
         "dest": "cargo/vendor",
-        "dest-filename": "librespot-0.1.3.crate"
+        "dest-filename": "librespot-0.1.6.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%22c9de5f3110cf89c5b9ac715a895a0b2274d8dc449a93998d548714dae9b7290e%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/librespot-0.1.3",
+        "url": "data:%7B%22package%22%3A%20%22ab9ce22dea20b7869ec5bd848435e7e8e0278c67852618e680762e56151cc566%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/librespot-0.1.6",
         "dest-filename": ".cargo-checksum.json"
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/librespot-audio/librespot-audio-0.1.3.crate",
-        "sha256": "1bb21228db5a87fdc2774cd4b3fe32e898a4a1f4957c82e9faa196cca71bf839",
+        "url": "https://static.crates.io/crates/librespot-audio/librespot-audio-0.1.6.crate",
+        "sha256": "94641641158cd8dcfeadaebf71246d39a84b2658c2054870310baa63ea40f3ce",
         "dest": "cargo/vendor",
-        "dest-filename": "librespot-audio-0.1.3.crate"
+        "dest-filename": "librespot-audio-0.1.6.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%221bb21228db5a87fdc2774cd4b3fe32e898a4a1f4957c82e9faa196cca71bf839%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/librespot-audio-0.1.3",
+        "url": "data:%7B%22package%22%3A%20%2294641641158cd8dcfeadaebf71246d39a84b2658c2054870310baa63ea40f3ce%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/librespot-audio-0.1.6",
         "dest-filename": ".cargo-checksum.json"
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/librespot-connect/librespot-connect-0.1.3.crate",
-        "sha256": "4f4bf51df1c33e4faa1cf558b075c175704b53362d90f819ed86e89463c34ed2",
+        "url": "https://static.crates.io/crates/librespot-connect/librespot-connect-0.1.6.crate",
+        "sha256": "fdaa5a87f0dd285bf2496f3a84205a522ab07cbbb340360f8c3a17fd5ef902e5",
         "dest": "cargo/vendor",
-        "dest-filename": "librespot-connect-0.1.3.crate"
+        "dest-filename": "librespot-connect-0.1.6.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%224f4bf51df1c33e4faa1cf558b075c175704b53362d90f819ed86e89463c34ed2%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/librespot-connect-0.1.3",
+        "url": "data:%7B%22package%22%3A%20%22fdaa5a87f0dd285bf2496f3a84205a522ab07cbbb340360f8c3a17fd5ef902e5%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/librespot-connect-0.1.6",
         "dest-filename": ".cargo-checksum.json"
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/librespot-core/librespot-core-0.1.3.crate",
-        "sha256": "2c8bd9161067ffcae878cd9224562b8c8d0ca254f15db255eabe58df4ba258d0",
+        "url": "https://static.crates.io/crates/librespot-core/librespot-core-0.1.6.crate",
+        "sha256": "271eaff0f61152c3c2b1383c783df387215df2f216ffe5dc5e2480decd81bf0a",
         "dest": "cargo/vendor",
-        "dest-filename": "librespot-core-0.1.3.crate"
+        "dest-filename": "librespot-core-0.1.6.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%222c8bd9161067ffcae878cd9224562b8c8d0ca254f15db255eabe58df4ba258d0%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/librespot-core-0.1.3",
+        "url": "data:%7B%22package%22%3A%20%22271eaff0f61152c3c2b1383c783df387215df2f216ffe5dc5e2480decd81bf0a%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/librespot-core-0.1.6",
         "dest-filename": ".cargo-checksum.json"
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/librespot-metadata/librespot-metadata-0.1.3.crate",
-        "sha256": "0553a4be36640aba59cc40ce1f34c87f70203b87209beebebea4c5253c8dba13",
+        "url": "https://static.crates.io/crates/librespot-metadata/librespot-metadata-0.1.6.crate",
+        "sha256": "7643d10e46b22c1cee0be11c431f9179ec6b1d3348cebe7363cc2b75e1e5ba8d",
         "dest": "cargo/vendor",
-        "dest-filename": "librespot-metadata-0.1.3.crate"
+        "dest-filename": "librespot-metadata-0.1.6.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%220553a4be36640aba59cc40ce1f34c87f70203b87209beebebea4c5253c8dba13%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/librespot-metadata-0.1.3",
+        "url": "data:%7B%22package%22%3A%20%227643d10e46b22c1cee0be11c431f9179ec6b1d3348cebe7363cc2b75e1e5ba8d%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/librespot-metadata-0.1.6",
         "dest-filename": ".cargo-checksum.json"
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/librespot-playback/librespot-playback-0.1.3.crate",
-        "sha256": "56df0417db5f1b5932c2443d853fd79bdbd509f6dfb399af9c8ce57bb6065c76",
+        "url": "https://static.crates.io/crates/librespot-playback/librespot-playback-0.1.6.crate",
+        "sha256": "1249ca618becf5152c694c185b1bf654ac94c757984a9675289b1f93e4fcecd6",
         "dest": "cargo/vendor",
-        "dest-filename": "librespot-playback-0.1.3.crate"
+        "dest-filename": "librespot-playback-0.1.6.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%2256df0417db5f1b5932c2443d853fd79bdbd509f6dfb399af9c8ce57bb6065c76%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/librespot-playback-0.1.3",
+        "url": "data:%7B%22package%22%3A%20%221249ca618becf5152c694c185b1bf654ac94c757984a9675289b1f93e4fcecd6%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/librespot-playback-0.1.6",
         "dest-filename": ".cargo-checksum.json"
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/librespot-protocol/librespot-protocol-0.1.3.crate",
-        "sha256": "40c202de42b184e368250648602fddacddcc675bb2699aae1b59f07170157e01",
+        "url": "https://static.crates.io/crates/librespot-protocol/librespot-protocol-0.1.6.crate",
+        "sha256": "d42302b49ef369d44a0dfe4fb9e8803e7500f0dda7ea95413457664f1eca0fd9",
         "dest": "cargo/vendor",
-        "dest-filename": "librespot-protocol-0.1.3.crate"
+        "dest-filename": "librespot-protocol-0.1.6.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%2240c202de42b184e368250648602fddacddcc675bb2699aae1b59f07170157e01%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/librespot-protocol-0.1.3",
+        "url": "data:%7B%22package%22%3A%20%22d42302b49ef369d44a0dfe4fb9e8803e7500f0dda7ea95413457664f1eca0fd9%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/librespot-protocol-0.1.6",
         "dest-filename": ".cargo-checksum.json"
     },
     {
