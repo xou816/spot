@@ -23,9 +23,14 @@ impl DetailsModel {
         }
     }
 
+    fn songs_ref(&self) -> Option<impl Deref<Target = Vec<SongDescription>> + '_> {
+        self.app_model
+            .map_state_opt(|s| Some(&s.browser.details_state(&self.id)?.content.as_ref()?.songs))
+    }
+
     pub fn get_album_info(&self) -> Option<impl Deref<Target = AlbumDescription> + '_> {
         self.app_model
-            .map_state_opt(|s| s.browser.details_state()?.content.as_ref())
+            .map_state_opt(|s| s.browser.details_state(&self.id)?.content.as_ref())
     }
 
     pub fn load_album_info(&self) {
@@ -83,9 +88,7 @@ impl PlaylistModel for DetailsModel {
     }
 
     fn songs(&self) -> Vec<SongModel> {
-        let songs = self
-            .app_model
-            .map_state_opt(|s| Some(&s.browser.details_state()?.content.as_ref()?.songs));
+        let songs = self.songs_ref();
         match songs {
             Some(songs) => songs
                 .iter()
@@ -99,9 +102,7 @@ impl PlaylistModel for DetailsModel {
     fn play_song(&self, id: String) {
         let source = PlaylistSource::Album(self.id.clone());
         if self.app_model.get_state().playback.source != source {
-            let songs = self
-                .app_model
-                .map_state_opt(|s| Some(&s.browser.details_state()?.content.as_ref()?.songs));
+            let songs = self.songs_ref();
             if let Some(songs) = songs {
                 self.dispatcher
                     .dispatch(PlaybackAction::LoadPlaylist(source, songs.clone()).into());
@@ -113,7 +114,7 @@ impl PlaylistModel for DetailsModel {
     fn should_refresh_songs(&self, event: &AppEvent) -> bool {
         matches!(
             event,
-            AppEvent::BrowserEvent(BrowserEvent::AlbumDetailsLoaded(_))
+            AppEvent::BrowserEvent(BrowserEvent::AlbumDetailsLoaded(id)) if id == &self.id
         )
     }
 

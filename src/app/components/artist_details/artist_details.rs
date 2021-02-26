@@ -31,7 +31,9 @@ pub struct ArtistDetails {
 }
 
 impl ArtistDetails {
-    pub fn new(id: String, model: ArtistDetailsModel, worker: Worker) -> Self {
+    pub fn new(model: ArtistDetailsModel, worker: Worker) -> Self {
+        model.load_artist_details(model.id.clone());
+
         let widget = ArtistDetailsWidget::new();
         let model = Rc::new(model);
 
@@ -62,8 +64,6 @@ impl ArtistDetails {
                     child.upcast::<gtk::Widget>()
                 });
         }
-
-        model.load_artist_details(id);
 
         let playlist = Box::new(Playlist::new(widget.top_tracks.clone(), Rc::clone(&model)));
 
@@ -96,7 +96,9 @@ impl Component for ArtistDetails {
 impl EventListener for ArtistDetails {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::BrowserEvent(BrowserEvent::ArtistDetailsUpdated) => {
+            AppEvent::BrowserEvent(BrowserEvent::ArtistDetailsUpdated(id))
+                if id == &self.model.id =>
+            {
                 self.update_details();
             }
             _ => {}

@@ -548,6 +548,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
             let top_tracks: Vec<SongDescription> = top_tracks.into();
 
             let result = ArtistDescription {
+                id: artist.id,
                 name: artist.name,
                 albums,
                 top_tracks,
