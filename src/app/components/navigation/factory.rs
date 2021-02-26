@@ -51,8 +51,8 @@ impl ScreenFactory {
 
     pub fn make_artist_details(&self, id: String) -> ArtistDetails {
         let model =
-            ArtistDetailsModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        ArtistDetails::new(id, model, self.worker.clone())
+            ArtistDetailsModel::new(id, Rc::clone(&self.app_model), self.dispatcher.box_clone());
+        ArtistDetails::new(model, self.worker.clone())
     }
 
     pub fn make_playlist_details(&self, id: String) -> PlaylistDetails {

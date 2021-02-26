@@ -89,7 +89,11 @@ impl Component for PlaylistDetails {
 impl EventListener for PlaylistDetails {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::BrowserEvent(BrowserEvent::PlaylistDetailsLoaded) => self.update_details(),
+            AppEvent::BrowserEvent(BrowserEvent::PlaylistDetailsLoaded(id))
+                if id == &self.model.id =>
+            {
+                self.update_details()
+            }
             _ => {}
         }
         self.broadcast_event(event);

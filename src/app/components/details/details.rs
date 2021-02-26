@@ -119,14 +119,14 @@ impl EventListener for Details {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
             AppEvent::BrowserEvent(BrowserEvent::AlbumDetailsLoaded(id))
-                if *id == self.model.id =>
+                if id == &self.model.id =>
             {
                 self.update_details();
                 self.update_liked();
             }
             AppEvent::BrowserEvent(BrowserEvent::AlbumSaved(id))
             | AppEvent::BrowserEvent(BrowserEvent::AlbumUnsaved(id))
-                if *id == self.model.id =>
+                if id == &self.model.id =>
             {
                 self.update_liked();
             }

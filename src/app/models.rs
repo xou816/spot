@@ -124,6 +124,7 @@ impl SongDescription {
 
 #[derive(Clone, Debug)]
 pub struct ArtistDescription {
+    pub id: String,
     pub name: String,
     pub albums: Vec<AlbumDescription>,
     pub top_tracks: Vec<SongDescription>,

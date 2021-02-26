@@ -84,6 +84,7 @@ impl UpdatableState for DetailsState {
 }
 
 pub struct PlaylistDetailsState {
+    pub id: String,
     pub name: ScreenName,
     pub content: Option<PlaylistDescription>,
 }
@@ -91,6 +92,7 @@ pub struct PlaylistDetailsState {
 impl PlaylistDetailsState {
     pub fn new(id: String) -> Self {
         Self {
+            id: id.clone(),
             name: ScreenName::PlaylistDetails(id),
             content: None,
         }
@@ -104,8 +106,9 @@ impl UpdatableState for PlaylistDetailsState {
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
             BrowserAction::SetPlaylistDetails(playlist) => {
+                let id = playlist.id.clone();
                 self.content = Some(playlist);
-                vec![BrowserEvent::PlaylistDetailsLoaded]
+                vec![BrowserEvent::PlaylistDetailsLoaded(id)]
             }
             _ => vec![],
         }
@@ -159,6 +162,7 @@ impl<T> Pagination<T> {
 }
 
 pub struct ArtistState {
+    pub id: String,
     pub name: ScreenName,
     pub artist: Option<String>,
     pub next_page: Pagination<String>,
@@ -169,6 +173,7 @@ pub struct ArtistState {
 impl ArtistState {
     pub fn new(id: String) -> Self {
         Self {
+            id: id.clone(),
             name: ScreenName::Artist(id.clone()),
             artist: None,
             next_page: Pagination::new(id, 20),
@@ -185,6 +190,7 @@ impl UpdatableState for ArtistState {
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
             BrowserAction::SetArtistDetails(ArtistDescription {
+                id,
                 name,
                 albums,
                 mut top_tracks,
@@ -200,14 +206,14 @@ impl UpdatableState for ArtistState {
                 top_tracks.truncate(5);
                 self.top_tracks = top_tracks;
 
-                vec![BrowserEvent::ArtistDetailsUpdated]
+                vec![BrowserEvent::ArtistDetailsUpdated(id)]
             }
             BrowserAction::AppendArtistReleases(albums) => {
                 for album in albums {
                     self.albums.append(album.into());
                 }
                 self.next_page.update(self.albums.len() as u32);
-                vec![BrowserEvent::ArtistDetailsUpdated]
+                vec![BrowserEvent::ArtistDetailsUpdated(self.id.clone())]
             }
             _ => vec![],
         }
@@ -365,6 +371,7 @@ mod tests {
     fn test_next_page_no_next() {
         let mut artist_state = ArtistState::new("id".to_owned());
         artist_state.update_with(BrowserAction::SetArtistDetails(ArtistDescription {
+            id: "".to_owned(),
             name: "Foo".to_owned(),
             albums: vec![],
             top_tracks: vec![],
@@ -386,6 +393,7 @@ mod tests {
         };
         let mut artist_state = ArtistState::new("id".to_owned());
         artist_state.update_with(BrowserAction::SetArtistDetails(ArtistDescription {
+            id: "".to_owned(),
             name: "Foo".to_owned(),
             albums: (0..20).map(|_| fake_album.clone()).collect(),
             top_tracks: vec![],
