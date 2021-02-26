@@ -5,7 +5,7 @@ use isahc::http::{StatusCode, Uri};
 use isahc::{AsyncReadResponseExt, HttpClient, Request};
 use regex::Regex;
 use serde_json::from_str;
-use std::convert::{AsRef, Into};
+use std::convert::{AsRef, Into, TryInto};
 use std::sync::Mutex;
 use thiserror::Error;
 
@@ -30,8 +30,6 @@ pub trait SpotifyApiClient {
     fn get_playlist(
         &self,
         id: &str,
-        offset: u32,
-        limit: u32,
     ) -> BoxFuture<SpotifyResult<PlaylistDescription>>;
 
     fn get_saved_albums(
@@ -279,14 +277,29 @@ impl CachedSpotifyClient {
         .await
     }
 
-    async fn get_playlist_no_cache(&self, id: &str, offset: u32, limit: u32) -> Result<String, SpotifyApiError> {
+    async fn get_playlist_no_cache(&self, id: &str) -> Result<String, SpotifyApiError> {
+        self.send_req(|token| {
+            let query = Self::make_query_params()
+                .append_pair("fields", "id,name,images,owner")
+                .finish();
+
+            let uri = self.uri(format!("/v1/playlists/{}", id), Some(query)).unwrap();
+            Request::get(uri)
+                .header("Authorization", format!("Bearer {}", &token))
+                .body(())
+                .unwrap()
+        })
+        .await
+    }
+
+    async fn get_playlist_tracks_no_cache(&self, id: &str, offset: u32, limit: u32) -> Result<String, SpotifyApiError> {
         self.send_req(|token| {
             let query = Self::make_query_params()
                 .append_pair("offset", &offset.to_string()[..])
                 .append_pair("limit", &limit.to_string()[..])
                 .finish();
 
-            let uri = self.uri(format!("/v1/playlists/{}", id), Some(query)).unwrap();
+            let uri = self.uri(format!("/v1/playlists/{}/tracks", id), Some(query)).unwrap();
             Request::get(uri)
                 .header("Authorization", format!("Bearer {}", &token))
                 .body(())
@@ -491,28 +504,61 @@ impl SpotifyApiClient for CachedSpotifyClient {
     fn get_playlist(
         &self,
         id: &str,
-        offset: u32,
-        limit: u32,
     ) -> BoxFuture<SpotifyResult<PlaylistDescription>> {
         let id = id.to_owned();
 
         Box::pin(async move {
             let cache_request = self.cache_request(
-                format!("net/playlist_{}_{}_{}.json", id, offset, limit),
+                format!("net/playlist_{}.json", id),
                 None,
             );
 
             let text = cache_request
                 .or_else_try_write(
-                    || self.get_playlist_no_cache(&id[..], offset, limit),
+                    || self.get_playlist_no_cache(&id[..]),
                     CacheExpiry::expire_in_hours(6),
                 )
                 .await?;
 
-            Ok(from_str::<DetailedPlaylist>(&text)?.into())
+            let playlist: Playlist = from_str(&text)?;
+            let mut playlist: PlaylistDescription = playlist.into();
+
+            let mut tracks: Vec<SongDescription> = vec![];
+            let mut offset = 0;
+            let limit = 100;
+            loop {
+                let song_request = self.cache_request(
+                    format!("net/playlist_items_{}_{}_{}.json", id, offset, limit),
+                    None
+                );
+
+                let song_text = song_request
+                    .or_else_try_write(
+                        || self.get_playlist_tracks_no_cache(&id[..], offset, limit),
+                        CacheExpiry::expire_in_hours(6),
+                    )
+                    .await?;
+
+                let songs: Page<PlaylistTrack> = from_str(&song_text)?;
+
+                let mut songs: Vec<SongDescription> = songs.into();
+                let songs_loaded = songs.len();
+
+                tracks.append(&mut songs);
+
+                if songs_loaded < limit.try_into().unwrap() {
+                    break;
+                }
+
+                offset += limit;
+            }
+
+            playlist.songs = tracks;
+
+            Ok(playlist)
         })
     }
-
+ 
     fn get_artist_albums(
         &self,
         id: &str,

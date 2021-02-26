@@ -214,6 +214,17 @@ impl Into<Vec<SongDescription>> for DetailedPlaylist {
     }
 }
 
+impl Into<Vec<SongDescription>> for Page<PlaylistTrack> {
+    fn into(self) -> Vec<SongDescription> {
+        let items = self
+            .items
+            .into_iter()
+            .filter_map(|PlaylistTrack { is_local, track }| track.filter(|_| !is_local))
+            .collect::<Vec<TrackItem>>();
+        Tracks { items }.into()
+    }
+}
+
 impl Into<Vec<SongDescription>> for TopTracks {
     fn into(self) -> Vec<SongDescription> {
         Tracks { items: self.tracks }.into()
