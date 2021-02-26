@@ -5,7 +5,7 @@ use isahc::http::{StatusCode, Uri};
 use isahc::{AsyncReadResponseExt, HttpClient, Request};
 use regex::Regex;
 use serde_json::from_str;
-use std::convert::{AsRef, Into, TryInto};
+use std::convert::{AsRef, Into};
 use std::sync::Mutex;
 use thiserror::Error;
 
@@ -294,8 +294,8 @@ impl CachedSpotifyClient {
     async fn get_playlist_tracks_no_cache(
         &self,
         id: &str,
-        offset: u32,
-        limit: u32,
+        offset: usize,
+        limit: usize,
     ) -> Result<String, SpotifyApiError> {
         self.send_req(|token| {
             let query = Self::make_query_params()
@@ -524,8 +524,8 @@ impl SpotifyApiClient for CachedSpotifyClient {
             let mut playlist: PlaylistDescription = playlist.into();
 
             let mut tracks: Vec<SongDescription> = vec![];
-            let mut offset = 0;
-            let limit = 100;
+            let mut offset: usize = 0;
+            let limit: usize = 100;
             loop {
                 let song_request = self.cache_request(
                     format!("net/playlist_items_{}_{}_{}.json", id, offset, limit),
@@ -546,7 +546,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
 
                 tracks.append(&mut songs);
 
-                if songs_loaded < limit.try_into().unwrap() {
+                if songs_loaded < limit {
                     break;
                 }
 
