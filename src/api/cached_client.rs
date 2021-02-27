@@ -4,11 +4,9 @@ use regex::Regex;
 use std::convert::Into;
 use std::future::Future;
 
-pub use super::api_models::SearchType;
 use super::api_models::*;
 use super::cache::{CacheExpiry, CacheManager, CachePolicy, CacheRequest};
-pub use super::spotify_client::SpotifyApiError;
-use super::spotify_client::{SpotifyClient, SpotifyRawResult, SpotifyResponse};
+use super::client::{SpotifyApiError, SpotifyClient, SpotifyRawResult, SpotifyResponse};
 use crate::app::models::*;
 
 lazy_static! {
@@ -114,7 +112,7 @@ impl CachedSpotifyClient {
     async fn cache_get_or_write<'a, T, O, F>(
         &self,
         key: SpotCacheKey<'a>,
-        or_write: F,
+        write: F,
         expiry: CacheExpiry,
     ) -> SpotifyRawResult<T>
     where
@@ -125,8 +123,8 @@ impl CachedSpotifyClient {
             CacheRequest::for_resource(&self.cache, key.into_raw(), self.default_cache_policy());
 
         let raw = req
-            .or_else_try_write(
-                move || or_write().map(|r| SpotifyResult::Ok(r?.content)),
+            .get_or_write(
+                move || write().map(|r| SpotifyResult::Ok(r?.content)),
                 expiry,
             )
             .await?;

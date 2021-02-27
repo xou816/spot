@@ -1,4 +1,4 @@
-use crate::backend::cache::*;
+use crate::api::cache::*;
 use gdk_pixbuf::{Pixbuf, PixbufLoader, PixbufLoaderExt};
 use isahc::config::Configurable;
 use isahc::{AsyncBody, AsyncReadResponseExt, HttpClient, Response};

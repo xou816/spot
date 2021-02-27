@@ -29,11 +29,11 @@ run_command(
 )
 
 # find . -name "*.rs" -printf "'%p',\n"
-sources = files('./api/api.rs',
+sources = files(
 './api/cache.rs',
-'./api/api.rs',
 './api/api_models.rs',
-'./api/spotify_client.rs',
+'./api/client.rs',
+'./api/cached_client.rs',
 './api/mod.rs',
 './app/dispatch.rs',
 './app/components/details/details.rs',

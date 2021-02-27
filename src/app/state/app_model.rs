@@ -1,5 +1,5 @@
+use crate::api::SpotifyApiClient;
 use crate::app::state::*;
-use crate::backend::api::SpotifyApiClient;
 use ref_filter_map::*;
 use std::cell::{Ref, RefCell};
 use std::sync::Arc;

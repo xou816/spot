@@ -10,7 +10,7 @@ pub mod components;
 use components::*;
 
 pub mod backend;
-use backend::api::CachedSpotifyClient;
+use crate::api::CachedSpotifyClient;
 
 pub mod dbus;
 

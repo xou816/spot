@@ -13,7 +13,6 @@ mod app;
 mod config;
 pub use config::VERSION;
 
-use crate::app::backend;
 use crate::app::dispatch::{spawn_task_handler, DispatchLoop};
 use crate::app::{App, AppAction};
 

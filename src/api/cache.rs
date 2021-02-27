@@ -212,11 +212,7 @@ where
         }
     }
 
-    pub async fn or_else_try_write<O, F, E>(
-        &self,
-        fresh: F,
-        expiry: CacheExpiry,
-    ) -> Result<String, E>
+    pub async fn get_or_write<O, F, E>(&self, fresh: F, expiry: CacheExpiry) -> Result<String, E>
     where
         O: Future<Output = Result<String, E>>,
         F: FnOnce() -> O,
