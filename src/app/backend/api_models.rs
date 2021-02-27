@@ -99,21 +99,6 @@ impl WithImages for Playlist {
 }
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct DetailedPlaylist {
-    pub id: String,
-    pub name: String,
-    pub images: Vec<Image>,
-    pub tracks: Tracks<PlaylistTrack>,
-    pub owner: PlaylistOwner,
-}
-
-impl WithImages for DetailedPlaylist {
-    fn images(&self) -> &[Image] {
-        &self.images[..]
-    }
-}
-
-#[derive(Deserialize, Debug, Clone)]
 pub struct PlaylistTrack {
     pub is_local: bool,
     pub track: Option<TrackItem>,
@@ -202,10 +187,9 @@ impl Into<ArtistSummary> for Artist {
     }
 }
 
-impl Into<Vec<SongDescription>> for DetailedPlaylist {
+impl Into<Vec<SongDescription>> for Page<PlaylistTrack> {
     fn into(self) -> Vec<SongDescription> {
         let items = self
-            .tracks
             .items
             .into_iter()
             .filter_map(|PlaylistTrack { is_local, track }| track.filter(|_| !is_local))
@@ -332,21 +316,6 @@ impl Into<PlaylistDescription> for Playlist {
             title: self.name,
             art,
             songs: vec![],
-            owner: UserRef { id, display_name },
-        }
-    }
-}
-
-impl Into<PlaylistDescription> for DetailedPlaylist {
-    fn into(self) -> PlaylistDescription {
-        let songs: Vec<SongDescription> = self.clone().into();
-        let art = self.best_image_for_width(200).map(|i| i.url.clone());
-        let PlaylistOwner { id, display_name } = self.owner;
-        PlaylistDescription {
-            id: self.id,
-            title: self.name,
-            art,
-            songs,
             owner: UserRef { id, display_name },
         }
     }
