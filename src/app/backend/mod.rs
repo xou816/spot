@@ -13,7 +13,7 @@ mod player;
 pub use player::{SpotifyError, SpotifyPlayer, SpotifyPlayerDelegate};
 
 pub mod api;
-mod api_models;
+pub mod api_models;
 
 pub mod cache;
 

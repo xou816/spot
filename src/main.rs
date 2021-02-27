@@ -8,6 +8,7 @@ use gio::{ActionMapExt, SimpleAction};
 use gtk::prelude::*;
 use gtk::SettingsExt;
 
+mod api;
 mod app;
 mod config;
 pub use config::VERSION;
