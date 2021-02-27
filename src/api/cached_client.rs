@@ -11,6 +11,9 @@ use crate::app::models::*;
 
 lazy_static! {
     static ref ME_ALBUMS_CACHE: Regex = Regex::new(r"^me_albums_\w+_\w+\.json\.expiry$").unwrap();
+    pub static ref ALL_CACHE: Regex =
+        Regex::new(r"^(me_albums_|me_playlists_|album_|playlist_|artist_)\w+\.json(\.expiry)?$")
+            .unwrap();
 }
 
 pub type SpotifyResult<T> = Result<T, SpotifyApiError>;
@@ -119,7 +122,6 @@ impl CachedSpotifyClient {
         O: Future<Output = SpotifyRawResult<T>>,
         F: FnOnce() -> O,
     {
-
         let req = CacheRequest::for_resource(
             &self.cache,
             format!("spot/net/{}", key.into_raw()),

@@ -124,6 +124,7 @@ cargo_release = custom_target(
     meson.project_name(),
     '@OUTPUT@',
     get_option('buildtype'),
+    get_option('features'),
     get_option('offline') ? 'true' : 'false'
   ]
 )

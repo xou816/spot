@@ -136,6 +136,24 @@ impl CacheManager {
         self.set_expiry_for(resource, Duration::new(0, 0)).await
     }
 
+    pub async fn clear_cache_pattern(&self, dir: &str, regex: &Regex) -> io::Result<()> {
+        let dir_path = self.cache_path(dir);
+
+        let mut entries = fs::read_dir(dir_path).await?;
+        while let Some(Ok(entry)) = entries.next().await {
+            let matches = entry
+                .file_name()
+                .to_str()
+                .map(|s| regex.is_match(s))
+                .unwrap_or(false);
+            if matches {
+                fs::remove_file(entry.path()).await?;
+            }
+        }
+
+        Ok(())
+    }
+
     pub async fn set_expired_pattern(&self, dir: &str, regex: &Regex) -> io::Result<()> {
         let dir_path = self.cache_path(dir);
 

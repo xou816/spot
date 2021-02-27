@@ -4,6 +4,9 @@ version = "0.1.8"
 edition = "2018"
 license = "MIT"
 
+[features]
+warn-cache = []
+
 [dependencies.gtk]
 version = "^0.9.0"
 features = ["v3_24"]

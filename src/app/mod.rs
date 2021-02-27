@@ -63,7 +63,7 @@ impl App {
         let dispatcher = Box::new(ActionDispatcherImpl::new(sender.clone(), worker.clone()));
 
         let mut components: Vec<Box<dyn EventListener>> = vec![
-            App::make_window(builder),
+            App::make_window(builder, worker.clone()),
             App::make_playback_control(builder, Rc::clone(model), dispatcher.box_clone()),
             App::make_playback_info(
                 builder,
@@ -97,9 +97,9 @@ impl App {
         Box::new(dbus::start_dbus_server(app_model, sender).expect("could not start server"))
     }
 
-    fn make_window(builder: &gtk::Builder) -> Box<impl EventListener> {
+    fn make_window(builder: &gtk::Builder, worker: Worker) -> Box<impl EventListener> {
         let window: libhandy::ApplicationWindow = builder.get_object("window").unwrap();
-        Box::new(MainWindow::new(window))
+        Box::new(MainWindow::new(window, worker))
     }
 
     fn make_navigation(
