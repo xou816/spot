@@ -2,6 +2,8 @@ use form_urlencoded::Serializer;
 use isahc::config::Configurable;
 use isahc::http::{StatusCode, Uri};
 use isahc::{AsyncReadResponseExt, HttpClient, Request};
+use serde::Deserialize;
+use serde_json::from_str;
 use std::convert::Into;
 use std::marker::PhantomData;
 use std::sync::Mutex;
@@ -12,16 +14,25 @@ pub use super::api_models::*;
 const SPOTIFY_HOST: &str = "api.spotify.com";
 
 pub(crate) struct SpotifyResponse<T> {
-    content: String,
+    pub content: String,
     _type: PhantomData<T>,
 }
 
 impl<T> SpotifyResponse<T> {
-    fn new(content: String) -> Self {
+    pub(crate) fn new(content: String) -> Self {
         Self {
             content,
             _type: PhantomData,
         }
+    }
+}
+
+impl<'a, T> SpotifyResponse<T>
+where
+    T: Deserialize<'a>,
+{
+    pub(crate) fn deserialize(&'a self) -> serde_json::Result<T> {
+        from_str(&self.content)
     }
 }
 
@@ -58,6 +69,16 @@ impl SpotifyClient {
         Self {
             token: Mutex::new(None),
             client,
+        }
+    }
+
+    pub(crate) fn has_token(&self) -> bool {
+        self.token.lock().unwrap().is_some()
+    }
+
+    pub(crate) fn update_token(&self, new_token: String) {
+        if let Ok(mut token) = self.token.lock() {
+            *token = Some(new_token)
         }
     }
 
@@ -120,7 +141,7 @@ impl SpotifyClient {
 }
 
 impl SpotifyClient {
-    async fn get_artist(&self, id: &str) -> SpotifyRawResult<Artist> {
+    pub(crate) async fn get_artist(&self, id: &str) -> SpotifyRawResult<Artist> {
         self.send_req(|token| {
             let uri = self.uri(format!("/v1/artists/{}", id), None).unwrap();
             Request::get(uri)
@@ -131,7 +152,7 @@ impl SpotifyClient {
         .await
     }
 
-    async fn get_artist_albums(
+    pub(crate) async fn get_artist_albums(
         &self,
         id: &str,
         offset: u32,
@@ -156,7 +177,7 @@ impl SpotifyClient {
         .await
     }
 
-    async fn get_artist_top_tracks(&self, id: &str) -> SpotifyRawResult<TopTracks> {
+    pub(crate) async fn get_artist_top_tracks(&self, id: &str) -> SpotifyRawResult<TopTracks> {
         self.send_req(|token| {
             let query = Self::make_query_params()
                 .append_pair("market", "from_token")
@@ -173,7 +194,7 @@ impl SpotifyClient {
         .await
     }
 
-    async fn is_album_saved(&self, id: &str) -> SpotifyRawResult<Vec<bool>> {
+    pub(crate) async fn is_album_saved(&self, id: &str) -> SpotifyRawResult<Vec<bool>> {
         self.send_req(|token| {
             let query = Self::make_query_params().append_pair("ids", id).finish();
             let uri = self
@@ -187,7 +208,7 @@ impl SpotifyClient {
         .await
     }
 
-    async fn save_album(&self, id: &str) -> Result<(), SpotifyApiError> {
+    pub(crate) async fn save_album(&self, id: &str) -> Result<(), SpotifyApiError> {
         self.send_req_no_response(|token| {
             let query = Self::make_query_params().append_pair("ids", id).finish();
             let uri = self.uri("/v1/me/albums".to_string(), Some(query)).unwrap();
@@ -199,7 +220,7 @@ impl SpotifyClient {
         .await
     }
 
-    async fn remove_saved_album(&self, id: &str) -> Result<(), SpotifyApiError> {
+    pub(crate) async fn remove_saved_album(&self, id: &str) -> Result<(), SpotifyApiError> {
         self.send_req_no_response(|token| {
             let query = Self::make_query_params().append_pair("ids", id).finish();
             let uri = self.uri("/v1/me/albums".to_string(), Some(query)).unwrap();
@@ -211,7 +232,7 @@ impl SpotifyClient {
         .await
     }
 
-    async fn get_album(&self, id: &str) -> SpotifyRawResult<Album> {
+    pub(crate) async fn get_album(&self, id: &str) -> SpotifyRawResult<Album> {
         self.send_req(|token| {
             let uri = self.uri(format!("/v1/albums/{}", id), None).unwrap();
             Request::get(uri)
@@ -222,9 +243,14 @@ impl SpotifyClient {
         .await
     }
 
-    async fn get_playlist(&self, id: &str) -> SpotifyRawResult<DetailedPlaylist> {
+    pub(crate) async fn get_playlist(&self, id: &str) -> SpotifyRawResult<Playlist> {
         self.send_req(|token| {
-            let uri = self.uri(format!("/v1/playlists/{}", id), None).unwrap();
+            let query = Self::make_query_params()
+                .append_pair("fields", "id,name,images,owner")
+                .finish();
+            let uri = self
+                .uri(format!("/v1/playlists/{}", id), Some(query))
+                .unwrap();
             Request::get(uri)
                 .header("Authorization", format!("Bearer {}", &token))
                 .body(())
@@ -233,7 +259,30 @@ impl SpotifyClient {
         .await
     }
 
-    async fn get_saved_albums(
+    pub(crate) async fn get_playlist_tracks(
+        &self,
+        id: &str,
+        offset: u32,
+        limit: u32,
+    ) -> SpotifyRawResult<Page<PlaylistTrack>> {
+        self.send_req(|token| {
+            let query = Self::make_query_params()
+                .append_pair("offset", &offset.to_string()[..])
+                .append_pair("limit", &limit.to_string()[..])
+                .finish();
+
+            let uri = self
+                .uri(format!("/v1/playlists/{}/tracks", id), Some(query))
+                .unwrap();
+            Request::get(uri)
+                .header("Authorization", format!("Bearer {}", &token))
+                .body(())
+                .unwrap()
+        })
+        .await
+    }
+
+    pub(crate) async fn get_saved_albums(
         &self,
         offset: u32,
         limit: u32,
@@ -253,11 +302,11 @@ impl SpotifyClient {
         .await
     }
 
-    async fn get_saved_playlists(
+    pub(crate) async fn get_saved_playlists(
         &self,
         offset: u32,
         limit: u32,
-    ) -> SpotifyRawResult<Page<Playlist>>  {
+    ) -> SpotifyRawResult<Page<Playlist>> {
         self.send_req(|token| {
             let query = Self::make_query_params()
                 .append_pair("offset", &offset.to_string()[..])
@@ -275,7 +324,7 @@ impl SpotifyClient {
         .await
     }
 
-    async fn search(
+    pub(crate) async fn search(
         &self,
         query: String,
         offset: u32,
