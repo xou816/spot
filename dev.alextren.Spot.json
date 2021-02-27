@@ -44,8 +44,7 @@
             "builddir" : true,
             "config-opts" : [
                 "-Dexamples=false",
-                "-Dtests=false",
-                "-Dfeatures=''"
+                "-Dtests=false"
             ],
             "sources" : [
                 {
@@ -60,7 +59,8 @@
             "buildsystem" : "meson",
             "config-opts" : [
                 "-Doffline=true",
-                "-Dbuildtype=debug"
+                "-Dbuildtype=debug",
+                "-Dfeatures=''"
             ],
             "sources" : [
                 {
