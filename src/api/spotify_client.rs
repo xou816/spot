@@ -7,7 +7,7 @@ use std::marker::PhantomData;
 use std::sync::Mutex;
 use thiserror::Error;
 
-pub use crate::app::backend::api_models::*;
+pub use super::api_models::*;
 
 const SPOTIFY_HOST: &str = "api.spotify.com";
 
