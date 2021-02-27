@@ -228,7 +228,10 @@ impl SpotifyApiClient for CachedSpotifyClient {
 
         Box::pin(async move {
             self.cache
-                .set_expired(&SpotCacheKey::AlbumLiked(&id).into_raw())
+                .set_expired(&format!(
+                    "spot/net/{}",
+                    SpotCacheKey::AlbumLiked(&id).into_raw()
+                ))
                 .await
                 .unwrap_or(());
             self.cache
@@ -245,11 +248,14 @@ impl SpotifyApiClient for CachedSpotifyClient {
 
         Box::pin(async move {
             self.cache
-                .set_expired(&SpotCacheKey::AlbumLiked(&id).into_raw())
+                .set_expired(&format!(
+                    "spot/net/{}",
+                    SpotCacheKey::AlbumLiked(&id).into_raw()
+                ))
                 .await
                 .unwrap_or(());
             self.cache
-                .set_expired_pattern("net", &*ME_ALBUMS_CACHE)
+                .set_expired_pattern("spot/net", &*ME_ALBUMS_CACHE)
                 .await
                 .unwrap_or(());
             self.client.remove_saved_album(&id).await

@@ -34,7 +34,6 @@ fn _clear_old_cache_warn(window: &gtk::Window, worker: Worker) {
         dialog.show_all();
         dialog.connect_response(move |dialog, response| {
             if response == gtk::ResponseType::Yes {
-                println!("test");
                 do_clear();
             }
             dialog.close();
