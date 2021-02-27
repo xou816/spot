@@ -10,7 +10,7 @@ use super::client::{SpotifyApiError, SpotifyClient, SpotifyRawResult, SpotifyRes
 use crate::app::models::*;
 
 lazy_static! {
-    static ref ME_ALBUMS_CACHE: Regex = Regex::new(r"^me_albums_\w+_\w+\.json.expiry$").unwrap();
+    static ref ME_ALBUMS_CACHE: Regex = Regex::new(r"^me_albums_\w+_\w+\.json\.expiry$").unwrap();
 }
 
 pub type SpotifyResult<T> = Result<T, SpotifyApiError>;
@@ -69,21 +69,21 @@ enum SpotCacheKey<'a> {
 impl<'a> SpotCacheKey<'a> {
     fn into_raw(self) -> String {
         match self {
-            Self::SavedAlbums(offset, limit) => format!("net/me_albums_{}_{}.json", offset, limit),
+            Self::SavedAlbums(offset, limit) => format!("me_albums_{}_{}.json", offset, limit),
             Self::SavedPlaylists(offset, limit) => {
-                format!("net/me_playlists_{}_{}.json", offset, limit)
+                format!("me_playlists_{}_{}.json", offset, limit)
             }
-            Self::Album(id) => format!("net/album_{}.json", id),
-            Self::AlbumLiked(id) => format!("net/album_liked_{}.json", id),
-            Self::Playlist(id) => format!("net/playlist_{}.json", id),
+            Self::Album(id) => format!("album_{}.json", id),
+            Self::AlbumLiked(id) => format!("album_liked_{}.json", id),
+            Self::Playlist(id) => format!("playlist_{}.json", id),
             Self::PlaylistTracks(id, offset, limit) => {
-                format!("net/playlist_item_{}_{}_{}.json", id, offset, limit)
+                format!("playlist_item_{}_{}_{}.json", id, offset, limit)
             }
             Self::ArtistAlbums(id, offset, limit) => {
-                format!("net/artist_albums_{}_{}_{}.json", id, offset, limit)
+                format!("artist_albums_{}_{}_{}.json", id, offset, limit)
             }
-            Self::Artist(id) => format!("net/artist_{}.json", id),
-            Self::ArtistTopTracks(id) => format!("net/artist_top_tracks_{}.json", id),
+            Self::Artist(id) => format!("artist_{}.json", id),
+            Self::ArtistTopTracks(id) => format!("artist_top_tracks_{}.json", id),
         }
     }
 }
@@ -97,7 +97,7 @@ impl CachedSpotifyClient {
     pub fn new() -> CachedSpotifyClient {
         CachedSpotifyClient {
             client: SpotifyClient::new(),
-            cache: CacheManager::new(&["net"]).unwrap(),
+            cache: CacheManager::new(&["spot/net"]).unwrap(),
         }
     }
 
@@ -119,8 +119,12 @@ impl CachedSpotifyClient {
         O: Future<Output = SpotifyRawResult<T>>,
         F: FnOnce() -> O,
     {
-        let req =
-            CacheRequest::for_resource(&self.cache, key.into_raw(), self.default_cache_policy());
+
+        let req = CacheRequest::for_resource(
+            &self.cache,
+            format!("spot/net/{}", key.into_raw()),
+            self.default_cache_policy(),
+        );
 
         let raw = req
             .get_or_write(

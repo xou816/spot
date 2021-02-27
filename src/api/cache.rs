@@ -54,34 +54,29 @@ pub struct CacheManager {
 
 impl CacheManager {
     pub fn new(dirs: &[&str]) -> Option<Self> {
-        let root = glib::get_user_cache_dir()?;
-        let root_unwrapped = root.to_str()?;
+        let root: PathBuf = glib::get_user_cache_dir()?.into();
         let mask = 0o744;
 
         for &dir in dirs.iter() {
-            let path = format!("{}/{}", root_unwrapped, dir);
-            glib::mkdir_with_parents(path, mask);
+            glib::mkdir_with_parents(root.join(dir), mask);
         }
 
-        Some(Self { root: root.into() })
+        Some(Self { root })
     }
 
-    fn cache_path(&self, resource: &str) -> Option<PathBuf> {
-        let cache_dir = glib::get_user_cache_dir()?;
-        glib::build_filenamev(&[cache_dir.as_path(), std::path::Path::new(resource)])
-            .map(|p| p.into())
+    fn cache_path(&self, resource: &str) -> PathBuf {
+        self.root.join(resource)
     }
 
-    fn cache_meta_path(&self, resource: &str) -> Option<PathBuf> {
-        let cache_dir = glib::get_user_cache_dir()?;
+    fn cache_meta_path(&self, resource: &str) -> PathBuf {
         let full = format!("{}.{}", resource, "expiry");
-        glib::build_filenamev(&[cache_dir.as_path(), std::path::Path::new(&full)]).map(|p| p.into())
+        self.root.join(&full)
     }
 }
 
 impl CacheManager {
     async fn read_expiry_file(&self, resource: &str) -> io::Result<Duration> {
-        let expiry_file = self.cache_meta_path(resource).unwrap();
+        let expiry_file = self.cache_meta_path(resource);
         let buffer = fs::read(&expiry_file).await?;
         let slice: Box<[u8; core::mem::size_of::<u64>()]> = buffer
             .into_boxed_slice()
@@ -103,7 +98,7 @@ impl CacheManager {
     }
 
     pub async fn read_cache_file(&self, resource: &str, policy: CachePolicy) -> CacheFile {
-        let path = self.cache_path(resource).unwrap();
+        let path = self.cache_path(resource);
 
         match policy {
             CachePolicy::IgnoreExpiry => match fs::read(&path).await {
@@ -133,9 +128,7 @@ impl CacheManager {
     }
 
     pub async fn set_expiry_for(&self, resource: &str, expiry: Duration) -> io::Result<()> {
-        let meta_file = self
-            .cache_meta_path(resource)
-            .ok_or_else(|| io::Error::from(io::ErrorKind::NotFound))?;
+        let meta_file = self.cache_meta_path(resource);
         self.set_expiry_for_path(&meta_file, expiry).await
     }
 
@@ -144,9 +137,7 @@ impl CacheManager {
     }
 
     pub async fn set_expired_pattern(&self, dir: &str, regex: &Regex) -> io::Result<()> {
-        let dir_path = self
-            .cache_path(dir)
-            .ok_or_else(|| io::Error::from(io::ErrorKind::NotFound))?;
+        let dir_path = self.cache_path(dir);
 
         let mut entries = fs::read_dir(dir_path).await?;
         while let Some(Ok(entry)) = entries.next().await {
@@ -170,9 +161,7 @@ impl CacheManager {
         content: &[u8],
         expiry: CacheExpiry,
     ) -> io::Result<()> {
-        let file = self
-            .cache_path(resource)
-            .ok_or_else(|| io::Error::from(io::ErrorKind::NotFound))?;
+        let file = self.cache_path(resource);
         fs::write(&file, content).await?;
 
         if let CacheExpiry::AtUnixTimestamp(ts) = expiry {
