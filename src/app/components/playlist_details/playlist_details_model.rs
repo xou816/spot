@@ -99,10 +99,8 @@ impl PlaylistModel for PlaylistDetailsModel {
 
     fn actions_for(&self, id: String) -> Option<gio::ActionGroup> {
         let songs = self.songs_ref()?;
-        let song = songs.iter().find(|song| {
-           song.id == id
-        })?;
-        
+        let song = songs.iter().find(|song| song.id == id)?;
+
         let group = SimpleActionGroup::new();
 
         let album_id = song.album.id.clone();
@@ -136,7 +134,10 @@ impl PlaylistModel for PlaylistDetailsModel {
         let copy_link = SimpleAction::new("copy_link", None);
         copy_link.connect_activate(move |_, _| {
             let clipboard = Clipboard::get(&SELECTION_CLIPBOARD);
-            clipboard.set_text(&format!("https://open.spotify.com/track/{}", track_id.clone()));
+            clipboard.set_text(&format!(
+                "https://open.spotify.com/track/{}",
+                track_id.clone()
+            ));
         });
         group.add_action(&copy_link);
 
@@ -145,9 +146,7 @@ impl PlaylistModel for PlaylistDetailsModel {
 
     fn menu_for(&self, id: String) -> Option<gio::MenuModel> {
         let songs = self.songs_ref()?;
-        let song = songs.iter().find(|song| {
-           song.id == id
-        })?;
+        let song = songs.iter().find(|song| song.id == id)?;
 
         let menu = gio::Menu::new();
         menu.insert(0, Some("View album"), Some("song.view_album"));
