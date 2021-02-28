@@ -1,3 +1,7 @@
+use gdk::SELECTION_CLIPBOARD;
+use gio::prelude::*;
+use gio::{ActionMapExt, SimpleAction, SimpleActionGroup};
+use gtk::Clipboard;
 use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
@@ -118,11 +122,61 @@ impl PlaylistModel for DetailsModel {
         )
     }
 
-    fn actions_for(&self, _: String) -> Option<gio::ActionGroup> {
-        None
+    fn actions_for(&self, id: String) -> Option<gio::ActionGroup> {
+        let songs = self.songs_ref()?;
+        let song = songs.iter().find(|song| song.id == id)?;
+
+        let group = SimpleActionGroup::new();
+
+        for (i, artist) in song.artists.iter().enumerate() {
+            let view_artist = SimpleAction::new(&format!("view_artist_{}", i), None);
+            let dispatcher = self.dispatcher.box_clone();
+            let id = artist.id.clone();
+            view_artist.connect_activate(move |_, _| {
+                dispatcher.dispatch(AppAction::ViewArtist(id.clone()));
+            });
+            group.add_action(&view_artist);
+        }
+
+        let track_id = song.id.clone();
+        let copy_uri = SimpleAction::new("copy_uri", None);
+        copy_uri.connect_activate(move |_, _| {
+            let clipboard = Clipboard::get(&SELECTION_CLIPBOARD);
+            clipboard.set_text(&format!("spotify:track:{}", track_id.clone()));
+        });
+        group.add_action(&copy_uri);
+
+        let track_id = song.id.clone();
+        let copy_link = SimpleAction::new("copy_link", None);
+        copy_link.connect_activate(move |_, _| {
+            let clipboard = Clipboard::get(&SELECTION_CLIPBOARD);
+            clipboard.set_text(&format!(
+                "https://open.spotify.com/track/{}",
+                track_id.clone()
+            ));
+        });
+        group.add_action(&copy_link);
+
+        Some(group.upcast())
     }
 
-    fn menu_for(&self, _: String) -> Option<gio::MenuModel> {
-        None
+    fn menu_for(&self, id: String) -> Option<gio::MenuModel> {
+        let songs = self.songs_ref()?;
+        let song = songs.iter().find(|song| song.id == id)?;
+
+        let menu = gio::Menu::new();
+        for (i, artist) in song.artists.iter().enumerate() {
+            menu.insert(
+                i as i32,
+                Some(&format!("More from {}", artist.name)),
+                Some(&format!("song.view_artist_{}", i)),
+            );
+        }
+
+        menu.append(Some("Copy URI"), Some("song.copy_uri"));
+        menu.append(Some("Copy link"), Some("song.copy_link"));
+
+        Some(menu.upcast())
+ 
     }
 }
