@@ -71,3 +71,10 @@ pub fn wrap_flowbox_item<
     child.show_all();
     child.upcast::<gtk::Widget>()
 }
+
+pub fn format_duration(duration: f64) -> String {
+    let seconds = (duration / 1000.0) as i32;
+    let minutes = seconds.div_euclid(60);
+    let seconds = seconds.rem_euclid(60);
+    format!("{}:{:02}", minutes, seconds)
+}

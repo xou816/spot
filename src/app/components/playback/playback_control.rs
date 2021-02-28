@@ -10,6 +10,7 @@ use crate::app::components::{
 };
 use crate::app::state::{PlaybackAction, PlaybackEvent};
 use crate::app::{ActionDispatcher, AppEvent, AppModel, AppState};
+use crate::app::components::utils::format_duration;
 
 pub struct PlaybackControlModel {
     app_model: Rc<AppModel>,
@@ -104,7 +105,7 @@ impl PlaybackControl {
 
         widget
             .seek_bar
-            .connect_format_value(|_, value| Self::format_duration(value));
+            .connect_format_value(|_, value| format_duration(value));
 
         let debouncer = Debouncer::new();
         let debouncer_clone = debouncer.clone();
@@ -162,13 +163,6 @@ impl PlaybackControl {
             .expect("error updating icon");
     }
 
-    fn format_duration(duration: f64) -> String {
-        let seconds = (duration / 1000.0) as i32;
-        let minutes = seconds.div_euclid(60);
-        let seconds = seconds.rem_euclid(60);
-        format!("{}:{:02}", minutes, seconds)
-    }
-
     fn toggle_playing(&self) {
         let is_playing = self.model.is_playing();
         self.set_playing(is_playing);
@@ -192,7 +186,7 @@ impl PlaybackControl {
             self.widget.track_duration.show();
             self.widget
                 .track_duration
-                .set_text(&Self::format_duration(duration));
+                .set_text(&format_duration(duration));
         }
     }
 

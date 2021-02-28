@@ -63,7 +63,8 @@ pub use playlist_details::*;
 mod window;
 pub use window::*;
 
-mod utils;
+pub mod utils;
+pub use utils::*;
 
 pub fn handle_error(err: SpotifyApiError) -> Option<AppAction> {
     match err {

@@ -11,6 +11,7 @@ struct SongWidget {
     song_index: gtk::Label,
     song_title: gtk::Label,
     song_artist: gtk::Label,
+    song_length: gtk::Label,
     menu_btn: gtk::MenuButton,
 }
 
@@ -51,6 +52,10 @@ impl Song {
 
         model
             .bind_property("artist", &widget.song_artist, "label")
+            .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+            .build();
+        model
+            .bind_property("duration", &widget.song_length, "label")
             .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
             .build();
 
