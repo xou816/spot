@@ -177,6 +177,5 @@ impl PlaylistModel for DetailsModel {
         menu.append(Some("Copy link"), Some("song.copy_link"));
 
         Some(menu.upcast())
- 
     }
 }
