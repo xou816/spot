@@ -65,7 +65,7 @@
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">start</property>
-                            <property name="label">Playlist</property>
+                            <property name="label" translatable="yes">Playlist</property>
                             <property name="wrap">True</property>
                             <property name="xalign">0</property>
                             <style>
@@ -86,9 +86,6 @@
                             <property name="label" translatable="yes">Owner</property>
                             <property name="wrap">True</property>
                             <property name="xalign">0</property>
-                            <style>
-                              <class name="playlist_details__owner"/>
-                            </style>
                           </object>
                           <packing>
                             <property name="expand">False</property>
