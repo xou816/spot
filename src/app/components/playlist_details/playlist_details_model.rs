@@ -1,12 +1,13 @@
+use gio::prelude::*;
+use gio::{ActionMapExt, SimpleAction, SimpleActionGroup};
 use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
 use crate::app::components::{handle_error, PlaylistModel};
-use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
 use crate::app::state::{BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource};
-use crate::app::{AppEvent, AppModel, AppState};
+use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState};
 
 pub struct PlaylistDetailsModel {
     pub id: String,
@@ -94,11 +95,51 @@ impl PlaylistModel for PlaylistDetailsModel {
         )
     }
 
-    fn actions_for(&self, _: String) -> Option<gio::ActionGroup> {
-        None
+    fn actions_for(&self, id: String) -> Option<gio::ActionGroup> {
+        let songs = self.songs_ref()?;
+        let song = songs.iter().find(|song| {
+           song.id == id
+        })?;
+        
+        let group = SimpleActionGroup::new();
+
+        let album_id = song.album.id.clone();
+        let view_album = SimpleAction::new("view_album", None);
+        let dispatcher = self.dispatcher.box_clone();
+        view_album.connect_activate(move |_, _| {
+            dispatcher.dispatch(AppAction::ViewAlbum(album_id.clone()));
+        });
+
+        group.add_action(&view_album);
+
+        for (i, artist) in song.artists.iter().enumerate() {
+            let view_artist = SimpleAction::new(&format!("view_artist_{}", i), None);
+            let dispatcher = self.dispatcher.box_clone();
+            let id = artist.id.clone();
+            view_artist.connect_activate(move |_, _| {
+                dispatcher.dispatch(AppAction::ViewArtist(id.clone()));
+            });
+            group.add_action(&view_artist);
+        }
+
+        Some(group.upcast())
     }
 
-    fn menu_for(&self, _: String) -> Option<gio::MenuModel> {
-        None
+    fn menu_for(&self, id: String) -> Option<gio::MenuModel> {
+        let songs = self.songs_ref()?;
+        let song = songs.iter().find(|song| {
+           song.id == id
+        })?;
+
+        let menu = gio::Menu::new();
+        menu.insert(0, Some("View album"), Some("song.view_album"));
+        for (i, artist) in song.artists.iter().enumerate() {
+            menu.insert(
+                (i + 1) as i32,
+                Some(&format!("More from {}", artist.name)),
+                Some(&format!("song.view_artist_{}", i)),
+            );
+        }
+        Some(menu.upcast())
     }
 }
