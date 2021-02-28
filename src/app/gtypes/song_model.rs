@@ -24,7 +24,7 @@ impl SongModel {
                 ("title", &title),
                 ("artist", &artist),
                 ("id", &id),
-                ("duration", &duration)
+                ("duration", &duration),
             ],
         )
         .expect("Failed to create")
@@ -101,7 +101,13 @@ mod imp {
             glib::ParamSpec::string(id, "id", "id", None, glib::ParamFlags::READWRITE)
         }),
         subclass::Property("duration", |duration| {
-            glib::ParamSpec::string(duration, "duration", "dur", None, glib::ParamFlags::READWRITE)
+            glib::ParamSpec::string(
+                duration,
+                "duration",
+                "dur",
+                None,
+                glib::ParamFlags::READWRITE,
+            )
         }),
         subclass::Property("playing", |playing| {
             glib::ParamSpec::boolean(
@@ -163,7 +169,7 @@ mod imp {
                 artist: RefCell::new(None),
                 id: RefCell::new(None),
                 playing: RefCell::new(false),
-                duration: RefCell::new(None)
+                duration: RefCell::new(None),
             }
         }
     }

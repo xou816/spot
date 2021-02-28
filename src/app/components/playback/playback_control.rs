@@ -4,13 +4,13 @@ use gtk::{BinExt, ImageExt, LabelExt, RangeExt, ScaleExt};
 use std::ops::Deref;
 use std::rc::Rc;
 
+use crate::app::components::utils::format_duration;
 use crate::app::components::{
     utils::{Clock, Debouncer},
     EventListener,
 };
 use crate::app::state::{PlaybackAction, PlaybackEvent};
 use crate::app::{ActionDispatcher, AppEvent, AppModel, AppState};
-use crate::app::components::utils::format_duration;
 
 pub struct PlaybackControlModel {
     app_model: Rc<AppModel>,

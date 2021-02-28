@@ -1,6 +1,6 @@
 pub use super::gtypes::*;
-use std::convert::From;
 use crate::app::components::utils::format_duration;
+use std::convert::From;
 
 impl From<&AlbumDescription> for AlbumModel {
     fn from(album: &AlbumDescription) -> Self {
@@ -38,7 +38,7 @@ impl SongDescription {
             (position + 1) as u32,
             &self.title,
             &self.artists_name(),
-            &format_duration(self.duration.into())
+            &format_duration(self.duration.into()),
         )
     }
 }
