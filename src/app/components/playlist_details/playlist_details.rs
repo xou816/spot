@@ -13,6 +13,7 @@ use crate::app::{AppEvent, BrowserEvent};
 struct PlaylistDetailsWidget {
     pub root: gtk::Widget,
     pub name_label: gtk::Label,
+    pub owner_label: gtk::Label,
     pub tracks: gtk::ListBox,
     pub art: gtk::Image,
 }
@@ -57,8 +58,10 @@ impl PlaylistDetails {
     fn update_details(&self) {
         if let Some(info) = self.model.get_playlist_info() {
             let title = &info.title[..];
-
+            let owner = &info.owner.display_name[..];
+            
             self.widget.name_label.set_label(title);
+            self.widget.owner_label.set_label(owner);
 
             let widget = self.widget.clone();
             if let Some(art) = info.art.clone() {
