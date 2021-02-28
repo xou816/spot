@@ -163,7 +163,14 @@ impl PlaybackControl {
             .expect("error updating icon");
     }
 
-    fn toggle_playing(&self) {
+    fn format_duration(duration: f64) -> String {
+        let seconds = (duration / 1000.0) as i32;
+        let minutes = seconds.div_euclid(60);
+        let seconds = seconds.rem_euclid(60);
+        format!("{}:{:02}", minutes, seconds)
+    }
+
+    fn update_playing(&self) {
         let is_playing = self.model.is_playing();
         self.set_playing(is_playing);
 
@@ -187,6 +194,10 @@ impl PlaybackControl {
             self.widget
                 .track_duration
                 .set_text(&format_duration(duration));
+        } else {
+            self.widget.seek_bar.set_draw_value(false);
+            self.widget.seek_bar.set_range(0.0, 0.0);
+            self.widget.track_duration.hide();
         }
     }
 
@@ -198,11 +209,15 @@ impl PlaybackControl {
 impl EventListener for PlaybackControl {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::PlaybackEvent(PlaybackEvent::TrackPaused)
-            | AppEvent::PlaybackEvent(PlaybackEvent::TrackResumed) => {
-                self.toggle_playing();
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackPaused)
+            | AppEvent::PlaybackEvent(PlaybackEvent::PlaybackResumed) => {
+                self.update_playing();
             }
             AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
+                self.update_current_info();
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackStopped) => {
+                self.update_playing();
                 self.update_current_info();
             }
             AppEvent::PlaybackEvent(PlaybackEvent::SeekSynced(pos)) => {

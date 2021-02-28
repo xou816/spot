@@ -18,8 +18,9 @@ impl PlayerNotifier {
 impl EventListener for PlayerNotifier {
     fn on_event(&mut self, event: &AppEvent) {
         let command = match event {
-            AppEvent::PlaybackEvent(PlaybackEvent::TrackPaused) => Some(Command::PlayerPause),
-            AppEvent::PlaybackEvent(PlaybackEvent::TrackResumed) => Some(Command::PlayerResume),
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackPaused) => Some(Command::PlayerPause),
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackResumed) => Some(Command::PlayerResume),
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackStopped) => Some(Command::PlayerStop),
             AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(id)) => {
                 SpotifyId::from_base62(&id).ok().map(Command::PlayerLoad)
             }

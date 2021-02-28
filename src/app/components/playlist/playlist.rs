@@ -85,18 +85,9 @@ where
         row
     }
 
-    fn song_is_current(&self, song: &SongModel) -> bool {
-        let current_song_id = self.model.current_song_id();
-        let current_song_id = current_song_id.as_ref();
-
-        current_song_id
-            .map(|s| s.eq(&song.get_id()))
-            .unwrap_or(false)
-    }
-
     fn update_list(&self) {
         for (i, song) in self.model.songs().iter().enumerate() {
-            let is_current = self.song_is_current(&song);
+            let is_current = Some(&song.get_id()) == self.model.current_song_id().as_ref();
             let model_song = self.list_model.get(i as u32);
             model_song.set_playing(is_current);
         }
@@ -116,6 +107,9 @@ where
         match event {
             AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
                 self.update_list();
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackStopped) => {
+                self.reset_list();
             }
             _ if self.model.should_refresh_songs(event) => self.reset_list(),
             _ => {}

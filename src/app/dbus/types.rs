@@ -1,5 +1,6 @@
 use std::convert::Into;
 use std::sync::{Arc, Mutex};
+use std::time::Instant;
 use zvariant::Type;
 use zvariant::{Dict, Signature, Str, Value};
 
@@ -27,6 +28,44 @@ impl From<PlaybackStatus> for Value<'_> {
             PlaybackStatus::Paused => "Paused".into(),
             PlaybackStatus::Stopped => "Stopped".into(),
         }
+    }
+}
+
+struct PositionMicros {
+    last_known_position: u128,
+    last_resume_instant: Option<Instant>,
+    rate: f32,
+}
+
+impl PositionMicros {
+    fn new(rate: f32) -> Self {
+        Self {
+            last_known_position: 0,
+            last_resume_instant: None,
+            rate,
+        }
+    }
+    fn current(&self) -> u128 {
+        let current_progress = self.last_resume_instant.map(|ri| {
+            let elapsed = ri.elapsed().as_micros() as f32;
+            let real_elapsed = self.rate * elapsed;
+            real_elapsed.ceil() as u128
+        });
+        self.last_known_position + current_progress.unwrap_or(0)
+    }
+
+    fn set(&mut self, position: u128, playing: bool) {
+        self.last_known_position = position;
+        self.last_resume_instant = if playing { Some(Instant::now()) } else { None }
+    }
+
+    fn pause(&mut self) {
+        self.last_known_position = self.current();
+        self.last_resume_instant = None;
+    }
+
+    fn resume(&mut self) {
+        self.last_resume_instant = Some(Instant::now());
     }
 }
 
@@ -63,6 +102,7 @@ impl From<TrackMetadata> for Value<'_> {
 
 struct MprisState {
     status: PlaybackStatus,
+    position: PositionMicros,
     metadata: Option<TrackMetadata>,
     has_prev: bool,
     has_next: bool,
@@ -75,6 +115,7 @@ impl SharedMprisState {
     pub fn new() -> Self {
         Self(Arc::new(Mutex::new(MprisState {
             status: PlaybackStatus::Stopped,
+            position: PositionMicros::new(1.0),
             metadata: None,
             has_prev: false,
             has_next: false,
@@ -89,7 +130,7 @@ impl SharedMprisState {
     }
 
     pub fn current_track(&self) -> Option<TrackMetadata> {
-        self.0.lock().ok().and_then(|s| s.metadata.clone()) // clone :(
+        self.0.lock().ok().and_then(|s| s.metadata.clone())
     }
 
     pub fn has_prev(&self) -> bool {
@@ -114,16 +155,40 @@ impl SharedMprisState {
 
     pub fn set_current_track(&self, track: Option<TrackMetadata>) {
         if let Ok(mut state) = self.0.lock() {
+            let playing = state.status == PlaybackStatus::Playing;
             (*state).metadata = track;
+            (*state).position.set(0, playing);
         }
     }
 
-    pub fn set_playing(&self, playing: bool) {
+    pub fn position(&self) -> u128 {
+        self.0
+            .lock()
+            .ok()
+            .map(|s| s.position.current())
+            .unwrap_or(0)
+    }
+
+    pub fn set_position(&self, position: u128) {
         if let Ok(mut state) = self.0.lock() {
-            (*state).status = if playing {
-                PlaybackStatus::Playing
-            } else {
-                PlaybackStatus::Paused
+            let playing = state.status == PlaybackStatus::Playing;
+            (*state).position.set(position, playing);
+        }
+    }
+
+    pub fn set_playing(&self, status: PlaybackStatus) {
+        if let Ok(mut state) = self.0.lock() {
+            (*state).status = status;
+            match status {
+                PlaybackStatus::Playing => {
+                    (*state).position.resume();
+                }
+                PlaybackStatus::Paused => {
+                    (*state).position.pause();
+                }
+                PlaybackStatus::Stopped => {
+                    (*state).position.set(0, false);
+                }
             }
         }
     }

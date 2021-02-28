@@ -56,7 +56,7 @@ impl AppPlaybackStateListener {
                      ..
                  }| TrackMetadata {
                     id: format!("/dev/alextren/Spot/Track/{}", id),
-                    length: duration as u64,
+                    length: 1000 * duration as u64,
                     title,
                     artist: artists.into_iter().map(|a| a.name).collect(),
                 },
@@ -75,17 +75,25 @@ impl AppPlaybackStateListener {
 impl EventListener for AppPlaybackStateListener {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::PlaybackEvent(PlaybackEvent::TrackPaused) => {
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackPaused) => {
                 self.with_player(|player| {
-                    player.state.set_playing(false);
+                    player.state.set_playing(PlaybackStatus::Paused);
                     player.notify_playback_status()?;
                     Ok(())
                 })
                 .unwrap();
             }
-            AppEvent::PlaybackEvent(PlaybackEvent::TrackResumed) => {
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackResumed) => {
                 self.with_player(|player| {
-                    player.state.set_playing(true);
+                    player.state.set_playing(PlaybackStatus::Playing);
+                    player.notify_playback_status()?;
+                    Ok(())
+                })
+                .unwrap();
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackStopped) => {
+                self.with_player(|player| {
+                    player.state.set_playing(PlaybackStatus::Stopped);
                     player.notify_playback_status()?;
                     Ok(())
                 })
@@ -99,6 +107,16 @@ impl EventListener for AppPlaybackStateListener {
                     player.state.set_has_prev(has_prev);
                     player.state.set_has_next(has_next);
                     player.notify_metadata_and_prev_next()?;
+                    Ok(())
+                })
+                .unwrap();
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::TrackSeeked(pos))
+            | AppEvent::PlaybackEvent(PlaybackEvent::SeekSynced(pos)) => {
+                self.with_player(|player| {
+                    let pos = 1000 * (*pos as u128);
+                    player.state.set_position(pos);
+                    player.seeked(pos as i64)?;
                     Ok(())
                 })
                 .unwrap();

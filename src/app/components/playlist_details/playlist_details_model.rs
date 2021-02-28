@@ -9,7 +9,7 @@ use crate::app::state::{BrowserAction, BrowserEvent, PlaybackAction, PlaylistSou
 use crate::app::{AppEvent, AppModel, AppState};
 
 pub struct PlaylistDetailsModel {
-    id: String,
+    pub id: String,
     app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>,
 }
@@ -23,9 +23,21 @@ impl PlaylistDetailsModel {
         }
     }
 
+    fn songs_ref(&self) -> Option<impl Deref<Target = Vec<SongDescription>> + '_> {
+        self.app_model.map_state_opt(|s| {
+            Some(
+                &s.browser
+                    .playlist_details_state(&self.id)?
+                    .content
+                    .as_ref()?
+                    .songs,
+            )
+        })
+    }
+
     pub fn get_playlist_info(&self) -> Option<impl Deref<Target = PlaylistDescription> + '_> {
         self.app_model
-            .map_state_opt(|s| s.browser.playlist_details_state()?.content.as_ref())
+            .map_state_opt(|s| s.browser.playlist_details_state(&self.id)?.content.as_ref())
     }
 
     pub fn load_playlist_info(&self) {
@@ -52,9 +64,7 @@ impl PlaylistModel for PlaylistDetailsModel {
     }
 
     fn songs(&self) -> Vec<SongModel> {
-        let songs = self
-            .app_model
-            .map_state_opt(|s| Some(&s.browser.playlist_details_state()?.content.as_ref()?.songs));
+        let songs = self.songs_ref();
         match songs {
             Some(songs) => songs
                 .iter()
@@ -68,9 +78,7 @@ impl PlaylistModel for PlaylistDetailsModel {
     fn play_song(&self, id: String) {
         let source = PlaylistSource::Playlist(self.id.clone());
         if self.app_model.get_state().playback.source != source {
-            let songs = self.app_model.map_state_opt(|s| {
-                Some(&s.browser.playlist_details_state()?.content.as_ref()?.songs)
-            });
+            let songs = self.songs_ref();
             if let Some(songs) = songs {
                 self.dispatcher
                     .dispatch(PlaybackAction::LoadPlaylist(source, songs.clone()).into());
@@ -82,7 +90,7 @@ impl PlaylistModel for PlaylistDetailsModel {
     fn should_refresh_songs(&self, event: &AppEvent) -> bool {
         matches!(
             event,
-            AppEvent::BrowserEvent(BrowserEvent::PlaylistDetailsLoaded)
+            AppEvent::BrowserEvent(BrowserEvent::PlaylistDetailsLoaded(id)) if id == &self.id
         )
     }
 

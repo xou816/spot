@@ -37,10 +37,10 @@ pub enum BrowserEvent {
     LibraryUpdated,
     SavedPlaylistsUpdated,
     AlbumDetailsLoaded(String),
-    PlaylistDetailsLoaded,
+    PlaylistDetailsLoaded(String),
     SearchUpdated,
     SearchResultsUpdated,
-    ArtistDetailsUpdated,
+    ArtistDetailsUpdated(String),
     NavigationPushed(ScreenName),
     NavigationPopped,
     NavigationPoppedTo(ScreenName),
@@ -207,9 +207,9 @@ impl BrowserState {
         })
     }
 
-    pub fn details_state(&self) -> Option<&DetailsState> {
+    pub fn details_state(&self, id: &str) -> Option<&DetailsState> {
         self.navigation.iter_rev().find_map(|screen| match screen {
-            BrowserScreen::AlbumDetails(state) => Some(state),
+            BrowserScreen::AlbumDetails(state) if state.id == id => Some(state),
             _ => None,
         })
     }
@@ -221,16 +221,16 @@ impl BrowserState {
         })
     }
 
-    pub fn artist_state(&self) -> Option<&ArtistState> {
+    pub fn artist_state(&self, id: &str) -> Option<&ArtistState> {
         self.navigation.iter_rev().find_map(|screen| match screen {
-            BrowserScreen::Artist(state) => Some(state),
+            BrowserScreen::Artist(state) if state.id == id => Some(state),
             _ => None,
         })
     }
 
-    pub fn playlist_details_state(&self) -> Option<&PlaylistDetailsState> {
+    pub fn playlist_details_state(&self, id: &str) -> Option<&PlaylistDetailsState> {
         self.navigation.iter_rev().find_map(|screen| match screen {
-            BrowserScreen::PlaylistDetails(state) => Some(state),
+            BrowserScreen::PlaylistDetails(state) if state.id == id => Some(state),
             _ => None,
         })
     }
@@ -304,7 +304,7 @@ pub mod tests {
 
         assert_eq!(state.current_screen(), &new_screen);
         assert_eq!(state.count(), 2);
-        assert_eq!(state.artist_state().is_some(), true);
+        assert_eq!(state.artist_state("some_id").is_some(), true);
     }
 
     #[test]

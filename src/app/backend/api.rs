@@ -276,7 +276,36 @@ impl CachedSpotifyClient {
 
     async fn get_playlist_no_cache(&self, id: &str) -> Result<String, SpotifyApiError> {
         self.send_req(|token| {
-            let uri = self.uri(format!("/v1/playlists/{}", id), None).unwrap();
+            let query = Self::make_query_params()
+                .append_pair("fields", "id,name,images,owner")
+                .finish();
+
+            let uri = self
+                .uri(format!("/v1/playlists/{}", id), Some(query))
+                .unwrap();
+            Request::get(uri)
+                .header("Authorization", format!("Bearer {}", &token))
+                .body(())
+                .unwrap()
+        })
+        .await
+    }
+
+    async fn get_playlist_tracks_no_cache(
+        &self,
+        id: &str,
+        offset: usize,
+        limit: usize,
+    ) -> Result<String, SpotifyApiError> {
+        self.send_req(|token| {
+            let query = Self::make_query_params()
+                .append_pair("offset", &offset.to_string()[..])
+                .append_pair("limit", &limit.to_string()[..])
+                .finish();
+
+            let uri = self
+                .uri(format!("/v1/playlists/{}/tracks", id), Some(query))
+                .unwrap();
             Request::get(uri)
                 .header("Authorization", format!("Bearer {}", &token))
                 .body(())
@@ -491,7 +520,42 @@ impl SpotifyApiClient for CachedSpotifyClient {
                 )
                 .await?;
 
-            Ok(from_str::<DetailedPlaylist>(&text)?.into())
+            let playlist: Playlist = from_str(&text)?;
+            let mut playlist: PlaylistDescription = playlist.into();
+
+            let mut tracks: Vec<SongDescription> = vec![];
+            let mut offset: usize = 0;
+            let limit: usize = 100;
+            loop {
+                let song_request = self.cache_request(
+                    format!("net/playlist_items_{}_{}_{}.json", id, offset, limit),
+                    None,
+                );
+
+                let song_text = song_request
+                    .or_else_try_write(
+                        || self.get_playlist_tracks_no_cache(&id[..], offset, limit),
+                        CacheExpiry::expire_in_hours(6),
+                    )
+                    .await?;
+
+                let songs: Page<PlaylistTrack> = from_str(&song_text)?;
+
+                let mut songs: Vec<SongDescription> = songs.into();
+                let songs_loaded = songs.len();
+
+                tracks.append(&mut songs);
+
+                if songs_loaded < limit {
+                    break;
+                }
+
+                offset += limit;
+            }
+
+            playlist.songs = tracks;
+
+            Ok(playlist)
         })
     }
 
@@ -548,6 +612,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
             let top_tracks: Vec<SongDescription> = top_tracks.into();
 
             let result = ArtistDescription {
+                id: artist.id,
                 name: artist.name,
                 albums,
                 top_tracks,
