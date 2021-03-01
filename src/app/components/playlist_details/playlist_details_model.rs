@@ -134,10 +134,7 @@ impl PlaylistModel for PlaylistDetailsModel {
         let copy_link = SimpleAction::new("copy_link", None);
         copy_link.connect_activate(move |_, _| {
             let clipboard = Clipboard::get(&SELECTION_CLIPBOARD);
-            clipboard.set_text(&format!(
-                "https://open.spotify.com/track/{}",
-                &track_id
-            ));
+            clipboard.set_text(&format!("https://open.spotify.com/track/{}", &track_id));
         });
         group.add_action(&copy_link);
 
