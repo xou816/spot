@@ -2,24 +2,18 @@ use async_std::fs;
 use async_std::io;
 use async_std::path::PathBuf;
 use async_std::prelude::*;
+use core::mem::size_of;
 use regex::Regex;
-use std::convert::{From, TryInto};
+use std::convert::From;
 use std::future::Future;
 use std::time::{Duration, SystemTime};
 
-pub enum CacheFile {
-    File(Vec<u8>),
-    Expired,
-    None,
-}
+pub type ETag = String;
 
-impl From<Option<Vec<u8>>> for CacheFile {
-    fn from(opt: Option<Vec<u8>>) -> CacheFile {
-        match opt {
-            Some(buffer) => CacheFile::File(buffer),
-            None => CacheFile::None,
-        }
-    }
+pub enum CacheFile {
+    Fresh(Vec<u8>, Option<ETag>),
+    Expired(Vec<u8>, Option<ETag>),
+    None,
 }
 
 #[derive(PartialEq, Clone, Copy)]
@@ -28,22 +22,41 @@ pub enum CachePolicy {
     IgnoreExpiry,
 }
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum CacheExpiry {
     Never,
-    AtUnixTimestamp(Duration),
+    AtUnixTimestamp(Duration, Option<ETag>),
 }
 
 impl CacheExpiry {
-    pub fn expire_in_seconds(seconds: u64) -> Self {
+    pub fn expire_in_seconds(seconds: u64, etag: Option<ETag>) -> Self {
         let timestamp = SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)
             .unwrap();
-        Self::AtUnixTimestamp(timestamp + Duration::new(seconds, 0))
+        Self::AtUnixTimestamp(timestamp + Duration::new(seconds, 0), etag)
     }
 
-    pub fn expire_in_hours(hours: u32) -> Self {
-        Self::expire_in_seconds(hours as u64 * 3600)
+    pub fn expire_in_hours(hours: u32, etag: Option<ETag>) -> Self {
+        Self::expire_in_seconds(hours as u64 * 3600, etag)
+    }
+
+    fn is_expired(&self) -> bool {
+        match self {
+            Self::Never => false,
+            Self::AtUnixTimestamp(ref duration, _) => {
+                let now = &SystemTime::now()
+                    .duration_since(SystemTime::UNIX_EPOCH)
+                    .unwrap();
+                now > duration
+            }
+        }
+    }
+
+    fn etag(&self) -> Option<&String> {
+        match self {
+            Self::Never => None,
+            Self::AtUnixTimestamp(_, ref etag) => etag.as_ref(),
+        }
     }
 }
 
@@ -75,65 +88,59 @@ impl CacheManager {
 }
 
 impl CacheManager {
-    async fn read_expiry_file(&self, resource: &str) -> io::Result<Duration> {
+    async fn read_expiry_file(&self, resource: &str) -> io::Result<CacheExpiry> {
         let expiry_file = self.cache_meta_path(resource);
         let buffer = fs::read(&expiry_file).await?;
-        let slice: Box<[u8; core::mem::size_of::<u64>()]> = buffer
-            .into_boxed_slice()
-            .try_into()
-            .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "conversion error"))?;
-        Ok(Duration::new(u64::from_be_bytes(*slice), 0))
-    }
+        const OFFSET: usize = size_of::<u64>();
 
-    async fn is_file_expired(&self, resource: &str) -> bool {
-        let now = SystemTime::now()
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .unwrap();
+        let mut duration: [u8; OFFSET] = Default::default();
+        duration.copy_from_slice(&buffer[..OFFSET]);
+        let duration = Duration::from_secs(u64::from_be_bytes(duration));
 
-        match self.read_expiry_file(resource).await {
-            Err(err) if err.kind() == io::ErrorKind::NotFound => false,
-            Err(_) => true,
-            Ok(expiry) => now > expiry,
-        }
+        let etag = String::from_utf8((&buffer[OFFSET..]).to_vec()).ok();
+
+        Ok(CacheExpiry::AtUnixTimestamp(duration, etag))
     }
 
     pub async fn read_cache_file(&self, resource: &str, policy: CachePolicy) -> CacheFile {
         let path = self.cache_path(resource);
+        let file = fs::read(&path).await;
+        let expiry = self.read_expiry_file(resource);
 
-        match policy {
-            CachePolicy::IgnoreExpiry => match fs::read(&path).await {
-                Err(_) => CacheFile::None,
-                Ok(buf) => CacheFile::File(buf),
-            },
-            CachePolicy::Default => {
-                let expired = self.is_file_expired(resource).await;
-                if expired {
+        match (file, policy) {
+            (Ok(buf), CachePolicy::IgnoreExpiry) => CacheFile::Fresh(buf, None),
+            (Ok(buf), CachePolicy::Default) => {
+                let expiry = expiry.await.unwrap_or(CacheExpiry::Never);
+                let etag = expiry.etag().cloned();
+                if expiry.is_expired() {
                     println!("Expired: {}", resource);
-                    CacheFile::Expired
+                    CacheFile::Expired(buf, etag)
                 } else {
-                    match fs::read(&path).await {
-                        Err(_) => CacheFile::None,
-                        Ok(buf) => CacheFile::File(buf),
-                    }
+                    CacheFile::Fresh(buf, etag)
                 }
             }
+            (Err(_), _) => CacheFile::None,
         }
     }
 }
 
 impl CacheManager {
-    async fn set_expiry_for_path(&self, path: &PathBuf, expiry: Duration) -> io::Result<()> {
-        let content = expiry.as_secs().to_be_bytes().to_owned();
-        fs::write(path, content).await
-    }
-
-    pub async fn set_expiry_for(&self, resource: &str, expiry: Duration) -> io::Result<()> {
-        let meta_file = self.cache_meta_path(resource);
-        self.set_expiry_for_path(&meta_file, expiry).await
+    async fn set_expiry_for_path(&self, path: &PathBuf, expiry: CacheExpiry) -> io::Result<()> {
+        if let CacheExpiry::AtUnixTimestamp(duration, etag) = expiry {
+            let mut content = duration.as_secs().to_be_bytes().to_vec();
+            if let Some(etag) = etag {
+                content.append(&mut etag.into_bytes());
+            }
+            fs::write(path, content).await
+        } else {
+            Ok(())
+        }
     }
 
     pub async fn set_expired(&self, resource: &str) -> io::Result<()> {
-        self.set_expiry_for(resource, Duration::new(0, 0)).await
+        let meta_file = self.cache_meta_path(resource);
+        self.set_expiry_for_path(&meta_file, CacheExpiry::expire_in_seconds(0, None))
+            .await
     }
 
     pub async fn clear_cache_pattern(&self, dir: &str, regex: &Regex) -> io::Result<()> {
@@ -165,7 +172,7 @@ impl CacheManager {
                 .map(|s| regex.is_match(s))
                 .unwrap_or(false);
             if matches {
-                self.set_expiry_for_path(&entry.path(), Duration::new(0, 0))
+                self.set_expiry_for_path(&entry.path(), CacheExpiry::expire_in_seconds(0, None))
                     .await?;
             }
         }
@@ -181,11 +188,8 @@ impl CacheManager {
     ) -> io::Result<()> {
         let file = self.cache_path(resource);
         fs::write(&file, content).await?;
-
-        if let CacheExpiry::AtUnixTimestamp(ts) = expiry {
-            self.set_expiry_for(resource, ts).await?;
-        }
-
+        self.set_expiry_for_path(&self.cache_meta_path(resource), expiry)
+            .await?;
         Ok(())
     }
 }
@@ -194,6 +198,11 @@ pub struct CacheRequest<'a, S> {
     cache: &'a CacheManager,
     resource: S,
     policy: CachePolicy,
+}
+
+pub enum FetchResult {
+    NotModified,
+    Modified(Vec<u8>, CacheExpiry),
 }
 
 impl<'a, S> CacheRequest<'a, S>
@@ -208,32 +217,45 @@ where
         }
     }
 
-    pub async fn get(&self) -> Option<String> {
-        match self
-            .cache
-            .read_cache_file(self.resource.as_ref(), self.policy)
-            .await
-        {
-            CacheFile::File(buffer) => String::from_utf8(buffer).ok(),
-            _ => None,
-        }
-    }
-
-    pub async fn get_or_write<O, F, E>(&self, fresh: F, expiry: CacheExpiry) -> Result<String, E>
+    pub async fn get_or_write<'s, O, F, E>(&self, fetch: F) -> Result<Vec<u8>, E>
     where
-        O: Future<Output = Result<String, E>>,
-        F: FnOnce() -> O,
+        O: Future<Output = Result<FetchResult, E>>,
+        F: FnOnce(Option<ETag>) -> O,
         E: From<io::Error>,
     {
-        match self.get().await {
-            Some(text) => Ok(text),
-            None => {
-                let fresh = fresh().await?;
-                self.cache
-                    .write_cache_file(self.resource.as_ref(), fresh.as_bytes(), expiry)
-                    .await?;
-                Ok(fresh)
-            }
+        let file = self
+            .cache
+            .read_cache_file(self.resource.as_ref(), self.policy)
+            .await;
+        match file {
+            CacheFile::Fresh(buf, _) => Ok(buf),
+            CacheFile::Expired(buf, etag) => match fetch(etag).await? {
+                FetchResult::NotModified => {
+                    println!("not modified!");
+                    Ok(buf)
+                },
+                FetchResult::Modified(fresh, expiry) => {
+                    println!("{:?}", expiry);
+                    self.cache
+                        .write_cache_file(self.resource.as_ref(), &fresh, expiry)
+                        .await?;
+                    Ok(fresh)
+                }
+            },
+            CacheFile::None => match fetch(None).await? {
+                FetchResult::NotModified => Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "unexpected not modified",
+                )
+                .into()),
+                FetchResult::Modified(fresh, expiry) => {
+                    println!("{:?}", expiry);
+                    self.cache
+                        .write_cache_file(self.resource.as_ref(), &fresh, expiry)
+                        .await?;
+                    Ok(fresh)
+                }
+            },
         }
     }
 }

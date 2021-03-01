@@ -68,7 +68,7 @@ impl ImageLoader {
             .read_cache_file(&resource[..], CachePolicy::IgnoreExpiry)
             .await
         {
-            CacheFile::File(buffer) => {
+            CacheFile::Fresh(buffer, _) => {
                 loader.write_all(&buffer[..]).ok()?;
             }
             _ => {
