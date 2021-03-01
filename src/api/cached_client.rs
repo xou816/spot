@@ -8,7 +8,7 @@ use std::future::Future;
 
 use super::api_models::*;
 use super::cache::{CacheExpiry, CacheManager, CachePolicy, FetchResult};
-use super::client::{SpotifyApiError, SpotifyClient, SpotifyResponse};
+use super::client::{SpotifyApiError, SpotifyClient, SpotifyResponse, SpotifyResponseKind};
 use crate::app::models::*;
 
 lazy_static! {
@@ -133,17 +133,17 @@ impl CachedSpotifyClient {
                 cache_policy.unwrap_or_else(|| self.default_cache_policy()),
                 move |etag| {
                     write(etag).map(|r| {
-                        SpotifyResult::Ok(match r? {
-                            SpotifyResponse::Ok {
-                                content,
-                                max_age,
-                                etag,
-                                ..
-                            } => FetchResult::Modified(
-                                content.into_bytes(),
-                                CacheExpiry::expire_in_seconds(u64::max(max_age, 60), etag),
-                            ),
-                            SpotifyResponse::NotModified => FetchResult::NotModified,
+                        let SpotifyResponse {
+                            kind,
+                            max_age,
+                            etag,
+                        } = r?;
+                        let expiry = CacheExpiry::expire_in_seconds(u64::max(max_age, 60), etag);
+                        SpotifyResult::Ok(match kind {
+                            SpotifyResponseKind::Ok(content, _) => {
+                                FetchResult::Modified(content.into_bytes(), expiry)
+                            }
+                            SpotifyResponseKind::NotModified => FetchResult::NotModified(expiry),
                         })
                     })
                 },

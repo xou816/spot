@@ -89,25 +89,15 @@ where
     }
 }
 
-pub(crate) enum SpotifyResponse<T> {
-    Ok {
-        content: String,
-        max_age: u64,
-        etag: Option<String>,
-        _type: PhantomData<T>,
-    },
+pub(crate) enum SpotifyResponseKind<T> {
+    Ok(String, PhantomData<T>),
     NotModified,
 }
 
-impl<T> SpotifyResponse<T> {
-    pub(crate) fn new(content: String, max_age: u64, etag: Option<String>) -> Self {
-        Self::Ok {
-            content,
-            max_age,
-            etag,
-            _type: PhantomData,
-        }
-    }
+pub(crate) struct SpotifyResponse<T> {
+    pub kind: SpotifyResponseKind<T>,
+    pub max_age: u64,
+    pub etag: Option<String>,
 }
 
 impl<'a, T> SpotifyResponse<T>
@@ -115,7 +105,7 @@ where
     T: Deserialize<'a>,
 {
     pub(crate) fn deserialize(&'a self) -> Option<T> {
-        if let Self::Ok { ref content, .. } = self {
+        if let SpotifyResponseKind::Ok(ref content, _) = self.kind {
             from_str(content).ok()
         } else {
             None
@@ -198,28 +188,31 @@ impl SpotifyClient {
         B: Into<isahc::AsyncBody>,
     {
         let mut result = self.client.send_async(request).await?;
+
+        let etag = result
+            .headers()
+            .get("etag")
+            .and_then(|header| header.to_str().ok())
+            .map(|s| s.to_owned());
+
+        let cache_control = result
+            .headers()
+            .get("cache-control")
+            .and_then(|header| header.to_str().ok())
+            .and_then(|s| Self::parse_cache_control(s));
+
         match result.status() {
             StatusCode::UNAUTHORIZED => Err(SpotifyApiError::InvalidToken),
-            s if s.is_success() => {
-                let etag = result
-                    .headers()
-                    .get("etag")
-                    .and_then(|header| header.to_str().ok())
-                    .map(|s| s.to_owned());
-
-                let cache_control = result
-                    .headers()
-                    .get("cache-control")
-                    .and_then(|header| header.to_str().ok())
-                    .and_then(|s| Self::parse_cache_control(s));
-
-                Ok(SpotifyResponse::new(
-                    result.text().await?,
-                    cache_control.unwrap_or(10),
-                    etag,
-                ))
-            }
-            StatusCode::NOT_MODIFIED => Ok(SpotifyResponse::NotModified),
+            s if s.is_success() => Ok(SpotifyResponse {
+                kind: SpotifyResponseKind::Ok(result.text().await?, PhantomData),
+                max_age: cache_control.unwrap_or(10),
+                etag,
+            }),
+            StatusCode::NOT_MODIFIED => Ok(SpotifyResponse {
+                kind: SpotifyResponseKind::NotModified,
+                max_age: cache_control.unwrap_or(10),
+                etag,
+            }),
             s => Err(SpotifyApiError::BadStatus(s.as_u16())),
         }
     }

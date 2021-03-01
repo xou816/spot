@@ -249,14 +249,18 @@ impl CacheManager {
         match file {
             CacheFile::Fresh(buf, _) => Ok(buf),
             CacheFile::Expired(buf, etag) => match fetch(etag).await? {
-                FetchResult::NotModified => Ok(buf),
+                FetchResult::NotModified(expiry) => {
+                    let meta = self.cache_meta_path(resource);
+                    self.set_expiry_for_path(&meta, expiry).await?;
+                    Ok(buf)
+                }
                 FetchResult::Modified(fresh, expiry) => {
                     self.write_cache_file(resource, &fresh, expiry).await?;
                     Ok(fresh)
                 }
             },
             CacheFile::None => match fetch(None).await? {
-                FetchResult::NotModified => Err(E::from(CacheError::NoContent)),
+                FetchResult::NotModified(_) => Err(E::from(CacheError::NoContent)),
                 FetchResult::Modified(fresh, expiry) => {
                     self.write_cache_file(resource, &fresh, expiry).await?;
                     Ok(fresh)
@@ -267,6 +271,6 @@ impl CacheManager {
 }
 
 pub enum FetchResult {
-    NotModified,
+    NotModified(CacheExpiry),
     Modified(Vec<u8>, CacheExpiry),
 }

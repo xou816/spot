@@ -60,7 +60,7 @@
             "config-opts" : [
                 "-Doffline=true",
                 "-Dbuildtype=debug",
-                "-Dfeatures=''"
+                "-Dfeatures="
             ],
             "sources" : [
                 {
