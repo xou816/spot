@@ -167,7 +167,7 @@ impl CacheManager {
             }
             fs::write(path, content)
                 .await
-                .map_err(|e| CacheError::WriteError(e))?;
+                .map_err(CacheError::WriteError)?;
         }
         Ok(())
     }
@@ -177,7 +177,7 @@ impl CacheManager {
 
         let mut entries = fs::read_dir(dir_path)
             .await
-            .map_err(|e| CacheError::ReadError(e))?;
+            .map_err(CacheError::ReadError)?;
 
         while let Some(Ok(entry)) = entries.next().await {
             let matches = entry
@@ -188,7 +188,7 @@ impl CacheManager {
             if matches {
                 fs::remove_file(entry.path())
                     .await
-                    .map_err(|e| CacheError::RemoveError(e))?;
+                    .map_err(CacheError::RemoveError)?;
             }
         }
 
@@ -200,7 +200,7 @@ impl CacheManager {
 
         let mut entries = fs::read_dir(dir_path)
             .await
-            .map_err(|e| CacheError::ReadError(e))?;
+            .map_err(CacheError::ReadError)?;
 
         while let Some(Ok(entry)) = entries.next().await {
             let matches = entry
@@ -229,7 +229,7 @@ impl CacheManager {
             fs::write(&file, content),
             self.set_expiry_for_path(&meta, expiry)
         );
-        r1.map_err(|e| CacheError::WriteError(e))?;
+        r1.map_err(CacheError::WriteError)?;
         r2?;
         Ok(())
     }

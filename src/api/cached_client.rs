@@ -115,9 +115,9 @@ impl CachedSpotifyClient {
         }
     }
 
-    async fn cache_get_or_write<'a, T, O, F>(
+    async fn cache_get_or_write<T, O, F>(
         &self,
-        key: SpotCacheKey<'a>,
+        key: SpotCacheKey<'_>,
         cache_policy: Option<CachePolicy>,
         write: F,
     ) -> SpotifyResult<T>
