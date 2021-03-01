@@ -35,6 +35,7 @@ pub enum CacheFile {
 pub enum CachePolicy {
     Default,
     IgnoreExpiry,
+    AlwaysRevalidate
 }
 
 #[derive(PartialEq, Clone, Debug)]
@@ -121,6 +122,11 @@ impl CacheManager {
 
         match (file, policy) {
             (Ok(buf), CachePolicy::IgnoreExpiry) => CacheFile::Fresh(buf, None),
+            (Ok(buf), CachePolicy::AlwaysRevalidate) => {
+                let expiry = expiry.unwrap_or(CacheExpiry::Never);
+                let etag = expiry.etag().cloned();
+                CacheFile::Expired(buf, etag)
+            }
             (Ok(buf), CachePolicy::Default) => {
                 let expiry = expiry.unwrap_or(CacheExpiry::Never);
                 let etag = expiry.etag().cloned();
@@ -151,12 +157,6 @@ impl CacheManager {
                 .map_err(|e| CacheError::WriteError(e))?;
         }
         Ok(())
-    }
-
-    pub async fn set_expired(&self, resource: &str) -> Result<(), CacheError> {
-        let meta_file = self.cache_meta_path(resource);
-        self.set_expiry_for_path(&meta_file, CacheExpiry::expire_in_seconds(0, None))
-            .await
     }
 
     pub async fn clear_cache_pattern(&self, dir: &str, regex: &Regex) -> Result<(), CacheError> {
