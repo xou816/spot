@@ -126,7 +126,7 @@ impl PlaylistModel for PlaylistDetailsModel {
         let copy_uri = SimpleAction::new("copy_uri", None);
         copy_uri.connect_activate(move |_, _| {
             let clipboard = Clipboard::get(&SELECTION_CLIPBOARD);
-            clipboard.set_text(&format!("spotify:track:{}", track_id.clone()));
+            clipboard.set_text(&format!("spotify:track:{}", &track_id));
         });
         group.add_action(&copy_uri);
 
@@ -136,7 +136,7 @@ impl PlaylistModel for PlaylistDetailsModel {
             let clipboard = Clipboard::get(&SELECTION_CLIPBOARD);
             clipboard.set_text(&format!(
                 "https://open.spotify.com/track/{}",
-                track_id.clone()
+                &track_id
             ));
         });
         group.add_action(&copy_link);
