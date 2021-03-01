@@ -149,10 +149,9 @@ impl PlaylistModel for PlaylistDetailsModel {
         let song = songs.iter().find(|song| song.id == id)?;
 
         let menu = gio::Menu::new();
-        menu.insert(0, Some("View album"), Some("song.view_album"));
+        menu.append(Some("View album"), Some("song.view_album"));
         for (i, artist) in song.artists.iter().enumerate() {
-            menu.insert(
-                (i + 1) as i32,
+            menu.append(
                 Some(&format!("More from {}", artist.name)),
                 Some(&format!("song.view_artist_{}", i)),
             );

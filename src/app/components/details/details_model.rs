@@ -166,8 +166,7 @@ impl PlaylistModel for DetailsModel {
 
         let menu = gio::Menu::new();
         for (i, artist) in song.artists.iter().enumerate() {
-            menu.insert(
-                i as i32,
+            menu.append(
                 Some(&format!("More from {}", artist.name)),
                 Some(&format!("song.view_artist_{}", i)),
             );
