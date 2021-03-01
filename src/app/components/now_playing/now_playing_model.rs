@@ -1,5 +1,7 @@
+use gdk::SELECTION_CLIPBOARD;
 use gio::prelude::*;
 use gio::{ActionMapExt, SimpleAction, SimpleActionGroup};
+use gtk::Clipboard;
 use std::cell::Ref;
 use std::rc::Rc;
 
@@ -77,6 +79,14 @@ impl PlaylistModel for NowPlayingModel {
             group.add_action(&view_artist);
         }
 
+        let track_id = song.id.clone();
+        let copy_link = SimpleAction::new("copy_link", None);
+        copy_link.connect_activate(move |_, _| {
+            let clipboard = Clipboard::get(&SELECTION_CLIPBOARD);
+            clipboard.set_text(&format!("https://open.spotify.com/track/{}", &track_id));
+        });
+        group.add_action(&copy_link);
+
         Some(group.upcast())
     }
 
@@ -85,14 +95,16 @@ impl PlaylistModel for NowPlayingModel {
         let song = queue.song(&id)?;
 
         let menu = gio::Menu::new();
-        menu.insert(0, Some("View album"), Some("song.view_album"));
+        menu.append(Some("View album"), Some("song.view_album"));
         for (i, artist) in song.artists.iter().enumerate() {
-            menu.insert(
-                (i + 1) as i32,
+            menu.append(
                 Some(&format!("More from {}", artist.name)),
                 Some(&format!("song.view_artist_{}", i)),
             );
         }
+
+        menu.append(Some("Copy link"), Some("song.copy_link"));
+
         Some(menu.upcast())
     }
 }
