@@ -18,6 +18,76 @@ fn make_query_params<'a>() -> Serializer<'a, String> {
     Serializer::new(String::new())
 }
 
+pub(crate) struct SpotifyRequest<'a, Body, Response> {
+    client: &'a SpotifyClient,
+    request: Builder,
+    body: Body,
+    _type: PhantomData<Response>,
+}
+
+impl<'a, B, R> SpotifyRequest<'a, B, R>
+where
+    B: Into<isahc::AsyncBody>,
+{
+    fn method(mut self, method: Method) -> Self {
+        self.request = self.request.method(method);
+        self
+    }
+
+    fn uri(mut self, path: String, query: Option<&str>) -> Self {
+        let path_and_query = match query {
+            None => path,
+            Some(query) => format!("{}?{}", path, query),
+        };
+        let uri = Uri::builder()
+            .scheme("https")
+            .authority(SPOTIFY_HOST)
+            .path_and_query(&path_and_query[..])
+            .build()
+            .unwrap();
+        self.request = self.request.uri(uri);
+        self
+    }
+
+    fn authenticated(mut self) -> Result<Self, SpotifyApiError> {
+        let token = self.client.token.lock().unwrap();
+        let token = token.as_ref().ok_or(SpotifyApiError::NoToken)?;
+        self.request = self
+            .request
+            .header("Authorization", format!("Bearer {}", token));
+        Ok(self)
+    }
+
+    pub(crate) fn etag(mut self, etag: Option<String>) -> Self {
+        if let Some(etag) = etag {
+            self.request = self.request.header("If-None-Match", etag);
+        }
+        self
+    }
+
+    pub(crate) async fn send(self) -> Result<SpotifyResponse<R>, SpotifyApiError> {
+        let Self {
+            client,
+            request,
+            body,
+            ..
+        } = self.authenticated()?;
+        client.send_req(request.body(body).unwrap()).await
+    }
+
+    pub(crate) async fn send_no_response(self) -> Result<(), SpotifyApiError> {
+        let Self {
+            client,
+            request,
+            body,
+            ..
+        } = self.authenticated()?;
+        client
+            .send_req_no_response(request.body(body).unwrap())
+            .await
+    }
+}
+
 pub(crate) enum SpotifyResponse<T> {
     Ok {
         content: String,
@@ -139,8 +209,12 @@ impl SpotifyClient {
                     .get("cache-control")
                     .and_then(|header| header.to_str().ok())
                     .and_then(|s| Self::parse_cache_control(s));
-                println!("{:?}", cache_control);
-                Ok(SpotifyResponse::new(result.text().await?, cache_control.unwrap_or(10), etag))
+
+                Ok(SpotifyResponse::new(
+                    result.text().await?,
+                    cache_control.unwrap_or(10),
+                    etag,
+                ))
             }
             StatusCode::NOT_MODIFIED => Ok(SpotifyResponse::NotModified),
             s => Err(SpotifyApiError::BadStatus(s.as_u16())),
@@ -158,76 +232,6 @@ impl SpotifyClient {
             s if s.is_success() => Ok(()),
             s => Err(SpotifyApiError::BadStatus(s.as_u16())),
         }
-    }
-}
-
-pub(crate) struct SpotifyRequest<'a, Body, Response> {
-    client: &'a SpotifyClient,
-    request: Builder,
-    body: Body,
-    _type: PhantomData<Response>,
-}
-
-impl<'a, B, R> SpotifyRequest<'a, B, R>
-where
-    B: Into<isahc::AsyncBody>,
-{
-    fn method(mut self, method: Method) -> Self {
-        self.request = self.request.method(method);
-        self
-    }
-
-    fn uri(mut self, path: String, query: Option<&str>) -> Self {
-        let path_and_query = match query {
-            None => path,
-            Some(query) => format!("{}?{}", path, query),
-        };
-        let uri = Uri::builder()
-            .scheme("https")
-            .authority(SPOTIFY_HOST)
-            .path_and_query(&path_and_query[..])
-            .build()
-            .unwrap();
-        self.request = self.request.uri(uri);
-        self
-    }
-
-    fn authenticated(mut self) -> Result<Self, SpotifyApiError> {
-        let token = self.client.token.lock().unwrap();
-        let token = token.as_ref().ok_or(SpotifyApiError::NoToken)?;
-        self.request = self
-            .request
-            .header("Authorization", format!("Bearer {}", token));
-        Ok(self)
-    }
-
-    pub(crate) fn etag(mut self, etag: Option<String>) -> Self {
-        if let Some(etag) = etag {
-            self.request = self.request.header("If-None-Match", etag);
-        }
-        self
-    }
-
-    pub(crate) async fn send(self) -> Result<SpotifyResponse<R>, SpotifyApiError> {
-        let Self {
-            client,
-            request,
-            body,
-            ..
-        } = self.authenticated()?;
-        client.send_req(request.body(body).unwrap()).await
-    }
-
-    pub(crate) async fn send_no_response(self) -> Result<(), SpotifyApiError> {
-        let Self {
-            client,
-            request,
-            body,
-            ..
-        } = self.authenticated()?;
-        client
-            .send_req_no_response(request.body(body).unwrap())
-            .await
     }
 }
 

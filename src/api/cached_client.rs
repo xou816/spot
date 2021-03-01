@@ -7,7 +7,7 @@ use std::convert::Into;
 use std::future::Future;
 
 use super::api_models::*;
-use super::cache::{CacheExpiry, CacheManager, CachePolicy, CacheRequest, FetchResult};
+use super::cache::{CacheExpiry, CacheManager, CachePolicy, FetchResult};
 use super::client::{SpotifyApiError, SpotifyClient, SpotifyResponse};
 use crate::app::models::*;
 
@@ -34,6 +34,7 @@ pub trait SpotifyApiClient {
     ) -> BoxFuture<SpotifyResult<Vec<AlbumDescription>>>;
 
     fn save_album(&self, id: &str) -> BoxFuture<SpotifyResult<AlbumDescription>>;
+
     fn remove_saved_album(&self, id: &str) -> BoxFuture<SpotifyResult<()>>;
 
     fn get_saved_playlists(
@@ -118,36 +119,34 @@ impl CachedSpotifyClient {
         &self,
         key: SpotCacheKey<'a>,
         write: F,
-        _expiry: CacheExpiry,
     ) -> SpotifyResult<T>
     where
         O: Future<Output = SpotifyResult<SpotifyResponse<T>>>,
         F: FnOnce(Option<String>) -> O,
         T: DeserializeOwned,
     {
-        let req = CacheRequest::for_resource(
-            &self.cache,
-            format!("spot/net/{}", key.into_raw()),
-            self.default_cache_policy(),
-        );
-
-        let raw = req
-            .get_or_write(move |etag| {
-                write(etag).map(|r| {
-                    SpotifyResult::Ok(match r? {
-                        SpotifyResponse::Ok {
-                            content,
-                            max_age,
-                            etag,
-                            ..
-                        } => FetchResult::Modified(
-                            content.into_bytes(),
-                            CacheExpiry::expire_in_seconds(max_age, etag),
-                        ),
-                        SpotifyResponse::NotModified => FetchResult::NotModified,
+        let raw = self
+            .cache
+            .get_or_write(
+                &format!("spot/net/{}", key.into_raw()),
+                self.default_cache_policy(),
+                move |etag| {
+                    write(etag).map(|r| {
+                        SpotifyResult::Ok(match r? {
+                            SpotifyResponse::Ok {
+                                content,
+                                max_age,
+                                etag,
+                                ..
+                            } => FetchResult::Modified(
+                                content.into_bytes(),
+                                CacheExpiry::expire_in_seconds(u64::max(max_age, 60), etag),
+                            ),
+                            SpotifyResponse::NotModified => FetchResult::NotModified,
+                        })
                     })
-                })
-            })
+                },
+            )
             .await?;
 
         let result = from_slice::<T>(&raw);
@@ -167,16 +166,12 @@ impl SpotifyApiClient for CachedSpotifyClient {
     ) -> BoxFuture<SpotifyResult<Vec<AlbumDescription>>> {
         Box::pin(async move {
             let page = self
-                .cache_get_or_write(
-                    SpotCacheKey::SavedAlbums(offset, limit),
-                    |etag| {
-                        self.client
-                            .get_saved_albums(offset, limit)
-                            .etag(etag)
-                            .send()
-                    },
-                    CacheExpiry::expire_in_seconds(3600, None),
-                )
+                .cache_get_or_write(SpotCacheKey::SavedAlbums(offset, limit), |etag| {
+                    self.client
+                        .get_saved_albums(offset, limit)
+                        .etag(etag)
+                        .send()
+                })
                 .await?;
 
             let albums = page
@@ -196,16 +191,12 @@ impl SpotifyApiClient for CachedSpotifyClient {
     ) -> BoxFuture<SpotifyResult<Vec<PlaylistDescription>>> {
         Box::pin(async move {
             let page = self
-                .cache_get_or_write(
-                    SpotCacheKey::SavedPlaylists(offset, limit),
-                    |etag| {
-                        self.client
-                            .get_saved_playlists(offset, limit)
-                            .etag(etag)
-                            .send()
-                    },
-                    CacheExpiry::expire_in_seconds(3600, None),
-                )
+                .cache_get_or_write(SpotCacheKey::SavedPlaylists(offset, limit), |etag| {
+                    self.client
+                        .get_saved_playlists(offset, limit)
+                        .etag(etag)
+                        .send()
+                })
                 .await?;
 
             let albums = page
@@ -223,19 +214,15 @@ impl SpotifyApiClient for CachedSpotifyClient {
 
         Box::pin(async move {
             let album = self
-                .cache_get_or_write(
-                    SpotCacheKey::Album(&id),
-                    |etag| self.client.get_album(&id).etag(etag).send(),
-                    CacheExpiry::expire_in_hours(24, None),
-                )
+                .cache_get_or_write(SpotCacheKey::Album(&id), |etag| {
+                    self.client.get_album(&id).etag(etag).send()
+                })
                 .await?;
 
             let liked = self
-                .cache_get_or_write(
-                    SpotCacheKey::AlbumLiked(&id),
-                    |etag| self.client.is_album_saved(&id).etag(etag).send(),
-                    CacheExpiry::expire_in_hours(2, None),
-                )
+                .cache_get_or_write(SpotCacheKey::AlbumLiked(&id), |etag| {
+                    self.client.is_album_saved(&id).etag(etag).send()
+                })
                 .await?;
 
             let mut album: AlbumDescription = album.into();
@@ -289,11 +276,9 @@ impl SpotifyApiClient for CachedSpotifyClient {
 
         Box::pin(async move {
             let playlist = self
-                .cache_get_or_write(
-                    SpotCacheKey::Playlist(&id),
-                    |etag| self.client.get_playlist(&id).etag(etag).send(),
-                    CacheExpiry::expire_in_hours(6, None),
-                )
+                .cache_get_or_write(SpotCacheKey::Playlist(&id), |etag| {
+                    self.client.get_playlist(&id).etag(etag).send()
+                })
                 .await?;
 
             let mut playlist: PlaylistDescription = playlist.into();
@@ -303,16 +288,12 @@ impl SpotifyApiClient for CachedSpotifyClient {
             let limit = 100u32;
             loop {
                 let songs = self
-                    .cache_get_or_write(
-                        SpotCacheKey::PlaylistTracks(&id, offset, limit),
-                        |etag| {
-                            self.client
-                                .get_playlist_tracks(&id, offset, limit)
-                                .etag(etag)
-                                .send()
-                        },
-                        CacheExpiry::expire_in_hours(6, None),
-                    )
+                    .cache_get_or_write(SpotCacheKey::PlaylistTracks(&id, offset, limit), |etag| {
+                        self.client
+                            .get_playlist_tracks(&id, offset, limit)
+                            .etag(etag)
+                            .send()
+                    })
                     .await?;
 
                 let mut songs: Vec<SongDescription> = songs.into();
@@ -342,16 +323,12 @@ impl SpotifyApiClient for CachedSpotifyClient {
 
         Box::pin(async move {
             let albums = self
-                .cache_get_or_write(
-                    SpotCacheKey::ArtistAlbums(&id, offset, limit),
-                    |etag| {
-                        self.client
-                            .get_artist_albums(&id, offset, limit)
-                            .etag(etag)
-                            .send()
-                    },
-                    CacheExpiry::expire_in_hours(24, None),
-                )
+                .cache_get_or_write(SpotCacheKey::ArtistAlbums(&id, offset, limit), |etag| {
+                    self.client
+                        .get_artist_albums(&id, offset, limit)
+                        .etag(etag)
+                        .send()
+                })
                 .await?;
 
             let albums = albums
@@ -369,21 +346,17 @@ impl SpotifyApiClient for CachedSpotifyClient {
 
         Box::pin(async move {
             let artist = self
-                .cache_get_or_write(
-                    SpotCacheKey::Artist(&id),
-                    |etag| self.client.get_artist(&id).etag(etag).send(),
-                    CacheExpiry::expire_in_hours(0, None),
-                )
+                .cache_get_or_write(SpotCacheKey::Artist(&id), |etag| {
+                    self.client.get_artist(&id).etag(etag).send()
+                })
                 .await?;
 
             let albums = self.get_artist_albums(&id, 0, 20).await?;
 
             let top_tracks = self
-                .cache_get_or_write(
-                    SpotCacheKey::ArtistTopTracks(&id),
-                    |etag| self.client.get_artist_top_tracks(&id).etag(etag).send(),
-                    CacheExpiry::expire_in_hours(24, None),
-                )
+                .cache_get_or_write(SpotCacheKey::ArtistTopTracks(&id), |etag| {
+                    self.client.get_artist_top_tracks(&id).etag(etag).send()
+                })
                 .await?;
 
             let top_tracks: Vec<SongDescription> = top_tracks.into();

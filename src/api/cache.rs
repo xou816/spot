@@ -3,6 +3,7 @@ use async_std::io;
 use async_std::path::PathBuf;
 use async_std::prelude::*;
 use core::mem::size_of;
+use futures::join;
 use regex::Regex;
 use std::convert::From;
 use std::future::Future;
@@ -34,10 +35,6 @@ impl CacheExpiry {
             .duration_since(SystemTime::UNIX_EPOCH)
             .unwrap();
         Self::AtUnixTimestamp(timestamp + Duration::new(seconds, 0), etag)
-    }
-
-    pub fn expire_in_hours(hours: u32, etag: Option<ETag>) -> Self {
-        Self::expire_in_seconds(hours as u64 * 3600, etag)
     }
 
     fn is_expired(&self) -> bool {
@@ -104,16 +101,14 @@ impl CacheManager {
 
     pub async fn read_cache_file(&self, resource: &str, policy: CachePolicy) -> CacheFile {
         let path = self.cache_path(resource);
-        let file = fs::read(&path).await;
-        let expiry = self.read_expiry_file(resource);
+        let (file, expiry) = join!(fs::read(&path), self.read_expiry_file(resource));
 
         match (file, policy) {
             (Ok(buf), CachePolicy::IgnoreExpiry) => CacheFile::Fresh(buf, None),
             (Ok(buf), CachePolicy::Default) => {
-                let expiry = expiry.await.unwrap_or(CacheExpiry::Never);
+                let expiry = expiry.unwrap_or(CacheExpiry::Never);
                 let etag = expiry.etag().cloned();
                 if expiry.is_expired() {
-                    println!("Expired: {}", resource);
                     CacheFile::Expired(buf, etag)
                 } else {
                     CacheFile::Fresh(buf, etag)
@@ -187,75 +182,49 @@ impl CacheManager {
         expiry: CacheExpiry,
     ) -> io::Result<()> {
         let file = self.cache_path(resource);
-        fs::write(&file, content).await?;
-        self.set_expiry_for_path(&self.cache_meta_path(resource), expiry)
-            .await?;
+        let meta = self.cache_meta_path(resource);
+        let (r1, r2) = join!(
+            fs::write(&file, content),
+            self.set_expiry_for_path(&meta, expiry)
+        );
+        r1?;
+        r2?;
         Ok(())
     }
-}
 
-pub struct CacheRequest<'a, S> {
-    cache: &'a CacheManager,
-    resource: S,
-    policy: CachePolicy,
-}
-
-pub enum FetchResult {
-    NotModified,
-    Modified(Vec<u8>, CacheExpiry),
-}
-
-impl<'a, S> CacheRequest<'a, S>
-where
-    S: AsRef<str> + 'a,
-{
-    pub fn for_resource(cache: &'a CacheManager, resource: S, policy: CachePolicy) -> Self {
-        Self {
-            cache,
-            resource,
-            policy,
-        }
-    }
-
-    pub async fn get_or_write<'s, O, F, E>(&self, fetch: F) -> Result<Vec<u8>, E>
+    pub async fn get_or_write<'s, O, F, E>(
+        &self,
+        resource: &str,
+        policy: CachePolicy,
+        fetch: F,
+    ) -> Result<Vec<u8>, E>
     where
         O: Future<Output = Result<FetchResult, E>>,
         F: FnOnce(Option<ETag>) -> O,
         E: From<io::Error>,
     {
-        let file = self
-            .cache
-            .read_cache_file(self.resource.as_ref(), self.policy)
-            .await;
+        let file = self.read_cache_file(resource, policy).await;
         match file {
             CacheFile::Fresh(buf, _) => Ok(buf),
             CacheFile::Expired(buf, etag) => match fetch(etag).await? {
-                FetchResult::NotModified => {
-                    println!("not modified!");
-                    Ok(buf)
-                },
+                FetchResult::NotModified => Ok(buf),
                 FetchResult::Modified(fresh, expiry) => {
-                    println!("{:?}", expiry);
-                    self.cache
-                        .write_cache_file(self.resource.as_ref(), &fresh, expiry)
-                        .await?;
+                    self.write_cache_file(resource, &fresh, expiry).await?;
                     Ok(fresh)
                 }
             },
             CacheFile::None => match fetch(None).await? {
-                FetchResult::NotModified => Err(io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    "unexpected not modified",
-                )
-                .into()),
+                FetchResult::NotModified => panic!("empty cache, cannot receive not modified"),
                 FetchResult::Modified(fresh, expiry) => {
-                    println!("{:?}", expiry);
-                    self.cache
-                        .write_cache_file(self.resource.as_ref(), &fresh, expiry)
-                        .await?;
+                    self.write_cache_file(resource, &fresh, expiry).await?;
                     Ok(fresh)
                 }
             },
         }
     }
+}
+
+pub enum FetchResult {
+    NotModified,
+    Modified(Vec<u8>, CacheExpiry),
 }
