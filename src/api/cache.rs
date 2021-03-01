@@ -1,5 +1,4 @@
 use async_std::fs;
-use async_std::io;
 use async_std::path::PathBuf;
 use async_std::prelude::*;
 use core::mem::size_of;
@@ -8,6 +7,21 @@ use regex::Regex;
 use std::convert::From;
 use std::future::Future;
 use std::time::{Duration, SystemTime};
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum CacheError {
+    #[error("No content available")]
+    NoContent,
+    #[error("File could not be saved to cache: {0}")]
+    WriteError(std::io::Error),
+    #[error("File could not be read from cache: {0}")]
+    ReadError(std::io::Error),
+    #[error("File could not be removed from cache: {0}")]
+    RemoveError(std::io::Error),
+    #[error(transparent)]
+    ConversionError(#[from] std::string::FromUtf8Error),
+}
 
 pub type ETag = String;
 
@@ -85,9 +99,11 @@ impl CacheManager {
 }
 
 impl CacheManager {
-    async fn read_expiry_file(&self, resource: &str) -> io::Result<CacheExpiry> {
+    async fn read_expiry_file(&self, resource: &str) -> Result<CacheExpiry, CacheError> {
         let expiry_file = self.cache_meta_path(resource);
-        let buffer = fs::read(&expiry_file).await?;
+        let buffer = fs::read(&expiry_file)
+            .await
+            .map_err(|e| CacheError::ReadError(e))?;
         const OFFSET: usize = size_of::<u64>();
 
         let mut duration: [u8; OFFSET] = Default::default();
@@ -120,28 +136,36 @@ impl CacheManager {
 }
 
 impl CacheManager {
-    async fn set_expiry_for_path(&self, path: &PathBuf, expiry: CacheExpiry) -> io::Result<()> {
+    async fn set_expiry_for_path(
+        &self,
+        path: &PathBuf,
+        expiry: CacheExpiry,
+    ) -> Result<(), CacheError> {
         if let CacheExpiry::AtUnixTimestamp(duration, etag) = expiry {
             let mut content = duration.as_secs().to_be_bytes().to_vec();
             if let Some(etag) = etag {
                 content.append(&mut etag.into_bytes());
             }
-            fs::write(path, content).await
-        } else {
-            Ok(())
+            fs::write(path, content)
+                .await
+                .map_err(|e| CacheError::WriteError(e))?;
         }
+        Ok(())
     }
 
-    pub async fn set_expired(&self, resource: &str) -> io::Result<()> {
+    pub async fn set_expired(&self, resource: &str) -> Result<(), CacheError> {
         let meta_file = self.cache_meta_path(resource);
         self.set_expiry_for_path(&meta_file, CacheExpiry::expire_in_seconds(0, None))
             .await
     }
 
-    pub async fn clear_cache_pattern(&self, dir: &str, regex: &Regex) -> io::Result<()> {
+    pub async fn clear_cache_pattern(&self, dir: &str, regex: &Regex) -> Result<(), CacheError> {
         let dir_path = self.cache_path(dir);
 
-        let mut entries = fs::read_dir(dir_path).await?;
+        let mut entries = fs::read_dir(dir_path)
+            .await
+            .map_err(|e| CacheError::ReadError(e))?;
+
         while let Some(Ok(entry)) = entries.next().await {
             let matches = entry
                 .file_name()
@@ -149,17 +173,22 @@ impl CacheManager {
                 .map(|s| regex.is_match(s))
                 .unwrap_or(false);
             if matches {
-                fs::remove_file(entry.path()).await?;
+                fs::remove_file(entry.path())
+                    .await
+                    .map_err(|e| CacheError::RemoveError(e))?;
             }
         }
 
         Ok(())
     }
 
-    pub async fn set_expired_pattern(&self, dir: &str, regex: &Regex) -> io::Result<()> {
+    pub async fn set_expired_pattern(&self, dir: &str, regex: &Regex) -> Result<(), CacheError> {
         let dir_path = self.cache_path(dir);
 
-        let mut entries = fs::read_dir(dir_path).await?;
+        let mut entries = fs::read_dir(dir_path)
+            .await
+            .map_err(|e| CacheError::ReadError(e))?;
+
         while let Some(Ok(entry)) = entries.next().await {
             let matches = entry
                 .file_name()
@@ -180,14 +209,14 @@ impl CacheManager {
         resource: &str,
         content: &[u8],
         expiry: CacheExpiry,
-    ) -> io::Result<()> {
+    ) -> Result<(), CacheError> {
         let file = self.cache_path(resource);
         let meta = self.cache_meta_path(resource);
         let (r1, r2) = join!(
             fs::write(&file, content),
             self.set_expiry_for_path(&meta, expiry)
         );
-        r1?;
+        r1.map_err(|e| CacheError::WriteError(e))?;
         r2?;
         Ok(())
     }
@@ -201,7 +230,7 @@ impl CacheManager {
     where
         O: Future<Output = Result<FetchResult, E>>,
         F: FnOnce(Option<ETag>) -> O,
-        E: From<io::Error>,
+        E: From<CacheError>,
     {
         let file = self.read_cache_file(resource, policy).await;
         match file {
@@ -214,7 +243,7 @@ impl CacheManager {
                 }
             },
             CacheFile::None => match fetch(None).await? {
-                FetchResult::NotModified => panic!("empty cache, cannot receive not modified"),
+                FetchResult::NotModified => Err(E::from(CacheError::NoContent)),
                 FetchResult::Modified(fresh, expiry) => {
                     self.write_cache_file(resource, &fresh, expiry).await?;
                     Ok(fresh)

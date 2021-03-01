@@ -11,6 +11,7 @@ use std::sync::Mutex;
 use thiserror::Error;
 
 pub use super::api_models::*;
+use super::cache::CacheError;
 
 const SPOTIFY_HOST: &str = "api.spotify.com";
 
@@ -136,6 +137,8 @@ pub enum SpotifyApiError {
     ClientError(#[from] isahc::Error),
     #[error(transparent)]
     IoError(#[from] std::io::Error),
+    #[error(transparent)]
+    CacheError(#[from] CacheError),
     #[error(transparent)]
     ParseError(#[from] serde_json::Error),
     #[error(transparent)]
