@@ -1,4 +1,5 @@
 use async_std::fs;
+use async_std::io;
 use async_std::path::PathBuf;
 use async_std::prelude::*;
 use core::mem::size_of;
@@ -35,7 +36,7 @@ pub enum CacheFile {
 pub enum CachePolicy {
     Default,
     IgnoreExpiry,
-    AlwaysRevalidate
+    AlwaysRevalidate,
 }
 
 #[derive(PartialEq, Clone, Debug)]
@@ -102,41 +103,53 @@ impl CacheManager {
 impl CacheManager {
     async fn read_expiry_file(&self, resource: &str) -> Result<CacheExpiry, CacheError> {
         let expiry_file = self.cache_meta_path(resource);
-        let buffer = fs::read(&expiry_file)
-            .await
-            .map_err(|e| CacheError::ReadError(e))?;
-        const OFFSET: usize = size_of::<u64>();
+        match fs::read(&expiry_file).await {
+            Err(e) => match e.kind() {
+                io::ErrorKind::NotFound => Ok(CacheExpiry::Never),
+                _ => Err(CacheError::ReadError(e)),
+            },
+            Ok(buffer) => {
+                const OFFSET: usize = size_of::<u64>();
 
-        let mut duration: [u8; OFFSET] = Default::default();
-        duration.copy_from_slice(&buffer[..OFFSET]);
-        let duration = Duration::from_secs(u64::from_be_bytes(duration));
+                let mut duration: [u8; OFFSET] = Default::default();
+                duration.copy_from_slice(&buffer[..OFFSET]);
+                let duration = Duration::from_secs(u64::from_be_bytes(duration));
 
-        let etag = String::from_utf8((&buffer[OFFSET..]).to_vec()).ok();
+                let etag = String::from_utf8((&buffer[OFFSET..]).to_vec()).ok();
 
-        Ok(CacheExpiry::AtUnixTimestamp(duration, etag))
+                Ok(CacheExpiry::AtUnixTimestamp(duration, etag))
+            }
+        }
     }
 
-    pub async fn read_cache_file(&self, resource: &str, policy: CachePolicy) -> CacheFile {
+    pub async fn read_cache_file(
+        &self,
+        resource: &str,
+        policy: CachePolicy,
+    ) -> Result<CacheFile, CacheError> {
         let path = self.cache_path(resource);
         let (file, expiry) = join!(fs::read(&path), self.read_expiry_file(resource));
 
         match (file, policy) {
-            (Ok(buf), CachePolicy::IgnoreExpiry) => CacheFile::Fresh(buf, None),
+            (Ok(buf), CachePolicy::IgnoreExpiry) => Ok(CacheFile::Fresh(buf, None)),
             (Ok(buf), CachePolicy::AlwaysRevalidate) => {
                 let expiry = expiry.unwrap_or(CacheExpiry::Never);
                 let etag = expiry.etag().cloned();
-                CacheFile::Expired(buf, etag)
+                Ok(CacheFile::Expired(buf, etag))
             }
             (Ok(buf), CachePolicy::Default) => {
-                let expiry = expiry.unwrap_or(CacheExpiry::Never);
+                let expiry = expiry?;
                 let etag = expiry.etag().cloned();
-                if expiry.is_expired() {
+                Ok(if expiry.is_expired() {
                     CacheFile::Expired(buf, etag)
                 } else {
                     CacheFile::Fresh(buf, etag)
-                }
+                })
             }
-            (Err(_), _) => CacheFile::None,
+            (Err(e), _) => match e.kind() {
+                io::ErrorKind::NotFound => Ok(CacheFile::None),
+                _ => Err(CacheError::ReadError(e)),
+            },
         }
     }
 }
@@ -232,7 +245,7 @@ impl CacheManager {
         F: FnOnce(Option<ETag>) -> O,
         E: From<CacheError>,
     {
-        let file = self.read_cache_file(resource, policy).await;
+        let file = self.read_cache_file(resource, policy).await?;
         match file {
             CacheFile::Fresh(buf, _) => Ok(buf),
             CacheFile::Expired(buf, etag) => match fetch(etag).await? {
