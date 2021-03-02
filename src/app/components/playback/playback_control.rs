@@ -163,13 +163,6 @@ impl PlaybackControl {
             .expect("error updating icon");
     }
 
-    fn format_duration(duration: f64) -> String {
-        let seconds = (duration / 1000.0) as i32;
-        let minutes = seconds.div_euclid(60);
-        let seconds = seconds.rem_euclid(60);
-        format!("{}:{:02}", minutes, seconds)
-    }
-
     fn update_playing(&self) {
         let is_playing = self.model.is_playing();
         self.set_playing(is_playing);
