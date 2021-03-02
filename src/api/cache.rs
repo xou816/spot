@@ -234,7 +234,7 @@ impl CacheManager {
         Ok(())
     }
 
-    pub async fn get_or_write<'s, O, F, E>(
+    pub async fn get_or_write<O, F, E>(
         &self,
         resource: &str,
         policy: CachePolicy,
