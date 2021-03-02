@@ -17,6 +17,10 @@
   border-radius: 0;
   border-left: none;
   border-right: none;
+  min-height: 0;
+}
+
+.seek-bar--active trough, .seek-bar--active highlight {
   min-height: 5px;
 }
 

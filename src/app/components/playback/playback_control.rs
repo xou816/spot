@@ -173,7 +173,10 @@ impl PlaybackControl {
     }
 
     fn update_current_info(&self) {
+        let class = "seek-bar--active";
+        let style_context = self.widget.seek_bar.get_style_context();
         if let Some(duration) = self.model.current_song_duration() {
+            style_context.add_class(class);
             self.widget.seek_bar.set_range(0.0, duration);
             self.widget.seek_bar.set_value(0.0);
             self.widget.track_position.set_text("0:00");
@@ -183,6 +186,7 @@ impl PlaybackControl {
             self.widget.track_position.show();
             self.widget.track_duration.show();
         } else {
+            style_context.remove_class(class);
             self.widget.seek_bar.set_range(0.0, 0.0);
             self.widget.track_position.hide();
             self.widget.track_duration.hide();
