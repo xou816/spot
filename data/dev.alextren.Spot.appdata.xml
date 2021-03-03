@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-	<id>dev.alextren.Spot</id>
+  <id>dev.alextren.Spot</id>
   <url type="homepage">https://github.com/xou816/spot</url>
   <name>Spot</name>
-  <summary>Spotify Client for the Gnome desktop</summary>
+  <summary>Spotify Client for the GNOME desktop</summary>
   <launchable type="desktop-id">dev.alextren.Spot.desktop</launchable>
-	<metadata_license>CC0-1.0</metadata_license>
-	<project_license>MIT</project_license>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
   <content_rating type="oars-1.1" />
-	<description>
-	  <p>
-      Spotify Client for the Gnome desktop. <b>Requires a premium account.</b>
+  <description>
+    <p>
+      Spotify Client for the GNOME desktop. <b>Requires a premium account.</b>
     </p>
-	  <p>Current features:</p>
-	  <ul>
+    <p>Current features:</p>
+    <ul>
       <li>playback control (play/pause, previous/next, seeking, shuffle play)</li>
-      <li>library browser (saved albums)</li>
+      <li>library browser (saved albums and playlists)</li>
       <li>album search</li>
       <li>artist view</li>
       <li>credentials management with Secret Service</li>
       <li>MPRIS integration</li>
-	  </ul>
-	</description>
+    </ul>
+  </description>
   <screenshots>
     <screenshot>
       <image>https://raw.githubusercontent.com/xou816/spot/master/data/appstream/1.png</image>
@@ -33,7 +33,17 @@
       <image>https://raw.githubusercontent.com/xou816/spot/master/data/appstream/3.png</image>
     </screenshot>
   </screenshots>
-  <releases>    
+  <releases>
+    <release version="0.1.9" date="2021-03-02">
+      <description>
+        <p>
+          New feature: contextual menus for songs are now available everywhere, allowing you to easily navigate to related artists or share tracks. Thanks Douile!
+        </p>
+        <p>
+          This release also includes numerous fixes, including a few crashes, performance issues, and most importantly playlists being truncated.
+        </p>
+      </description>
+    </release>
     <release version="0.1.8" date="2021-02-20">
       <description>
         <p>

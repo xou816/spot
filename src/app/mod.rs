@@ -10,7 +10,7 @@ pub mod components;
 use components::*;
 
 pub mod backend;
-use backend::api::CachedSpotifyClient;
+use crate::api::CachedSpotifyClient;
 
 pub mod dbus;
 
@@ -63,7 +63,7 @@ impl App {
         let dispatcher = Box::new(ActionDispatcherImpl::new(sender.clone(), worker.clone()));
 
         let mut components: Vec<Box<dyn EventListener>> = vec![
-            App::make_window(builder),
+            App::make_window(builder, worker.clone()),
             App::make_playback_control(builder, Rc::clone(model), dispatcher.box_clone()),
             App::make_playback_info(
                 builder,
@@ -97,9 +97,9 @@ impl App {
         Box::new(dbus::start_dbus_server(app_model, sender).expect("could not start server"))
     }
 
-    fn make_window(builder: &gtk::Builder) -> Box<impl EventListener> {
+    fn make_window(builder: &gtk::Builder, worker: Worker) -> Box<impl EventListener> {
         let window: libhandy::ApplicationWindow = builder.get_object("window").unwrap();
-        Box::new(MainWindow::new(window))
+        Box::new(MainWindow::new(window, worker))
     }
 
     fn make_navigation(
@@ -170,16 +170,16 @@ impl App {
         dispatcher: Box<dyn ActionDispatcher>,
     ) -> Box<PlaybackControl> {
         let play_button: gtk::Button = builder.get_object("play_pause").unwrap();
-        let shuffle_button: gtk::ToggleButton = builder.get_object("shuffle").unwrap();
         let next: gtk::Button = builder.get_object("next").unwrap();
         let prev: gtk::Button = builder.get_object("prev").unwrap();
         let seek_bar: gtk::Scale = builder.get_object("seek_bar").unwrap();
+        let track_position: gtk::Label = builder.get_object("track_position").unwrap();
         let track_duration: gtk::Label = builder.get_object("track_duration").unwrap();
 
         let widget = PlaybackControlWidget::new(
             play_button,
-            shuffle_button,
             seek_bar,
+            track_position,
             track_duration,
             next,
             prev,

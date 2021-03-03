@@ -59,7 +59,8 @@
             "buildsystem" : "meson",
             "config-opts" : [
                 "-Doffline=true",
-                "-Dbuildtype=debug"
+                "-Dbuildtype=debug",
+                "-Dfeatures="
             ],
             "sources" : [
                 {

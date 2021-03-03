@@ -2,7 +2,7 @@ use gladis::Gladis;
 use gtk::prelude::*;
 use std::rc::Rc;
 
-use crate::app::components::{Component, EventListener, Playlist};
+use crate::app::components::{screen_add_css_provider, Component, EventListener, Playlist};
 use crate::app::AppEvent;
 
 use super::NowPlayingModel;
@@ -11,10 +11,12 @@ use super::NowPlayingModel;
 struct NowPlayingWidget {
     root: gtk::Widget,
     listbox: gtk::ListBox,
+    shuffle: gtk::Button,
 }
 
 impl NowPlayingWidget {
     fn new() -> Self {
+        screen_add_css_provider(resource!("/components/now_playing.css"));
         Self::from_resource(resource!("/components/now_playing.ui")).unwrap()
     }
 }
@@ -27,7 +29,16 @@ pub struct NowPlaying {
 impl NowPlaying {
     pub fn new(model: NowPlayingModel) -> Self {
         let widget = NowPlayingWidget::new();
-        let playlist = Playlist::new(widget.listbox.clone(), Rc::new(model));
+        let model = Rc::new(model);
+
+        widget
+            .shuffle
+            .connect_clicked(clone!(@weak model => move |_| {
+                model.toggle_shuffle();
+            }));
+
+        let playlist = Playlist::new(widget.listbox.clone(), model);
+
         Self {
             widget,
             children: vec![Box::new(playlist)],

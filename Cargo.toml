@@ -1,8 +1,11 @@
 [package]
 name = "spot"
-version = "0.1.8"
+version = "0.1.9"
 edition = "2018"
 license = "MIT"
+
+[features]
+warn-cache = []
 
 [dependencies.gtk]
 version = "^0.9.0"

@@ -12,11 +12,6 @@ use crate::app::{credentials, AppAction};
 mod player;
 pub use player::{SpotifyError, SpotifyPlayer, SpotifyPlayerDelegate};
 
-pub mod api;
-mod api_models;
-
-pub mod cache;
-
 #[derive(Debug, Clone)]
 pub enum Command {
     Login(String, String),

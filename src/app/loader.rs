@@ -1,4 +1,4 @@
-use crate::backend::cache::*;
+use crate::api::cache::*;
 use gdk_pixbuf::{Pixbuf, PixbufLoader, PixbufLoaderExt};
 use isahc::config::Configurable;
 use isahc::{AsyncBody, AsyncReadResponseExt, HttpClient, Response};
@@ -31,7 +31,7 @@ pub struct ImageLoader {
 impl ImageLoader {
     pub fn new() -> Self {
         Self {
-            cache: CacheManager::new(&["img"]).unwrap(),
+            cache: CacheManager::new(&["spot/img"]).unwrap(),
         }
     }
 
@@ -39,7 +39,7 @@ impl ImageLoader {
         let mut hasher = DefaultHasher::new();
         hasher.write(url.as_bytes());
         let hashed = hasher.finish().to_string();
-        format!("img/{}.{}", hashed, ext)
+        format!("spot/img/{}.{}", hashed, ext)
     }
 
     async fn get_image(url: &str) -> Option<Response<AsyncBody>> {
@@ -68,7 +68,7 @@ impl ImageLoader {
             .read_cache_file(&resource[..], CachePolicy::IgnoreExpiry)
             .await
         {
-            CacheFile::File(buffer) => {
+            Ok(CacheFile::Fresh(buffer, _)) => {
                 loader.write_all(&buffer[..]).ok()?;
             }
             _ => {

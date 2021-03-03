@@ -2,7 +2,6 @@ use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use crate::app::backend::api::SpotifyApiError;
 use crate::app::components::handle_error;
 use crate::app::models::*;
 use crate::app::state::HomeState;
@@ -53,8 +52,7 @@ impl SavedPlaylistsModel {
         self.dispatcher.dispatch_async(Box::pin(async move {
             match api.get_saved_playlists(offset, batch_size).await {
                 Ok(playlists) => Some(BrowserAction::AppendPlaylistsContent(playlists).into()),
-                Err(SpotifyApiError::InvalidToken) => Some(AppAction::RefreshToken),
-                _ => None,
+                Err(err) => handle_error(err),
             }
         }));
 
