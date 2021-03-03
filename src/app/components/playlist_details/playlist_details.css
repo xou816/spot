@@ -3,6 +3,15 @@
   font-weight: bold;
 }
 
+.playlist_details__owner label {
+  font-size: 16px;
+  color: @theme_text_color;
+}
+
+.playlist_details__owner {
+  padding: 0;
+}
+
 .playlist_details .playlist_details__art {
   border-radius: 8px;
 }
