@@ -1,0 +1,74 @@
+{
+    "app-id": "dev.alextren.Spot",
+    "runtime": "org.gnome.Platform",
+    "runtime-version": "3.38",
+    "sdk": "org.gnome.Sdk",
+    "sdk-extensions": [
+        "org.freedesktop.Sdk.Extension.rust-stable"
+    ],
+    "command": "spot",
+    "finish-args": [
+        "--share=network",
+        "--share=ipc",
+        "--socket=fallback-x11",
+        "--socket=wayland",
+        "--socket=pulseaudio",
+        "--talk-name=org.freedesktop.secrets",
+        "--own-name=org.mpris.MediaPlayer2.Spot"
+    ],
+    "build-options": {
+        "append-path": "/usr/lib/sdk/rust-stable/bin",
+        "env": {
+            "CARGO_HOME": "/run/build/spot/cargo",
+            "RUST_BACKTRACE": "full",
+            "RUST_LOG": "spot=debug"
+        },
+        "strip": false,
+        "no-debuginfo": true
+    },
+    "cleanup": [
+        "/include",
+        "/lib/pkgconfig",
+        "/man",
+        "/share/doc",
+        "/share/gtk-doc",
+        "/share/man",
+        "/share/pkgconfig",
+        "*.la",
+        "*.a"
+    ],
+    "modules": [
+        {
+            "name": "libhandy-1",
+            "buildsystem": "meson",
+            "builddir": true,
+            "config-opts": [
+                "-Dexamples=false",
+                "-Dtests=false"
+            ],
+            "sources": [
+                {
+                    "type": "git",
+                    "url": "https://gitlab.gnome.org/GNOME/libhandy.git"
+                }
+            ]
+        },
+        {
+            "name": "spot",
+            "builddir": true,
+            "buildsystem": "meson",
+            "config-opts": [
+                "-Doffline=true",
+                "-Dbuildtype=debug",
+                "-Dfeatures="
+            ],
+            "sources": [
+                {
+                    "type": "dir",
+                    "path": "."
+                },
+                "cargo-sources.json"
+            ]
+        }
+    ]
+}
