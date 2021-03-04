@@ -12,6 +12,7 @@ pub enum ScreenName {
     Search,
     Artist(String),
     PlaylistDetails(String),
+    User(String),
 }
 
 impl ScreenName {
@@ -22,6 +23,7 @@ impl ScreenName {
             Self::Search => Cow::Borrowed("search"),
             Self::Artist(s) => Cow::Owned(format!("artist_{}", s)),
             Self::PlaylistDetails(s) => Cow::Owned(format!("playlist_{}", s)),
+            Self::User(s) => Cow::Owned(format!("user_{}", s)),
         }
     }
 }

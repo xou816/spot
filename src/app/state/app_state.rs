@@ -36,6 +36,11 @@ impl AppAction {
     pub fn ViewPlaylist(id: String) -> Self {
         BrowserAction::NavigationPush(ScreenName::PlaylistDetails(id)).into()
     }
+
+    #[allow(non_snake_case)]
+    pub fn ViewUser(id: String) -> Self {
+        BrowserAction::NavigationPush(ScreenName::User(id)).into()
+    }
 }
 
 #[derive(Clone, Debug)]
