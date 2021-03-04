@@ -1,4 +1,5 @@
 pub use super::gtypes::*;
+use crate::app::components::utils::format_duration;
 use std::convert::From;
 
 impl From<&AlbumDescription> for AlbumModel {
@@ -37,6 +38,7 @@ impl SongDescription {
             (position + 1) as u32,
             &self.title,
             &self.artists_name(),
+            &format_duration(self.duration.into()),
         )
     }
 }

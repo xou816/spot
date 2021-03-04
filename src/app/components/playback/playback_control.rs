@@ -4,6 +4,7 @@ use gtk::{BinExt, ImageExt, LabelExt, RangeExt};
 use std::ops::Deref;
 use std::rc::Rc;
 
+use crate::app::components::utils::format_duration;
 use crate::app::components::{
     utils::{Clock, Debouncer},
     EventListener,
@@ -96,14 +97,13 @@ pub struct PlaybackControl {
 impl PlaybackControl {
     pub fn new(model: PlaybackControlModel, widget: PlaybackControlWidget) -> Self {
         let model = Rc::new(model);
-
         let debouncer = Debouncer::new();
         let debouncer_clone = debouncer.clone();
 
         let track_position = &widget.track_position;
         widget.seek_bar.connect_change_value(
             clone!(@weak model, @weak track_position => @default-return signal::Inhibit(false), move |_, _, requested| {
-                track_position.set_text(&Self::format_duration(requested));
+                track_position.set_text(&format_duration(requested));
                 debouncer_clone.debounce(200, move || {
                     model.seek_to(requested as u32);
                 });
@@ -150,13 +150,6 @@ impl PlaybackControl {
             .expect("error updating icon");
     }
 
-    fn format_duration(duration: f64) -> String {
-        let seconds = (duration / 1000.0) as i32;
-        let minutes = seconds.div_euclid(60);
-        let seconds = seconds.rem_euclid(60);
-        format!("{}:{:02}", minutes, seconds)
-    }
-
     fn update_playing(&self) {
         let is_playing = self.model.is_playing();
         self.set_playing(is_playing);
@@ -168,7 +161,7 @@ impl PlaybackControl {
                 .start(clone!(@weak seek_bar, @weak track_position => move || {
                     let value = seek_bar.get_value() + 1000.0;
                     seek_bar.set_value(value);
-                    track_position.set_text(&Self::format_duration(value));
+                    track_position.set_text(&format_duration(value));
                 }));
         } else {
             self.clock.stop();
@@ -185,7 +178,7 @@ impl PlaybackControl {
             self.widget.track_position.set_text("0:00");
             self.widget
                 .track_duration
-                .set_text(&format!(" / {}", Self::format_duration(duration)));
+                .set_text(&format!(" / {}", format_duration(duration)));
             self.widget.track_position.show();
             self.widget.track_duration.show();
         } else {
@@ -199,9 +192,7 @@ impl PlaybackControl {
     fn sync_seek(&self, pos: u32) {
         let pos = pos as f64;
         self.widget.seek_bar.set_value(pos);
-        self.widget
-            .track_position
-            .set_text(&Self::format_duration(pos));
+        self.widget.track_position.set_text(&format_duration(pos));
     }
 }
 

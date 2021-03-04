@@ -16,7 +16,7 @@ glib_wrapper! {
 // Constructor for new instances. This simply calls glib::Object::new() with
 // initial values for our two properties and then returns the new instance
 impl SongModel {
-    pub fn new(id: &str, index: u32, title: &str, artist: &str) -> SongModel {
+    pub fn new(id: &str, index: u32, title: &str, artist: &str, duration: &str) -> SongModel {
         glib::Object::new(
             Self::static_type(),
             &[
@@ -24,6 +24,7 @@ impl SongModel {
                 ("title", &title),
                 ("artist", &artist),
                 ("id", &id),
+                ("duration", &duration),
             ],
         )
         .expect("Failed to create")
@@ -72,7 +73,7 @@ mod imp {
     use std::cell::RefCell;
 
     // Static array for defining the properties of the new type.
-    static PROPERTIES: [subclass::Property; 5] = [
+    static PROPERTIES: [subclass::Property; 6] = [
         subclass::Property("index", |index| {
             glib::ParamSpec::uint(
                 index,
@@ -99,6 +100,15 @@ mod imp {
         subclass::Property("id", |id| {
             glib::ParamSpec::string(id, "id", "id", None, glib::ParamFlags::READWRITE)
         }),
+        subclass::Property("duration", |duration| {
+            glib::ParamSpec::string(
+                duration,
+                "duration",
+                "dur",
+                None,
+                glib::ParamFlags::READWRITE,
+            )
+        }),
         subclass::Property("playing", |playing| {
             glib::ParamSpec::boolean(
                 playing,
@@ -118,6 +128,7 @@ mod imp {
         title: RefCell<Option<String>>,
         artist: RefCell<Option<String>>,
         id: RefCell<Option<String>>,
+        duration: RefCell<Option<String>>,
         playing: RefCell<bool>,
     }
 
@@ -158,6 +169,7 @@ mod imp {
                 artist: RefCell::new(None),
                 id: RefCell::new(None),
                 playing: RefCell::new(false),
+                duration: RefCell::new(None),
             }
         }
     }
@@ -198,6 +210,12 @@ mod imp {
                         .expect("type conformity checked by `Object::set_property`");
                     self.id.replace(id);
                 }
+                subclass::Property("duration", ..) => {
+                    let dur = value
+                        .get()
+                        .expect("type conformity checked by `Object::set_property`");
+                    self.duration.replace(dur);
+                }
                 subclass::Property("playing", ..) => {
                     let playing = value
                         .get()
@@ -219,6 +237,7 @@ mod imp {
                 subclass::Property("title", ..) => Ok(self.title.borrow().to_value()),
                 subclass::Property("artist", ..) => Ok(self.artist.borrow().to_value()),
                 subclass::Property("id", ..) => Ok(self.id.borrow().to_value()),
+                subclass::Property("duration", ..) => Ok(self.duration.borrow().to_value()),
                 subclass::Property("playing", ..) => Ok(self.playing.borrow().to_value()),
                 _ => unimplemented!(),
             }
