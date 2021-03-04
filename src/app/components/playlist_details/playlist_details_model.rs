@@ -54,6 +54,14 @@ impl PlaylistDetailsModel {
             }
         }));
     }
+
+    pub fn view_owner(&self) {
+        if let Some(playlist) = self.get_playlist_info() {
+            let owner = &playlist.owner.id;
+            self.dispatcher
+                .dispatch(AppAction::ViewUser(owner.to_owned()));
+        }
+    }
 }
 
 impl PlaylistDetailsModel {
