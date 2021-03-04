@@ -10,12 +10,17 @@
   font-weight: bold;
 }
 
-.song--playing label {
+.song--playing label.song__title, .song--playing label.song__artist, .song--playing label.song__index {
   color: @theme_selected_bg_color;
 }
 
 .song label.song__artist {
   font-size: 14px;
+}
+
+.song label.song__duration {
+  font-size: 14px;
+  color: @insensitive_fg_color;
 }
 
 .song__menu {
@@ -26,6 +31,6 @@
   opacity: 0.2;
 }
 
-row:hover .song__menu--enabled, .song__menu--enabled:checked  {
+row:hover .song__menu--enabled, .song__menu--enabled:checked {
   opacity: 1;
 }
