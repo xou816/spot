@@ -1717,6 +1717,19 @@
     },
     {
         "type": "file",
+        "url": "https://static.crates.io/crates/hex/hex-0.4.2.crate",
+        "sha256": "644f9158b2f133fd50f5fb3242878846d9eb792e445c893805ff0e3824006e35",
+        "dest": "cargo/vendor",
+        "dest-filename": "hex-0.4.2.crate"
+    },
+    {
+        "type": "file",
+        "url": "data:%7B%22package%22%3A%20%22644f9158b2f133fd50f5fb3242878846d9eb792e445c893805ff0e3824006e35%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/hex-0.4.2",
+        "dest-filename": ".cargo-checksum.json"
+    },
+    {
+        "type": "file",
         "url": "https://static.crates.io/crates/hkdf/hkdf-0.10.0.crate",
         "sha256": "51ab2f639c231793c5f6114bdb9bbe50a7dbbfcd7c7c6bd8475dec2d991e964f",
         "dest": "cargo/vendor",
@@ -3030,19 +3043,6 @@
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/pollster/pollster-0.2.1.crate",
-        "sha256": "1a0c427c464eaca5923b642b3b346792b9c98edd91026aa6a753435e42d2a07b",
-        "dest": "cargo/vendor",
-        "dest-filename": "pollster-0.2.1.crate"
-    },
-    {
-        "type": "file",
-        "url": "data:%7B%22package%22%3A%20%221a0c427c464eaca5923b642b3b346792b9c98edd91026aa6a753435e42d2a07b%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/pollster-0.2.1",
-        "dest-filename": ".cargo-checksum.json"
-    },
-    {
-        "type": "file",
         "url": "https://static.crates.io/crates/ppv-lite86/ppv-lite86-0.2.10.crate",
         "sha256": "ac74c624d6b2d21f425f752262f42188365d7b8ff1aff74c82e45136510a4857",
         "dest": "cargo/vendor",
@@ -3806,6 +3806,19 @@
         "type": "file",
         "url": "data:%7B%22package%22%3A%20%22f7d94d0bede923b3cea61f3f1ff57ff8cdfd77b400fb8f9998949e0cf04163df%22%2C%20%22files%22%3A%20%7B%7D%7D",
         "dest": "cargo/vendor/sha-1-0.8.2",
+        "dest-filename": ".cargo-checksum.json"
+    },
+    {
+        "type": "file",
+        "url": "https://static.crates.io/crates/sha1/sha1-0.6.0.crate",
+        "sha256": "2579985fda508104f7587689507983eadd6a6e84dd35d6d115361f530916fa0d",
+        "dest": "cargo/vendor",
+        "dest-filename": "sha1-0.6.0.crate"
+    },
+    {
+        "type": "file",
+        "url": "data:%7B%22package%22%3A%20%222579985fda508104f7587689507983eadd6a6e84dd35d6d115361f530916fa0d%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/sha1-0.6.0",
         "dest-filename": ".cargo-checksum.json"
     },
     {
@@ -4967,15 +4980,15 @@
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/zbus/zbus-2.0.0-beta.crate",
-        "sha256": "af79db7390577a815660d03f7c4975519dfaa36c8d13f42d7fcff3a6d8000e12",
+        "url": "https://static.crates.io/crates/zbus/zbus-2.0.0-beta.2.crate",
+        "sha256": "b50a2ffd6637b05dd587c1877b969705412da85e56f5231d7c15064e9e1ebf8b",
         "dest": "cargo/vendor",
-        "dest-filename": "zbus-2.0.0-beta.crate"
+        "dest-filename": "zbus-2.0.0-beta.2.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%22af79db7390577a815660d03f7c4975519dfaa36c8d13f42d7fcff3a6d8000e12%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/zbus-2.0.0-beta",
+        "url": "data:%7B%22package%22%3A%20%22b50a2ffd6637b05dd587c1877b969705412da85e56f5231d7c15064e9e1ebf8b%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/zbus-2.0.0-beta.2",
         "dest-filename": ".cargo-checksum.json"
     },
     {
@@ -4993,15 +5006,15 @@
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/zbus_macros/zbus_macros-2.0.0-beta.crate",
-        "sha256": "af34a6cffc3b48f8d009f174a743f1282856535011e16ec832a030fe2b926106",
+        "url": "https://static.crates.io/crates/zbus_macros/zbus_macros-2.0.0-beta.2.crate",
+        "sha256": "f2adffa6284f0c9a5cf098bca0f3982540f525c73186ed5e54519c98b607c62e",
         "dest": "cargo/vendor",
-        "dest-filename": "zbus_macros-2.0.0-beta.crate"
+        "dest-filename": "zbus_macros-2.0.0-beta.2.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%22af34a6cffc3b48f8d009f174a743f1282856535011e16ec832a030fe2b926106%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/zbus_macros-2.0.0-beta",
+        "url": "data:%7B%22package%22%3A%20%22f2adffa6284f0c9a5cf098bca0f3982540f525c73186ed5e54519c98b607c62e%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/zbus_macros-2.0.0-beta.2",
         "dest-filename": ".cargo-checksum.json"
     },
     {
