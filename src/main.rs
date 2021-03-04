@@ -8,11 +8,11 @@ use gio::{ActionMapExt, SimpleAction};
 use gtk::prelude::*;
 use gtk::SettingsExt;
 
+mod api;
 mod app;
 mod config;
 pub use config::VERSION;
 
-use crate::app::backend;
 use crate::app::dispatch::{spawn_task_handler, DispatchLoop};
 use crate::app::{App, AppAction};
 
@@ -34,11 +34,7 @@ fn main() {
 
     let dispatch_loop = DispatchLoop::new();
     let sender = dispatch_loop.make_dispatcher();
-    let app = App::new(
-        builder.clone(),
-        sender.clone(),
-        spawn_task_handler(&context),
-    );
+    let app = App::new(builder, sender.clone(), spawn_task_handler(&context));
     context.spawn_local(app.attach(dispatch_loop));
 
     gtk_app.connect_activate(move |gtk_app| {

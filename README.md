@@ -1,6 +1,6 @@
 # Spot
 
-Gtk/Rust native Spotify client for the Gnome desktop. **Only works with premium accounts!**
+Gtk/Rust native Spotify client for the GNOME desktop. **Only works with premium accounts!**
 
 Based on [librespot](https://github.com/librespot-org/librespot/).
 
@@ -35,11 +35,11 @@ Based on [librespot](https://github.com/librespot-org/librespot/).
 
 ## Building
 
-### With Gnome Builder
+### With GNOME Builder and flatpak
 
-Should be as simple as opening the project and hitting run :) 
+Pre-requisite: install the `org.freedesktop.Sdk.Extension.rust-stable` SDK extension with flatpak. Builder might do this for you automatically, but it will install an older version; make sure  the version installed matches the version of the Freedesktop SDK GNOME uses (at the time of writing: 20.08).
 
-Note: the included flatpak manifest is not ideal for development, it will work but it does not manage build caching properly.
+Open the project in GNOME Builder and make the `dev.alextren.Spot.development.json` configuration active. Then build :)
 
 ### Manually
 

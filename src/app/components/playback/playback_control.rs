@@ -1,6 +1,6 @@
 use glib::signal;
 use gtk::prelude::*;
-use gtk::{BinExt, ImageExt, LabelExt, RangeExt, ScaleExt};
+use gtk::{BinExt, ImageExt, LabelExt, RangeExt};
 use std::ops::Deref;
 use std::rc::Rc;
 
@@ -52,11 +52,6 @@ impl PlaybackControlModel {
         self.dispatcher.dispatch(PlaybackAction::TogglePlay.into());
     }
 
-    pub fn toggle_shuffle(&self) {
-        self.dispatcher
-            .dispatch(PlaybackAction::ToggleShuffle.into());
-    }
-
     pub fn seek_to(&self, position: u32) {
         self.dispatcher
             .dispatch(PlaybackAction::Seek(position).into());
@@ -65,8 +60,8 @@ impl PlaybackControlModel {
 
 pub struct PlaybackControlWidget {
     play_button: gtk::Button,
-    shuffle_button: gtk::ToggleButton,
     seek_bar: gtk::Scale,
+    track_position: gtk::Label,
     track_duration: gtk::Label,
     next: gtk::Button,
     prev: gtk::Button,
@@ -75,16 +70,16 @@ pub struct PlaybackControlWidget {
 impl PlaybackControlWidget {
     pub fn new(
         play_button: gtk::Button,
-        shuffle_button: gtk::ToggleButton,
         seek_bar: gtk::Scale,
+        track_position: gtk::Label,
         track_duration: gtk::Label,
         next: gtk::Button,
         prev: gtk::Button,
     ) -> Self {
         Self {
             play_button,
-            shuffle_button,
             seek_bar,
+            track_position,
             track_duration,
             next,
             prev,
@@ -102,15 +97,13 @@ pub struct PlaybackControl {
 impl PlaybackControl {
     pub fn new(model: PlaybackControlModel, widget: PlaybackControlWidget) -> Self {
         let model = Rc::new(model);
-
-        widget
-            .seek_bar
-            .connect_format_value(|_, value| format_duration(value));
-
         let debouncer = Debouncer::new();
         let debouncer_clone = debouncer.clone();
+
+        let track_position = &widget.track_position;
         widget.seek_bar.connect_change_value(
-            clone!(@weak model => @default-return signal::Inhibit(false), move |_, _, requested| {
+            clone!(@weak model, @weak track_position => @default-return signal::Inhibit(false), move |_, _, requested| {
+                track_position.set_text(&format_duration(requested));
                 debouncer_clone.debounce(200, move || {
                     model.seek_to(requested as u32);
                 });
@@ -131,12 +124,6 @@ impl PlaybackControl {
         widget.prev.connect_clicked(clone!(@weak model => move |_| {
             model.play_prev_song()
         }));
-
-        widget
-            .shuffle_button
-            .connect_clicked(clone!(@weak model => move |_| {
-                model.toggle_shuffle();
-            }));
 
         Self {
             model,
@@ -168,34 +155,46 @@ impl PlaybackControl {
         self.set_playing(is_playing);
 
         if is_playing {
-            let seek_bar = self.widget.seek_bar.clone();
-            self.clock.start(move || {
-                let value = seek_bar.get_value();
-                seek_bar.set_value(value + 1000.0);
-            });
+            let seek_bar = &self.widget.seek_bar;
+            let track_position = &self.widget.track_position;
+            self.clock
+                .start(clone!(@weak seek_bar, @weak track_position => move || {
+                    let value = seek_bar.get_value() + 1000.0;
+                    seek_bar.set_value(value);
+                    track_position.set_text(&Self::format_duration(value));
+                }));
         } else {
             self.clock.stop();
         }
     }
 
     fn update_current_info(&self) {
+        let class = "seek-bar--active";
+        let style_context = self.widget.seek_bar.get_style_context();
         if let Some(duration) = self.model.current_song_duration() {
-            self.widget.seek_bar.set_draw_value(true);
+            style_context.add_class(class);
             self.widget.seek_bar.set_range(0.0, duration);
             self.widget.seek_bar.set_value(0.0);
-            self.widget.track_duration.show();
+            self.widget.track_position.set_text("0:00");
             self.widget
                 .track_duration
-                .set_text(&format_duration(duration));
+                .set_text(&format!(" / {}", format_duration(duration)));
+            self.widget.track_position.show();
+            self.widget.track_duration.show();
         } else {
-            self.widget.seek_bar.set_draw_value(false);
+            style_context.remove_class(class);
             self.widget.seek_bar.set_range(0.0, 0.0);
+            self.widget.track_position.hide();
             self.widget.track_duration.hide();
         }
     }
 
     fn sync_seek(&self, pos: u32) {
-        self.widget.seek_bar.set_value(pos as f64);
+        let pos = pos as f64;
+        self.widget.seek_bar.set_value(pos);
+        self.widget
+            .track_position
+            .set_text(&Self::format_duration(pos));
     }
 }
 

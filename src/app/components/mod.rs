@@ -5,7 +5,7 @@ macro_rules! resource {
     };
 }
 
-use crate::app::backend::api::SpotifyApiError;
+use crate::api::SpotifyApiError;
 use crate::app::{AppAction, AppEvent};
 
 use gtk::prelude::*;

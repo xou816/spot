@@ -17,4 +17,4 @@ jobs:
     - uses: bilelmoussaoui/flatpak-github-actions@v2
       with:
         bundle: "spot.flatpak"
-        manifest-path: "dev.alextren.Spot.json"
+        manifest-path: "dev.alextren.Spot.snapshots.json"

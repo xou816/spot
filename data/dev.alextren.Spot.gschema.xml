@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="spot">
-	<schema id="dev.alextren.Spot" path="/dev/alextren/Spot/">
-	</schema>
+  <schema id="dev.alextren.Spot" path="/dev/alextren/Spot/">
+    <key name='old-cache-cleared' type='b'>
+      <default>false</default>
+      <summary>Has the old cache been cleared?</summary>
+    </key>
+  </schema>
 </schemalist>

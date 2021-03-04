@@ -1,6 +1,5 @@
-use gdk::EventKey;
+use gdk::{keys::constants::Return, EventKey};
 use gio::ApplicationExt;
-use glib::translate::ToGlib;
 use gtk::prelude::*;
 use gtk::{EntryExt, GtkWindowExt, WidgetExt};
 use std::rc::Rc;
@@ -10,8 +9,6 @@ use crate::app::credentials::Credentials;
 use crate::app::AppEvent;
 
 use super::LoginModel;
-
-const SUBMIT_KEY: &str = "Return";
 
 pub struct Login {
     dialog: gtk::Dialog,
@@ -86,7 +83,7 @@ impl Login {
         model: Rc<LoginModel>,
         event: &EventKey,
     ) -> Inhibit {
-        if event.get_keyval().to_glib() == gdk::keyval_from_name(SUBMIT_KEY) {
+        if event.get_keyval() == Return {
             Login::submit_login_form(username, password, model);
             Inhibit(true)
         } else {
