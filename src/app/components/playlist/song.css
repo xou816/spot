@@ -1,21 +1,24 @@
 .song .song__index {
-  font-size: 11px;
+  font-size: 12px;
+  margin: 4px 12px;
+  padding: 0;
 }
 
 .song label.song__title {
   font-size: 16px;
 }
 
-.song--playing label.song__title {
+.song--playing label.song__title, .song--playing label.song__index {
   font-weight: bold;
+  color: @theme_selected_bg_color;
 }
 
-.song--playing label.song__title, .song--playing label.song__artist, .song--playing label.song__index {
+.song--playing label.song__artist {
   color: @theme_selected_bg_color;
 }
 
 .song label.song__artist {
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .song label.song__duration {
