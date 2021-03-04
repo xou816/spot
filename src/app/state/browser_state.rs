@@ -24,6 +24,7 @@ pub enum BrowserAction {
     NavigationPopTo(ScreenName),
     SaveAlbum(AlbumDescription),
     UnsaveAlbum(String),
+    SetUserDetails(UserDescription),
 }
 
 impl Into<AppAction> for BrowserAction {
@@ -69,7 +70,7 @@ impl BrowserScreen {
             ScreenName::PlaylistDetails(id) => {
                 BrowserScreen::PlaylistDetails(PlaylistDetailsState::new(id.to_string()))
             }
-            ScreenName::User(id) => BrowserScreen::User(UserState::new(id.to_string())),
+            ScreenName::User(id) => BrowserScreen::User(UserDetailsState::new(id.to_string())),
         }
     }
 

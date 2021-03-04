@@ -364,6 +364,34 @@ impl UpdatableState for SearchState {
     }
 }
 
+pub struct UserDetailsState {
+    pub id: String,
+    pub name: ScreenName,
+}
+
+impl UserDetailsState {
+    pub fn new(id: String) -> Self {
+        Self {
+            id: id.clone(),
+            name: ScreenName::User(id),
+        }
+    }
+}
+
+impl UpdatableState for UserDetailsState {
+    type Action = BrowserAction;
+    type Event = BrowserEvent;
+
+    fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
+        match action {
+            BrowserAction::SetUserDetails(user) if user.id != self.id => {
+                vec![]
+            }
+            _ => vec![],
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
