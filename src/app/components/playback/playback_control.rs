@@ -161,7 +161,7 @@ impl PlaybackControl {
                 .start(clone!(@weak seek_bar, @weak track_position => move || {
                     let value = seek_bar.get_value() + 1000.0;
                     seek_bar.set_value(value);
-                    track_position.set_text(&Self::format_duration(value));
+                    track_position.set_text(&format_duration(value));
                 }));
         } else {
             self.clock.stop();
@@ -192,9 +192,7 @@ impl PlaybackControl {
     fn sync_seek(&self, pos: u32) {
         let pos = pos as f64;
         self.widget.seek_bar.set_value(pos);
-        self.widget
-            .track_position
-            .set_text(&Self::format_duration(pos));
+        self.widget.track_position.set_text(&format_duration(pos));
     }
 }
 
