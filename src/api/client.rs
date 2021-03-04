@@ -365,6 +365,12 @@ impl SpotifyClient {
             .method(Method::GET)
             .uri("/v1/search".to_string(), Some(&query.into_query_string()))
     }
+
+    pub(crate) fn get_user(&self, id: String) -> SpotifyRequest<'_, (), User> {
+        self.request()
+            .method(Method::GET)
+            .uri(format!("/v1/users/{}", id), None)
+    }
 }
 
 #[cfg(test)]

@@ -136,3 +136,11 @@ pub struct ArtistSummary {
     pub name: String,
     pub photo: Option<String>,
 }
+
+#[derive(Clone, Debug)]
+pub struct UserDescription {
+    pub id: String,
+    pub name: String,
+    pub image: String,
+    pub followers: u32,
+}
