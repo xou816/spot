@@ -1,5 +1,4 @@
 use futures::channel::mpsc::UnboundedSender;
-use std::convert::TryInto;
 use std::rc::Rc;
 use std::thread;
 use zbus::fdo;
@@ -35,10 +34,10 @@ impl AppPlaybackStateListener {
     }
 
     fn with_player<F: Fn(&SpotMprisPlayer) -> zbus::Result<()>>(&self, f: F) -> zbus::Result<()> {
-        self.object_server.with(
-            &"/org/mpris/MediaPlayer2".try_into()?,
-            |iface: &SpotMprisPlayer| f(iface),
-        )
+        self.object_server
+            .with("/org/mpris/MediaPlayer2", |iface: &SpotMprisPlayer| {
+                f(iface)
+            })
     }
 
     fn make_track_meta(&self) -> Option<TrackMetadata> {
@@ -132,8 +131,8 @@ fn register_mpris(
     player: SpotMprisPlayer,
 ) -> Result<zbus::ObjectServer, zbus::Error> {
     let mut object_server = zbus::ObjectServer::new(&connection);
-    object_server.at(&"/org/mpris/MediaPlayer2".try_into()?, mpris)?;
-    object_server.at(&"/org/mpris/MediaPlayer2".try_into()?, player)?;
+    object_server.at("/org/mpris/MediaPlayer2", mpris)?;
+    object_server.at("/org/mpris/MediaPlayer2", player)?;
     Ok(object_server)
 }
 
