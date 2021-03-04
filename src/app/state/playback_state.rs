@@ -166,6 +166,8 @@ impl Default for PlaybackState {
 #[derive(Clone, Debug)]
 pub enum PlaybackAction {
     TogglePlay,
+    Play,
+    Pause,
     ToggleShuffle,
     Seek(u32),
     SyncSeek(u32),
@@ -211,6 +213,20 @@ impl UpdatableState for PlaybackState {
                     } else {
                         vec![PlaybackEvent::PlaybackPaused]
                     }
+                } else {
+                    vec![]
+                }
+            }
+            PlaybackAction::Play => {
+                if !self.is_playing() && self.toggle_play() == Some(true) {
+                    vec![PlaybackEvent::PlaybackResumed]
+                } else {
+                    vec![]
+                }
+            }
+            PlaybackAction::Pause => {
+                if self.is_playing() && self.toggle_play() == Some(false) {
+                    vec![PlaybackEvent::PlaybackPaused]
                 } else {
                     vec![]
                 }

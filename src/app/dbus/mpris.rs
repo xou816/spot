@@ -89,11 +89,15 @@ impl SpotMprisPlayer {
     }
 
     pub fn pause(&self) -> Result<()> {
-        Err(Error::NotSupported("Not implemented".to_string()))
+        self.sender
+            .unbounded_send(PlaybackAction::Pause.into())
+            .map_err(|_| Error::Failed("Could not send action".to_string()))
     }
 
     pub fn play(&self) -> Result<()> {
-        Err(Error::NotSupported("Not implemented".to_string()))
+        self.sender
+            .unbounded_send(PlaybackAction::Play.into())
+            .map_err(|_| Error::Failed("Could not send action".to_string()))
     }
 
     pub fn play_pause(&mut self) -> Result<()> {
