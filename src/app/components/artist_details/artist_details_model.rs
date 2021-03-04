@@ -76,6 +76,14 @@ impl ArtistDetailsModel {
 }
 
 impl PlaylistModel for ArtistDetailsModel {
+    fn select_song(&self, id: &str) {}
+    fn is_song_selected(&self, id: &str) -> bool {
+        false
+    }
+    fn is_selection_enabled(&self) -> bool {
+        false
+    }
+
     fn songs(&self) -> Vec<SongModel> {
         let tracks = self.tracks_ref();
         match tracks {
@@ -92,13 +100,14 @@ impl PlaylistModel for ArtistDetailsModel {
         self.app_model.get_state().playback.current_song_id.clone()
     }
 
-    fn play_song(&self, id: String) {
+    fn play_song(&self, id: &str) {
         let tracks = self.tracks_ref();
         if let Some(tracks) = tracks {
             self.dispatcher.dispatch(
                 PlaybackAction::LoadPlaylist(PlaylistSource::None, tracks.clone()).into(),
             );
-            self.dispatcher.dispatch(PlaybackAction::Load(id).into());
+            self.dispatcher
+                .dispatch(PlaybackAction::Load(id.to_string()).into());
         }
     }
 
@@ -109,9 +118,9 @@ impl PlaylistModel for ArtistDetailsModel {
         )
     }
 
-    fn actions_for(&self, id: String) -> Option<gio::ActionGroup> {
+    fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
         let songs = self.tracks_ref()?;
-        let song = songs.iter().find(|song| song.id == id)?;
+        let song = songs.iter().find(|&song| &song.id == id)?;
 
         let group = SimpleActionGroup::new();
 
@@ -145,9 +154,9 @@ impl PlaylistModel for ArtistDetailsModel {
         Some(group.upcast())
     }
 
-    fn menu_for(&self, id: String) -> Option<gio::MenuModel> {
+    fn menu_for(&self, id: &str) -> Option<gio::MenuModel> {
         let songs = self.tracks_ref()?;
-        let song = songs.iter().find(|song| song.id == id)?;
+        let song = songs.iter().find(|&song| &song.id == id)?;
 
         let menu = gio::Menu::new();
         menu.append(Some("View album"), Some("song.view_album"));

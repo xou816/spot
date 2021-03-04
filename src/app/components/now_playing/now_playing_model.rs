@@ -35,12 +35,25 @@ impl NowPlayingModel {
         self.dispatcher
             .dispatch(PlaybackAction::ToggleShuffle.into());
     }
+
+    pub fn clear_queue(&self) {
+        self.dispatcher.dispatch(PlaybackAction::ClearQueue.into());
+    }
 }
 
 impl PlaylistModel for NowPlayingModel {
+    fn select_song(&self, id: &str) {}
+    fn is_song_selected(&self, id: &str) -> bool {
+        false
+    }
+    fn is_selection_enabled(&self) -> bool {
+        false
+    }
+
     fn current_song_id(&self) -> Option<String> {
         self.queue().current_song_id.clone()
     }
+
     fn songs(&self) -> Vec<SongModel> {
         self.queue()
             .songs()
@@ -49,8 +62,9 @@ impl PlaylistModel for NowPlayingModel {
             .collect()
     }
 
-    fn play_song(&self, id: String) {
-        self.dispatcher.dispatch(PlaybackAction::Load(id).into());
+    fn play_song(&self, id: &str) {
+        self.dispatcher
+            .dispatch(PlaybackAction::Load(id.to_string()).into());
     }
 
     fn should_refresh_songs(&self, event: &AppEvent) -> bool {
@@ -60,9 +74,9 @@ impl PlaylistModel for NowPlayingModel {
         )
     }
 
-    fn actions_for(&self, id: String) -> Option<gio::ActionGroup> {
+    fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
         let queue = self.queue();
-        let song = queue.song(&id)?;
+        let song = queue.song(id)?;
         let group = SimpleActionGroup::new();
 
         let album_id = song.album.id.clone();
@@ -92,12 +106,20 @@ impl PlaylistModel for NowPlayingModel {
         });
         group.add_action(&copy_link);
 
+        let dequeue = SimpleAction::new("dequeue", None);
+        let dispatcher = self.dispatcher.box_clone();
+        let track_id = song.id.clone();
+        dequeue.connect_activate(move |_, _| {
+            dispatcher.dispatch(PlaybackAction::Dequeue(track_id.clone()).into());
+        });
+        group.add_action(&dequeue);
+
         Some(group.upcast())
     }
 
-    fn menu_for(&self, id: String) -> Option<gio::MenuModel> {
+    fn menu_for(&self, id: &str) -> Option<gio::MenuModel> {
         let queue = self.queue();
-        let song = queue.song(&id)?;
+        let song = queue.song(id)?;
 
         let menu = gio::Menu::new();
         menu.append(Some("View album"), Some("song.view_album"));
@@ -109,6 +131,7 @@ impl PlaylistModel for NowPlayingModel {
         }
 
         menu.append(Some("Copy link"), Some("song.copy_link"));
+        menu.append(Some("Dequeue"), Some("song.dequeue"));
 
         Some(menu.upcast())
     }

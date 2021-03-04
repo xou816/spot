@@ -87,6 +87,14 @@ impl DetailsModel {
 }
 
 impl PlaylistModel for DetailsModel {
+    fn select_song(&self, id: &str) {}
+    fn is_song_selected(&self, id: &str) -> bool {
+        false
+    }
+    fn is_selection_enabled(&self) -> bool {
+        false
+    }
+
     fn current_song_id(&self) -> Option<String> {
         self.state().playback.current_song_id.clone()
     }
@@ -103,7 +111,7 @@ impl PlaylistModel for DetailsModel {
         }
     }
 
-    fn play_song(&self, id: String) {
+    fn play_song(&self, id: &str) {
         let source = PlaylistSource::Album(self.id.clone());
         if self.app_model.get_state().playback.source != source {
             let songs = self.songs_ref();
@@ -112,7 +120,8 @@ impl PlaylistModel for DetailsModel {
                     .dispatch(PlaybackAction::LoadPlaylist(source, songs.clone()).into());
             }
         }
-        self.dispatcher.dispatch(PlaybackAction::Load(id).into());
+        self.dispatcher
+            .dispatch(PlaybackAction::Load(id.to_string()).into());
     }
 
     fn should_refresh_songs(&self, event: &AppEvent) -> bool {
@@ -122,9 +131,9 @@ impl PlaylistModel for DetailsModel {
         )
     }
 
-    fn actions_for(&self, id: String) -> Option<gio::ActionGroup> {
+    fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
         let songs = self.songs_ref()?;
-        let song = songs.iter().find(|song| song.id == id)?;
+        let song = songs.iter().find(|&song| &song.id == id)?;
 
         let group = SimpleActionGroup::new();
 
@@ -146,12 +155,20 @@ impl PlaylistModel for DetailsModel {
         });
         group.add_action(&copy_link);
 
+        let queue = SimpleAction::new("queue", None);
+        let dispatcher = self.dispatcher.box_clone();
+        let song = song.clone();
+        queue.connect_activate(move |_, _| {
+            dispatcher.dispatch(PlaybackAction::Queue(song.clone()).into());
+        });
+        group.add_action(&queue);
+
         Some(group.upcast())
     }
 
-    fn menu_for(&self, id: String) -> Option<gio::MenuModel> {
+    fn menu_for(&self, id: &str) -> Option<gio::MenuModel> {
         let songs = self.songs_ref()?;
-        let song = songs.iter().find(|song| song.id == id)?;
+        let song = songs.iter().find(|&song| &song.id == id)?;
 
         let menu = gio::Menu::new();
         for (i, artist) in song.artists.iter().enumerate() {
@@ -162,6 +179,7 @@ impl PlaylistModel for DetailsModel {
         }
 
         menu.append(Some("Copy link"), Some("song.copy_link"));
+        menu.append(Some("Queue"), Some("song.queue"));
 
         Some(menu.upcast())
     }

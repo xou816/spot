@@ -45,6 +45,14 @@ impl SongModel {
             .unwrap()
     }
 
+    pub fn get_index(&self) -> u32 {
+        self.get_property("index")
+            .unwrap()
+            .get::<u32>()
+            .unwrap()
+            .unwrap()
+    }
+
     pub fn get_id(&self) -> String {
         self.get_property("id")
             .unwrap()

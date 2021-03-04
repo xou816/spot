@@ -62,6 +62,14 @@ impl PlaylistDetailsModel {
 }
 
 impl PlaylistModel for PlaylistDetailsModel {
+    fn select_song(&self, id: &str) {}
+    fn is_song_selected(&self, id: &str) -> bool {
+        false
+    }
+    fn is_selection_enabled(&self) -> bool {
+        false
+    }
+
     fn current_song_id(&self) -> Option<String> {
         self.state().playback.current_song_id.clone()
     }
@@ -78,7 +86,7 @@ impl PlaylistModel for PlaylistDetailsModel {
         }
     }
 
-    fn play_song(&self, id: String) {
+    fn play_song(&self, id: &str) {
         let source = PlaylistSource::Playlist(self.id.clone());
         if self.app_model.get_state().playback.source != source {
             let songs = self.songs_ref();
@@ -87,7 +95,8 @@ impl PlaylistModel for PlaylistDetailsModel {
                     .dispatch(PlaybackAction::LoadPlaylist(source, songs.clone()).into());
             }
         }
-        self.dispatcher.dispatch(PlaybackAction::Load(id).into());
+        self.dispatcher
+            .dispatch(PlaybackAction::Load(id.to_string()).into());
     }
 
     fn should_refresh_songs(&self, event: &AppEvent) -> bool {
@@ -97,9 +106,9 @@ impl PlaylistModel for PlaylistDetailsModel {
         )
     }
 
-    fn actions_for(&self, id: String) -> Option<gio::ActionGroup> {
+    fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
         let songs = self.songs_ref()?;
-        let song = songs.iter().find(|song| song.id == id)?;
+        let song = songs.iter().find(|&song| &song.id == id)?;
 
         let group = SimpleActionGroup::new();
 
@@ -133,9 +142,9 @@ impl PlaylistModel for PlaylistDetailsModel {
         Some(group.upcast())
     }
 
-    fn menu_for(&self, id: String) -> Option<gio::MenuModel> {
+    fn menu_for(&self, id: &str) -> Option<gio::MenuModel> {
         let songs = self.songs_ref()?;
-        let song = songs.iter().find(|song| song.id == id)?;
+        let song = songs.iter().find(|&song| &song.id == id)?;
 
         let menu = gio::Menu::new();
         menu.append(Some("View album"), Some("song.view_album"));

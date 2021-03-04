@@ -8,12 +8,16 @@
   font-size: 16px;
 }
 
-.song--playing label.song__title, .song--playing label.song__index {
+row {
+  margin: 1px 0;
+}
+
+row:not(:selected) .song--playing label.song__title, row:not(:selected) .song--playing label.song__index {
   font-weight: bold;
   color: @theme_selected_bg_color;
 }
 
-.song--playing label.song__artist {
+row:not(:selected) .song--playing label.song__artist {
   color: @theme_selected_bg_color;
 }
 

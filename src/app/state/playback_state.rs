@@ -1,4 +1,4 @@
-use rand::{rngs::SmallRng, seq::SliceRandom, SeedableRng};
+use rand::{rngs::SmallRng, seq::SliceRandom, RngCore, SeedableRng};
 use std::collections::HashMap;
 
 use crate::app::models::SongDescription;
@@ -103,6 +103,29 @@ impl PlaybackState {
         }
     }
 
+    fn queue(&mut self, track: SongDescription) {
+        self.source = PlaylistSource::None;
+        self.running_order.push(track.id.clone());
+        if let Some(shuffled) = self.running_order_shuffled.as_mut() {
+            let next = (self.rng.next_u32() as usize) % (shuffled.len() - 1);
+            shuffled.insert(next + 1, track.id.clone());
+        }
+        self.indexed_songs.insert(track.id.clone(), track);
+    }
+
+    fn dequeue(&mut self, id: String) {
+        self.source = PlaylistSource::None;
+        self.running_order.retain(|t| t != &id);
+        if let Some(shuffled) = self.running_order_shuffled.as_mut() {
+            shuffled.retain(|t| t != &id);
+        }
+        self.indexed_songs.remove(&id);
+    }
+
+    fn clear(&mut self) {
+        *self = Default::default();
+    }
+
     fn play(&mut self, id: &str) {
         self.current_song_id = Some(id.to_string());
         self.is_playing = true;
@@ -175,6 +198,9 @@ pub enum PlaybackAction {
     LoadPlaylist(PlaylistSource, Vec<SongDescription>),
     Next,
     Previous,
+    Queue(SongDescription),
+    Dequeue(String),
+    ClearQueue,
 }
 
 impl Into<AppAction> for PlaybackAction {
@@ -257,15 +283,34 @@ impl UpdatableState for PlaybackState {
                 }
             }
             PlaybackAction::Load(id) => {
-                self.play(&id);
-                vec![
-                    PlaybackEvent::TrackChanged(id),
-                    PlaybackEvent::PlaybackResumed,
-                ]
+                if self.current_song_id.as_ref() != Some(&id) {
+                    self.play(&id);
+                    vec![
+                        PlaybackEvent::TrackChanged(id),
+                        PlaybackEvent::PlaybackResumed,
+                    ]
+                } else {
+                    vec![]
+                }
             }
             PlaybackAction::LoadPlaylist(source, tracks) => {
                 self.set_playlist(source, tracks);
                 vec![PlaybackEvent::PlaylistChanged]
+            }
+            PlaybackAction::Queue(track) => {
+                self.queue(track);
+                vec![PlaybackEvent::PlaylistChanged]
+            }
+            PlaybackAction::Dequeue(index) => {
+                self.dequeue(index);
+                vec![PlaybackEvent::PlaylistChanged]
+            }
+            PlaybackAction::ClearQueue => {
+                self.clear();
+                vec![
+                    PlaybackEvent::PlaylistChanged,
+                    PlaybackEvent::PlaybackStopped,
+                ]
             }
             PlaybackAction::Seek(pos) => vec![PlaybackEvent::TrackSeeked(pos)],
             PlaybackAction::SyncSeek(pos) => vec![PlaybackEvent::SeekSynced(pos)],

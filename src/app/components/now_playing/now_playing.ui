@@ -30,22 +30,52 @@
           </packing>
         </child>
         <child>
-          <object class="GtkToggleButton" id="shuffle">
-            <property name="can-focus">True</property>
-            <property name="receives-default">False</property>
-            <property name="halign">end</property>
-            <property name="valign">center</property>
-            <property name="margin-left">8</property>
-            <property name="margin-right">8</property>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
             <property name="margin-start">8</property>
             <property name="margin-end">8</property>
             <child>
-              <object class="GtkImage">
+              <object class="GtkToggleButton" id="shuffle">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="icon-name">media-playlist-shuffle-symbolic</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="icon-name">media-playlist-shuffle-symbolic</property>
+                  </object>
+                </child>
               </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
             </child>
+            <child>
+              <object class="GtkButton" id="clear">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="icon-name">edit-clear-all-symbolic</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <style>
+              <class name="linked"/>
+            </style>
           </object>
           <packing>
             <property name="expand">False</property>
