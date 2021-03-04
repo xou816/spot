@@ -252,7 +252,10 @@ impl Into<Vec<SongDescription>> for Tracks<TrackItem> {
 
 impl Into<Vec<SongDescription>> for Album {
     fn into(self) -> Vec<SongDescription> {
-        let art = self.best_image_for_width(200).unwrap().url.clone();
+        let art = match self.best_image_for_width(200) {
+            Some(image) => Some(image.url.clone()),
+            None => None,
+        };
         let items = self.tracks.unwrap_or_default().items;
 
         let Album { id, name, .. } = self;
@@ -276,7 +279,7 @@ impl Into<Vec<SongDescription>> for Album {
                     artists,
                     album: album_ref.clone(),
                     duration: item.duration_ms as u32,
-                    art: Some(art.clone()),
+                    art: art.clone(),
                 }
             })
             .collect()
