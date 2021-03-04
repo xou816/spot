@@ -31,7 +31,7 @@ Based on [librespot](https://github.com/librespot-org/librespot/).
 - liked tracks
 - GNOME search provider?
 - smarter search?
-- recommandations?
+- recommendations?
 
 ## Building
 
