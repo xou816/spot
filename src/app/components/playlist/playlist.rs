@@ -12,7 +12,6 @@ pub trait PlaylistModel {
     fn current_song_id(&self) -> Option<String>;
     fn play_song(&self, id: &str);
     fn select_song(&self, id: &str);
-    fn is_song_selected(&self, id: &str) -> bool;
     fn is_selection_enabled(&self) -> bool;
     fn should_refresh_songs(&self, event: &AppEvent) -> bool;
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup>;
