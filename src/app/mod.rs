@@ -64,6 +64,7 @@ impl App {
 
         let mut components: Vec<Box<dyn EventListener>> = vec![
             App::make_window(builder, worker.clone()),
+            App::make_headerbar(builder, dispatcher.box_clone()),
             App::make_playback_control(builder, Rc::clone(model), dispatcher.box_clone()),
             App::make_playback_info(
                 builder,
@@ -99,7 +100,18 @@ impl App {
 
     fn make_window(builder: &gtk::Builder, worker: Worker) -> Box<impl EventListener> {
         let window: libhandy::ApplicationWindow = builder.get_object("window").unwrap();
-        Box::new(MainWindow::new(window, worker))
+        let search_bar: gtk::SearchBar = builder.get_object("search_bar").unwrap();
+        Box::new(MainWindow::new(window, search_bar, worker))
+    }
+
+    fn make_headerbar(
+        builder: &gtk::Builder,
+        dispatcher: Box<dyn ActionDispatcher>,
+    ) -> Box<impl EventListener> {
+        let headerbar: libhandy::HeaderBar = builder.get_object("header_bar").unwrap();
+        let selection_toggle: gtk::ToggleButton = builder.get_object("selection_toggle").unwrap();
+        let model = HeaderBarModel::new(dispatcher);
+        Box::new(HeaderBar::new(model, headerbar, selection_toggle))
     }
 
     fn make_navigation(
@@ -193,9 +205,16 @@ impl App {
         builder: &gtk::Builder,
         dispatcher: Box<dyn ActionDispatcher>,
     ) -> Box<SearchBar> {
+        let search_button: gtk::Button = builder.get_object("search_button").unwrap();
         let search_entry: gtk::SearchEntry = builder.get_object("search_entry").unwrap();
+        let search_bar: gtk::SearchBar = builder.get_object("search_bar").unwrap();
         let model = SearchBarModel(dispatcher);
-        Box::new(SearchBar::new(model, search_entry))
+        Box::new(SearchBar::new(
+            model,
+            search_button,
+            search_bar,
+            search_entry,
+        ))
     }
 
     fn make_user_menu(

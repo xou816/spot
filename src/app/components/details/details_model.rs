@@ -87,10 +87,12 @@ impl DetailsModel {
 }
 
 impl PlaylistModel for DetailsModel {
-    fn select_song(&self, id: &str) {}
+    fn select_song(&self, id: &str) {
+        println!("{}", id);
+    }
 
     fn is_selection_enabled(&self) -> bool {
-        false
+        self.state().selection.is_some()
     }
 
     fn current_song_id(&self) -> Option<String> {

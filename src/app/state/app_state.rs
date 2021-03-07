@@ -1,4 +1,5 @@
 use crate::app::credentials;
+use crate::app::models::SongDescription;
 use crate::app::state::{
     browser_state::{BrowserAction, BrowserEvent, BrowserState},
     playback_state::{PlaybackAction, PlaybackEvent, PlaybackState},
@@ -19,6 +20,7 @@ pub enum AppAction {
     ShowNotification(String),
     HideNotification,
     ViewNowPlaying,
+    ToggleSelectionMode,
 }
 
 impl AppAction {
@@ -51,12 +53,14 @@ pub enum AppEvent {
     NotificationShown(String),
     NotificationHidden,
     NowPlayingShown,
+    SelectionModeChanged(bool),
 }
 
 pub struct AppState {
     pub playback: PlaybackState,
     pub browser: BrowserState,
     pub user: Option<String>,
+    pub selection: Option<Vec<SongDescription>>,
 }
 
 impl AppState {
@@ -65,6 +69,7 @@ impl AppState {
             playback: Default::default(),
             browser: BrowserState::new(),
             user: None,
+            selection: None,
         }
     }
 
@@ -88,6 +93,15 @@ impl AppState {
             AppAction::HideNotification => vec![AppEvent::NotificationHidden],
             AppAction::ViewNowPlaying => vec![AppEvent::NowPlayingShown],
             AppAction::Raise => vec![AppEvent::Raised],
+            AppAction::ToggleSelectionMode => {
+                if self.selection.is_some() {
+                    self.selection = None;
+                    vec![AppEvent::SelectionModeChanged(false)]
+                } else {
+                    self.selection = Some(vec![]);
+                    vec![AppEvent::SelectionModeChanged(true)]
+                }
+            }
             AppAction::PlaybackAction(a) => self
                 .playback
                 .update_with(a)

@@ -19,6 +19,7 @@ pub trait PlaylistModel {
 }
 
 pub struct Playlist<Model> {
+    listbox: gtk::ListBox,
     list_model: ListStore<SongModel>,
     model: Rc<Model>,
 }
@@ -36,6 +37,8 @@ where
 
         let list_model_clone = list_model.clone();
         listbox.connect_row_activated(clone!(@weak model => move |listbox, row| {
+            let index = row.get_index() as u32;
+            let song: SongModel = list_model_clone.get(index);
             if model.is_selection_enabled() {
                 row.set_selectable(true);
                 if row.is_selected() {
@@ -43,10 +46,9 @@ where
                     row.set_selectable(false);
                 } else {
                     listbox.select_row(Some(row));
+                    model.select_song(&song.get_id());
                 }
             } else {
-                let index = row.get_index() as u32;
-                let song: SongModel = list_model_clone.get(index);
                 model.play_song(&song.get_id());
             }
         }));
@@ -69,7 +71,11 @@ where
             row.upcast::<gtk::Widget>()
         });
 
-        Self { list_model, model }
+        Self {
+            listbox,
+            list_model,
+            model,
+        }
     }
 
     fn create_row_for<M: PlaylistModel>(
@@ -113,6 +119,15 @@ where
         let list_model = &mut self.list_model;
         list_model.replace_all(self.model.songs());
     }
+
+    fn set_selection_active(&self, active: bool) {
+        self.listbox.set_selection_mode(if active {
+            gtk::SelectionMode::Multiple
+        } else {
+            self.listbox.unselect_all();
+            gtk::SelectionMode::None
+        });
+    }
 }
 
 impl<Model> EventListener for Playlist<Model>
@@ -126,6 +141,9 @@ where
             }
             AppEvent::PlaybackEvent(PlaybackEvent::PlaybackStopped) => {
                 self.reset_list();
+            }
+            AppEvent::SelectionModeChanged(active) => {
+                self.set_selection_active(*active);
             }
             _ if self.model.should_refresh_songs(event) => self.reset_list(),
             _ => {}

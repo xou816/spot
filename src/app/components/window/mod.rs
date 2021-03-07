@@ -1,6 +1,7 @@
 use gio::SettingsExt;
 use gtk::prelude::*;
 use gtk::DialogExt;
+use gtk::SearchBarExt;
 
 use crate::api::_clear_old_cache;
 use crate::app::components::EventListener;
@@ -49,11 +50,25 @@ pub struct MainWindow {
 }
 
 impl MainWindow {
-    pub fn new(window: libhandy::ApplicationWindow, worker: Worker) -> Self {
+    pub fn new(
+        window: libhandy::ApplicationWindow,
+        search_bar: gtk::SearchBar,
+        worker: Worker,
+    ) -> Self {
         window.connect_delete_event(|window, _| {
             window.hide();
             Inhibit(true)
         });
+
+        window.connect_key_press_event(move |_, event| {
+            let state = event.get_state();
+            if state.intersects(gdk::ModifierType::SHIFT_MASK | gdk::ModifierType::CONTROL_MASK) {
+                Inhibit(false)
+            } else {
+                Inhibit(search_bar.handle_event(event))
+            }
+        });
+
         Self { window, worker }
     }
 
