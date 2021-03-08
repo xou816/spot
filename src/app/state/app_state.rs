@@ -21,6 +21,8 @@ pub enum AppAction {
     HideNotification,
     ViewNowPlaying,
     ToggleSelectionMode,
+    Select(SongDescription),
+    Deselect(String),
 }
 
 impl AppAction {
@@ -54,6 +56,8 @@ pub enum AppEvent {
     NotificationHidden,
     NowPlayingShown,
     SelectionModeChanged(bool),
+    Selected(String),
+    Deselected(String),
 }
 
 pub struct AppState {
@@ -100,6 +104,23 @@ impl AppState {
                 } else {
                     self.selection = Some(vec![]);
                     vec![AppEvent::SelectionModeChanged(true)]
+                }
+            }
+            AppAction::Select(track) => {
+                if let Some(selection) = self.selection.as_mut() {
+                    let id = track.id.clone();
+                    selection.push(track);
+                    vec![AppEvent::Selected(id)]
+                } else {
+                    vec![]
+                }
+            }
+            AppAction::Deselect(id) => {
+                if let Some(selection) = self.selection.as_mut() {
+                    selection.retain(|t| &t.id != &id);
+                    vec![AppEvent::Deselected(id)]
+                } else {
+                    vec![]
                 }
             }
             AppAction::PlaybackAction(a) => self

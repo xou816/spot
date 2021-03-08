@@ -12,6 +12,7 @@ pub trait PlaylistModel {
     fn current_song_id(&self) -> Option<String>;
     fn play_song(&self, id: &str);
     fn select_song(&self, id: &str);
+    fn deselect_song(&self, id: &str);
     fn is_selection_enabled(&self) -> bool;
     fn should_refresh_songs(&self, event: &AppEvent) -> bool;
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup>;
@@ -44,6 +45,7 @@ where
                 if row.is_selected() {
                     listbox.unselect_row(row);
                     row.set_selectable(false);
+                    model.deselect_song(&song.get_id());
                 } else {
                     listbox.select_row(Some(row));
                     model.select_song(&song.get_id());
@@ -121,12 +123,16 @@ where
     }
 
     fn set_selection_active(&self, active: bool) {
-        self.listbox.set_selection_mode(if active {
-            gtk::SelectionMode::Multiple
+        if active {
+            self.listbox
+                .set_selection_mode(gtk::SelectionMode::Multiple);
         } else {
-            self.listbox.unselect_all();
-            gtk::SelectionMode::None
-        });
+            for row in self.listbox.get_selected_rows() {
+                self.listbox.unselect_row(&row);
+                row.set_selectable(false);
+            }
+            self.listbox.set_selection_mode(gtk::SelectionMode::None);
+        }
     }
 }
 

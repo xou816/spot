@@ -88,7 +88,17 @@ impl DetailsModel {
 
 impl PlaylistModel for DetailsModel {
     fn select_song(&self, id: &str) {
-        println!("{}", id);
+        let song = self
+            .songs_ref()
+            .and_then(|songs| songs.iter().find(|&song| &song.id == id).cloned());
+        if let Some(song) = song {
+            self.dispatcher.dispatch(AppAction::Select(song));
+        }
+    }
+
+    fn deselect_song(&self, id: &str) {
+        self.dispatcher
+            .dispatch(AppAction::Deselect(id.to_string()));
     }
 
     fn is_selection_enabled(&self) -> bool {

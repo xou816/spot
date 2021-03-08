@@ -63,6 +63,7 @@ impl PlaylistDetailsModel {
 
 impl PlaylistModel for PlaylistDetailsModel {
     fn select_song(&self, id: &str) {}
+    fn deselect_song(&self, id: &str) {}
 
     fn is_selection_enabled(&self) -> bool {
         false

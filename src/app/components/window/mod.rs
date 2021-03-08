@@ -60,14 +60,7 @@ impl MainWindow {
             Inhibit(true)
         });
 
-        window.connect_key_press_event(move |_, event| {
-            let state = event.get_state();
-            if state.intersects(gdk::ModifierType::SHIFT_MASK | gdk::ModifierType::CONTROL_MASK) {
-                Inhibit(false)
-            } else {
-                Inhibit(search_bar.handle_event(event))
-            }
-        });
+        window.connect_key_press_event(move |_, event| Inhibit(search_bar.handle_event(event)));
 
         Self { window, worker }
     }

@@ -20,6 +20,21 @@
             <property name="title" translatable="yes">Spotify</property>
             <property name="spacing">8</property>
             <property name="show-close-button">True</property>
+            <child type="title">
+              <object class="GtkMenuButton" id="selection_button">
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="relief">none</property>
+                <child>
+                  <object class="GtkLabel" id="selection_label">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">No song selected</property>
+                    <property name="ellipsize">end</property>
+                  </object>
+                </child>
+              </object>
+            </child>
             <child>
               <object class="GtkButton" id="nav_back">
                 <property name="visible">True</property>

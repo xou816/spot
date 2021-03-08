@@ -56,6 +56,7 @@ sources = files(
 './app/components/login/mod.rs',
 './app/components/login/login_model.rs',
 './app/components/window/mod.rs',
+'./app/components/selection_editor/mod.rs',
 './app/components/saved_playlists/saved_playlists_model.rs',
 './app/components/saved_playlists/mod.rs',
 './app/components/saved_playlists/saved_playlists.rs',
