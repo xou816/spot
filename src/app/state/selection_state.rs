@@ -50,6 +50,7 @@ impl SelectionState {
             .map(|s| s.iter().find(|&t| &t.id == id).is_some())
             .unwrap_or(false)
     }
+
     pub fn count(&self) -> usize {
         self.selected_songs.as_ref().map(|s| s.len()).unwrap_or(0)
     }

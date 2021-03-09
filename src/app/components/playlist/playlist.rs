@@ -2,7 +2,7 @@ use gio::prelude::*;
 use gtk::prelude::*;
 use gtk::ListBoxExt;
 use std::ops::Deref;
-use std::rc::{Rc, Weak};
+use std::rc::Rc;
 
 use crate::app::components::{Component, EventListener, Song};
 use crate::app::models::SongModel;
@@ -70,19 +70,24 @@ where
         }));
 
         let weak_model = Rc::downgrade(&model);
+        let weak_listbox = listbox.downgrade();
         listbox.bind_model(Some(list_model.unsafe_store()), move |item| {
             let item = item.downcast_ref::<SongModel>().unwrap();
-            let row = Self::create_row_for(
-                item,
-                weak_model.clone(),
-                weak_model
-                    .upgrade()
-                    .and_then(|m| m.actions_for(&item.get_id())),
-                weak_model
-                    .upgrade()
-                    .and_then(|m| m.menu_for(&item.get_id())),
-            );
-            row.set_selectable(false);
+            let id = &item.get_id();
+
+            let row = gtk::ListBoxRow::new();
+            let song = Song::new(item.clone());
+            row.add(song.get_root_widget());
+
+            if let Some(model) = weak_model.upgrade() {
+                song.set_menu(model.menu_for(id).as_ref());
+                song.set_actions(model.actions_for(id).as_ref());
+
+                if let Some(listbox) = weak_listbox.upgrade() {
+                    Self::set_row_state(&listbox, item, &row, &*model);
+                }
+            }
+
             row.show_all();
             row.upcast::<gtk::Widget>()
         });
@@ -94,29 +99,27 @@ where
         }
     }
 
-    fn create_row_for<M: PlaylistModel>(
+    fn set_row_state<M: PlaylistModel>(
+        listbox: &gtk::ListBox,
         item: &SongModel,
-        model: Weak<M>,
-        actions: Option<gio::ActionGroup>,
-        menu: Option<gio::MenuModel>,
-    ) -> gtk::ListBoxRow {
-        let row = gtk::ListBoxRow::new();
-
-        let is_current = model
-            .upgrade()
-            .and_then(|model| {
-                let current_song_id = model.current_song_id();
-                current_song_id.as_ref().map(|s| s.eq(&item.get_id()))
-            })
+        row: &gtk::ListBoxRow,
+        model: &M,
+    ) {
+        let id = &item.get_id();
+        let current_song_id = model.current_song_id();
+        let is_current = current_song_id.as_ref().map(|s| s.eq(id)).unwrap_or(false);
+        let is_selected = model
+            .selection()
+            .map(|s| s.is_song_selected(id))
             .unwrap_or(false);
 
         item.set_playing(is_current);
-
-        let song = Song::new(item.clone());
-        row.add(song.get_root_widget());
-        song.set_menu(menu.as_ref());
-        song.set_actions(actions.as_ref());
-        row
+        if is_selected {
+            row.set_selectable(true);
+            listbox.select_row(Some(row));
+        } else {
+            row.set_selectable(false);
+        }
     }
 
     fn update_list(&self) {
