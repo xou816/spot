@@ -103,14 +103,16 @@ impl PlaybackState {
         }
     }
 
-    fn queue(&mut self, track: SongDescription) {
-        self.source = PlaylistSource::None;
-        self.running_order.push(track.id.clone());
-        if let Some(shuffled) = self.running_order_shuffled.as_mut() {
-            let next = (self.rng.next_u32() as usize) % (shuffled.len() - 1);
-            shuffled.insert(next + 1, track.id.clone());
+    pub fn queue(&mut self, track: SongDescription) {
+        if !self.indexed_songs.contains_key(&track.id) {
+            self.source = PlaylistSource::None;
+            self.running_order.push(track.id.clone());
+            if let Some(shuffled) = self.running_order_shuffled.as_mut() {
+                let next = (self.rng.next_u32() as usize) % (shuffled.len() - 1);
+                shuffled.insert(next + 1, track.id.clone());
+            }
+            self.indexed_songs.insert(track.id.clone(), track);
         }
-        self.indexed_songs.insert(track.id.clone(), track);
     }
 
     fn dequeue(&mut self, id: String) {

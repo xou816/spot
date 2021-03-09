@@ -24,7 +24,7 @@
               <object class="GtkMenuButton" id="selection_button">
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
-                <property name="relief">none</property>
+                <property name="relief">half</property>
                 <child>
                   <object class="GtkLabel" id="selection_label">
                     <property name="visible">True</property>

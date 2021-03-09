@@ -3,7 +3,7 @@ use crate::app::state::{AppAction, AppEvent, UpdatableState};
 
 #[derive(Clone, Debug)]
 pub enum SelectionAction {
-    ToggleSelectionMode,
+    ChangeSelectionMode(bool),
     Select(SongDescription),
     Deselect(String),
 }
@@ -54,6 +54,10 @@ impl SelectionState {
     pub fn count(&self) -> usize {
         self.selected_songs.as_ref().map(|s| s.len()).unwrap_or(0)
     }
+
+    pub fn clear_selection(&mut self) -> Vec<SongDescription> {
+        self.selected_songs.take().unwrap_or_else(Vec::new)
+    }
 }
 
 impl UpdatableState for SelectionState {
@@ -62,13 +66,17 @@ impl UpdatableState for SelectionState {
 
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
-            SelectionAction::ToggleSelectionMode => {
-                if self.selected_songs.is_some() {
-                    self.selected_songs = None;
-                    vec![SelectionEvent::SelectionModeChanged(false)]
+            SelectionAction::ChangeSelectionMode(active) => {
+                if self.selected_songs.is_some() != active {
+                    if active {
+                        self.selected_songs = Some(vec![]);
+                        vec![SelectionEvent::SelectionModeChanged(true)]
+                    } else {
+                        self.selected_songs = None;
+                        vec![SelectionEvent::SelectionModeChanged(false)]
+                    }
                 } else {
-                    self.selected_songs = Some(vec![]);
-                    vec![SelectionEvent::SelectionModeChanged(true)]
+                    vec![]
                 }
             }
             SelectionAction::Select(track) => {

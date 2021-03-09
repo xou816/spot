@@ -21,6 +21,7 @@ pub enum AppAction {
     ShowNotification(String),
     HideNotification,
     ViewNowPlaying,
+    QueueSelection,
 }
 
 impl AppAction {
@@ -93,6 +94,15 @@ impl AppState {
             AppAction::HideNotification => vec![AppEvent::NotificationHidden],
             AppAction::ViewNowPlaying => vec![AppEvent::NowPlayingShown],
             AppAction::Raise => vec![AppEvent::Raised],
+            AppAction::QueueSelection => {
+                for track in self.selection.clear_selection() {
+                    self.playback.queue(track);
+                }
+                vec![
+                    SelectionEvent::SelectionModeChanged(false).into(),
+                    PlaybackEvent::PlaylistChanged.into(),
+                ]
+            }
             AppAction::PlaybackAction(a) => self
                 .playback
                 .update_with(a)
