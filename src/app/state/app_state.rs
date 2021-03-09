@@ -1,8 +1,8 @@
 use crate::app::credentials;
-use crate::app::models::SongDescription;
 use crate::app::state::{
     browser_state::{BrowserAction, BrowserEvent, BrowserState},
     playback_state::{PlaybackAction, PlaybackEvent, PlaybackState},
+    selection_state::{SelectionAction, SelectionEvent, SelectionState},
     ScreenName, UpdatableState,
 };
 
@@ -10,6 +10,7 @@ use crate::app::state::{
 pub enum AppAction {
     PlaybackAction(PlaybackAction),
     BrowserAction(BrowserAction),
+    SelectionAction(SelectionAction),
     Start,
     Raise,
     TryLogin(String, String),
@@ -20,9 +21,6 @@ pub enum AppAction {
     ShowNotification(String),
     HideNotification,
     ViewNowPlaying,
-    ToggleSelectionMode,
-    Select(SongDescription),
-    Deselect(String),
 }
 
 impl AppAction {
@@ -46,6 +44,7 @@ impl AppAction {
 pub enum AppEvent {
     PlaybackEvent(PlaybackEvent),
     BrowserEvent(BrowserEvent),
+    SelectionEvent(SelectionEvent),
     Started,
     Raised,
     FreshTokenRequested,
@@ -55,16 +54,13 @@ pub enum AppEvent {
     NotificationShown(String),
     NotificationHidden,
     NowPlayingShown,
-    SelectionModeChanged(bool),
-    Selected(String),
-    Deselected(String),
 }
 
 pub struct AppState {
     pub playback: PlaybackState,
     pub browser: BrowserState,
     pub user: Option<String>,
-    pub selection: Option<Vec<SongDescription>>,
+    pub selection: SelectionState,
 }
 
 impl AppState {
@@ -73,7 +69,7 @@ impl AppState {
             playback: Default::default(),
             browser: BrowserState::new(),
             user: None,
-            selection: None,
+            selection: Default::default(),
         }
     }
 
@@ -97,32 +93,6 @@ impl AppState {
             AppAction::HideNotification => vec![AppEvent::NotificationHidden],
             AppAction::ViewNowPlaying => vec![AppEvent::NowPlayingShown],
             AppAction::Raise => vec![AppEvent::Raised],
-            AppAction::ToggleSelectionMode => {
-                if self.selection.is_some() {
-                    self.selection = None;
-                    vec![AppEvent::SelectionModeChanged(false)]
-                } else {
-                    self.selection = Some(vec![]);
-                    vec![AppEvent::SelectionModeChanged(true)]
-                }
-            }
-            AppAction::Select(track) => {
-                if let Some(selection) = self.selection.as_mut() {
-                    let id = track.id.clone();
-                    selection.push(track);
-                    vec![AppEvent::Selected(id)]
-                } else {
-                    vec![]
-                }
-            }
-            AppAction::Deselect(id) => {
-                if let Some(selection) = self.selection.as_mut() {
-                    selection.retain(|t| &t.id != &id);
-                    vec![AppEvent::Deselected(id)]
-                } else {
-                    vec![]
-                }
-            }
             AppAction::PlaybackAction(a) => self
                 .playback
                 .update_with(a)
@@ -134,6 +104,12 @@ impl AppState {
                 .update_with(a)
                 .into_iter()
                 .map(AppEvent::BrowserEvent)
+                .collect(),
+            AppAction::SelectionAction(a) => self
+                .selection
+                .update_with(a)
+                .into_iter()
+                .map(AppEvent::SelectionEvent)
                 .collect(),
         }
     }

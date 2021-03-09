@@ -46,7 +46,7 @@ impl PlaybackState {
         self.indexed_songs.get(id)
     }
 
-    pub fn songs<'i, 's: 'i>(&'s self) -> impl Iterator<Item = &'i SongDescription> + 'i {
+    pub fn songs<'s>(&'s self) -> impl Iterator<Item = &'s SongDescription> + 's {
         let iter = self
             .running_order_shuffled
             .as_ref()

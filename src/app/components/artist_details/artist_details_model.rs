@@ -76,13 +76,6 @@ impl ArtistDetailsModel {
 }
 
 impl PlaylistModel for ArtistDetailsModel {
-    fn select_song(&self, id: &str) {}
-    fn deselect_song(&self, id: &str) {}
-
-    fn is_selection_enabled(&self) -> bool {
-        false
-    }
-
     fn songs(&self) -> Vec<SongModel> {
         let tracks = self.tracks_ref();
         match tracks {

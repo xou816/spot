@@ -9,7 +9,9 @@ use std::rc::Rc;
 use crate::app::components::{handle_error, PlaylistModel};
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
-use crate::app::state::{BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource};
+use crate::app::state::{
+    BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource, SelectionAction, SelectionState,
+};
 use crate::app::{AppAction, AppEvent, AppModel, AppState};
 
 pub struct DetailsModel {
@@ -92,17 +94,18 @@ impl PlaylistModel for DetailsModel {
             .songs_ref()
             .and_then(|songs| songs.iter().find(|&song| &song.id == id).cloned());
         if let Some(song) = song {
-            self.dispatcher.dispatch(AppAction::Select(song));
+            self.dispatcher
+                .dispatch(SelectionAction::Select(song).into());
         }
     }
 
     fn deselect_song(&self, id: &str) {
         self.dispatcher
-            .dispatch(AppAction::Deselect(id.to_string()));
+            .dispatch(SelectionAction::Deselect(id.to_string()).into());
     }
 
-    fn is_selection_enabled(&self) -> bool {
-        self.state().selection.is_some()
+    fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
+        Some(Box::new(self.app_model.map_state(|s| &s.selection)))
     }
 
     fn current_song_id(&self) -> Option<String> {

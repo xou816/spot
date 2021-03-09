@@ -2,7 +2,8 @@ use gtk::prelude::*;
 use std::rc::Rc;
 
 use crate::app::components::EventListener;
-use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel};
+use crate::app::state::{SelectionAction, SelectionEvent};
+use crate::app::{ActionDispatcher, AppEvent, AppModel};
 
 pub struct SelectionEditorModel {
     app_model: Rc<AppModel>,
@@ -18,16 +19,12 @@ impl SelectionEditorModel {
     }
 
     fn toggle_selection(&self) {
-        self.dispatcher.dispatch(AppAction::ToggleSelectionMode)
+        self.dispatcher
+            .dispatch(SelectionAction::ToggleSelectionMode.into())
     }
 
     fn selected_count(&self) -> usize {
-        self.app_model
-            .get_state()
-            .selection
-            .as_ref()
-            .map(|s| s.len())
-            .unwrap_or(0)
+        self.app_model.get_state().selection.count()
     }
 }
 
@@ -80,10 +77,11 @@ impl SelectionEditor {
 impl EventListener for SelectionEditor {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::SelectionModeChanged(active) => {
+            AppEvent::SelectionEvent(SelectionEvent::SelectionModeChanged(active)) => {
                 self.set_selection_active(*active);
             }
-            AppEvent::Selected(_) | AppEvent::Deselected(_) => {
+            AppEvent::SelectionEvent(SelectionEvent::Selected(_))
+            | AppEvent::SelectionEvent(SelectionEvent::Deselected(_)) => {
                 self.update_selection_count();
             }
             _ => {}

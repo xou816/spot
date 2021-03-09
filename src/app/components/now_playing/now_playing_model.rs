@@ -42,13 +42,6 @@ impl NowPlayingModel {
 }
 
 impl PlaylistModel for NowPlayingModel {
-    fn select_song(&self, id: &str) {}
-    fn deselect_song(&self, id: &str) {}
-
-    fn is_selection_enabled(&self) -> bool {
-        false
-    }
-
     fn current_song_id(&self) -> Option<String> {
         self.queue().current_song_id.clone()
     }
