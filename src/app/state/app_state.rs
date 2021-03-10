@@ -22,6 +22,7 @@ pub enum AppAction {
     HideNotification,
     ViewNowPlaying,
     QueueSelection,
+    DequeueSelection,
 }
 
 impl AppAction {
@@ -74,6 +75,13 @@ impl AppState {
         }
     }
 
+    pub fn selection_is_from_queue(&self) -> bool {
+        self.selection
+            .peek_selection()
+            .into_iter()
+            .all(|s| self.playback.song(&s.id).is_some())
+    }
+
     pub fn update_state(&mut self, message: AppAction) -> Vec<AppEvent> {
         match message {
             AppAction::SetLoginSuccess(credentials) => {
@@ -95,8 +103,17 @@ impl AppState {
             AppAction::ViewNowPlaying => vec![AppEvent::NowPlayingShown],
             AppAction::Raise => vec![AppEvent::Raised],
             AppAction::QueueSelection => {
-                for track in self.selection.clear_selection() {
+                for track in self.selection.take_selection() {
                     self.playback.queue(track);
+                }
+                vec![
+                    SelectionEvent::SelectionModeChanged(false).into(),
+                    PlaybackEvent::PlaylistChanged.into(),
+                ]
+            }
+            AppAction::DequeueSelection => {
+                for track in self.selection.take_selection() {
+                    self.playback.dequeue(&track.id);
                 }
                 vec![
                     SelectionEvent::SelectionModeChanged(false).into(),

@@ -115,13 +115,15 @@ impl PlaybackState {
         }
     }
 
-    fn dequeue(&mut self, id: String) {
-        self.source = PlaylistSource::None;
-        self.running_order.retain(|t| t != &id);
-        if let Some(shuffled) = self.running_order_shuffled.as_mut() {
-            shuffled.retain(|t| t != &id);
+    pub fn dequeue(&mut self, id: &str) {
+        if self.indexed_songs.contains_key(id) {
+            self.source = PlaylistSource::None;
+            self.running_order.retain(|t| t != id);
+            if let Some(shuffled) = self.running_order_shuffled.as_mut() {
+                shuffled.retain(|t| t != id);
+            }
+            self.indexed_songs.remove(id);
         }
-        self.indexed_songs.remove(&id);
     }
 
     fn clear(&mut self) {
@@ -303,8 +305,8 @@ impl UpdatableState for PlaybackState {
                 self.queue(track);
                 vec![PlaybackEvent::PlaylistChanged]
             }
-            PlaybackAction::Dequeue(index) => {
-                self.dequeue(index);
+            PlaybackAction::Dequeue(id) => {
+                self.dequeue(&id);
                 vec![PlaybackEvent::PlaylistChanged]
             }
             PlaybackAction::ClearQueue => {

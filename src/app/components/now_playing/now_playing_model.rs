@@ -3,11 +3,14 @@ use gio::prelude::*;
 use gio::{ActionMapExt, SimpleAction, SimpleActionGroup};
 use gtk::Clipboard;
 use std::cell::Ref;
+use std::ops::Deref;
 use std::rc::Rc;
 
 use crate::app::components::PlaylistModel;
 use crate::app::models::SongModel;
-use crate::app::state::{PlaybackAction, PlaybackEvent, PlaybackState};
+use crate::app::state::{
+    PlaybackAction, PlaybackEvent, PlaybackState, SelectionAction, SelectionState,
+};
 use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState};
 
 pub struct NowPlayingModel {
@@ -126,5 +129,22 @@ impl PlaylistModel for NowPlayingModel {
         menu.append(Some("Dequeue"), Some("song.dequeue"));
 
         Some(menu.upcast())
+    }
+
+    fn select_song(&self, id: &str) {
+        let queue = self.queue();
+        if let Some(song) = queue.song(id) {
+            self.dispatcher
+                .dispatch(SelectionAction::Select(song.clone()).into());
+        }
+    }
+
+    fn deselect_song(&self, id: &str) {
+        self.dispatcher
+            .dispatch(SelectionAction::Deselect(id.to_string()).into());
+    }
+
+    fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
+        Some(Box::new(self.app_model.map_state(|s| &s.selection)))
     }
 }

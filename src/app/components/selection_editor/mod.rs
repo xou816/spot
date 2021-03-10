@@ -29,13 +29,28 @@ impl SelectionEditorModel {
         self.app_model.get_state().selection.count()
     }
 
-    fn make_queue_action(&self) -> SimpleAction {
+    fn all_selected_from_queue(&self) -> bool {
+        self.app_model.get_state().selection_is_from_queue()
+    }
+
+    fn make_actions(&self) -> SimpleActionGroup {
+        let group = SimpleActionGroup::new();
+
         let queue_selection = SimpleAction::new("queue", None);
         let dispatcher = self.dispatcher.box_clone();
         queue_selection.connect_activate(move |_, _| {
             dispatcher.dispatch(AppAction::QueueSelection);
         });
-        queue_selection
+        group.add_action(&queue_selection);
+
+        let dequeue_selection = SimpleAction::new("dequeue", None);
+        let dispatcher = self.dispatcher.box_clone();
+        dequeue_selection.connect_activate(move |_, _| {
+            dispatcher.dispatch(AppAction::DequeueSelection);
+        });
+        group.add_action(&dequeue_selection);
+
+        group
     }
 }
 
@@ -60,13 +75,7 @@ impl SelectionEditor {
             model.set_selection_mode(t.get_active());
         }));
 
-        let group = SimpleActionGroup::new();
-        group.add_action(&model.make_queue_action());
-        selection_button.insert_action_group("selection", Some(&group));
-
-        let menu = gio::Menu::new();
-        menu.append(Some("Queue selected"), Some("selection.queue"));
-        selection_button.set_menu_model(Some(&menu));
+        selection_button.insert_action_group("selection", Some(&model.make_actions()));
 
         Self {
             model,
@@ -105,6 +114,20 @@ impl SelectionEditor {
         self.selection_label
             .set_label(&format!("{} songs selected", count));
     }
+
+    fn update_selection_actions(&self) {
+        if self.model.selected_count() == 0 {
+            return;
+        }
+
+        let menu = gio::Menu::new();
+        if self.model.all_selected_from_queue() {
+            menu.append(Some("Dequeue selected"), Some("selection.dequeue"));
+        } else {
+            menu.append(Some("Queue selected"), Some("selection.queue"));
+        }
+        self.selection_button.set_menu_model(Some(&menu));
+    }
 }
 
 impl EventListener for SelectionEditor {
@@ -116,6 +139,7 @@ impl EventListener for SelectionEditor {
             AppEvent::SelectionEvent(SelectionEvent::Selected(_))
             | AppEvent::SelectionEvent(SelectionEvent::Deselected(_)) => {
                 self.update_selection_count();
+                self.update_selection_actions();
             }
             _ => {}
         }
