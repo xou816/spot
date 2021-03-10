@@ -1,5 +1,6 @@
 use gio::{ActionMapExt, SimpleAction, SimpleActionGroup};
 use gtk::prelude::*;
+use gtk::ButtonExt;
 use std::rc::Rc;
 
 use crate::app::components::EventListener;
@@ -79,6 +80,8 @@ impl SelectionEditor {
     fn set_selection_active(&self, active: bool) {
         let context = self.headerbar.get_style_context();
         if active {
+            self.selection_button.set_sensitive(false);
+            self.selection_button.set_relief(gtk::ReliefStyle::None);
             self.selection_button.show();
             context.add_class("selection-mode");
         } else {
@@ -92,8 +95,15 @@ impl SelectionEditor {
     }
 
     fn update_selection_count(&self) {
+        let count = self.model.selected_count();
+        self.selection_button.set_relief(if count > 0 {
+            gtk::ReliefStyle::Normal
+        } else {
+            gtk::ReliefStyle::None
+        });
+        self.selection_button.set_sensitive(count > 0);
         self.selection_label
-            .set_label(&format!("{} songs selected", self.model.selected_count()));
+            .set_label(&format!("{} songs selected", count));
     }
 }
 

@@ -1,5 +1,6 @@
 use gtk::prelude::*;
-use gtk::SearchBarExt;
+use gtk::ToggleButtonExt;
+use libhandy::SearchBarExt;
 use std::rc::Rc;
 
 use super::SearchBarModel;
@@ -10,8 +11,8 @@ pub struct SearchBar;
 impl SearchBar {
     pub fn new(
         model: SearchBarModel,
-        search_button: gtk::Button,
-        search_bar: gtk::SearchBar,
+        search_button: gtk::ToggleButton,
+        search_bar: libhandy::SearchBar,
         search_entry: gtk::SearchEntry,
     ) -> Self {
         let model = Rc::new(model);
@@ -34,9 +35,18 @@ impl SearchBar {
             Inhibit(false)
         });
 
-        search_button.connect_clicked(clone!(@weak search_bar => move |_| {
-            search_bar.set_search_mode(true);
+        search_button.connect_clicked(clone!(@weak search_bar => move |b| {
+            search_bar.set_search_mode(b.get_active());
         }));
+
+        search_bar.connect_property_search_mode_enabled_notify(
+            clone!(@weak search_button => move |s| {
+                let active = s.get_search_mode();
+                if active != search_button.get_active() {
+                    search_button.set_active(active);
+                }
+            }),
+        );
 
         search_bar.connect_entry(&search_entry);
 

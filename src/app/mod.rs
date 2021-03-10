@@ -100,7 +100,7 @@ impl App {
 
     fn make_window(builder: &gtk::Builder, worker: Worker) -> Box<impl EventListener> {
         let window: libhandy::ApplicationWindow = builder.get_object("window").unwrap();
-        let search_bar: gtk::SearchBar = builder.get_object("search_bar").unwrap();
+        let search_bar: libhandy::SearchBar = builder.get_object("search_bar").unwrap();
         Box::new(MainWindow::new(window, search_bar, worker))
     }
 
@@ -214,9 +214,9 @@ impl App {
         builder: &gtk::Builder,
         dispatcher: Box<dyn ActionDispatcher>,
     ) -> Box<SearchBar> {
-        let search_button: gtk::Button = builder.get_object("search_button").unwrap();
+        let search_button: gtk::ToggleButton = builder.get_object("search_button").unwrap();
         let search_entry: gtk::SearchEntry = builder.get_object("search_entry").unwrap();
-        let search_bar: gtk::SearchBar = builder.get_object("search_bar").unwrap();
+        let search_bar: libhandy::SearchBar = builder.get_object("search_bar").unwrap();
         let model = SearchBarModel(dispatcher);
         Box::new(SearchBar::new(
             model,
