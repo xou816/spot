@@ -102,7 +102,7 @@ impl PlaylistModel for PlaylistDetailsModel {
 
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
         let songs = self.songs_ref()?;
-        let song = songs.iter().find(|&song| &song.id == id)?;
+        let song = songs.iter().find(|&song| song.id == id)?;
 
         let group = SimpleActionGroup::new();
 
@@ -138,7 +138,7 @@ impl PlaylistModel for PlaylistDetailsModel {
 
     fn menu_for(&self, id: &str) -> Option<gio::MenuModel> {
         let songs = self.songs_ref()?;
-        let song = songs.iter().find(|&song| &song.id == id)?;
+        let song = songs.iter().find(|&song| song.id == id)?;
 
         let menu = gio::Menu::new();
         menu.append(Some("View album"), Some("song.view_album"));
@@ -157,7 +157,7 @@ impl PlaylistModel for PlaylistDetailsModel {
     fn select_song(&self, id: &str) {
         let song = self
             .songs_ref()
-            .and_then(|songs| songs.iter().find(|&song| &song.id == id).cloned());
+            .and_then(|songs| songs.iter().find(|&song| song.id == id).cloned());
         if let Some(song) = song {
             self.dispatcher
                 .dispatch(SelectionAction::Select(song).into());

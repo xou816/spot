@@ -54,9 +54,9 @@ impl SelectionState {
 
     fn deselect(&mut self, id: &str) -> bool {
         if let Some(selected_songs) = self.selected_songs.as_mut() {
-            let selected = selected_songs.iter().find(|&t| &t.id == id).is_some();
+            let selected = selected_songs.iter().any(|t| t.id == id);
             if selected {
-                selected_songs.retain(|t| &t.id != id);
+                selected_songs.retain(|t| t.id != id);
             }
             selected
         } else {
@@ -71,7 +71,7 @@ impl SelectionState {
     pub fn is_song_selected(&self, id: &str) -> bool {
         self.selected_songs
             .as_ref()
-            .map(|s| s.iter().find(|&t| &t.id == id).is_some())
+            .map(|s| s.iter().any(|t| t.id == id))
             .unwrap_or(false)
     }
 

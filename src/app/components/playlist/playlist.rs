@@ -127,7 +127,7 @@ where
             let is_current = self
                 .model
                 .current_song_id()
-                .map(|s| &s[..] == song.get_id())
+                .map(|s| s == song.get_id())
                 .unwrap_or(false);
             let model_song = self.list_model.get(i as u32);
             model_song.set_playing(is_current);

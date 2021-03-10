@@ -78,7 +78,7 @@ impl AppState {
     pub fn selection_is_from_queue(&self) -> bool {
         self.selection
             .peek_selection()
-            .into_iter()
+            .iter()
             .all(|s| self.playback.song(&s.id).is_some())
     }
 
