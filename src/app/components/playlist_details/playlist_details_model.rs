@@ -8,7 +8,9 @@ use std::rc::Rc;
 
 use crate::app::components::{handle_error, PlaylistModel};
 use crate::app::models::*;
-use crate::app::state::{BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource};
+use crate::app::state::{
+    BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource, SelectionAction, SelectionState,
+};
 use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState};
 
 pub struct PlaylistDetailsModel {
@@ -78,7 +80,7 @@ impl PlaylistModel for PlaylistDetailsModel {
         }
     }
 
-    fn play_song(&self, id: String) {
+    fn play_song(&self, id: &str) {
         let source = PlaylistSource::Playlist(self.id.clone());
         if self.app_model.get_state().playback.source != source {
             let songs = self.songs_ref();
@@ -87,7 +89,8 @@ impl PlaylistModel for PlaylistDetailsModel {
                     .dispatch(PlaybackAction::LoadPlaylist(source, songs.clone()).into());
             }
         }
-        self.dispatcher.dispatch(PlaybackAction::Load(id).into());
+        self.dispatcher
+            .dispatch(PlaybackAction::Load(id.to_string()).into());
     }
 
     fn should_refresh_songs(&self, event: &AppEvent) -> bool {
@@ -97,9 +100,9 @@ impl PlaylistModel for PlaylistDetailsModel {
         )
     }
 
-    fn actions_for(&self, id: String) -> Option<gio::ActionGroup> {
+    fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
         let songs = self.songs_ref()?;
-        let song = songs.iter().find(|song| song.id == id)?;
+        let song = songs.iter().find(|&song| &song.id == id)?;
 
         let group = SimpleActionGroup::new();
 
@@ -133,9 +136,9 @@ impl PlaylistModel for PlaylistDetailsModel {
         Some(group.upcast())
     }
 
-    fn menu_for(&self, id: String) -> Option<gio::MenuModel> {
+    fn menu_for(&self, id: &str) -> Option<gio::MenuModel> {
         let songs = self.songs_ref()?;
-        let song = songs.iter().find(|song| song.id == id)?;
+        let song = songs.iter().find(|&song| &song.id == id)?;
 
         let menu = gio::Menu::new();
         menu.append(Some("View album"), Some("song.view_album"));
@@ -149,5 +152,24 @@ impl PlaylistModel for PlaylistDetailsModel {
         menu.append(Some("Copy link"), Some("song.copy_link"));
 
         Some(menu.upcast())
+    }
+
+    fn select_song(&self, id: &str) {
+        let song = self
+            .songs_ref()
+            .and_then(|songs| songs.iter().find(|&song| &song.id == id).cloned());
+        if let Some(song) = song {
+            self.dispatcher
+                .dispatch(SelectionAction::Select(song).into());
+        }
+    }
+
+    fn deselect_song(&self, id: &str) {
+        self.dispatcher
+            .dispatch(SelectionAction::Deselect(id.to_string()).into());
+    }
+
+    fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
+        Some(Box::new(self.app_model.map_state(|s| &s.selection)))
     }
 }

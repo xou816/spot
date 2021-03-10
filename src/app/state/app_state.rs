@@ -2,6 +2,7 @@ use crate::app::credentials;
 use crate::app::state::{
     browser_state::{BrowserAction, BrowserEvent, BrowserState},
     playback_state::{PlaybackAction, PlaybackEvent, PlaybackState},
+    selection_state::{SelectionAction, SelectionEvent, SelectionState},
     ScreenName, UpdatableState,
 };
 
@@ -9,6 +10,7 @@ use crate::app::state::{
 pub enum AppAction {
     PlaybackAction(PlaybackAction),
     BrowserAction(BrowserAction),
+    SelectionAction(SelectionAction),
     Start,
     Raise,
     TryLogin(String, String),
@@ -19,6 +21,8 @@ pub enum AppAction {
     ShowNotification(String),
     HideNotification,
     ViewNowPlaying,
+    QueueSelection,
+    DequeueSelection,
 }
 
 impl AppAction {
@@ -42,6 +46,7 @@ impl AppAction {
 pub enum AppEvent {
     PlaybackEvent(PlaybackEvent),
     BrowserEvent(BrowserEvent),
+    SelectionEvent(SelectionEvent),
     Started,
     Raised,
     FreshTokenRequested,
@@ -57,6 +62,7 @@ pub struct AppState {
     pub playback: PlaybackState,
     pub browser: BrowserState,
     pub user: Option<String>,
+    pub selection: SelectionState,
 }
 
 impl AppState {
@@ -65,7 +71,15 @@ impl AppState {
             playback: Default::default(),
             browser: BrowserState::new(),
             user: None,
+            selection: Default::default(),
         }
+    }
+
+    pub fn selection_is_from_queue(&self) -> bool {
+        self.selection
+            .peek_selection()
+            .into_iter()
+            .all(|s| self.playback.song(&s.id).is_some())
     }
 
     pub fn update_state(&mut self, message: AppAction) -> Vec<AppEvent> {
@@ -88,6 +102,24 @@ impl AppState {
             AppAction::HideNotification => vec![AppEvent::NotificationHidden],
             AppAction::ViewNowPlaying => vec![AppEvent::NowPlayingShown],
             AppAction::Raise => vec![AppEvent::Raised],
+            AppAction::QueueSelection => {
+                for track in self.selection.take_selection() {
+                    self.playback.queue(track);
+                }
+                vec![
+                    SelectionEvent::SelectionModeChanged(false).into(),
+                    PlaybackEvent::PlaylistChanged.into(),
+                ]
+            }
+            AppAction::DequeueSelection => {
+                for track in self.selection.take_selection() {
+                    self.playback.dequeue(&track.id);
+                }
+                vec![
+                    SelectionEvent::SelectionModeChanged(false).into(),
+                    PlaybackEvent::PlaylistChanged.into(),
+                ]
+            }
             AppAction::PlaybackAction(a) => self
                 .playback
                 .update_with(a)
@@ -99,6 +131,12 @@ impl AppState {
                 .update_with(a)
                 .into_iter()
                 .map(AppEvent::BrowserEvent)
+                .collect(),
+            AppAction::SelectionAction(a) => self
+                .selection
+                .update_with(a)
+                .into_iter()
+                .map(AppEvent::SelectionEvent)
                 .collect(),
         }
     }
