@@ -8,6 +8,7 @@ use super::SavedPlaylistsModel;
 use crate::app::components::{Album, Component, EventListener};
 use crate::app::dispatch::Worker;
 use crate::app::models::AlbumModel;
+use crate::app::state::LoginEvent;
 use crate::app::AppEvent;
 
 #[derive(Clone, Gladis)]
@@ -72,7 +73,7 @@ impl EventListener for SavedPlaylists {
                 let _ = self.model.refresh_saved_playlists();
                 self.bind_flowbox(self.model.get_list_store().unwrap().unsafe_store())
             }
-            AppEvent::LoginCompleted(_) => {
+            AppEvent::LoginEvent(LoginEvent::LoginCompleted(_)) => {
                 let _ = self.model.refresh_saved_playlists();
             }
             _ => {}

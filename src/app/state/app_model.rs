@@ -41,10 +41,10 @@ impl AppModel {
 
     pub fn update_state(&self, message: AppAction) -> Vec<AppEvent> {
         match message {
-            AppAction::SetLoginSuccess(ref creds) => {
+            AppAction::LoginAction(LoginAction::SetLoginSuccess(ref creds)) => {
                 self.services.spotify_api.update_token(creds.token.clone())
             }
-            AppAction::SetRefreshedToken(ref token) => {
+            AppAction::LoginAction(LoginAction::SetRefreshedToken(ref token)) => {
                 self.services.spotify_api.update_token(token.clone())
             }
             _ => {}

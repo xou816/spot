@@ -17,3 +17,10 @@ pub async fn _clear_old_cache() -> Option<()> {
     cache.clear_cache_pattern("img", &img_cache).await.ok()?;
     Some(())
 }
+
+pub async fn clear_user_cache() -> Option<()> {
+    cache::CacheManager::new(&[])?
+        .clear_cache_pattern("spot/net", &*cached_client::USER_CACHE)
+        .await
+        .ok()
+}

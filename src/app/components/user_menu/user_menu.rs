@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use super::UserMenuModel;
 use crate::app::components::EventListener;
-use crate::app::AppEvent;
+use crate::app::{state::LoginEvent, AppEvent};
 
 pub struct UserMenu {
     user_button: gtk::MenuButton,
@@ -71,7 +71,7 @@ impl UserMenu {
 impl EventListener for UserMenu {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::LoginCompleted(_) | AppEvent::Started => {
+            AppEvent::LoginEvent(LoginEvent::LoginCompleted(_)) | AppEvent::Started => {
                 self.update_menu();
             }
             _ => {}

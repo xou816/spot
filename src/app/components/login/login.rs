@@ -6,6 +6,7 @@ use std::rc::Rc;
 
 use crate::app::components::EventListener;
 use crate::app::credentials::Credentials;
+use crate::app::state::LoginEvent;
 use crate::app::AppEvent;
 
 use super::LoginModel;
@@ -107,13 +108,13 @@ impl Login {
 impl EventListener for Login {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::LoginCompleted(creds) => {
+            AppEvent::LoginEvent(LoginEvent::LoginCompleted(creds)) => {
                 self.hide_and_save_creds(creds.clone());
             }
             AppEvent::Started => {
                 self.show_self_if_needed();
             }
-            AppEvent::LogoutCompleted => {
+            AppEvent::LoginEvent(LoginEvent::LogoutCompleted) => {
                 self.show_self();
             }
             _ => {}

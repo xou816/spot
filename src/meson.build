@@ -97,6 +97,7 @@ sources = files(
 './app/state/app_model.rs',
 './app/state/selection_state.rs',
 './app/state/browser_state.rs',
+'./app/state/login_state.rs',
 './app/state/screen_states.rs',
 './app/state/playback_state.rs',
 './app/state/app_state.rs',

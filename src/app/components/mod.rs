@@ -6,7 +6,7 @@ macro_rules! resource {
 }
 
 use crate::api::SpotifyApiError;
-use crate::app::{AppAction, AppEvent};
+use crate::app::{state::LoginAction, AppAction, AppEvent};
 
 use gtk::prelude::*;
 use std::cell::RefCell;
@@ -70,7 +70,7 @@ pub mod utils;
 
 pub fn handle_error(err: SpotifyApiError) -> Option<AppAction> {
     match err {
-        SpotifyApiError::InvalidToken => Some(AppAction::RefreshToken),
+        SpotifyApiError::InvalidToken => Some(LoginAction::RefreshToken.into()),
         SpotifyApiError::NoToken => None,
         _ => {
             println!("Error: {:?}", err);

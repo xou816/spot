@@ -3,7 +3,8 @@ use librespot::core::spotify_id::SpotifyId;
 
 use crate::app::backend::Command;
 use crate::app::components::EventListener;
-use crate::app::{state::PlaybackEvent, AppEvent};
+use crate::app::state::{LoginEvent, PlaybackEvent};
+use crate::app::AppEvent;
 
 pub struct PlayerNotifier {
     sender: UnboundedSender<Command>,
@@ -27,10 +28,11 @@ impl EventListener for PlayerNotifier {
             AppEvent::PlaybackEvent(PlaybackEvent::TrackSeeked(position)) => {
                 Some(Command::PlayerSeek(*position))
             }
-            AppEvent::LoginStarted(username, password) => {
+            AppEvent::LoginEvent(LoginEvent::LoginStarted(username, password)) => {
                 Some(Command::Login(username.to_owned(), password.to_owned()))
             }
-            AppEvent::FreshTokenRequested => Some(Command::RefreshToken),
+            AppEvent::LoginEvent(LoginEvent::FreshTokenRequested) => Some(Command::RefreshToken),
+            AppEvent::LoginEvent(LoginEvent::LogoutCompleted) => Some(Command::Logout),
             _ => None,
         };
 

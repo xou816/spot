@@ -1,6 +1,6 @@
-use crate::app::credentials;
 use crate::app::state::{
     browser_state::{BrowserAction, BrowserEvent, BrowserState},
+    login_state::{LoginAction, LoginEvent, LoginState},
     playback_state::{PlaybackAction, PlaybackEvent, PlaybackState},
     selection_state::{SelectionAction, SelectionEvent, SelectionState},
     ScreenName, UpdatableState,
@@ -11,13 +11,9 @@ pub enum AppAction {
     PlaybackAction(PlaybackAction),
     BrowserAction(BrowserAction),
     SelectionAction(SelectionAction),
+    LoginAction(LoginAction),
     Start,
     Raise,
-    TryLogin(String, String),
-    RefreshToken,
-    SetRefreshedToken(String),
-    SetLoginSuccess(credentials::Credentials),
-    Logout,
     ShowNotification(String),
     HideNotification,
     ViewNowPlaying,
@@ -47,12 +43,9 @@ pub enum AppEvent {
     PlaybackEvent(PlaybackEvent),
     BrowserEvent(BrowserEvent),
     SelectionEvent(SelectionEvent),
+    LoginEvent(LoginEvent),
     Started,
     Raised,
-    FreshTokenRequested,
-    LoginStarted(String, String),
-    LoginCompleted(credentials::Credentials),
-    LogoutCompleted,
     NotificationShown(String),
     NotificationHidden,
     NowPlayingShown,
@@ -61,8 +54,8 @@ pub enum AppEvent {
 pub struct AppState {
     pub playback: PlaybackState,
     pub browser: BrowserState,
-    pub user: Option<String>,
     pub selection: SelectionState,
+    pub login: LoginState,
 }
 
 impl AppState {
@@ -70,8 +63,8 @@ impl AppState {
         Self {
             playback: Default::default(),
             browser: BrowserState::new(),
-            user: None,
             selection: Default::default(),
+            login: Default::default(),
         }
     }
 
@@ -84,20 +77,7 @@ impl AppState {
 
     pub fn update_state(&mut self, message: AppAction) -> Vec<AppEvent> {
         match message {
-            AppAction::SetLoginSuccess(credentials) => {
-                self.user = Some(credentials.username.clone());
-                vec![AppEvent::LoginCompleted(credentials)]
-            }
-            AppAction::RefreshToken => vec![AppEvent::FreshTokenRequested],
-            AppAction::SetRefreshedToken(_) => vec![AppEvent::NotificationShown(
-                "Connection refreshed".to_string(),
-            )],
-            AppAction::Logout => {
-                self.user = None;
-                vec![AppEvent::LogoutCompleted]
-            }
             AppAction::Start => vec![AppEvent::Started],
-            AppAction::TryLogin(u, p) => vec![AppEvent::LoginStarted(u, p)],
             AppAction::ShowNotification(c) => vec![AppEvent::NotificationShown(c)],
             AppAction::HideNotification => vec![AppEvent::NotificationHidden],
             AppAction::ViewNowPlaying => vec![AppEvent::NowPlayingShown],
@@ -138,6 +118,7 @@ impl AppState {
                 .into_iter()
                 .map(AppEvent::SelectionEvent)
                 .collect(),
+            AppAction::LoginAction(a) => self.login.update_with(a).into_iter().collect(),
         }
     }
 }

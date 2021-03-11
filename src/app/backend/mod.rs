@@ -6,7 +6,7 @@ use std::rc::Rc;
 use std::thread;
 use tokio_core::reactor::Core;
 
-use crate::app::state::PlaybackAction;
+use crate::app::state::{LoginAction, PlaybackAction};
 use crate::app::{credentials, AppAction};
 
 mod player;
@@ -15,6 +15,7 @@ pub use player::{SpotifyError, SpotifyPlayer, SpotifyPlayerDelegate};
 #[derive(Debug, Clone)]
 pub enum Command {
     Login(String, String),
+    Logout,
     PlayerLoad(SpotifyId),
     PlayerResume,
     PlayerPause,
@@ -45,14 +46,14 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
     fn login_successful(&self, credentials: credentials::Credentials) {
         self.sender
             .borrow_mut()
-            .unbounded_send(AppAction::SetLoginSuccess(credentials))
+            .unbounded_send(LoginAction::SetLoginSuccess(credentials).into())
             .unwrap();
     }
 
     fn refresh_successful(&self, token: String) {
         self.sender
             .borrow_mut()
-            .unbounded_send(AppAction::SetRefreshedToken(token))
+            .unbounded_send(LoginAction::SetRefreshedToken(token).into())
             .unwrap();
     }
 

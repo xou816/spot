@@ -95,9 +95,17 @@ impl SpotifyPlayer {
                 Ok(())
             }
             Command::RefreshToken => {
-                let session = session.as_mut().ok_or(SpotifyError::PlayerNotReady)?;
+                let session = session.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
                 let token = get_access_token(&session).await?;
                 self.delegate.refresh_successful(token);
+                Ok(())
+            }
+            Command::Logout => {
+                session
+                    .take()
+                    .ok_or(SpotifyError::PlayerNotReady)?
+                    .shutdown();
+                player.take().ok_or(SpotifyError::PlayerNotReady)?.stop();
                 Ok(())
             }
             Command::Login(username, password) => {

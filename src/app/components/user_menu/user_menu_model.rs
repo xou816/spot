@@ -1,5 +1,7 @@
+use crate::api::clear_user_cache;
 use crate::app::credentials;
-use crate::app::{ActionDispatcher, AppAction, AppModel};
+use crate::app::state::LoginAction;
+use crate::app::{ActionDispatcher, AppModel};
 use std::ops::Deref;
 use std::rc::Rc;
 
@@ -17,12 +19,14 @@ impl UserMenuModel {
     }
 
     pub fn username(&self) -> Option<impl Deref<Target = String> + '_> {
-        self.app_model.map_state_opt(|s| s.user.as_ref())
+        self.app_model.map_state_opt(|s| s.login.user.as_ref())
     }
 
     pub fn logout(&self) {
-        if credentials::logout().is_ok() {
-            self.dispatcher.dispatch(AppAction::Logout);
-        }
+        let _ = credentials::logout();
+        self.dispatcher.dispatch_async(Box::pin(async {
+            let _ = clear_user_cache().await;
+            Some(LoginAction::Logout.into())
+        }));
     }
 }

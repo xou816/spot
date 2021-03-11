@@ -12,7 +12,10 @@ use super::client::{SpotifyApiError, SpotifyClient, SpotifyResponse, SpotifyResp
 use crate::app::models::*;
 
 lazy_static! {
-    static ref ME_ALBUMS_CACHE: Regex = Regex::new(r"^me_albums_\w+_\w+\.json\.expiry$").unwrap();
+    pub static ref ME_ALBUMS_CACHE: Regex =
+        Regex::new(r"^me_albums_\w+_\w+\.json\.expiry$").unwrap();
+    pub static ref USER_CACHE: Regex =
+        Regex::new(r"^me_(albums|playlists)_\w+_\w+\.json(\.expiry)?$").unwrap();
     pub static ref ALL_CACHE: Regex =
         Regex::new(r"^(me_albums_|me_playlists_|album_|playlist_|artist_)\w+\.json(\.expiry)?$")
             .unwrap();
