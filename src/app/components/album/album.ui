@@ -68,6 +68,7 @@
         <property name="label" translatable="yes">Album</property>
         <property name="justify">center</property>
         <property name="wrap">True</property>
+        <property name="wrap-mode">word-char</property>
         <property name="ellipsize">end</property>
         <property name="max-width-chars">22</property>
         <property name="lines">2</property>
@@ -88,6 +89,7 @@
         <property name="label" translatable="yes">Artist</property>
         <property name="justify">center</property>
         <property name="wrap">True</property>
+        <property name="wrap-mode">word-char</property>
         <property name="max-width-chars">25</property>
         <style>
           <class name="album__artist"/>
