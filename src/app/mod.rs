@@ -9,13 +9,9 @@ pub use dispatch::{ActionDispatcher, ActionDispatcherImpl, DispatchLoop, Worker}
 pub mod components;
 use components::*;
 
-pub mod backend;
 use crate::api::CachedSpotifyClient;
 
-pub mod dbus;
-
 pub mod gtypes;
-
 pub mod models;
 
 mod list_store;
@@ -88,14 +84,16 @@ impl App {
     }
 
     fn make_player_notifier(sender: UnboundedSender<AppAction>) -> Box<impl EventListener> {
-        Box::new(PlayerNotifier::new(backend::start_player_service(sender)))
+        Box::new(PlayerNotifier::new(crate::player::start_player_service(
+            sender,
+        )))
     }
 
     fn make_dbus(
         app_model: Rc<AppModel>,
         sender: UnboundedSender<AppAction>,
     ) -> Box<impl EventListener> {
-        Box::new(dbus::start_dbus_server(app_model, sender).expect("could not start server"))
+        Box::new(crate::dbus::start_dbus_server(app_model, sender).expect("could not start server"))
     }
 
     fn make_window(builder: &gtk::Builder, worker: Worker) -> Box<impl EventListener> {

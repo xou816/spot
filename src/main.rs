@@ -10,6 +10,9 @@ use gtk::SettingsExt;
 
 mod api;
 mod app;
+mod dbus;
+mod player;
+
 mod config;
 pub use config::VERSION;
 

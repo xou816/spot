@@ -1,10 +1,10 @@
 use futures::channel::mpsc::UnboundedSender;
 use librespot::core::spotify_id::SpotifyId;
 
-use crate::app::backend::Command;
 use crate::app::components::EventListener;
 use crate::app::state::{LoginEvent, PlaybackEvent};
 use crate::app::AppEvent;
+use crate::player::Command;
 
 pub struct PlayerNotifier {
     sender: UnboundedSender<Command>,
