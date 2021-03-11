@@ -59,7 +59,7 @@ impl App {
         let dispatcher = Box::new(ActionDispatcherImpl::new(sender.clone(), worker.clone()));
 
         let mut components: Vec<Box<dyn EventListener>> = vec![
-            App::make_window(builder, worker.clone()),
+            App::make_window(builder, Rc::clone(model), worker.clone()),
             App::make_selection_editor(builder, Rc::clone(model), dispatcher.box_clone()),
             App::make_playback_control(builder, Rc::clone(model), dispatcher.box_clone()),
             App::make_playback_info(
@@ -96,10 +96,14 @@ impl App {
         Box::new(crate::dbus::start_dbus_server(app_model, sender).expect("could not start server"))
     }
 
-    fn make_window(builder: &gtk::Builder, worker: Worker) -> Box<impl EventListener> {
+    fn make_window(
+        builder: &gtk::Builder,
+        app_model: Rc<AppModel>,
+        worker: Worker,
+    ) -> Box<impl EventListener> {
         let window: libhandy::ApplicationWindow = builder.get_object("window").unwrap();
         let search_bar: libhandy::SearchBar = builder.get_object("search_bar").unwrap();
-        Box::new(MainWindow::new(window, search_bar, worker))
+        Box::new(MainWindow::new(app_model, window, search_bar, worker))
     }
 
     fn make_selection_editor(

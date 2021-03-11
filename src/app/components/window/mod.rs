@@ -2,10 +2,11 @@ use gio::SettingsExt;
 use gtk::prelude::*;
 use gtk::DialogExt;
 use libhandy::SearchBarExt;
+use std::rc::Rc;
 
 use crate::api::_clear_old_cache;
 use crate::app::components::EventListener;
-use crate::app::{AppEvent, Worker};
+use crate::app::{AppEvent, AppModel, Worker};
 
 const MESSAGE: &str = "The old application cache must be cleared. 
 Please check ~/.cache/img and ~/.cache/net for any files you might own before proceeding. 
@@ -51,14 +52,22 @@ pub struct MainWindow {
 
 impl MainWindow {
     pub fn new(
+        app_model: Rc<AppModel>,
         window: libhandy::ApplicationWindow,
         search_bar: libhandy::SearchBar,
         worker: Worker,
     ) -> Self {
-        window.connect_delete_event(|window, _| {
-            window.hide();
-            Inhibit(true)
-        });
+        window.connect_delete_event(
+            clone!(@weak app_model => @default-return Inhibit(false), move |window, _| {
+                let state = app_model.get_state();
+                if state.playback.is_playing() {
+                    window.hide();
+                    Inhibit(true)
+                } else {
+                    Inhibit(false)
+                }
+            }),
+        );
 
         window.connect_key_press_event(move |_, event| {
             Inhibit(search_bar.handle_event(&mut event.clone())) //FIXME: clone shouldn't be needed here
