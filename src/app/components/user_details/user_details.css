@@ -1,0 +1,18 @@
+list.user__top-artists {
+  padding: 8px;
+  border-radius: 8px;
+  margin: 8px;
+}
+
+list.user__top-artists row {
+  border-radius: 4px;
+}
+
+.user {
+  transition: opacity .3s ease;
+  opacity: 0;
+}
+
+.user__loaded {
+  opacity: 1;
+}
