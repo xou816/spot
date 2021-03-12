@@ -149,6 +149,23 @@ impl WithImages for Artist {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+pub struct User {
+    pub id: String,
+    pub display_name: String,
+    pub images: Option<Vec<Image>>,
+}
+
+impl WithImages for User {
+    fn images(&self) -> &[Image] {
+        if let Some(ref images) = self.images {
+            images
+        } else {
+            &[]
+        }
+    }
+}
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct Tracks<Item> {
     pub items: Vec<Item>,
 }
