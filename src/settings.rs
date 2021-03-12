@@ -2,45 +2,92 @@ use crate::player::{AudioBackend, SpotifyPlayerSettings};
 use gio::SettingsExt;
 use librespot::playback::config::Bitrate;
 
-pub struct SpotSettings {
-    pub prefers_dark_theme: bool,
-    pub player_settings: SpotifyPlayerSettings,
+const SETTINGS: &str = "dev.alextren.Spot";
+
+#[derive(Clone)]
+pub struct WindowGeometry {
+    pub width: i32,
+    pub height: i32,
+    pub is_maximized: bool,
 }
 
-impl SpotSettings {
-    pub fn new_or_default() -> Self {
-        Self::new().unwrap_or_else(|| Self {
-            prefers_dark_theme: true,
-            player_settings: SpotifyPlayerSettings {
-                bitrate: Bitrate::Bitrate160,
-                backend: AudioBackend::PulseAudio,
-            },
-        })
+impl WindowGeometry {
+    pub fn new_from_gsettings() -> Self {
+        let settings = gio::Settings::new(SETTINGS);
+        Self {
+            width: settings.get_int("window-width"),
+            height: settings.get_int("window-height"),
+            is_maximized: settings.get_boolean("window-is-maximized"),
+        }
     }
 
-    pub fn new() -> Option<Self> {
-        let settings = gio::Settings::new("dev.alextren.Spot");
-        let prefers_dark_theme = settings.get_boolean("prefers-dark-theme");
+    pub fn save(&self) -> Option<()> {
+        let settings = gio::Settings::new(SETTINGS);
+        settings.delay();
+        settings.set_int("window-width", self.width).ok()?;
+        settings.set_int("window-height", self.height).ok()?;
+        settings
+            .set_boolean("window-is-maximized", self.is_maximized)
+            .ok()?;
+        settings.apply();
+        Some(())
+    }
+}
+
+impl Default for WindowGeometry {
+    fn default() -> Self {
+        Self {
+            width: 0,
+            height: 0,
+            is_maximized: false,
+        }
+    }
+}
+
+impl SpotifyPlayerSettings {
+    pub fn new_from_gsettings() -> Option<Self> {
+        let settings = gio::Settings::new(SETTINGS);
         let bitrate = match settings.get_enum("player-bitrate") {
             0 => Some(Bitrate::Bitrate96),
             1 => Some(Bitrate::Bitrate160),
             2 => Some(Bitrate::Bitrate320),
             _ => None,
-        };
+        }?;
         let backend = match settings.get_enum("audio-backend") {
             0 => Some(AudioBackend::PulseAudio),
             1 => Some(AudioBackend::Alsa(
                 settings.get_string("alsa-device")?.as_str().to_string(),
             )),
             _ => None,
-        };
-        let player_settings = SpotifyPlayerSettings {
-            bitrate: bitrate?,
-            backend: backend?,
-        };
+        }?;
+        Some(Self { bitrate, backend })
+    }
+}
+
+pub struct SpotSettings {
+    pub prefers_dark_theme: bool,
+    pub player_settings: SpotifyPlayerSettings,
+    pub window: WindowGeometry,
+}
+
+impl SpotSettings {
+    pub fn new_from_gsettings() -> Option<Self> {
+        let settings = gio::Settings::new(SETTINGS);
+        let prefers_dark_theme = settings.get_boolean("prefers-dark-theme");
         Some(Self {
             prefers_dark_theme,
-            player_settings,
+            player_settings: SpotifyPlayerSettings::new_from_gsettings()?,
+            window: WindowGeometry::new_from_gsettings(),
         })
+    }
+}
+
+impl Default for SpotSettings {
+    fn default() -> Self {
+        Self {
+            prefers_dark_theme: true,
+            player_settings: Default::default(),
+            window: Default::default(),
+        }
     }
 }

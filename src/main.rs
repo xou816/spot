@@ -20,7 +20,7 @@ use crate::app::dispatch::{spawn_task_handler, DispatchLoop};
 use crate::app::{App, AppAction};
 
 fn main() {
-    let settings = settings::SpotSettings::new_or_default();
+    let settings = settings::SpotSettings::new_from_gsettings().unwrap_or_default();
     startup(&settings);
     let gtk_app = gtk::Application::new(Some("dev.alextren.Spot"), Default::default()).unwrap();
     let builder = gtk::Builder::from_resource("/dev/alextren/Spot/window.ui");

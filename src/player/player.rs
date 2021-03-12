@@ -62,6 +62,15 @@ pub struct SpotifyPlayerSettings {
     pub backend: AudioBackend,
 }
 
+impl Default for SpotifyPlayerSettings {
+    fn default() -> Self {
+        Self {
+            bitrate: Bitrate::Bitrate160,
+            backend: AudioBackend::PulseAudio,
+        }
+    }
+}
+
 pub struct SpotifyPlayer {
     settings: SpotifyPlayerSettings,
     player: RefCell<Option<Player>>,

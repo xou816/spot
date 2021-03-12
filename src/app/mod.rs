@@ -24,6 +24,7 @@ pub mod credentials;
 pub mod loader;
 
 pub struct App {
+    settings: SpotSettings,
     builder: gtk::Builder,
     components: Vec<Box<dyn EventListener>>,
     model: Rc<AppModel>,
@@ -48,6 +49,7 @@ impl App {
         ];
 
         Self {
+            settings,
             builder,
             model,
             components,
@@ -64,7 +66,7 @@ impl App {
         let dispatcher = Box::new(ActionDispatcherImpl::new(sender.clone(), worker.clone()));
 
         let mut components: Vec<Box<dyn EventListener>> = vec![
-            App::make_window(builder, Rc::clone(model), worker.clone()),
+            App::make_window(&self.settings, builder, Rc::clone(model), worker.clone()),
             App::make_selection_editor(builder, Rc::clone(model), dispatcher.box_clone()),
             App::make_playback_control(builder, Rc::clone(model), dispatcher.box_clone()),
             App::make_playback_info(
@@ -106,13 +108,20 @@ impl App {
     }
 
     fn make_window(
+        settings: &SpotSettings,
         builder: &gtk::Builder,
         app_model: Rc<AppModel>,
         worker: Worker,
     ) -> Box<impl EventListener> {
         let window: libhandy::ApplicationWindow = builder.get_object("window").unwrap();
         let search_bar: libhandy::SearchBar = builder.get_object("search_bar").unwrap();
-        Box::new(MainWindow::new(app_model, window, search_bar, worker))
+        Box::new(MainWindow::new(
+            settings.window.clone(),
+            app_model,
+            window,
+            search_bar,
+            worker,
+        ))
     }
 
     fn make_selection_editor(

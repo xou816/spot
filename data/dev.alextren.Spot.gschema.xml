@@ -18,6 +18,18 @@
       <default>true</default>
       <summary>Prefer dark theme</summary>
     </key>
+    <key name="window-width" type="i">
+      <default>1080</default>
+      <summary>The width of the window</summary>
+    </key>
+    <key name="window-height" type="i">
+      <default>720</default>
+      <summary>The height of the window</summary>
+    </key>
+    <key name="window-is-maximized" type="b">
+      <default>false</default>
+      <summary>A flag to enable maximized mode</summary>
+    </key>
     <key name='player-bitrate' enum='dev.alextren.Spot.Bitrate'>
       <default>'160'</default>
       <summary>Songs bitrate (96, 160, 320kbps)</summary>
