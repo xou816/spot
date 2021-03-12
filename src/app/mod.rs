@@ -1,3 +1,5 @@
+use crate::api::CachedSpotifyClient;
+use crate::settings::SpotSettings;
 use futures::channel::mpsc::UnboundedSender;
 use gtk::prelude::*;
 use std::rc::Rc;
@@ -8,8 +10,6 @@ pub use dispatch::{ActionDispatcher, ActionDispatcherImpl, DispatchLoop, Worker}
 
 pub mod components;
 use components::*;
-
-use crate::api::CachedSpotifyClient;
 
 pub mod gtypes;
 pub mod models;
@@ -32,13 +32,18 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(builder: gtk::Builder, sender: UnboundedSender<AppAction>, worker: Worker) -> Self {
+    pub fn new(
+        settings: SpotSettings,
+        builder: gtk::Builder,
+        sender: UnboundedSender<AppAction>,
+        worker: Worker,
+    ) -> Self {
         let state = AppState::new();
         let spotify_client = Arc::new(CachedSpotifyClient::new());
         let model = Rc::new(AppModel::new(state, spotify_client));
 
         let components: Vec<Box<dyn EventListener>> = vec![
-            App::make_player_notifier(sender.clone()),
+            App::make_player_notifier(&settings, sender.clone()),
             App::make_dbus(Rc::clone(&model), sender.clone()),
         ];
 
@@ -83,8 +88,12 @@ impl App {
         self.components.append(&mut components);
     }
 
-    fn make_player_notifier(sender: UnboundedSender<AppAction>) -> Box<impl EventListener> {
+    fn make_player_notifier(
+        settings: &SpotSettings,
+        sender: UnboundedSender<AppAction>,
+    ) -> Box<impl EventListener> {
         Box::new(PlayerNotifier::new(crate::player::start_player_service(
+            settings.player_settings.clone(),
             sender,
         )))
     }

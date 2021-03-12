@@ -10,7 +10,7 @@ use crate::app::state::{LoginAction, PlaybackAction};
 use crate::app::{credentials, AppAction};
 
 mod player;
-pub use player::{SpotifyError, SpotifyPlayer, SpotifyPlayerDelegate};
+pub use player::*;
 
 #[derive(Debug, Clone)]
 pub enum Command {
@@ -73,6 +73,7 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
 }
 
 pub fn start_player_service(
+    player_settings: SpotifyPlayerSettings,
     appaction_sender: UnboundedSender<AppAction>,
 ) -> UnboundedSender<Command> {
     let (sender, receiver) = unbounded::<Command>();
@@ -80,18 +81,12 @@ pub fn start_player_service(
         let mut core = Core::new().unwrap();
         let delegate = Rc::new(AppPlayerDelegate::new(appaction_sender.clone()));
         core.run(
-            SpotifyPlayer::new(delegate)
+            SpotifyPlayer::new(player_settings, delegate)
                 .start(core.handle(), receiver)
                 .boxed_local()
                 .compat(),
         )
-        .unwrap_or_else(move |_| {
-            appaction_sender
-                .unbounded_send(AppAction::ShowNotification(
-                    "Player crashed, please restart the application.".to_string(),
-                ))
-                .unwrap();
-        })
+        .unwrap()
     });
     sender
 }
