@@ -1,3 +1,5 @@
+use crate::api::CachedSpotifyClient;
+use crate::settings::SpotSettings;
 use futures::channel::mpsc::UnboundedSender;
 use gtk::prelude::*;
 use std::rc::Rc;
@@ -8,8 +10,6 @@ pub use dispatch::{ActionDispatcher, ActionDispatcherImpl, DispatchLoop, Worker}
 
 pub mod components;
 use components::*;
-
-use crate::api::CachedSpotifyClient;
 
 pub mod gtypes;
 pub mod models;
@@ -24,6 +24,7 @@ pub mod credentials;
 pub mod loader;
 
 pub struct App {
+    settings: SpotSettings,
     builder: gtk::Builder,
     components: Vec<Box<dyn EventListener>>,
     model: Rc<AppModel>,
@@ -32,17 +33,23 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(builder: gtk::Builder, sender: UnboundedSender<AppAction>, worker: Worker) -> Self {
+    pub fn new(
+        settings: SpotSettings,
+        builder: gtk::Builder,
+        sender: UnboundedSender<AppAction>,
+        worker: Worker,
+    ) -> Self {
         let state = AppState::new();
         let spotify_client = Arc::new(CachedSpotifyClient::new());
         let model = Rc::new(AppModel::new(state, spotify_client));
 
         let components: Vec<Box<dyn EventListener>> = vec![
-            App::make_player_notifier(sender.clone()),
+            App::make_player_notifier(&settings, sender.clone()),
             App::make_dbus(Rc::clone(&model), sender.clone()),
         ];
 
         Self {
+            settings,
             builder,
             model,
             components,
@@ -59,7 +66,7 @@ impl App {
         let dispatcher = Box::new(ActionDispatcherImpl::new(sender.clone(), worker.clone()));
 
         let mut components: Vec<Box<dyn EventListener>> = vec![
-            App::make_window(builder, Rc::clone(model), worker.clone()),
+            App::make_window(&self.settings, builder, Rc::clone(model), worker.clone()),
             App::make_selection_editor(builder, Rc::clone(model), dispatcher.box_clone()),
             App::make_playback_control(builder, Rc::clone(model), dispatcher.box_clone()),
             App::make_playback_info(
@@ -83,8 +90,12 @@ impl App {
         self.components.append(&mut components);
     }
 
-    fn make_player_notifier(sender: UnboundedSender<AppAction>) -> Box<impl EventListener> {
+    fn make_player_notifier(
+        settings: &SpotSettings,
+        sender: UnboundedSender<AppAction>,
+    ) -> Box<impl EventListener> {
         Box::new(PlayerNotifier::new(crate::player::start_player_service(
+            settings.player_settings.clone(),
             sender,
         )))
     }
@@ -97,13 +108,20 @@ impl App {
     }
 
     fn make_window(
+        settings: &SpotSettings,
         builder: &gtk::Builder,
         app_model: Rc<AppModel>,
         worker: Worker,
     ) -> Box<impl EventListener> {
         let window: libhandy::ApplicationWindow = builder.get_object("window").unwrap();
         let search_bar: libhandy::SearchBar = builder.get_object("search_bar").unwrap();
-        Box::new(MainWindow::new(app_model, window, search_bar, worker))
+        Box::new(MainWindow::new(
+            settings.window.clone(),
+            app_model,
+            window,
+            search_bar,
+            worker,
+        ))
     }
 
     fn make_selection_editor(

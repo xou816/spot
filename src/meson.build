@@ -109,6 +109,7 @@ sources = files(
 './player/mod.rs',
 './config.rs',
 './main.rs',
+'./settings.rs',
 )
 
 cargo_script = find_program(join_paths(meson.source_root(), 'build-aux/cargo.sh'))

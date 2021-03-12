@@ -2,11 +2,17 @@ use gio::SettingsExt;
 use gtk::prelude::*;
 use gtk::DialogExt;
 use libhandy::SearchBarExt;
+use std::cell::Cell;
 use std::rc::Rc;
 
 use crate::api::_clear_old_cache;
 use crate::app::components::EventListener;
 use crate::app::{AppEvent, AppModel, Worker};
+use crate::settings::WindowGeometry;
+
+thread_local! {
+    static WINDOW_GEOMETRY: Cell<Option<WindowGeometry>> = Cell::new(None);
+}
 
 const MESSAGE: &str = "The old application cache must be cleared. 
 Please check ~/.cache/img and ~/.cache/net for any files you might own before proceeding. 
@@ -46,12 +52,14 @@ fn _clear_old_cache_warn(window: &gtk::Window, worker: Worker) {
 }
 
 pub struct MainWindow {
+    initial_window_geometry: WindowGeometry,
     window: libhandy::ApplicationWindow,
     worker: Worker,
 }
 
 impl MainWindow {
     pub fn new(
+        initial_window_geometry: WindowGeometry,
         app_model: Rc<AppModel>,
         window: libhandy::ApplicationWindow,
         search_bar: libhandy::SearchBar,
@@ -73,10 +81,42 @@ impl MainWindow {
             Inhibit(search_bar.handle_event(&mut event.clone())) //FIXME: clone shouldn't be needed here
         });
 
-        Self { window, worker }
+        window.connect_size_allocate(|window, _| {
+            let (width, height) = window.get_size();
+            let is_maximized = window.is_maximized();
+            // sorry
+            WINDOW_GEOMETRY.with(|g| {
+                g.set(Some(WindowGeometry {
+                    width,
+                    height,
+                    is_maximized,
+                }));
+            });
+        });
+
+        window.connect_destroy(|_| {
+            WINDOW_GEOMETRY.with(|g| {
+                if let Some(g) = g.replace(None) {
+                    g.save();
+                }
+            });
+        });
+
+        Self {
+            initial_window_geometry,
+            window,
+            worker,
+        }
     }
 
     fn start(&self) {
+        self.window.set_default_size(
+            self.initial_window_geometry.width,
+            self.initial_window_geometry.height,
+        );
+        if self.initial_window_geometry.is_maximized {
+            self.window.maximize();
+        }
         self.window.present();
         _clear_old_cache_warn(self.window.upcast_ref(), self.worker.clone());
     }

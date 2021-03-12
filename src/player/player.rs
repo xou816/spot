@@ -12,8 +12,8 @@ use librespot::core::keymaster;
 use librespot::core::session::Session;
 
 use librespot::playback::audio_backend;
-use librespot::playback::config::PlayerConfig;
-use librespot::playback::player::{Player, PlayerEvent};
+use librespot::playback::config::{Bitrate, PlayerConfig};
+use librespot::playback::player::{Player, PlayerEvent, PlayerEventChannel};
 
 use std::cell::RefCell;
 use std::error::Error;
@@ -50,15 +50,38 @@ pub trait SpotifyPlayerDelegate {
     fn notify_playback_state(&self, position: u32);
 }
 
+#[derive(Clone)]
+pub enum AudioBackend {
+    PulseAudio,
+    Alsa(String),
+}
+
+#[derive(Clone)]
+pub struct SpotifyPlayerSettings {
+    pub bitrate: Bitrate,
+    pub backend: AudioBackend,
+}
+
+impl Default for SpotifyPlayerSettings {
+    fn default() -> Self {
+        Self {
+            bitrate: Bitrate::Bitrate160,
+            backend: AudioBackend::PulseAudio,
+        }
+    }
+}
+
 pub struct SpotifyPlayer {
+    settings: SpotifyPlayerSettings,
     player: RefCell<Option<Player>>,
     session: RefCell<Option<Session>>,
     delegate: Rc<dyn SpotifyPlayerDelegate>,
 }
 
 impl SpotifyPlayer {
-    pub fn new(delegate: Rc<dyn SpotifyPlayerDelegate>) -> Self {
+    pub fn new(settings: SpotifyPlayerSettings, delegate: Rc<dyn SpotifyPlayerDelegate>) -> Self {
         Self {
+            settings,
             player: RefCell::new(None),
             session: RefCell::new(None),
             delegate,
@@ -120,13 +143,9 @@ impl SpotifyPlayer {
                 };
                 self.delegate.login_successful(credentials);
 
-                let new_player = create_player(new_session.clone());
-                handle.spawn(player_subscribe_to_playing_event(
-                    &new_player,
-                    Rc::downgrade(&self.delegate),
-                ));
-                handle.spawn(player_end_of_track_event(
-                    &new_player,
+                let (new_player, channel) = self.create_player(new_session.clone());
+                handle.spawn(player_setup_delegate(
+                    channel,
                     Rc::downgrade(&self.delegate),
                 ));
                 player.replace(new_player);
@@ -135,6 +154,27 @@ impl SpotifyPlayer {
                 Ok(())
             }
         }
+    }
+
+    fn create_player(&self, session: Session) -> (Player, PlayerEventChannel) {
+        let backend = self.settings.backend.clone();
+
+        let mut player_config = PlayerConfig::default();
+        player_config.bitrate = self.settings.bitrate;
+        println!("bitrate: {:?}", &player_config.bitrate);
+
+        Player::new(player_config, session, None, move || match backend {
+            AudioBackend::PulseAudio => {
+                println!("using pulseaudio");
+                let backend = audio_backend::find(Some("pulseaudio".to_string())).unwrap();
+                backend(None)
+            }
+            AudioBackend::Alsa(device) => {
+                println!("using alsa ({})", &device);
+                let backend = audio_backend::find(Some("alsa".to_string())).unwrap();
+                backend(Some(device.to_string()))
+            }
+        })
     }
 
     pub async fn start(
@@ -188,48 +228,21 @@ async fn create_session(
     result.map_err(|_| SpotifyError::LoginFailed)
 }
 
-fn create_player(session: Session) -> Player {
-    let preferred = std::env::var("AUDIO_BACKEND").unwrap_or_else(|_| "pulseaudio".to_string());
-    let alsa_device = std::env::var("ALSA_DEVICE").ok();
-    let backend = audio_backend::find(Some(preferred)).unwrap();
-    let player_config = PlayerConfig::default();
-    let (new_player, _) = Player::new(player_config, session, None, move || backend(alsa_device));
-    new_player
-}
-
-fn player_end_of_track_event(
-    player: &Player,
+fn player_setup_delegate(
+    channel: PlayerEventChannel,
     delegate: Weak<dyn SpotifyPlayerDelegate>,
 ) -> impl OldFuture<Item = (), Error = ()> {
-    player
-        .get_player_event_channel()
-        .filter(|event| {
-            matches!(
-                event,
-                PlayerEvent::EndOfTrack { .. } | PlayerEvent::Stopped { .. }
-            )
-        })
-        .for_each(move |_| {
-            delegate.upgrade().ok_or(())?.end_of_track_reached();
-            Ok(())
-        })
-}
-
-fn player_subscribe_to_playing_event(
-    player: &Player,
-    delegate: Weak<dyn SpotifyPlayerDelegate>,
-) -> impl OldFuture<Item = (), Error = ()> {
-    player
-        .get_player_event_channel()
-        .filter_map(|event| match event {
-            PlayerEvent::Playing { position_ms, .. } => Some(position_ms),
-            _ => None,
-        })
-        .for_each(move |position_ms| {
-            delegate
-                .upgrade()
-                .ok_or(())?
-                .notify_playback_state(position_ms);
-            Ok(())
-        })
+    channel.for_each(move |event| {
+        let delegate = delegate.upgrade().ok_or(())?;
+        match event {
+            PlayerEvent::EndOfTrack { .. } | PlayerEvent::Stopped { .. } => {
+                delegate.end_of_track_reached();
+            }
+            PlayerEvent::Playing { position_ms, .. } => {
+                delegate.notify_playback_state(position_ms);
+            }
+            _ => {}
+        }
+        Ok(())
+    })
 }

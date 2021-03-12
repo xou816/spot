@@ -10,17 +10,18 @@ use gtk::SettingsExt;
 
 mod api;
 mod app;
+mod config;
 mod dbus;
 mod player;
-
-mod config;
+mod settings;
 pub use config::VERSION;
 
 use crate::app::dispatch::{spawn_task_handler, DispatchLoop};
 use crate::app::{App, AppAction};
 
 fn main() {
-    startup();
+    let settings = settings::SpotSettings::new_from_gsettings().unwrap_or_default();
+    startup(&settings);
     let gtk_app = gtk::Application::new(Some("dev.alextren.Spot"), Default::default()).unwrap();
     let builder = gtk::Builder::from_resource("/dev/alextren/Spot/window.ui");
     let window: libhandy::ApplicationWindow = builder.get_object("window").unwrap();
@@ -37,7 +38,12 @@ fn main() {
 
     let dispatch_loop = DispatchLoop::new();
     let sender = dispatch_loop.make_dispatcher();
-    let app = App::new(builder, sender.clone(), spawn_task_handler(&context));
+    let app = App::new(
+        settings,
+        builder,
+        sender.clone(),
+        spawn_task_handler(&context),
+    );
     context.spawn_local(app.attach(dispatch_loop));
 
     gtk_app.connect_activate(move |gtk_app| {
@@ -57,7 +63,7 @@ fn main() {
     std::process::exit(0);
 }
 
-fn startup() {
+fn startup(settings: &settings::SpotSettings) {
     gtk::init().unwrap_or_else(|_| panic!("Failed to initialize GTK"));
     libhandy::init();
 
@@ -67,7 +73,7 @@ fn startup() {
 
     gtk::Settings::get_default()
         .unwrap()
-        .set_property_gtk_application_prefer_dark_theme(true);
+        .set_property_gtk_application_prefer_dark_theme(settings.prefers_dark_theme);
 
     let provider = gtk::CssProvider::new();
     provider.load_from_resource("/dev/alextren/Spot/app.css");
