@@ -12,7 +12,7 @@ use librespot::core::keymaster;
 use librespot::core::session::Session;
 
 use librespot::playback::audio_backend;
-use librespot::playback::config::PlayerConfig;
+use librespot::playback::config::{Bitrate, PlayerConfig};
 use librespot::playback::player::{Player, PlayerEvent};
 
 use std::cell::RefCell;
@@ -192,7 +192,12 @@ fn create_player(session: Session) -> Player {
     let preferred = std::env::var("AUDIO_BACKEND").unwrap_or_else(|_| "pulseaudio".to_string());
     let alsa_device = std::env::var("ALSA_DEVICE").ok();
     let backend = audio_backend::find(Some(preferred)).unwrap();
-    let player_config = PlayerConfig::default();
+    let player_config = PlayerConfig {
+        bitrate: Bitrate::Bitrate320,
+        normalisation: false,
+        normalisation_pregain: 0.0,
+        gapless: true,
+    };
     let (new_player, _) = Player::new(player_config, session, None, move || backend(alsa_device));
     new_player
 }
