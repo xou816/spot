@@ -195,6 +195,7 @@ pub enum PlaybackAction {
     TogglePlay,
     Play,
     Pause,
+    Stop,
     ToggleShuffle,
     Seek(u32),
     SyncSeek(u32),
@@ -275,6 +276,10 @@ impl UpdatableState for PlaybackState {
                     self.stop();
                     vec![PlaybackEvent::PlaybackStopped]
                 }
+            }
+            PlaybackAction::Stop => {
+                self.stop();
+                vec![PlaybackEvent::PlaybackStopped]
             }
             PlaybackAction::Previous => {
                 if let Some(id) = self.play_prev() {

@@ -1,6 +1,6 @@
 use crate::api::clear_user_cache;
 use crate::app::credentials;
-use crate::app::state::LoginAction;
+use crate::app::state::{LoginAction, PlaybackAction};
 use crate::app::{ActionDispatcher, AppModel};
 use std::ops::Deref;
 use std::rc::Rc;
@@ -23,8 +23,9 @@ impl UserMenuModel {
     }
 
     pub fn logout(&self) {
-        let _ = credentials::logout();
+        self.dispatcher.dispatch(PlaybackAction::Stop.into());
         self.dispatcher.dispatch_async(Box::pin(async {
+            let _ = credentials::logout();
             let _ = clear_user_cache().await;
             Some(LoginAction::Logout.into())
         }));

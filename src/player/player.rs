@@ -105,7 +105,7 @@ impl SpotifyPlayer {
                     .take()
                     .ok_or(SpotifyError::PlayerNotReady)?
                     .shutdown();
-                player.take().ok_or(SpotifyError::PlayerNotReady)?.stop();
+                let _ = player.take();
                 Ok(())
             }
             Command::Login(username, password) => {
