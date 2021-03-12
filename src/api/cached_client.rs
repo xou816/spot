@@ -60,6 +60,10 @@ pub trait SpotifyApiClient {
         limit: u32,
     ) -> BoxFuture<SpotifyResult<Vec<AlbumDescription>>>;
 
+    fn get_user(&self, id: &str) -> BoxFuture<SpotifyResult<UserDescription>>;
+
+    fn get_user_playlists(&self, id: &str, offset: u32, limit: u32) -> BoxFuture<SpotifyResult<Vec<PlaylistDescription>>>;
+
     fn update_token(&self, token: String);
 }
 
@@ -73,6 +77,8 @@ enum SpotCacheKey<'a> {
     ArtistAlbums(&'a str, u32, u32),
     Artist(&'a str),
     ArtistTopTracks(&'a str),
+    User(&'a str),
+    UserPlaylists(&'a str, u32, u32),
 }
 
 impl<'a> SpotCacheKey<'a> {
@@ -93,6 +99,8 @@ impl<'a> SpotCacheKey<'a> {
             }
             Self::Artist(id) => format!("artist_{}.json", id),
             Self::ArtistTopTracks(id) => format!("artist_top_tracks_{}.json", id),
+            Self::User(id) => format!("user_{}.json", id),
+            Self::UserPlaylists(id, offset, limit) => format!("user_playlists_{}_{}_{}.json", id, offset, limit),
         }
     }
 }
@@ -401,6 +409,60 @@ impl SpotifyApiClient for CachedSpotifyClient {
                 .collect::<Vec<ArtistSummary>>();
 
             Ok(SearchResults { albums, artists })
+        })
+    }
+
+    fn get_user_playlists(
+        &self,
+        id: &str,
+        offset: u32,
+        limit: u32,
+    ) -> BoxFuture<SpotifyResult<Vec<PlaylistDescription>>> {
+        let id = id.to_owned();
+
+        Box::pin(async move {
+            let playlists = self
+                .cache_get_or_write(
+                    SpotCacheKey::UserPlaylists(&id, offset, limit),
+                    None,
+                    |etag| {
+                        self.client
+                            .get_user_playlists(&id, offset, limit)
+                            .etag(etag)
+                            .send()
+                    },
+                )
+                .await?;
+
+            let playlists = playlists
+                .items
+                .into_iter()
+                .map(|a| a.into())
+                .collect::<Vec<PlaylistDescription>>();
+
+            Ok(playlists)
+        })
+    }
+
+    fn get_user(&self, id: &str) -> BoxFuture<Result<UserDescription, SpotifyApiError>> {
+        let id = id.to_owned();
+
+        Box::pin(async move {
+            let user = self.cache_get_or_write(SpotCacheKey::User(&id), None, |etag| {
+                self.client.get_user(&id).etag(etag).send()
+            });
+
+            let playlists = self.get_user_playlists(&id, 0, 20);
+
+            let (user, playlists) = join!(user, playlists);
+
+            let user = user?;
+            let result = UserDescription {
+                id: user.id,
+                name: user.display_name,
+                playlists: playlists?,
+            };
+            Ok(result)
         })
     }
 }

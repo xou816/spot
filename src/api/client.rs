@@ -366,11 +366,24 @@ impl SpotifyClient {
             .uri("/v1/search".to_string(), Some(&query.into_query_string()))
     }
 
-    pub(crate) fn get_user(&self, id: String) -> SpotifyRequest<'_, (), User> {
+    pub(crate) fn get_user(&self, id: &str) -> SpotifyRequest<'_, (), User> {
         self.request()
             .method(Method::GET)
             .uri(format!("/v1/users/{}", id), None)
     }
+
+    pub(crate) fn get_user_playlists(&self, id: &str, offset: u32, limit: u32) -> SpotifyRequest<'_, (), Page<Playlist>> {
+        let query = make_query_params()
+            .append_pair("offset", &offset.to_string()[..])
+            .append_pair("limit", &limit.to_string()[..])
+            .finish();
+
+        self.request()
+            .method(Method::GET)
+            .uri(format!("/v1/users/{}/playlists", id), Some(&query))
+    }
+
+
 }
 
 #[cfg(test)]

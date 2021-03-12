@@ -144,5 +144,5 @@ pub struct UserDescription {
     pub id: String,
     pub name: String,
     pub image: String,
-    pub followers: u32,
+    pub playlists: Vec<PlaylistDescription>,
 }
