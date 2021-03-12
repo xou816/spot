@@ -3,6 +3,9 @@
   <gresource prefix="/dev/alextren/Spot">
     <file>window.ui</file>
     <file>app.css</file>
+    <!-- login -->
+    <file alias="components/login.ui">app/components/login/login.ui</file>
+    <!-- search -->
     <file alias="components/search.ui">app/components/search/search.ui</file>
     <!-- album -->
     <file alias="components/album.ui">app/components/album/album.ui</file>

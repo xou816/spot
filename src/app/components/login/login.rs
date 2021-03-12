@@ -1,5 +1,6 @@
 use gdk::{keys::constants::Return, EventKey};
 use gio::ApplicationExt;
+use gladis::Gladis;
 use gtk::prelude::*;
 use gtk::{EntryExt, GtkWindowExt, WidgetExt};
 use std::rc::Rc;
@@ -11,70 +12,85 @@ use crate::app::AppEvent;
 
 use super::LoginModel;
 
+#[derive(Clone, Gladis)]
+struct LoginWidget {
+    pub window: libhandy::Window,
+    username: gtk::Entry,
+    password: gtk::Entry,
+    close_button: gtk::Button,
+    login_button: gtk::Button,
+}
+
+impl LoginWidget {
+    fn new() -> Self {
+        Self::from_resource(resource!("/components/login.ui")).unwrap()
+    }
+}
+
 pub struct Login {
-    dialog: gtk::Dialog,
     parent: gtk::Window,
+    window: libhandy::Window,
     model: Rc<LoginModel>,
 }
 
 impl Login {
-    pub fn new(
-        parent: gtk::Window,
-        dialog: gtk::Dialog,
-        username: gtk::Entry,
-        password: gtk::Entry,
-        login_btn: gtk::Button,
-        model: LoginModel,
-    ) -> Self {
+    pub fn new(parent: gtk::Window, model: LoginModel) -> Self {
         let model = Rc::new(model);
-        login_btn.connect_clicked(
+        let LoginWidget {
+            window,
+            username,
+            password,
+            close_button,
+            login_button,
+        } = LoginWidget::new();
+
+        login_button.connect_clicked(
             clone!(@weak username, @weak password,  @weak model => move |_| {
-                Login::submit_login_form(username, password, model);
+                Self::submit_login_form(username, password, model);
             }),
         );
+
         username.connect_key_press_event(
             clone!(@weak username, @weak password, @weak model => @default-return Inhibit(false), move |_, event | {
-                Login::handle_keypress(username, password, model, event)
+                Self::handle_keypress(username, password, model, event)
             }),
         );
+
         password.connect_key_press_event(
             clone!(@weak username, @weak password, @weak model => @default-return Inhibit(false), move |_, event | {
-                Login::handle_keypress(username, password, model, event)
+                Self::handle_keypress(username, password, model, event)
             }),
         );
 
-        dialog.connect_delete_event(
-            clone!(@weak parent => @default-return Inhibit(false), move |_, _| {
-                if let Some(app) = parent.get_application().as_ref() {
-                    app.quit();
-                }
-                Inhibit(true)
-            }),
-        );
+        close_button.connect_clicked(clone!(@weak parent => move |_| {
+            if let Some(app) = parent.get_application().as_ref() {
+                app.quit();
+            }
+        }));
 
         Self {
-            dialog,
             parent,
+            window,
             model,
         }
     }
 
     fn show_self_if_needed(&self) {
         if self.model.try_autologin() {
-            self.dialog.close();
+            self.window.close();
         } else {
             self.show_self();
         }
     }
 
     fn show_self(&self) {
-        self.dialog.set_transient_for(Some(&self.parent));
-        self.dialog.set_modal(true);
-        self.dialog.show_all();
+        self.window.set_transient_for(Some(&self.parent));
+        self.window.set_modal(true);
+        self.window.show_all();
     }
 
     fn hide_and_save_creds(&self, credentials: Credentials) {
-        self.dialog.hide();
+        self.window.hide();
         self.model.save_for_autologin(credentials);
     }
 

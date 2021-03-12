@@ -170,15 +170,8 @@ impl App {
 
     fn make_login(builder: &gtk::Builder, dispatcher: Box<dyn ActionDispatcher>) -> Box<Login> {
         let parent: gtk::Window = builder.get_object("window").unwrap();
-        let dialog: gtk::Dialog = builder.get_object("login").unwrap();
-        let username: gtk::Entry = builder.get_object("username").unwrap();
-        let password: gtk::Entry = builder.get_object("password").unwrap();
-        let login_btn: gtk::Button = builder.get_object("login_btn").unwrap();
-
         let model = LoginModel::new(dispatcher);
-        Box::new(Login::new(
-            parent, dialog, username, password, login_btn, model,
-        ))
+        Box::new(Login::new(parent, model))
     }
 
     fn make_playback_info(
