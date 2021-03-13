@@ -1,6 +1,6 @@
 [package]
 name = "spot"
-version = "0.1.9"
+version = "0.1.10"
 edition = "2018"
 license = "MIT"
 

@@ -34,6 +34,21 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.1.10" date="2021-03-13">
+      <description>
+        <p>
+          New features:
+        </p>
+        <ul>
+          <li>redesigned seekbar, login dialog and search (type from any screen to start a search)</li>
+          <li>song durations in playlist widgets (thanks realJavabot!)</li>
+          <li>play queue management (queue/dequeue/clear queue)</li>
+          <li>selection mode: enter selection mode to easily queue multiple tracks</li>
+          <li>keyboards shortcuts</li>
+          <li>various playback options through GSettings (no GUI yet)</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.9" date="2021-03-02">
       <description>
         <p>
