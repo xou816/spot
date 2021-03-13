@@ -3,6 +3,7 @@ extern crate glib;
 #[macro_use]
 extern crate lazy_static;
 
+use futures::channel::mpsc::UnboundedSender;
 use gio::prelude::*;
 use gio::{ActionMapExt, SimpleAction};
 use gtk::prelude::*;
@@ -17,7 +18,7 @@ mod settings;
 pub use config::VERSION;
 
 use crate::app::dispatch::{spawn_task_handler, DispatchLoop};
-use crate::app::{App, AppAction};
+use crate::app::{state::PlaybackAction, App, AppAction, BrowserAction};
 
 fn main() {
     let settings = settings::SpotSettings::new_from_gsettings().unwrap_or_default();
@@ -26,18 +27,13 @@ fn main() {
     let builder = gtk::Builder::from_resource("/dev/alextren/Spot/window.ui");
     let window: libhandy::ApplicationWindow = builder.get_object("window").unwrap();
 
-    let quit = SimpleAction::new("quit", None);
-    quit.connect_activate(clone!(@weak gtk_app => move |_, _| {
-        gtk_app.quit();
-    }));
-    gtk_app.add_action(&quit);
-    gtk_app.set_accels_for_action("app.quit", &["<Ctrl>Q"]);
-
     let context = glib::MainContext::default();
     context.push_thread_default();
 
     let dispatch_loop = DispatchLoop::new();
     let sender = dispatch_loop.make_dispatcher();
+    register_actions(&gtk_app, sender.clone());
+
     let app = App::new(
         settings,
         builder,
@@ -83,4 +79,53 @@ fn startup(settings: &settings::SpotSettings) {
         &provider,
         gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
     );
+}
+
+fn register_actions(app: &gtk::Application, sender: UnboundedSender<AppAction>) {
+    let quit = SimpleAction::new("quit", None);
+    quit.connect_activate(clone!(@weak app => move |_, _| {
+        app.quit();
+    }));
+    app.add_action(&quit);
+    app.set_accels_for_action("app.quit", &["<Ctrl>Q"]);
+
+    app.add_action(&make_action(
+        "toggle_playback",
+        PlaybackAction::TogglePlay.into(),
+        sender.clone(),
+    ));
+    app.set_accels_for_action("app.toggle_playback", &["space", "<Alt>C"]);
+
+    app.add_action(&make_action(
+        "player_prev",
+        PlaybackAction::Previous.into(),
+        sender.clone(),
+    ));
+    app.set_accels_for_action("app.player_prev", &["<Alt>P"]);
+
+    app.add_action(&make_action(
+        "player_next",
+        PlaybackAction::Next.into(),
+        sender.clone(),
+    ));
+    app.set_accels_for_action("app.player_next", &["<Alt>N"]);
+
+    app.add_action(&make_action(
+        "nav_pop",
+        AppAction::BrowserAction(BrowserAction::NavigationPop),
+        sender.clone(),
+    ));
+    app.set_accels_for_action("app.nav_pop", &["<Alt>Left"]);
+}
+
+fn make_action(
+    name: &str,
+    app_action: AppAction,
+    sender: UnboundedSender<AppAction>,
+) -> SimpleAction {
+    let action = SimpleAction::new(name, None);
+    action.connect_activate(move |_, _| {
+        sender.unbounded_send(app_action.clone()).unwrap();
+    });
+    action
 }
