@@ -176,7 +176,6 @@
                 </child>
                 <child type="overlay">
                   <object class="GtkBox" id="notification">
-                    <property name="width-request">150</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="halign">center</property>
@@ -187,6 +186,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Information</property>
+                        <property name="wrap">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>

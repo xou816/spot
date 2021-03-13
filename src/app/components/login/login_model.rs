@@ -23,7 +23,7 @@ impl LoginModel {
     pub fn save_for_autologin(&self, credentials: credentials::Credentials) {
         if credentials::save_credentials(credentials).is_err() {
             self.dispatcher.dispatch(AppAction::ShowNotification(
-                "Could not save password.".to_string(),
+                "Could not save password. Make sure the session keyring is unlocked.".to_string(),
             ));
         }
     }
