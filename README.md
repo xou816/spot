@@ -14,6 +14,13 @@ Based on [librespot](https://github.com/librespot-org/librespot/).
 | <a href='https://snapcraft.io/spot'><img width='130' alt="Get it from the Snap Store" src="https://snapcraft.io/static/images/badges/en/snap-store-black.svg"></a> | popey | https://github.com/popey/spot-snap |
 | <a href='https://aur.archlinux.org/packages/spot-client/'><img alt="AUR version" src="https://img.shields.io/aur/version/spot-client"></a> | dpeukert | https://gitlab.com/dpeukert/pkgbuilds/tree/main/spot-client |
 
+It is recommended to install a libsecret compliant keyring application, such as GNOME Keyring (aka seahorse).
+
+### Usage notes
+
+Spot caches images and HTTP responses in `~/.cache/spot`.
+
+Spot can also be configured via `gsettings` if you want to change the audio backend, the song bitrate, etc.
 
 ## Features
 
