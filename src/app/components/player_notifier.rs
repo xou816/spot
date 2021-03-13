@@ -2,17 +2,24 @@ use futures::channel::mpsc::UnboundedSender;
 use librespot::core::spotify_id::SpotifyId;
 
 use crate::app::components::EventListener;
-use crate::app::state::{LoginEvent, PlaybackEvent};
-use crate::app::AppEvent;
+use crate::app::state::{LoginAction, LoginEvent, PlaybackEvent};
+use crate::app::{AppAction, AppEvent};
 use crate::player::Command;
 
 pub struct PlayerNotifier {
+    action_sender: UnboundedSender<AppAction>,
     sender: UnboundedSender<Command>,
 }
 
 impl PlayerNotifier {
-    pub fn new(sender: UnboundedSender<Command>) -> Self {
-        Self { sender }
+    pub fn new(
+        action_sender: UnboundedSender<AppAction>,
+        sender: UnboundedSender<Command>,
+    ) -> Self {
+        Self {
+            action_sender,
+            sender,
+        }
     }
 }
 
@@ -37,8 +44,11 @@ impl EventListener for PlayerNotifier {
         };
 
         if let Some(command) = command {
+            let action_sender = &self.action_sender;
             self.sender.unbounded_send(command).unwrap_or_else(|_| {
-                println!("Could not send message to player");
+                action_sender
+                    .unbounded_send(AppAction::LoginAction(LoginAction::SetLoginFailure))
+                    .unwrap();
             });
         }
     }

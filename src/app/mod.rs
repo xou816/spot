@@ -94,10 +94,10 @@ impl App {
         settings: &SpotSettings,
         sender: UnboundedSender<AppAction>,
     ) -> Box<impl EventListener> {
-        Box::new(PlayerNotifier::new(crate::player::start_player_service(
-            settings.player_settings.clone(),
-            sender,
-        )))
+        Box::new(PlayerNotifier::new(
+            sender.clone(),
+            crate::player::start_player_service(settings.player_settings.clone(), sender),
+        ))
     }
 
     fn make_dbus(

@@ -5,6 +5,7 @@ use crate::app::state::{AppAction, AppEvent, UpdatableState};
 pub enum LoginAction {
     TryLogin(String, String),
     SetLoginSuccess(credentials::Credentials),
+    SetLoginFailure,
     RefreshToken,
     SetRefreshedToken(String),
     Logout,
@@ -20,6 +21,7 @@ impl Into<AppAction> for LoginAction {
 pub enum LoginEvent {
     LoginStarted(String, String),
     LoginCompleted(credentials::Credentials),
+    LoginFailed,
     FreshTokenRequested,
     LogoutCompleted,
 }
@@ -51,6 +53,7 @@ impl UpdatableState for LoginState {
                 self.user = Some(credentials.username.clone());
                 vec![LoginEvent::LoginCompleted(credentials).into()]
             }
+            LoginAction::SetLoginFailure => vec![LoginEvent::LoginFailed.into()],
             LoginAction::RefreshToken => vec![LoginEvent::FreshTokenRequested.into()],
             LoginAction::SetRefreshedToken(_) => vec![AppEvent::NotificationShown(
                 "Connection refreshed".to_string(),

@@ -2,7 +2,7 @@ use gdk::{keys::constants::Return, EventKey};
 use gio::ApplicationExt;
 use gladis::Gladis;
 use gtk::prelude::*;
-use gtk::{EntryExt, GtkWindowExt, WidgetExt};
+use gtk::{EntryExt, GtkWindowExt, RevealerExt, WidgetExt};
 use std::rc::Rc;
 
 use crate::app::components::EventListener;
@@ -19,6 +19,7 @@ struct LoginWidget {
     password: gtk::Entry,
     close_button: gtk::Button,
     login_button: gtk::Button,
+    error_container: gtk::Revealer,
 }
 
 impl LoginWidget {
@@ -30,6 +31,7 @@ impl LoginWidget {
 pub struct Login {
     parent: gtk::Window,
     window: libhandy::Window,
+    error_container: gtk::Revealer,
     model: Rc<LoginModel>,
 }
 
@@ -42,6 +44,7 @@ impl Login {
             password,
             close_button,
             login_button,
+            error_container,
         } = LoginWidget::new();
 
         login_button.connect_clicked(
@@ -71,6 +74,7 @@ impl Login {
         Self {
             parent,
             window,
+            error_container,
             model,
         }
     }
@@ -119,6 +123,10 @@ impl Login {
             model.login(username_text, password_text);
         }
     }
+
+    fn reveal_error(&self) {
+        self.error_container.set_reveal_child(true);
+    }
 }
 
 impl EventListener for Login {
@@ -126,6 +134,9 @@ impl EventListener for Login {
         match event {
             AppEvent::LoginEvent(LoginEvent::LoginCompleted(creds)) => {
                 self.hide_and_save_creds(creds.clone());
+            }
+            AppEvent::LoginEvent(LoginEvent::LoginFailed) => {
+                self.reveal_error();
             }
             AppEvent::Started => {
                 self.show_self_if_needed();
