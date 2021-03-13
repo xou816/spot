@@ -3745,28 +3745,28 @@
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/serde/serde-1.0.123.crate",
-        "sha256": "92d5161132722baa40d802cc70b15262b98258453e85e5d1d365c757c73869ae",
+        "url": "https://static.crates.io/crates/serde/serde-1.0.124.crate",
+        "sha256": "bd761ff957cb2a45fbb9ab3da6512de9de55872866160b23c25f1a841e99d29f",
         "dest": "cargo/vendor",
-        "dest-filename": "serde-1.0.123.crate"
+        "dest-filename": "serde-1.0.124.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%2292d5161132722baa40d802cc70b15262b98258453e85e5d1d365c757c73869ae%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/serde-1.0.123",
+        "url": "data:%7B%22package%22%3A%20%22bd761ff957cb2a45fbb9ab3da6512de9de55872866160b23c25f1a841e99d29f%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/serde-1.0.124",
         "dest-filename": ".cargo-checksum.json"
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/serde_derive/serde_derive-1.0.123.crate",
-        "sha256": "9391c295d64fc0abb2c556bad848f33cb8296276b1ad2677d1ae1ace4f258f31",
+        "url": "https://static.crates.io/crates/serde_derive/serde_derive-1.0.124.crate",
+        "sha256": "1800f7693e94e186f5e25a28291ae1570da908aff7d97a095dec1e56ff99069b",
         "dest": "cargo/vendor",
-        "dest-filename": "serde_derive-1.0.123.crate"
+        "dest-filename": "serde_derive-1.0.124.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%229391c295d64fc0abb2c556bad848f33cb8296276b1ad2677d1ae1ace4f258f31%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/serde_derive-1.0.123",
+        "url": "data:%7B%22package%22%3A%20%221800f7693e94e186f5e25a28291ae1570da908aff7d97a095dec1e56ff99069b%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/serde_derive-1.0.124",
         "dest-filename": ".cargo-checksum.json"
     },
     {
