@@ -94,7 +94,7 @@ fn register_actions(app: &gtk::Application, sender: UnboundedSender<AppAction>) 
         PlaybackAction::TogglePlay.into(),
         sender.clone(),
     ));
-    app.set_accels_for_action("app.toggle_playback", &["<Alt>C"]);
+    app.set_accels_for_action("app.toggle_playback", &["space"]);
 
     app.add_action(&make_action(
         "player_prev",

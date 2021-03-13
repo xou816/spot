@@ -79,8 +79,13 @@ impl MainWindow {
             }),
         );
 
-        window.connect_key_press_event(move |_, event| {
-            Inhibit(search_bar.handle_event(&mut event.clone())) //FIXME: clone shouldn't be needed here
+        window.connect_key_press_event(move |window, event| {
+            let search_triggered = search_bar.handle_event(&mut event.clone());
+            if !search_triggered {
+                Inhibit(window.propagate_key_event(event))
+            } else {
+                Inhibit(true)
+            }
         });
 
         window.connect_size_allocate(|window, _| {
