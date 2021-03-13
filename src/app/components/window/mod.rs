@@ -2,7 +2,7 @@ use gio::SettingsExt;
 use gtk::prelude::*;
 use gtk::DialogExt;
 use libhandy::SearchBarExt;
-use std::cell::Cell;
+use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::api::_clear_old_cache;
@@ -11,7 +11,9 @@ use crate::app::{AppEvent, AppModel, Worker};
 use crate::settings::WindowGeometry;
 
 thread_local! {
-    static WINDOW_GEOMETRY: Cell<Option<WindowGeometry>> = Cell::new(None);
+    static WINDOW_GEOMETRY: RefCell<WindowGeometry> = RefCell::new(WindowGeometry {
+        width: 0, height: 0, is_maximized: false
+    });
 }
 
 const MESSAGE: &str = "The old application cache must be cleared. 
@@ -84,21 +86,19 @@ impl MainWindow {
         window.connect_size_allocate(|window, _| {
             let (width, height) = window.get_size();
             let is_maximized = window.is_maximized();
-            // sorry
             WINDOW_GEOMETRY.with(|g| {
-                g.set(Some(WindowGeometry {
-                    width,
-                    height,
-                    is_maximized,
-                }));
+                let mut g = g.borrow_mut();
+                g.is_maximized = is_maximized;
+                if !is_maximized {
+                    g.width = width;
+                    g.height = height;
+                }
             });
         });
 
         window.connect_destroy(|_| {
             WINDOW_GEOMETRY.with(|g| {
-                if let Some(g) = g.replace(None) {
-                    g.save();
-                }
+                g.borrow().save();
             });
         });
 
