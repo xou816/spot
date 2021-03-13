@@ -70,6 +70,7 @@ sources = files(
 './app/components/user_menu/mod.rs',
 './app/components/user_menu/user_menu.rs',
 './app/components/playlist/song.rs',
+'./app/components/playlist/song_actions.rs',
 './app/components/playlist/playlist.rs',
 './app/components/playlist/mod.rs',
 './app/components/navigation/navigation.rs',

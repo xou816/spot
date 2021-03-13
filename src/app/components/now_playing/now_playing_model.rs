@@ -1,7 +1,5 @@
-use gdk::SELECTION_CLIPBOARD;
 use gio::prelude::*;
-use gio::{ActionMapExt, SimpleAction, SimpleActionGroup};
-use gtk::Clipboard;
+use gio::{ActionMapExt, SimpleActionGroup};
 use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
@@ -11,7 +9,7 @@ use crate::app::models::SongModel;
 use crate::app::state::{
     PlaybackAction, PlaybackEvent, PlaybackState, SelectionAction, SelectionState,
 };
-use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState};
+use crate::app::{ActionDispatcher, AppEvent, AppModel, AppState};
 
 pub struct NowPlayingModel {
     app_model: Rc<AppModel>,
@@ -74,40 +72,12 @@ impl PlaylistModel for NowPlayingModel {
         let song = queue.song(id)?;
         let group = SimpleActionGroup::new();
 
-        let album_id = song.album.id.clone();
-        let view_album = SimpleAction::new("view_album", None);
-        let dispatcher = self.dispatcher.box_clone();
-        view_album.connect_activate(move |_, _| {
-            dispatcher.dispatch(AppAction::ViewAlbum(album_id.clone()));
-        });
-
-        group.add_action(&view_album);
-
-        for (i, artist) in song.artists.iter().enumerate() {
-            let view_artist = SimpleAction::new(&format!("view_artist_{}", i), None);
-            let dispatcher = self.dispatcher.box_clone();
-            let id = artist.id.clone();
-            view_artist.connect_activate(move |_, _| {
-                dispatcher.dispatch(AppAction::ViewArtist(id.clone()));
-            });
+        for view_artist in song.make_artist_actions(self.dispatcher.box_clone(), None) {
             group.add_action(&view_artist);
         }
-
-        let track_id = song.id.clone();
-        let copy_link = SimpleAction::new("copy_link", None);
-        copy_link.connect_activate(move |_, _| {
-            let clipboard = Clipboard::get(&SELECTION_CLIPBOARD);
-            clipboard.set_text(&format!("https://open.spotify.com/track/{}", &track_id));
-        });
-        group.add_action(&copy_link);
-
-        let dequeue = SimpleAction::new("dequeue", None);
-        let dispatcher = self.dispatcher.box_clone();
-        let track_id = song.id.clone();
-        dequeue.connect_activate(move |_, _| {
-            dispatcher.dispatch(PlaybackAction::Dequeue(track_id.clone()).into());
-        });
-        group.add_action(&dequeue);
+        group.add_action(&song.make_album_action(self.dispatcher.box_clone(), None));
+        group.add_action(&song.make_link_action(None));
+        group.add_action(&song.make_dequeue_action(self.dispatcher.box_clone(), None));
 
         Some(group.upcast())
     }
@@ -118,10 +88,10 @@ impl PlaylistModel for NowPlayingModel {
 
         let menu = gio::Menu::new();
         menu.append(Some("View album"), Some("song.view_album"));
-        for (i, artist) in song.artists.iter().enumerate() {
+        for artist in song.artists.iter() {
             menu.append(
                 Some(&format!("More from {}", artist.name)),
-                Some(&format!("song.view_artist_{}", i)),
+                Some(&format!("song.view_artist_{}", artist.id)),
             );
         }
 

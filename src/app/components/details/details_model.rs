@@ -1,7 +1,5 @@
-use gdk::SELECTION_CLIPBOARD;
 use gio::prelude::*;
-use gio::{ActionMapExt, SimpleAction, SimpleActionGroup};
-use gtk::Clipboard;
+use gio::{ActionMapExt, SimpleActionGroup};
 use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
@@ -150,31 +148,11 @@ impl PlaylistModel for DetailsModel {
 
         let group = SimpleActionGroup::new();
 
-        for (i, artist) in song.artists.iter().enumerate() {
-            let view_artist = SimpleAction::new(&format!("view_artist_{}", i), None);
-            let dispatcher = self.dispatcher.box_clone();
-            let id = artist.id.clone();
-            view_artist.connect_activate(move |_, _| {
-                dispatcher.dispatch(AppAction::ViewArtist(id.clone()));
-            });
+        for view_artist in song.make_artist_actions(self.dispatcher.box_clone(), None) {
             group.add_action(&view_artist);
         }
-
-        let track_id = song.id.clone();
-        let copy_link = SimpleAction::new("copy_link", None);
-        copy_link.connect_activate(move |_, _| {
-            let clipboard = Clipboard::get(&SELECTION_CLIPBOARD);
-            clipboard.set_text(&format!("https://open.spotify.com/track/{}", &track_id));
-        });
-        group.add_action(&copy_link);
-
-        let queue = SimpleAction::new("queue", None);
-        let dispatcher = self.dispatcher.box_clone();
-        let song = song.clone();
-        queue.connect_activate(move |_, _| {
-            dispatcher.dispatch(PlaybackAction::Queue(song.clone()).into());
-        });
-        group.add_action(&queue);
+        group.add_action(&song.make_link_action(None));
+        group.add_action(&song.make_queue_action(self.dispatcher.box_clone(), None));
 
         Some(group.upcast())
     }
@@ -184,10 +162,10 @@ impl PlaylistModel for DetailsModel {
         let song = songs.iter().find(|&song| song.id == id)?;
 
         let menu = gio::Menu::new();
-        for (i, artist) in song.artists.iter().enumerate() {
+        for artist in song.artists.iter() {
             menu.append(
                 Some(&format!("More from {}", artist.name)),
-                Some(&format!("song.view_artist_{}", i)),
+                Some(&format!("song.view_artist_{}", artist.id)),
             );
         }
 
