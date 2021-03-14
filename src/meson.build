@@ -140,6 +140,7 @@ test('Unit tests',
   args: [
     meson.source_root(),
     meson.build_root(),
+    get_option('buildtype'),
     get_option('offline') ? 'true' : 'false'
   ]
 )
