@@ -66,7 +66,6 @@ impl EventListener for Notification {
         match event {
             AppEvent::NotificationShown(content) => self.show(&content),
             AppEvent::NotificationHidden => self.hide(),
-            // AppEvent::Started => self.show("Welcome to Spot!"),
             _ => {}
         }
     }

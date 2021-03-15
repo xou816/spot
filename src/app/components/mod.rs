@@ -5,12 +5,13 @@ macro_rules! resource {
     };
 }
 
-use crate::api::SpotifyApiError;
-use crate::app::{state::LoginAction, AppAction, AppEvent};
-
+use gettextrs::*;
 use gtk::prelude::*;
 use std::cell::RefCell;
 use std::collections::HashSet;
+
+use crate::api::SpotifyApiError;
+use crate::app::{state::LoginAction, AppAction, AppEvent};
 
 mod navigation;
 pub use navigation::*;
@@ -74,9 +75,9 @@ pub fn handle_error(err: SpotifyApiError) -> Option<AppAction> {
         SpotifyApiError::NoToken => None,
         _ => {
             println!("Error: {:?}", err);
-            Some(AppAction::ShowNotification(
-                "An error occured. Check logs for details!".to_string(),
-            ))
+            Some(AppAction::ShowNotification(gettext(
+                "An error occured. Check logs for details!",
+            )))
         }
     }
 }

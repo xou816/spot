@@ -16,7 +16,7 @@
       <object class="GtkLabel" id="song_index">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="label" translatable="yes">1</property>
+        <property name="label">1</property>
         <style>
           <class name="song__index"/>
         </style>
@@ -37,7 +37,7 @@
           <object class="GtkLabel" id="song_title">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="label" translatable="yes">Title</property>
+            <property name="label">Title</property>
             <property name="ellipsize">middle</property>
             <property name="max-width-chars">50</property>
             <property name="xalign">0</property>
@@ -55,7 +55,7 @@
           <object class="GtkLabel" id="song_artist">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="label" translatable="yes">Artist</property>
+            <property name="label">Artist</property>
             <property name="ellipsize">middle</property>
             <property name="max-width-chars">35</property>
             <property name="xalign">0</property>
@@ -107,7 +107,7 @@
         <property name="sensitive">False</property>
         <property name="can-focus">False</property>
         <property name="xpad">0</property>
-        <property name="label" translatable="yes">0:00</property>
+        <property name="label">0:00</property>
         <property name="max-width-chars">35</property>
         <property name="xalign">1</property>
         <style>

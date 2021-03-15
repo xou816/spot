@@ -1,3 +1,5 @@
+use gettextrs::*;
+
 use crate::app::credentials;
 use crate::app::state::{AppAction, AppEvent, UpdatableState};
 
@@ -55,9 +57,9 @@ impl UpdatableState for LoginState {
             }
             LoginAction::SetLoginFailure => vec![LoginEvent::LoginFailed.into()],
             LoginAction::RefreshToken => vec![LoginEvent::FreshTokenRequested.into()],
-            LoginAction::SetRefreshedToken(_) => vec![AppEvent::NotificationShown(
-                "Connection refreshed".to_string(),
-            )],
+            LoginAction::SetRefreshedToken(_) => {
+                vec![AppEvent::NotificationShown(gettext("Connection refreshed"))]
+            }
             LoginAction::Logout => {
                 self.user = None;
                 vec![LoginEvent::LogoutCompleted.into()]

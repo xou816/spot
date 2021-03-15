@@ -28,7 +28,7 @@
                 <property name="halign">start</property>
                 <property name="margin-start">8</property>
                 <property name="margin-end">8</property>
-                <property name="label" translatable="yes">Artist</property>
+                <property name="label">Artist</property>
                 <property name="wrap">True</property>
                 <property name="xalign">0</property>
                 <style>

@@ -1,3 +1,4 @@
+use gettextrs::*;
 use gio::{ActionMapExt, SimpleAction, SimpleActionGroup};
 use gtk::prelude::*;
 use gtk::ButtonExt;
@@ -95,7 +96,7 @@ impl SelectionEditor {
             context.add_class("selection-mode");
         } else {
             self.selection_button.hide();
-            self.selection_label.set_label("No songs selected");
+            self.selection_label.set_label(&gettext("No song selected"));
             context.remove_class("selection-mode");
         }
         if self.selection_toggle.get_active() != active {
@@ -111,8 +112,11 @@ impl SelectionEditor {
             gtk::ReliefStyle::None
         });
         self.selection_button.set_sensitive(count > 0);
-        self.selection_label
-            .set_label(&format!("{} songs selected", count));
+        self.selection_label.set_label(&format!(
+            "{} {}",
+            count,
+            ngettext("song selected", "songs selected", count as u32),
+        ));
     }
 
     fn update_selection_actions(&self) {
@@ -122,9 +126,12 @@ impl SelectionEditor {
 
         let menu = gio::Menu::new();
         if self.model.all_selected_from_queue() {
-            menu.append(Some("Dequeue selected"), Some("selection.dequeue"));
+            menu.append(
+                Some(&gettext("Dequeue selected")),
+                Some("selection.dequeue"),
+            );
         } else {
-            menu.append(Some("Queue selected"), Some("selection.queue"));
+            menu.append(Some(&gettext("Queue selected")), Some("selection.queue"));
         }
         self.selection_button.set_menu_model(Some(&menu));
     }

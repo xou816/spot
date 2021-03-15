@@ -1,3 +1,4 @@
+use gettextrs::*;
 use gio::prelude::*;
 use gladis::Gladis;
 use gtk::prelude::*;
@@ -118,7 +119,7 @@ impl SearchResults {
         }
 
         if let Some(query) = self.model.get_query() {
-            let formatted = format!("Search results for « {} »", *query);
+            let formatted = format!("{} « {} »", gettext("Search results for"), *query);
             self.widget.results_label.set_label(&formatted[..]);
         }
     }

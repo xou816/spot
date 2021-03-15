@@ -65,7 +65,7 @@
       <object class="GtkLabel" id="album_label">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="label" translatable="yes">Album</property>
+        <property name="label">Album</property>
         <property name="justify">center</property>
         <property name="wrap">True</property>
         <property name="wrap-mode">word-char</property>
@@ -86,7 +86,7 @@
       <object class="GtkLabel" id="artist_label">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="label" translatable="yes">Artist</property>
+        <property name="label">Artist</property>
         <property name="justify">center</property>
         <property name="wrap">True</property>
         <property name="wrap-mode">word-char</property>

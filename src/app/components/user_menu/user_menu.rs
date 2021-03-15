@@ -1,3 +1,4 @@
+use gettextrs::*;
 use gio::{ActionMapExt, SimpleAction, SimpleActionGroup};
 use gtk::{AboutDialogExt, DialogExt, MenuButtonExt, WidgetExt};
 use std::rc::Rc;
@@ -56,12 +57,12 @@ impl UserMenu {
 
     fn update_menu(&self) {
         let menu = gio::Menu::new();
-        menu.append(Some("About"), Some("menu.about"));
-        menu.append(Some("Quit"), Some("app.quit"));
+        menu.append(Some(&gettext("About")), Some("menu.about"));
+        menu.append(Some(&gettext("Quit")), Some("app.quit"));
 
         if let Some(username) = self.model.username() {
             let user_menu = gio::Menu::new();
-            user_menu.append(Some("Log out"), Some("menu.logout"));
+            user_menu.append(Some(&gettext("Log out")), Some("menu.logout"));
             menu.insert_section(0, Some(&username), &user_menu);
         }
 

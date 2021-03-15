@@ -41,7 +41,7 @@
       <object class="GtkLabel" id="artist">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="label" translatable="yes">Artist Name</property>
+        <property name="label">Artist Name</property>
       </object>
       <packing>
         <property name="expand">False</property>
