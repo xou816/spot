@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-15 19:34+0100\n"
+"POT-Creation-Date: 2021-03-15 20:16+0100\n"
 "PO-Revision-Date: 2021-03-15 19:18+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -42,6 +42,10 @@ msgstr "Ajouter à la file d'attente"
 #: src/app/components/now_playing/now_playing_model.rs:91
 msgid "View album"
 msgstr "Voir l'album"
+
+#: src/app/components/login/login_model.rs:29
+msgid "Could not save password. Make sure the session keyring is unlocked."
+msgstr "Le mot de passe n'a pu être enregistré, assurez vous que le Trousseau de session est déverouillé."
 
 #: src/app/components/now_playing/now_playing_model.rs:100
 msgid "Dequeue"

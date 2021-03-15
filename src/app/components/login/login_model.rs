@@ -1,3 +1,5 @@
+use gettextrs::*;
+
 use crate::app::credentials;
 use crate::app::{state::LoginAction, ActionDispatcher, AppAction};
 
@@ -22,9 +24,10 @@ impl LoginModel {
 
     pub fn save_for_autologin(&self, credentials: credentials::Credentials) {
         if credentials::save_credentials(credentials).is_err() {
-            self.dispatcher.dispatch(AppAction::ShowNotification(
-                "Could not save password. Make sure the session keyring is unlocked.".to_string(),
-            ));
+            self.dispatcher
+                .dispatch(AppAction::ShowNotification(gettext(
+                    "Could not save password. Make sure the session keyring is unlocked.",
+                )));
         }
     }
 
