@@ -28,7 +28,7 @@ fn main() {
 
     let settings = settings::SpotSettings::new_from_gsettings().unwrap_or_default();
     startup(&settings);
-    let gtk_app = gtk::Application::new(Some("dev.alextren.SpotDev"), Default::default()).unwrap();
+    let gtk_app = gtk::Application::new(Some("dev.alextren.Spot"), Default::default()).unwrap();
     let builder = gtk::Builder::from_resource("/dev/alextren/Spot/window.ui");
     let window: libhandy::ApplicationWindow = builder.get_object("window").unwrap();
 

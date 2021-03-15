@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-15 19:34+0100\n"
+"POT-Creation-Date: 2021-03-15 20:16+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,6 +42,10 @@ msgstr ""
 #: src/app/components/artist_details/artist_details_model.rs:135
 #: src/app/components/now_playing/now_playing_model.rs:91
 msgid "View album"
+msgstr ""
+
+#: src/app/components/login/login_model.rs:29
+msgid "Could not save password. Make sure the session keyring is unlocked."
 msgstr ""
 
 #: src/app/components/now_playing/now_playing_model.rs:100
