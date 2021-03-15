@@ -3220,6 +3220,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c111b5bd5695e56cffe5129854aa230b39c93a305372fdbb2668ca2394eea9f8"
 
 [[package]]
+name = "slotmap"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab3003725ae562cf995f3dc82bb99e70926e09000396816765bb6d7adbe740b1"
+dependencies = [
+ "version_check",
+]
+
+[[package]]
 name = "sluice"
 version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3300,7 +3309,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio-core",
- "zbus 2.0.0-beta.2",
+ "zbus 2.0.0-beta.3",
  "zvariant",
  "zvariant_derive",
 ]
@@ -4081,15 +4090,16 @@ dependencies = [
 
 [[package]]
 name = "zbus"
-version = "2.0.0-beta.2"
+version = "2.0.0-beta.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b50a2ffd6637b05dd587c1877b969705412da85e56f5231d7c15064e9e1ebf8b"
+checksum = "3e1e656194618d167524f97e88ff9bf87f2b1e8bf58f357b2a7abfdff8cc85c9"
 dependencies = [
  "async-io",
  "async-lock",
  "byteorder",
  "derivative",
  "enumflags2",
+ "event-listener",
  "futures-core",
  "futures-sink",
  "futures-util",
@@ -4101,7 +4111,8 @@ dependencies = [
  "serde",
  "serde_repr",
  "sha1",
- "zbus_macros 2.0.0-beta.2",
+ "slotmap",
+ "zbus_macros 2.0.0-beta.3",
  "zvariant",
 ]
 
@@ -4119,9 +4130,9 @@ dependencies = [
 
 [[package]]
 name = "zbus_macros"
-version = "2.0.0-beta.2"
+version = "2.0.0-beta.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2adffa6284f0c9a5cf098bca0f3982540f525c73186ed5e54519c98b607c62e"
+checksum = "fcd4cb372bc2cade3f2323e4104112dceb6819f5dd9afa98515b4e821d232932"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
