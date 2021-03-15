@@ -185,7 +185,7 @@
                       <object class="GtkLabel" id="notification_content">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Information</property>
+                        <property name="label">Information</property>
                         <property name="wrap">True</property>
                       </object>
                       <packing>
@@ -387,7 +387,7 @@
                   <object class="GtkLabel" id="track_position">
                     <property name="sensitive">False</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">0:00</property>
+                    <property name="label">0:00</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -399,7 +399,7 @@
                   <object class="GtkLabel" id="track_duration">
                     <property name="sensitive">False</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes"> / 0:00</property>
+                    <property name="label"> / 0:00</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>

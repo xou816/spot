@@ -1,3 +1,4 @@
+use gettextrs::*;
 use gio::prelude::*;
 use gio::{ActionMapExt, SimpleActionGroup};
 use std::cell::Ref;
@@ -87,16 +88,16 @@ impl PlaylistModel for NowPlayingModel {
         let song = queue.song(id)?;
 
         let menu = gio::Menu::new();
-        menu.append(Some("View album"), Some("song.view_album"));
+        menu.append(Some(&gettext("View album")), Some("song.view_album"));
         for artist in song.artists.iter() {
             menu.append(
-                Some(&format!("More from {}", artist.name)),
+                Some(&format!("{} {}", gettext("More from"), artist.name)),
                 Some(&format!("song.view_artist_{}", artist.id)),
             );
         }
 
-        menu.append(Some("Copy link"), Some("song.copy_link"));
-        menu.append(Some("Dequeue"), Some("song.dequeue"));
+        menu.append(Some(&gettext("Copy link")), Some("song.copy_link"));
+        menu.append(Some(&gettext("Dequeue")), Some("song.dequeue"));
 
         Some(menu.upcast())
     }

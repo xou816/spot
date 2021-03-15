@@ -4,6 +4,7 @@ extern crate glib;
 extern crate lazy_static;
 
 use futures::channel::mpsc::UnboundedSender;
+use gettextrs::*;
 use gio::prelude::*;
 use gio::{ActionMapExt, SimpleAction};
 use gtk::prelude::*;
@@ -21,9 +22,13 @@ use crate::app::dispatch::{spawn_task_handler, DispatchLoop};
 use crate::app::{state::PlaybackAction, App, AppAction, BrowserAction};
 
 fn main() {
+    textdomain("spot")
+        .and_then(|_| bind_textdomain_codeset("spot", "UTF-8"))
+        .expect("Could not setup localization");
+
     let settings = settings::SpotSettings::new_from_gsettings().unwrap_or_default();
     startup(&settings);
-    let gtk_app = gtk::Application::new(Some("dev.alextren.Spot"), Default::default()).unwrap();
+    let gtk_app = gtk::Application::new(Some("dev.alextren.SpotDev"), Default::default()).unwrap();
     let builder = gtk::Builder::from_resource("/dev/alextren/Spot/window.ui");
     let window: libhandy::ApplicationWindow = builder.get_object("window").unwrap();
 

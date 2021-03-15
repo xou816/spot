@@ -68,6 +68,13 @@ This will install a `.desktop` file among other things, and the spot executable 
 
 To build an optimized release build, use `-Dbuildtype=release` instead.
 
+### Regenerating potfiles
+
+```
+ninja spot-pot -C target
+ninja spot-update-po -C target
+```
+
 ### Debugging
 
 Spot uses [isahc](https://github.com/sagebind/isahc), which uses libcurl, therefore you can set the `https_proxy` env variable to help with debugging. In debug mode, Spot skips SSL certificate verification.

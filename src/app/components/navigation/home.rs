@@ -1,3 +1,4 @@
+use gettextrs::*;
 use gtk::prelude::*;
 use gtk::{ListBoxExt, StackExt, StackSidebarExt};
 
@@ -28,13 +29,17 @@ impl HomePane {
 
         let stack = gtk::Stack::new();
         stack.set_transition_type(gtk::StackTransitionType::Crossfade);
-        stack.add_titled(library.get_root_widget(), "library", "Library");
+        stack.add_titled(library.get_root_widget(), "library", &gettext("Library"));
         stack.add_titled(
             saved_playlists.get_root_widget(),
             "saved_playlists",
-            "Playlists",
+            &gettext("Playlists"),
         );
-        stack.add_titled(now_playing.get_root_widget(), "now_playing", "Now playing");
+        stack.add_titled(
+            now_playing.get_root_widget(),
+            "now_playing",
+            &gettext("Now playing"),
+        );
 
         stack_sidebar.set_stack(&stack);
 
