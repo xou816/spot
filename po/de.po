@@ -98,8 +98,8 @@ msgstr "Kein Titel ausgewählt"
 #: src/app/components/selection_editor/mod.rs:118
 msgid "song selected"
 msgid_plural "songs selected"
-msgstr[0] "Lied ausgewählt"
-msgstr[1] "Lieder ausgewählt"
+msgstr[0] "Titel ausgewählt"
+msgstr[1] "Titel ausgewählt"
 
 #: src/app/components/selection_editor/mod.rs:130
 msgid "Dequeue selected"
