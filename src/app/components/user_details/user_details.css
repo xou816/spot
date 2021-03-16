@@ -10,7 +10,7 @@ list.user__top-artists row {
 
 .user {
   transition: opacity .3s ease;
-  opacity: 0;
+  /* opacity: 0;*/
 }
 
 .user__loaded {

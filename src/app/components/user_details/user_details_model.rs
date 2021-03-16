@@ -24,12 +24,6 @@ impl UserDetailsModel {
             dispatcher,
         }
     }
-
-    fn tracks_ref(&self) -> Option<impl Deref<Target = Vec<SongDescription>> + '_> {
-        self.app_model
-            .map_state_opt(|s| Some(&s.browser.artist_state(&self.id)?.top_tracks))
-    }
-
     pub fn get_user_name(&self) -> Option<impl Deref<Target = String> + '_> {
         self.app_model
             .map_state_opt(|s| s.browser.user_state(&self.id)?.user.as_ref())
@@ -40,7 +34,8 @@ impl UserDetailsModel {
             .map_state_opt(|s| Some(&s.browser.user_state(&self.id)?.playlists))
     }
 
-    pub fn load_artist_details(&self, id: String) {
+    pub fn load_user_details(&self, id: String) {
+        println!("Loading user details {}...", id);
         let api = self.app_model.get_spotify();
         self.dispatcher.dispatch_async(Box::pin(async move {
             match api.get_user(&id[..]).await {
@@ -50,9 +45,9 @@ impl UserDetailsModel {
         }));
     }
 
-    pub fn open_album(&self, id: &str) {
+    pub fn open_playlist(&self, id: &str) {
         self.dispatcher
-            .dispatch(AppAction::ViewAlbum(id.to_string()));
+            .dispatch(AppAction::ViewPlaylist(id.to_string()));
     }
 
     pub fn load_more(&self) -> Option<()> {
@@ -72,92 +67,5 @@ impl UserDetailsModel {
         }));
 
         Some(())
-    }
-}
-
-impl PlaylistModel for UserDetailsModel {
-    fn songs(&self) -> Vec<SongModel> {
-        let tracks = self.tracks_ref();
-        match tracks {
-            Some(tracks) => tracks
-                .iter()
-                .enumerate()
-                .map(|(i, s)| s.to_song_model(i))
-                .collect(),
-            None => vec![],
-        }
-    }
-
-    fn current_song_id(&self) -> Option<String> {
-        self.app_model.get_state().playback.current_song_id.clone()
-    }
-
-    fn play_song(&self, id: String) {
-        let tracks = self.tracks_ref();
-        if let Some(tracks) = tracks {
-            self.dispatcher.dispatch(
-                PlaybackAction::LoadPlaylist(PlaylistSource::None, tracks.clone()).into(),
-            );
-            self.dispatcher.dispatch(PlaybackAction::Load(id).into());
-        }
-    }
-
-    fn should_refresh_songs(&self, event: &AppEvent) -> bool {
-        matches!(
-            event,
-            AppEvent::BrowserEvent(BrowserEvent::ArtistDetailsUpdated(id)) if id == &self.id
-        )
-    }
-
-    fn actions_for(&self, id: String) -> Option<gio::ActionGroup> {
-        let songs = self.tracks_ref()?;
-        let song = songs.iter().find(|song| song.id == id)?;
-
-        let group = SimpleActionGroup::new();
-
-        let album_id = song.album.id.clone();
-        let view_album = SimpleAction::new("view_album", None);
-        let dispatcher = self.dispatcher.box_clone();
-        view_album.connect_activate(move |_, _| {
-            dispatcher.dispatch(AppAction::ViewAlbum(album_id.clone()));
-        });
-
-        group.add_action(&view_album);
-
-        for (i, artist) in song.artists.iter().enumerate() {
-            let view_artist = SimpleAction::new(&format!("view_artist_{}", i), None);
-            let dispatcher = self.dispatcher.box_clone();
-            let id = artist.id.clone();
-            view_artist.connect_activate(move |_, _| {
-                dispatcher.dispatch(AppAction::ViewArtist(id.clone()));
-            });
-            group.add_action(&view_artist);
-        }
-
-        let track_id = song.id.clone();
-        let copy_link = SimpleAction::new("copy_link", None);
-        copy_link.connect_activate(move |_, _| {
-            let clipboard = Clipboard::get(&SELECTION_CLIPBOARD);
-            clipboard.set_text(&format!("https://open.spotify.com/track/{}", &track_id,));
-        });
-        group.add_action(&copy_link);
-
-        Some(group.upcast())
-    }
-
-    fn menu_for(&self, id: String) -> Option<gio::MenuModel> {
-        let songs = self.tracks_ref()?;
-        let song = songs.iter().find(|song| song.id == id)?;
-
-        let menu = gio::Menu::new();
-        menu.append(Some("View album"), Some("song.view_album"));
-        for (i, artist) in song.artists.iter().enumerate() {
-            menu.append(
-                Some(&format!("More from {}", artist.name)),
-                Some(&format!("song.view_artist_{}", i)),
-            );
-        }
-        menu.append(Some("Copy link"), Some("song.copy_link"));
-        Some(menu.upcast())
     }
 }

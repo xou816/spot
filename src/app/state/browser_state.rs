@@ -1,6 +1,6 @@
 use super::{
     ArtistState, DetailsState, HomeState, PlaylistDetailsState, ScreenName, SearchState,
-    UpdatableState, UserDetailsState,
+    UpdatableState, UserState,
 };
 use crate::app::models::*;
 use crate::app::state::AppAction;
@@ -25,6 +25,7 @@ pub enum BrowserAction {
     SaveAlbum(AlbumDescription),
     UnsaveAlbum(String),
     SetUserDetails(UserDescription),
+    AppendUserPlaylists(Vec<PlaylistDescription>),
 }
 
 impl Into<AppAction> for BrowserAction {
@@ -47,6 +48,7 @@ pub enum BrowserEvent {
     NavigationPoppedTo(ScreenName),
     AlbumSaved(String),
     AlbumUnsaved(String),
+    UserDetailsUpdated(String),
 }
 
 pub enum BrowserScreen {
@@ -55,7 +57,7 @@ pub enum BrowserScreen {
     Search(SearchState),
     Artist(ArtistState),
     PlaylistDetails(PlaylistDetailsState),
-    User(UserDetailsState),
+    User(UserState),
 }
 
 impl BrowserScreen {
@@ -70,7 +72,7 @@ impl BrowserScreen {
             ScreenName::PlaylistDetails(id) => {
                 BrowserScreen::PlaylistDetails(PlaylistDetailsState::new(id.to_string()))
             }
-            ScreenName::User(id) => BrowserScreen::User(UserDetailsState::new(id.to_string())),
+            ScreenName::User(id) => BrowserScreen::User(UserState::new(id.to_string())),
         }
     }
 
@@ -236,6 +238,13 @@ impl BrowserState {
     pub fn playlist_details_state(&self, id: &str) -> Option<&PlaylistDetailsState> {
         self.navigation.iter_rev().find_map(|screen| match screen {
             BrowserScreen::PlaylistDetails(state) if state.id == id => Some(state),
+            _ => None,
+        })
+    }
+
+    pub fn user_state(&self, id: &str) -> Option<&UserState> {
+        self.navigation.iter_rev().find_map(|screen| match screen {
+            BrowserScreen::User(state) if state.id == id => Some(state),
             _ => None,
         })
     }
