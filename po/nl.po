@@ -1,0 +1,152 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the spot package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: spot\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-03-15 20:16+0100\n"
+"PO-Revision-Date: 2021-03-16 12:35+0100\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 2.4.2\n"
+"Last-Translator: Heimen Stoffels <vistausss@outlook.com>\n"
+"Language: nl\n"
+
+#: src/app/components/details/details_model.rs:168
+#: src/app/components/playlist_details/playlist_details_model.rs:126
+#: src/app/components/artist_details/artist_details_model.rs:138
+#: src/app/components/now_playing/now_playing_model.rs:94
+msgid "More from"
+msgstr "Meer van"
+
+#: src/app/components/details/details_model.rs:173
+#: src/app/components/playlist_details/playlist_details_model.rs:131
+#: src/app/components/artist_details/artist_details_model.rs:142
+#: src/app/components/now_playing/now_playing_model.rs:99
+msgid "Copy link"
+msgstr "Link kopiëren"
+
+#: src/app/components/details/details_model.rs:174
+#: src/app/components/playlist_details/playlist_details_model.rs:132
+#: src/app/components/artist_details/artist_details_model.rs:143
+msgid "Queue"
+msgstr "Toevoegen aan wachtrij"
+
+#: src/app/components/playlist_details/playlist_details_model.rs:123
+#: src/app/components/artist_details/artist_details_model.rs:135
+#: src/app/components/now_playing/now_playing_model.rs:91
+msgid "View album"
+msgstr "Album bekijken"
+
+#: src/app/components/login/login_model.rs:29
+msgid "Could not save password. Make sure the session keyring is unlocked."
+msgstr "Het wachtwoord kan niet worden opgeslagen - zorg dat de sessiesleutelhanger ontgrendeld is."
+
+#: src/app/components/now_playing/now_playing_model.rs:100
+msgid "Dequeue"
+msgstr "Verwijderen uit wachtrij"
+
+#: src/app/components/user_menu/user_menu.rs:60
+msgid "About"
+msgstr "Over"
+
+#: src/app/components/user_menu/user_menu.rs:61
+msgid "Quit"
+msgstr "Afsluiten"
+
+#: src/app/components/user_menu/user_menu.rs:65
+msgid "Log out"
+msgstr "Uitloggen"
+
+#: src/app/components/navigation/home.rs:32
+msgid "Library"
+msgstr "Verzameling"
+
+#: src/app/components/navigation/home.rs:36
+msgid "Playlists"
+msgstr "Afspeellijsten"
+
+#: src/app/components/navigation/home.rs:41
+#: src/app/components/now_playing/now_playing.ui:21
+msgid "Now playing"
+msgstr "Je luistert naar"
+
+#: src/app/components/search/search.rs:122
+msgid "Search results for"
+msgstr "Zoekresultaten voor"
+
+#: src/app/components/mod.rs:79
+msgid "An error occured. Check logs for details!"
+msgstr "Er is een fout opgetreden - bekijk het logboek!"
+
+#: src/app/components/selection_editor/mod.rs:99 src/window.ui:32
+msgid "No song selected"
+msgstr "Geen nummer geselecteerd"
+
+#: src/app/components/selection_editor/mod.rs:118
+msgid "song selected"
+msgid_plural "songs selected"
+msgstr[0] "nummer geselecteerd"
+msgstr[1] "nummers geselecteerd"
+
+#: src/app/components/selection_editor/mod.rs:130
+msgid "Dequeue selected"
+msgstr "Selectie verwijderen uit wachtrij"
+
+#: src/app/components/selection_editor/mod.rs:134
+msgid "Queue selected"
+msgstr "Selectie toevoegen aan wachtrij"
+
+#: src/app/state/login_state.rs:61
+msgid "Connection refreshed"
+msgstr "De verbinding is vernieuwd"
+
+#: src/app/components/artist_details/artist_details.ui:57
+msgid "Top tracks"
+msgstr "Topnummers"
+
+#: src/app/components/artist_details/artist_details.ui:112
+msgid "Releases"
+msgstr "Uitgaven"
+
+#: src/app/components/login/login.ui:69
+msgid "Login to Spotify Premium"
+msgstr "Inloggen op Spotify Premium"
+
+#: src/app/components/login/login.ui:97
+msgid "Username"
+msgstr "Gebruikersnaam"
+
+#: src/app/components/login/login.ui:112
+msgid "Password"
+msgstr "Wachtwoord"
+
+#: src/app/components/login/login.ui:156
+msgid "Authentication failed! Please restart Spot before attempting to log in again."
+msgstr "Het inloggen is mislukt. Herstart Spot en probeer het opnieuw."
+
+#: src/app/components/login/login.ui:181
+msgid "Log in"
+msgstr "Inloggen"
+
+#: src/app/components/search/search.ui:95
+msgid "Albums"
+msgstr "Albums"
+
+#: src/app/components/search/search.ui:144
+msgid "Artists"
+msgstr "Artiesten"
+
+#: src/window.ui:20
+msgid "Spotify"
+msgstr "Spotify"
+
+#: src/window.ui:458
+msgid "No song playing"
+msgstr "Er wordt niks afgespeeld"
