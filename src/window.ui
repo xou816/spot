@@ -96,7 +96,7 @@
                   <object class="GtkImage">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="icon-name">search-symbolic</property>
+                    <property name="icon-name">system-search-symbolic</property>
                   </object>
                 </child>
               </object>
