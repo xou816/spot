@@ -1,0 +1,153 @@
+# German translations for spot package.
+# Copyright (C) 2021 THE spot'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the spot package.
+# Automatically generated, 2021.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: spot\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-03-15 20:16+0100\n"
+"PO-Revision-Date: 2021-03-15 19:18+0100\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: src/app/components/details/details_model.rs:168
+#: src/app/components/playlist_details/playlist_details_model.rs:126
+#: src/app/components/artist_details/artist_details_model.rs:138
+#: src/app/components/now_playing/now_playing_model.rs:94
+msgid "More from"
+msgstr "Mehr von"
+
+#: src/app/components/details/details_model.rs:173
+#: src/app/components/playlist_details/playlist_details_model.rs:131
+#: src/app/components/artist_details/artist_details_model.rs:142
+#: src/app/components/now_playing/now_playing_model.rs:99
+msgid "Copy link"
+msgstr "Link kopieren"
+
+#: src/app/components/details/details_model.rs:174
+#: src/app/components/playlist_details/playlist_details_model.rs:132
+#: src/app/components/artist_details/artist_details_model.rs:143
+msgid "Queue"
+msgstr "Warteschlange"
+
+#: src/app/components/playlist_details/playlist_details_model.rs:123
+#: src/app/components/artist_details/artist_details_model.rs:135
+#: src/app/components/now_playing/now_playing_model.rs:91
+msgid "View album"
+msgstr "Album ansehen"
+
+#: src/app/components/login/login_model.rs:29
+msgid "Could not save password. Make sure the session keyring is unlocked."
+msgstr "Das Passwort konnte nicht gespeichert werden. Stellen Sie sicher, dass der Sitzungsschlüsselring entsperrt ist."
+
+#: src/app/components/now_playing/now_playing_model.rs:100
+msgid "Dequeue"
+msgstr "Aus Warteschlange entfernen"
+
+#: src/app/components/user_menu/user_menu.rs:60
+msgid "About"
+msgstr "Über"
+
+#: src/app/components/user_menu/user_menu.rs:61
+msgid "Quit"
+msgstr "Beenden"
+
+#: src/app/components/user_menu/user_menu.rs:65
+msgid "Log out"
+msgstr "Abmelden"
+
+#: src/app/components/navigation/home.rs:32
+msgid "Library"
+msgstr "Bibliothek"
+
+#: src/app/components/navigation/home.rs:36
+msgid "Playlists"
+msgstr "Playlists"
+
+#: src/app/components/navigation/home.rs:41
+#: src/app/components/now_playing/now_playing.ui:21
+msgid "Now playing"
+msgstr "Es läuft"
+
+#: src/app/components/search/search.rs:122
+msgid "Search results for"
+msgstr "Suchergebnisse für"
+
+#: src/app/components/mod.rs:79
+msgid "An error occured. Check logs for details!"
+msgstr "Es ist ein Fehler aufgetreten. Prüfen Sie die Protokolle für Details!"
+
+#: src/app/components/selection_editor/mod.rs:99 src/window.ui:32
+msgid "No song selected"
+msgstr "Kein Lied ausgewählt"
+
+#: src/app/components/selection_editor/mod.rs:118
+msgid "song selected"
+msgid_plural "songs selected"
+msgstr[0] "Lied ausgewählt"
+msgstr[1] "Lieder ausgewählt"
+
+#: src/app/components/selection_editor/mod.rs:130
+msgid "Dequeue selected"
+msgstr "Ausgewählte entfernen"
+
+#: src/app/components/selection_editor/mod.rs:134
+msgid "Queue selected"
+msgstr "Auswahl in Warteschlange einreihen"
+
+#: src/app/state/login_state.rs:61
+msgid "Connection refreshed"
+msgstr "Verbindung aufgefrischt"
+
+#: src/app/components/artist_details/artist_details.ui:57
+msgid "Top tracks"
+msgstr "Top-Tracks"
+
+#: src/app/components/artist_details/artist_details.ui:112
+msgid "Releases"
+msgstr "Veröffentlichungen"
+
+#: src/app/components/login/login.ui:69
+msgid "Login to Spotify Premium"
+msgstr "Bei Spotify Premium anmelden"
+
+#: src/app/components/login/login.ui:97
+msgid "Username"
+msgstr "Benutzernahme"
+
+#: src/app/components/login/login.ui:112
+msgid "Password"
+msgstr "Password"
+
+#: src/app/components/login/login.ui:156
+msgid ""
+"Authentication failed! Please restart Spot before attempting to log in again."
+msgstr ""
+"Authentifizierung fehlgeschlagen! Bitte starten Sie Spot neu, bevor Sie erneut versuchen, sich anzumelden."
+
+#: src/app/components/login/login.ui:181
+msgid "Log in"
+msgstr "Anmelden"
+
+#: src/app/components/search/search.ui:95
+msgid "Albums"
+msgstr "Alben"
+
+#: src/app/components/search/search.ui:144
+msgid "Artists"
+msgstr "Künstler"
+
+#: src/window.ui:20
+msgid "Spotify"
+msgstr "Spotify"
+
+#: src/window.ui:458
+msgid "No song playing"
+msgstr "Es wird kein Lied abgespielt"
