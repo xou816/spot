@@ -1,7 +1,12 @@
 # German translations for spot package.
 # Copyright (C) 2021 THE spot'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the spot package.
-# Automatically generated, 2021.
+# kleinHeiti, 2021.
+# Philipp Kiemle <philipp.kiemle@gmail.com>, 2021.
+#
+# Translated using the dictionary of the gnome-de translation team: https://wiki.gnome.org/de/StandardUebersetzungen
+#
+# Song = Titel
 #
 msgid ""
 msgstr ""
