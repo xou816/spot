@@ -127,7 +127,7 @@ msgstr "Bei Spotify Premium anmelden"
 
 #: src/app/components/login/login.ui:97
 msgid "Username"
-msgstr "Benutzernahme"
+msgstr "Benutzername"
 
 #: src/app/components/login/login.ui:112
 msgid "Password"
