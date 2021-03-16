@@ -89,7 +89,7 @@ msgstr "Suchergebnisse für"
 
 #: src/app/components/mod.rs:79
 msgid "An error occured. Check logs for details!"
-msgstr "Es ist ein Fehler aufgetreten. Prüfen Sie die Protokolle für Details!"
+msgstr "Es ist ein Fehler aufgetreten. Überprüfen Sie die Protokolle für Details!"
 
 #: src/app/components/selection_editor/mod.rs:99 src/window.ui:32
 msgid "No song selected"
