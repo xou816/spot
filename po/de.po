@@ -158,4 +158,4 @@ msgstr "Spotify"
 
 #: src/window.ui:458
 msgid "No song playing"
-msgstr "Es wird kein Lied abgespielt"
+msgstr "Kein Titel wird gespielt"
