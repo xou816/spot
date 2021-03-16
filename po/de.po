@@ -93,7 +93,7 @@ msgstr "Es ist ein Fehler aufgetreten. Überprüfen Sie die Protokolle für Deta
 
 #: src/app/components/selection_editor/mod.rs:99 src/window.ui:32
 msgid "No song selected"
-msgstr "Kein Lied ausgewählt"
+msgstr "Kein Titel ausgewählt"
 
 #: src/app/components/selection_editor/mod.rs:118
 msgid "song selected"
