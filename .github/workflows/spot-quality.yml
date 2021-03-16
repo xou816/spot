@@ -21,3 +21,11 @@ jobs:
         with:
           command: fmt
           args: --all -- --check
+
+  shellcheck:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+            sudo apt-get -y update && sudo apt-get -y install shellcheck
+            find $GITHUB_WORKSPACE -type f -and \( -name "*.sh" \) | xargs shellcheck
