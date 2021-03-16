@@ -50,7 +50,9 @@ msgstr "Album ansehen"
 
 #: src/app/components/login/login_model.rs:29
 msgid "Could not save password. Make sure the session keyring is unlocked."
-msgstr "Das Passwort konnte nicht gespeichert werden. Stellen Sie sicher, dass der Sitzungsschlüsselring entsperrt ist."
+msgstr ""
+"Das Passwort konnte nicht gespeichert werden. Stellen Sie sicher, dass der "
+"Sitzungs-Schlüsselbund entsperrt ist."
 
 #: src/app/components/now_playing/now_playing_model.rs:100
 msgid "Dequeue"
