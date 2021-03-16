@@ -115,7 +115,7 @@ msgstr "Verbindung aufgefrischt"
 
 #: src/app/components/artist_details/artist_details.ui:57
 msgid "Top tracks"
-msgstr "Top-Tracks"
+msgstr "Top-Titel"
 
 #: src/app/components/artist_details/artist_details.ui:112
 msgid "Releases"
