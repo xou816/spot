@@ -84,6 +84,7 @@ sources = files(
 './app/components/search/search_bar.rs',
 './app/components/search/mod.rs',
 './app/components/search/search.rs',
+'./app/components/labels.rs',
 './app/components/mod.rs',
 './app/components/selection_editor/mod.rs',
 './app/loader.rs',

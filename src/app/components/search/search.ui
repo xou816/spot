@@ -92,7 +92,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Albums</property>
+                    <property name="label" translatable="yes" comments="This is the title of a section of the search results">Albums</property>
                   </object>
                 </child>
               </object>
@@ -141,7 +141,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Artists</property>
+                    <property name="label" translatable="yes" comments="This is the title of a section of the search results">Artists</property>
                   </object>
                 </child>
               </object>

@@ -58,7 +58,8 @@ impl UpdatableState for LoginState {
             LoginAction::SetLoginFailure => vec![LoginEvent::LoginFailed.into()],
             LoginAction::RefreshToken => vec![LoginEvent::FreshTokenRequested.into()],
             LoginAction::SetRefreshedToken(_) => {
-                vec![AppEvent::NotificationShown(gettext("Connection refreshed"))]
+                // translators: This notification is shown when, after some inactivity, the session is successfully restored. The user might have to repeat its last action.
+                vec![AppEvent::NotificationShown(gettext("Connection restored"))]
             }
             LoginAction::Logout => {
                 self.user = None;

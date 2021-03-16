@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-15 20:16+0100\n"
+"POT-Creation-Date: 2021-03-16 19:27+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,136 +18,151 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: src/app/components/details/details_model.rs:168
-#: src/app/components/playlist_details/playlist_details_model.rs:126
-#: src/app/components/artist_details/artist_details_model.rs:138
-#: src/app/components/now_playing/now_playing_model.rs:94
-msgid "More from"
-msgstr ""
-
-#: src/app/components/details/details_model.rs:173
-#: src/app/components/playlist_details/playlist_details_model.rs:131
-#: src/app/components/artist_details/artist_details_model.rs:142
-#: src/app/components/now_playing/now_playing_model.rs:99
-msgid "Copy link"
-msgstr ""
-
-#: src/app/components/details/details_model.rs:174
-#: src/app/components/playlist_details/playlist_details_model.rs:132
-#: src/app/components/artist_details/artist_details_model.rs:143
-msgid "Queue"
-msgstr ""
-
-#: src/app/components/playlist_details/playlist_details_model.rs:123
-#: src/app/components/artist_details/artist_details_model.rs:135
-#: src/app/components/now_playing/now_playing_model.rs:91
-msgid "View album"
-msgstr ""
-
-#: src/app/components/login/login_model.rs:29
+#. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
+#: src/app/components/login/login_model.rs:30
 msgid "Could not save password. Make sure the session keyring is unlocked."
 msgstr ""
 
-#: src/app/components/now_playing/now_playing_model.rs:100
-msgid "Dequeue"
-msgstr ""
-
-#: src/app/components/user_menu/user_menu.rs:60
+#. translators: This is a menu entry.
+#: src/app/components/user_menu/user_menu.rs:61
 msgid "About"
 msgstr ""
 
-#: src/app/components/user_menu/user_menu.rs:61
+#. translators: This is a menu entry.
+#: src/app/components/user_menu/user_menu.rs:63
 msgid "Quit"
 msgstr ""
 
-#: src/app/components/user_menu/user_menu.rs:65
+#. translators: This is a menu entry.
+#: src/app/components/user_menu/user_menu.rs:68
 msgid "Log out"
 msgstr ""
 
-#: src/app/components/navigation/home.rs:32
+#. translators: This is a sidebar entry to browse to saved albums.
+#: src/app/components/navigation/home.rs:33
 msgid "Library"
 msgstr ""
 
-#: src/app/components/navigation/home.rs:36
+#. translators: This is a sidebar entry to browse to saved playlists.
+#: src/app/components/navigation/home.rs:38
 msgid "Playlists"
 msgstr ""
 
-#: src/app/components/navigation/home.rs:41
+#. This is the visible name for the play queue. It appears in the sidebar as well.
+#: src/app/components/navigation/home.rs:43
 #: src/app/components/now_playing/now_playing.ui:21
 msgid "Now playing"
 msgstr ""
 
-#: src/app/components/search/search.rs:122
+#. translators: This text is part of a larger text that says "Search results for <search term>".
+#: src/app/components/search/search.rs:123
 msgid "Search results for"
 msgstr ""
 
-#: src/app/components/mod.rs:79
+#. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
+#: src/app/components/labels.rs:5
+msgid "View album"
+msgstr ""
+
+#. translators: This is part of a contextual menu attached to a single track; the full text is "More from <artist>".
+#: src/app/components/labels.rs:8
+msgid "More from"
+msgstr ""
+
+#. translators: This is part of a contextual menu attached to a single track; the intent is to copy the link (public URL) to a specific track.
+#: src/app/components/labels.rs:11
+msgid "Copy link"
+msgstr ""
+
+#. translators: This is part of a contextual menu attached to a single track; this entry adds a track at the end of the play queue.
+#: src/app/components/labels.rs:14
+msgid "Add to queue"
+msgstr ""
+
+#. translators: This is part of a contextual menu attached to a single track; this entry removes a track from the play queue.
+#: src/app/components/labels.rs:17
+msgid "Remove from queue"
+msgstr ""
+
+#. translators: This notification is the default message for unhandled errors. Logs refer to console output.
+#: src/app/components/mod.rs:82
 msgid "An error occured. Check logs for details!"
 msgstr ""
 
-#: src/app/components/selection_editor/mod.rs:99 src/window.ui:32
+#. This text appears when entering selection mode. It should be as short as possible.
+#: src/app/components/selection_editor/mod.rs:99 src/window.ui:31
 msgid "No song selected"
 msgstr ""
 
-#: src/app/components/selection_editor/mod.rs:118
+#. translators: This is part of a larger text that says "<n> songs selected" when in selection mode. This text should be as short as possible.
+#: src/app/components/selection_editor/mod.rs:119
 msgid "song selected"
 msgid_plural "songs selected"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/app/components/selection_editor/mod.rs:130
-msgid "Dequeue selected"
+#. translators: This is a menu entry (shouldn't be too long) that might appear when the user has selected multiple tracks.
+#: src/app/components/selection_editor/mod.rs:132
+msgid "Remove selected tracks from queue"
 msgstr ""
 
-#: src/app/components/selection_editor/mod.rs:134
-msgid "Queue selected"
+#. translators: This is a menu entry (shouldn't be too long) that might appear when the user has selected multiple tracks.
+#: src/app/components/selection_editor/mod.rs:138
+msgid "Add selected tracks to queue"
 msgstr ""
 
-#: src/app/state/login_state.rs:61
-msgid "Connection refreshed"
+#. translators: This notification is shown when, after some inactivity, the session is successfully restored. The user might have to repeat its last action.
+#: src/app/state/login_state.rs:62
+msgid "Connection restored"
 msgstr ""
 
+#. Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify.
 #: src/app/components/artist_details/artist_details.ui:57
 msgid "Top tracks"
 msgstr ""
 
+#. Title of the sections that contains all releases from an artist (both singles and albums).
 #: src/app/components/artist_details/artist_details.ui:112
 msgid "Releases"
 msgstr ""
 
+#. Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).
 #: src/app/components/login/login.ui:69
 msgid "Login to Spotify Premium"
 msgstr ""
 
+#. Placeholder for the username field
 #: src/app/components/login/login.ui:97
 msgid "Username"
 msgstr ""
 
+#. Placeholder for the password field
 #: src/app/components/login/login.ui:112
 msgid "Password"
 msgstr ""
 
+#. This error is shown when authentication fails. It's important to stress the fact that a restart is required (for now at least).
 #: src/app/components/login/login.ui:156
 msgid ""
 "Authentication failed! Please restart Spot before attempting to log in again."
 msgstr ""
 
+#. Log in button label
 #: src/app/components/login/login.ui:181
 msgid "Log in"
 msgstr ""
 
+#. This is the title of a section of the search results
 #: src/app/components/search/search.ui:95
 msgid "Albums"
 msgstr ""
 
+#. This is the title of a section of the search results
 #: src/app/components/search/search.ui:144
 msgid "Artists"
 msgstr ""
 
-#: src/window.ui:20
-msgid "Spotify"
-msgstr ""
-
-#: src/window.ui:458
+#. Short text displayed instead of a song title when nothing plays
+#: src/window.ui:457
 msgid "No song playing"
 msgstr ""

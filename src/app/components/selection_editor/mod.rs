@@ -115,6 +115,7 @@ impl SelectionEditor {
         self.selection_label.set_label(&format!(
             "{} {}",
             count,
+            // translators: This is part of a larger text that says "<n> songs selected" when in selection mode. This text should be as short as possible.
             ngettext("song selected", "songs selected", count as u32),
         ));
     }
@@ -127,11 +128,16 @@ impl SelectionEditor {
         let menu = gio::Menu::new();
         if self.model.all_selected_from_queue() {
             menu.append(
-                Some(&gettext("Dequeue selected")),
+                // translators: This is a menu entry (shouldn't be too long) that might appear when the user has selected multiple tracks.
+                Some(&gettext("Remove selected tracks from queue")),
                 Some("selection.dequeue"),
             );
         } else {
-            menu.append(Some(&gettext("Queue selected")), Some("selection.queue"));
+            menu.append(
+                // translators: This is a menu entry (shouldn't be too long) that might appear when the user has selected multiple tracks.
+                Some(&gettext("Add selected tracks to queue")),
+                Some("selection.queue"),
+            );
         }
         self.selection_button.set_menu_model(Some(&menu));
     }

@@ -53,6 +53,7 @@ src/app/components/search/search_model.rs
 src/app/components/search/search_bar.rs
 src/app/components/search/mod.rs
 src/app/components/search/search.rs
+src/app/components/labels.rs
 src/app/components/mod.rs
 src/app/components/selection_editor/mod.rs
 src/app/loader.rs
