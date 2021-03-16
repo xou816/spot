@@ -60,7 +60,7 @@ msgstr "Aus Warteschlange entfernen"
 
 #: src/app/components/user_menu/user_menu.rs:60
 msgid "About"
-msgstr "Über"
+msgstr "Info"
 
 #: src/app/components/user_menu/user_menu.rs:61
 msgid "Quit"
