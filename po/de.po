@@ -119,7 +119,7 @@ msgstr "Top-Tracks"
 
 #: src/app/components/artist_details/artist_details.ui:112
 msgid "Releases"
-msgstr "Veröffentlichungen"
+msgstr "Diskografie"
 
 #: src/app/components/login/login.ui:69
 msgid "Login to Spotify Premium"
