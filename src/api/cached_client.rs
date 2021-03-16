@@ -459,7 +459,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
                 self.client.get_user(&id).etag(etag).send()
             });
 
-            let playlists = self.get_user_playlists(&id, 0, 20);
+            let playlists = self.get_user_playlists(&id, 0, 30);
 
             let (user, playlists) = join!(user, playlists);
 
