@@ -56,16 +56,11 @@ impl UserDetails {
                 });
         }
 
-        Self {
-            widget,
-            model,
-            worker,
-        }
+        Self { widget, model }
     }
 
     fn update_details(&self) {
         if let Some(name) = self.model.get_user_name() {
-            println!("Loaded user {}", self.model.id);
             let context = self.widget.root.get_style_context();
             context.add_class("user__loaded");
             self.widget.user_name.set_text(&name);

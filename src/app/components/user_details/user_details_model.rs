@@ -35,7 +35,6 @@ impl UserDetailsModel {
     }
 
     pub fn load_user_details(&self, id: String) {
-        println!("Loading user details {}...", id);
         let api = self.app_model.get_spotify();
         self.dispatcher.dispatch_async(Box::pin(async move {
             match api.get_user(&id[..]).await {

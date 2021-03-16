@@ -394,13 +394,14 @@ impl UpdatableState for UserState {
                 id,
                 name,
                 playlists,
-            }) if id != self.id => {
+            }) => {
                 self.user = Some(name);
 
                 self.playlists.remove_all();
                 for playlist in playlists {
                     self.playlists.append(playlist.into());
                 }
+
                 self.next_page.reset(self.playlists.len() as u32);
 
                 vec![BrowserEvent::UserDetailsUpdated(id)]
