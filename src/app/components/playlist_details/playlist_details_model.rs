@@ -10,7 +10,7 @@ use crate::app::models::*;
 use crate::app::state::{
     BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource, SelectionAction, SelectionState,
 };
-use crate::app::{ActionDispatcher, AppEvent, AppModel, AppState};
+use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState};
 
 pub struct PlaylistDetailsModel {
     pub id: String,
