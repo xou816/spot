@@ -137,7 +137,8 @@ msgstr "Passwort"
 msgid ""
 "Authentication failed! Please restart Spot before attempting to log in again."
 msgstr ""
-"Authentifizierung fehlgeschlagen! Bitte starten Sie Spot neu, bevor Sie erneut versuchen, sich anzumelden."
+"Anmeldung fehlgeschlagen! Bitte starten Sie Spot neu, bevor Sie einen neuen "
+"Versuch unternehmen."
 
 #: src/app/components/login/login.ui:181
 msgid "Log in"
