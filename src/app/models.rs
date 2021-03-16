@@ -141,6 +141,5 @@ pub struct ArtistSummary {
 pub struct UserDescription {
     pub id: String,
     pub name: String,
-    pub image: String,
     pub playlists: Vec<PlaylistDescription>,
 }

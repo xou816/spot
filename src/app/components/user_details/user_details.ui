@@ -51,13 +51,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="halign">start</property>
-                    <property name="margin-start">8</property>
-                    <property name="margin-end">8</property>
-                    <property name="label" translatable="yes">Top tracks</property>
-                    <style>
-                      <class name="title-4"/>
-                    </style>
+                    <property name="label" translatable="yes">Playlists</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -66,13 +60,14 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkListBox" id="top_artists">
+                  <object class="GtkFlowBox" id="user_playlists">
+                    <property name="height-request">100</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="min-children-per-line">1</property>
                     <property name="selection-mode">none</property>
-                    <style>
-                      <class name="user__top-artists"/>
-                    </style>
+                    <property name="activate-on-single-click">False</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -85,38 +80,6 @@
                 <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkExpander">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="margin-top">8</property>
-                <property name="margin-bottom">8</property>
-                <property name="expanded">True</property>
-                <child>
-                  <object class="GtkFlowBox" id="user_playlists">
-                    <property name="height-request">100</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="hexpand">True</property>
-                    <property name="min-children-per-line">1</property>
-                    <property name="selection-mode">none</property>
-                    <property name="activate-on-single-click">False</property>
-                  </object>
-                </child>
-                <child type="label">
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Playlists</property>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">3</property>
               </packing>
             </child>
           </object>

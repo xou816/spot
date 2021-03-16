@@ -364,28 +364,54 @@ impl UpdatableState for SearchState {
     }
 }
 
-pub struct UserDetailsState {
+pub struct UserState {
     pub id: String,
     pub name: ScreenName,
+    pub user: Option<String>,
+    pub next_page: Pagination<String>,
+    pub playlists: ListStore<AlbumModel>,
 }
 
-impl UserDetailsState {
+impl UserState {
     pub fn new(id: String) -> Self {
         Self {
             id: id.clone(),
-            name: ScreenName::User(id),
+            name: ScreenName::User(id.clone()),
+            user: None,
+            next_page: Pagination::new(id, 20),
+            playlists: ListStore::new(),
         }
     }
 }
 
-impl UpdatableState for UserDetailsState {
+impl UpdatableState for UserState {
     type Action = BrowserAction;
     type Event = BrowserEvent;
 
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
-            BrowserAction::SetUserDetails(user) if user.id != self.id => {
-                vec![]
+            BrowserAction::SetUserDetails(UserDescription {
+                id,
+                name,
+                playlists,
+            }) if id != self.id => {
+                self.user = Some(name);
+
+                self.playlists.remove_all();
+                for playlist in playlists {
+                    self.playlists.append(playlist.into());
+                }
+                self.next_page.reset(self.playlists.len() as u32);
+
+                vec![BrowserEvent::UserDetailsUpdated(id)]
+            }
+            BrowserAction::AppendUserPlaylists(playlists) => {
+                for playlist in playlists {
+                    self.playlists.append(playlist.into());
+                }
+
+                self.next_page.update(self.playlists.len() as u32);
+                vec![BrowserEvent::UserDetailsUpdated(self.id.clone())]
             }
             _ => vec![],
         }

@@ -45,6 +45,9 @@ use artist::*;
 mod artist_details;
 pub use artist_details::*;
 
+mod user_details;
+pub use user_details::*;
+
 mod now_playing;
 pub use now_playing::*;
 
