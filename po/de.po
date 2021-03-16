@@ -131,7 +131,7 @@ msgstr "Benutzername"
 
 #: src/app/components/login/login.ui:112
 msgid "Password"
-msgstr "Password"
+msgstr "Passwort"
 
 #: src/app/components/login/login.ui:156
 msgid ""
