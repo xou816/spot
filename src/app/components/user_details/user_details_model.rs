@@ -1,14 +1,10 @@
-use gdk::SELECTION_CLIPBOARD;
-use gio::prelude::*;
-use gio::{ActionMapExt, SimpleAction, SimpleActionGroup};
-use gtk::Clipboard;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use crate::app::components::{handle_error, PlaylistModel};
+use crate::app::components::handle_error;
 use crate::app::models::*;
-use crate::app::state::{BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource};
-use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, ListStore};
+use crate::app::state::BrowserAction;
+use crate::app::{ActionDispatcher, AppAction, AppModel, ListStore};
 
 pub struct UserDetailsModel {
     pub id: String,

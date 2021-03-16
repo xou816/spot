@@ -3,7 +3,7 @@ use gtk::prelude::*;
 use gtk::ScrolledWindowExt;
 use std::rc::{Rc, Weak};
 
-use crate::app::components::{screen_add_css_provider, Album, Component, EventListener, Playlist};
+use crate::app::components::{screen_add_css_provider, Album, Component, EventListener};
 use crate::app::models::*;
 use crate::app::{AppEvent, BrowserEvent, Worker};
 

@@ -62,7 +62,12 @@ pub trait SpotifyApiClient {
 
     fn get_user(&self, id: &str) -> BoxFuture<SpotifyResult<UserDescription>>;
 
-    fn get_user_playlists(&self, id: &str, offset: u32, limit: u32) -> BoxFuture<SpotifyResult<Vec<PlaylistDescription>>>;
+    fn get_user_playlists(
+        &self,
+        id: &str,
+        offset: u32,
+        limit: u32,
+    ) -> BoxFuture<SpotifyResult<Vec<PlaylistDescription>>>;
 
     fn update_token(&self, token: String);
 }
@@ -100,7 +105,9 @@ impl<'a> SpotCacheKey<'a> {
             Self::Artist(id) => format!("artist_{}.json", id),
             Self::ArtistTopTracks(id) => format!("artist_top_tracks_{}.json", id),
             Self::User(id) => format!("user_{}.json", id),
-            Self::UserPlaylists(id, offset, limit) => format!("user_playlists_{}_{}_{}.json", id, offset, limit),
+            Self::UserPlaylists(id, offset, limit) => {
+                format!("user_playlists_{}_{}_{}.json", id, offset, limit)
+            }
         }
     }
 }
