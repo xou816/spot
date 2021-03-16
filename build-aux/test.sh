@@ -5,7 +5,7 @@ export CARGO_TARGET_DIR="$2"/target
 export BUILDTYPE="$3"
 export OFFLINE="$4"
 
-echo $BUILDTYPE
+echo "$BUILDTYPE"
 
 if [[ $BUILDTYPE = "release" ]]; then
     PROFILE_ARG="--release"
