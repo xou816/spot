@@ -34,6 +34,13 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.1.11" date="2021-03-17">
+      <description>
+        <p>
+          This release fixes the broken "Search" icon, and adds French, German and Dutch translations. Thanks to all translators for their contribution!
+        </p>
+      </description>
+    </release>
     <release version="0.1.10" date="2021-03-13">
       <description>
         <p>
