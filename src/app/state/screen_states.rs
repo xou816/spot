@@ -378,7 +378,7 @@ impl UserState {
             id: id.clone(),
             name: ScreenName::User(id.clone()),
             user: None,
-            next_page: Pagination::new(id, 20),
+            next_page: Pagination::new(id, 30),
             playlists: ListStore::new(),
         }
     }
