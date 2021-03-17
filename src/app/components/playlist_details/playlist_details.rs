@@ -47,12 +47,13 @@ impl PlaylistDetails {
         let model = Rc::new(model);
         let widget = PlaylistDetailsWidget::new();
         let playlist = Box::new(Playlist::new(widget.tracks.clone(), model.clone()));
-        
-        widget.owner_button.connect_activate_link(clone!(@weak model => @default-return glib::signal::Inhibit(false), move |_| {
-            model.view_owner();
-            glib::signal::Inhibit(true)
-        }));
 
+        widget.owner_button.connect_activate_link(
+            clone!(@weak model => @default-return glib::signal::Inhibit(false), move |_| {
+                model.view_owner();
+                glib::signal::Inhibit(true)
+            }),
+        );
 
         Self {
             model,
