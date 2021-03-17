@@ -23,6 +23,7 @@ use crate::app::{state::PlaybackAction, App, AppAction, BrowserAction};
 
 fn main() {
     textdomain("spot")
+        .and_then(|_| bindtextdomain("spot", config::LOCALEDIR))
         .and_then(|_| bind_textdomain_codeset("spot", "UTF-8"))
         .expect("Could not setup localization");
 
