@@ -84,7 +84,6 @@ impl EventListener for UserDetails {
             }
             _ => {}
         }
-        self.broadcast_event(event);
     }
 }
 
