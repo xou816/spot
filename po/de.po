@@ -13,7 +13,7 @@ msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-03-16 19:27+0100\n"
-"PO-Revision-Date: 2021-03-16 19:21+0100\n
+"PO-Revision-Date: 2021-03-16 19:21+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
 "Language: de\n"
