@@ -152,17 +152,6 @@ impl WithImages for Artist {
 pub struct User {
     pub id: String,
     pub display_name: String,
-    pub images: Option<Vec<Image>>,
-}
-
-impl WithImages for User {
-    fn images(&self) -> &[Image] {
-        if let Some(ref images) = self.images {
-            images
-        } else {
-            &[]
-        }
-    }
 }
 
 #[derive(Deserialize, Debug, Clone)]
