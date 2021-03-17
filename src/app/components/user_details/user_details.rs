@@ -1,7 +1,7 @@
 use gladis::Gladis;
 use gtk::prelude::*;
 use gtk::ScrolledWindowExt;
-use std::rc::{Rc, Weak};
+use std::rc::Rc;
 
 use crate::app::components::{
     screen_add_css_provider, utils::wrap_flowbox_item, Album, Component, EventListener,
