@@ -66,7 +66,7 @@
                         <property name="can-focus">False</property>
                         <property name="halign">start</property>
                         <property name="valign">start</property>
-                        <property name="label" translatable="yes">Login to Spotify Premium</property>
+                        <property name="label" translatable="yes" comments="Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).">Login to Spotify Premium</property>
                         <property name="wrap">True</property>
                         <property name="xalign">0</property>
                         <property name="yalign">0</property>
@@ -94,7 +94,7 @@
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="primary-icon-name">avatar-default-symbolic</property>
-                            <property name="placeholder-text" translatable="yes">Username</property>
+                            <property name="placeholder-text" translatable="yes" comments="Placeholder for the username field">Username</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -109,7 +109,7 @@
                             <property name="visibility">False</property>
                             <property name="invisible-char">●</property>
                             <property name="primary-icon-name">dialog-password-symbolic</property>
-                            <property name="placeholder-text" translatable="yes">Password</property>
+                            <property name="placeholder-text" translatable="yes" comments="Placeholder for the password field">Password</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -153,7 +153,7 @@
                               <object class="GtkLabel">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Authentication failed! Please restart Spot before attempting to log in again.</property>
+                                <property name="label" translatable="yes" comments="This error is shown when authentication fails. It's important to stress the fact that a restart is required (for now at least).">Authentication failed! Please restart Spot before attempting to log in again.</property>
                                 <property name="wrap">True</property>
                                 <property name="xalign">0</property>
                                 <property name="yalign">0</property>
@@ -178,7 +178,7 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="login_button">
-                        <property name="label" translatable="yes">Log in</property>
+                        <property name="label" translatable="yes" comments="Log in button label">Log in</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>

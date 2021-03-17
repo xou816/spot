@@ -1,11 +1,10 @@
-use gettextrs::*;
 use gio::prelude::*;
 use gio::{ActionMapExt, SimpleActionGroup};
 use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use crate::app::components::{handle_error, PlaylistModel};
+use crate::app::components::{handle_error, labels, PlaylistModel};
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
 use crate::app::state::{
@@ -165,14 +164,13 @@ impl PlaylistModel for DetailsModel {
         let menu = gio::Menu::new();
         for artist in song.artists.iter() {
             menu.append(
-                Some(&format!("{} {}", gettext("More from"), artist.name)),
+                Some(&format!("{} {}", *labels::MORE_FROM, artist.name)),
                 Some(&format!("song.view_artist_{}", artist.id)),
             );
         }
 
-        menu.append(Some(&gettext("Copy link")), Some("song.copy_link"));
-        menu.append(Some(&gettext("Queue")), Some("song.queue"));
-
+        menu.append(Some(&*labels::COPY_LINK), Some("song.copy_link"));
+        menu.append(Some(&*labels::ADD_TO_QUEUE), Some("song.queue"));
         Some(menu.upcast())
     }
 }

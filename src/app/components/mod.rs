@@ -69,6 +69,8 @@ pub use selection_editor::*;
 
 pub mod utils;
 
+pub mod labels;
+
 pub fn handle_error(err: SpotifyApiError) -> Option<AppAction> {
     match err {
         SpotifyApiError::InvalidToken => Some(LoginAction::RefreshToken.into()),
@@ -76,6 +78,7 @@ pub fn handle_error(err: SpotifyApiError) -> Option<AppAction> {
         _ => {
             println!("Error: {:?}", err);
             Some(AppAction::ShowNotification(gettext(
+                // translators: This notification is the default message for unhandled errors. Logs refer to console output.
                 "An error occured. Check logs for details!",
             )))
         }

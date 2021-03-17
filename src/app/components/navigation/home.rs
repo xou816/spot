@@ -29,10 +29,12 @@ impl HomePane {
 
         let stack = gtk::Stack::new();
         stack.set_transition_type(gtk::StackTransitionType::Crossfade);
+        // translators: This is a sidebar entry to browse to saved albums.
         stack.add_titled(library.get_root_widget(), "library", &gettext("Library"));
         stack.add_titled(
             saved_playlists.get_root_widget(),
             "saved_playlists",
+            // translators: This is a sidebar entry to browse to saved playlists.
             &gettext("Playlists"),
         );
         stack.add_titled(
