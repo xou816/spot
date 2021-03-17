@@ -47,6 +47,7 @@
                 <property name="height-request">100</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="valign">start</property>
                 <property name="hexpand">True</property>
                 <property name="min-children-per-line">1</property>
                 <property name="selection-mode">none</property>
