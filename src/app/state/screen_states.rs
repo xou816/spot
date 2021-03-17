@@ -12,6 +12,7 @@ pub enum ScreenName {
     Search,
     Artist(String),
     PlaylistDetails(String),
+    User(String),
 }
 
 impl ScreenName {
@@ -22,6 +23,7 @@ impl ScreenName {
             Self::Search => Cow::Borrowed("search"),
             Self::Artist(s) => Cow::Owned(format!("artist_{}", s)),
             Self::PlaylistDetails(s) => Cow::Owned(format!("playlist_{}", s)),
+            Self::User(s) => Cow::Owned(format!("user_{}", s)),
         }
     }
 }
@@ -356,6 +358,61 @@ impl UpdatableState for SearchState {
                 self.album_results = results.albums;
                 self.artist_results = results.artists;
                 vec![BrowserEvent::SearchResultsUpdated]
+            }
+            _ => vec![],
+        }
+    }
+}
+
+pub struct UserState {
+    pub id: String,
+    pub name: ScreenName,
+    pub user: Option<String>,
+    pub next_page: Pagination<String>,
+    pub playlists: ListStore<AlbumModel>,
+}
+
+impl UserState {
+    pub fn new(id: String) -> Self {
+        Self {
+            id: id.clone(),
+            name: ScreenName::User(id.clone()),
+            user: None,
+            next_page: Pagination::new(id, 30),
+            playlists: ListStore::new(),
+        }
+    }
+}
+
+impl UpdatableState for UserState {
+    type Action = BrowserAction;
+    type Event = BrowserEvent;
+
+    fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
+        match action {
+            BrowserAction::SetUserDetails(UserDescription {
+                id,
+                name,
+                playlists,
+            }) => {
+                self.user = Some(name);
+
+                self.playlists.remove_all();
+                for playlist in playlists {
+                    self.playlists.append(playlist.into());
+                }
+
+                self.next_page.reset(self.playlists.len() as u32);
+
+                vec![BrowserEvent::UserDetailsUpdated(id)]
+            }
+            BrowserAction::AppendUserPlaylists(playlists) => {
+                for playlist in playlists {
+                    self.playlists.append(playlist.into());
+                }
+
+                self.next_page.update(self.playlists.len() as u32);
+                vec![BrowserEvent::UserDetailsUpdated(self.id.clone())]
             }
             _ => vec![],
         }

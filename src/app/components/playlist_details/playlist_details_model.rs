@@ -9,7 +9,7 @@ use crate::app::models::*;
 use crate::app::state::{
     BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource, SelectionAction, SelectionState,
 };
-use crate::app::{ActionDispatcher, AppEvent, AppModel, AppState};
+use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState};
 
 pub struct PlaylistDetailsModel {
     pub id: String,
@@ -52,6 +52,14 @@ impl PlaylistDetailsModel {
                 Err(err) => handle_error(err),
             }
         }));
+    }
+
+    pub fn view_owner(&self) {
+        if let Some(playlist) = self.get_playlist_info() {
+            let owner = &playlist.owner.id;
+            self.dispatcher
+                .dispatch(AppAction::ViewUser(owner.to_owned()));
+        }
     }
 }
 

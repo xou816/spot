@@ -13,6 +13,8 @@ use crate::app::{AppEvent, BrowserEvent};
 struct PlaylistDetailsWidget {
     pub root: gtk::Widget,
     pub name_label: gtk::Label,
+    pub owner_button: gtk::LinkButton,
+    pub owner_button_label: gtk::Label,
     pub tracks: gtk::ListBox,
     pub art: gtk::Image,
 }
@@ -46,6 +48,13 @@ impl PlaylistDetails {
         let widget = PlaylistDetailsWidget::new();
         let playlist = Box::new(Playlist::new(widget.tracks.clone(), model.clone()));
 
+        widget.owner_button.connect_activate_link(
+            clone!(@weak model => @default-return glib::signal::Inhibit(false), move |_| {
+                model.view_owner();
+                glib::signal::Inhibit(true)
+            }),
+        );
+
         Self {
             model,
             worker,
@@ -57,8 +66,10 @@ impl PlaylistDetails {
     fn update_details(&self) {
         if let Some(info) = self.model.get_playlist_info() {
             let title = &info.title[..];
+            let owner = &info.owner.display_name[..];
 
             self.widget.name_label.set_label(title);
+            self.widget.owner_button_label.set_label(owner);
 
             let widget = self.widget.clone();
             if let Some(art) = info.art.clone() {

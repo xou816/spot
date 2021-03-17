@@ -149,6 +149,12 @@ impl WithImages for Artist {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+pub struct User {
+    pub id: String,
+    pub display_name: String,
+}
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct Tracks<Item> {
     pub items: Vec<Item>,
 }

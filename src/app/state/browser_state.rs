@@ -1,6 +1,6 @@
 use super::{
     ArtistState, DetailsState, HomeState, PlaylistDetailsState, ScreenName, SearchState,
-    UpdatableState,
+    UpdatableState, UserState,
 };
 use crate::app::models::*;
 use crate::app::state::AppAction;
@@ -24,6 +24,8 @@ pub enum BrowserAction {
     NavigationPopTo(ScreenName),
     SaveAlbum(AlbumDescription),
     UnsaveAlbum(String),
+    SetUserDetails(UserDescription),
+    AppendUserPlaylists(Vec<PlaylistDescription>),
 }
 
 impl Into<AppAction> for BrowserAction {
@@ -46,6 +48,7 @@ pub enum BrowserEvent {
     NavigationPoppedTo(ScreenName),
     AlbumSaved(String),
     AlbumUnsaved(String),
+    UserDetailsUpdated(String),
 }
 
 pub enum BrowserScreen {
@@ -54,6 +57,7 @@ pub enum BrowserScreen {
     Search(SearchState),
     Artist(ArtistState),
     PlaylistDetails(PlaylistDetailsState),
+    User(UserState),
 }
 
 impl BrowserScreen {
@@ -68,6 +72,7 @@ impl BrowserScreen {
             ScreenName::PlaylistDetails(id) => {
                 BrowserScreen::PlaylistDetails(PlaylistDetailsState::new(id.to_string()))
             }
+            ScreenName::User(id) => BrowserScreen::User(UserState::new(id.to_string())),
         }
     }
 
@@ -78,6 +83,7 @@ impl BrowserScreen {
             Self::Search(state) => state,
             Self::Artist(state) => state,
             Self::PlaylistDetails(state) => state,
+            Self::User(state) => state,
         }
     }
 }
@@ -92,6 +98,7 @@ impl NamedScreen for BrowserScreen {
             Self::Search(state) => &state.name,
             Self::Artist(state) => &state.name,
             Self::PlaylistDetails(state) => &state.name,
+            Self::User(state) => &state.name,
         }
     }
 }
@@ -231,6 +238,13 @@ impl BrowserState {
     pub fn playlist_details_state(&self, id: &str) -> Option<&PlaylistDetailsState> {
         self.navigation.iter_rev().find_map(|screen| match screen {
             BrowserScreen::PlaylistDetails(state) if state.id == id => Some(state),
+            _ => None,
+        })
+    }
+
+    pub fn user_state(&self, id: &str) -> Option<&UserState> {
+        self.navigation.iter_rev().find_map(|screen| match screen {
+            BrowserScreen::User(state) if state.id == id => Some(state),
             _ => None,
         })
     }

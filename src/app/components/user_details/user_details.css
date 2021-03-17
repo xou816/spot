@@ -1,0 +1,8 @@
+.user {
+  transition: opacity .3s ease;
+  opacity: 0;
+}
+
+.user__loaded {
+  opacity: 1;
+}
