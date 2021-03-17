@@ -47,6 +47,12 @@ impl PlaylistDetails {
         let model = Rc::new(model);
         let widget = PlaylistDetailsWidget::new();
         let playlist = Box::new(Playlist::new(widget.tracks.clone(), model.clone()));
+        
+        widget.owner_button.connect_activate_link(clone!(@weak model => @default-return glib::signal::Inhibit(false), move |_| {
+            model.view_owner();
+            glib::signal::Inhibit(true)
+        }));
+
 
         Self {
             model,
@@ -63,14 +69,6 @@ impl PlaylistDetails {
 
             self.widget.name_label.set_label(title);
             self.widget.owner_button_label.set_label(owner);
-
-            let weak_model = Rc::downgrade(&self.model);
-            self.widget.owner_button.connect_activate_link(move |_| {
-                if let Some(model) = weak_model.upgrade() {
-                    model.view_owner();
-                }
-                glib::signal::Inhibit(true)
-            });
 
             let widget = self.widget.clone();
             if let Some(art) = info.art.clone() {
