@@ -46,22 +46,20 @@ impl UserDetails {
             }));
 
         if let Some(store) = model.get_list_store() {
-            let weak_model = Rc::downgrade(&model);
-
-            widget
-                .user_playlists
-                .bind_model(Some(store.unsafe_store()), move |item| {
+            widget.user_playlists.bind_model(
+                Some(store.unsafe_store()),
+                clone!(@weak model => @default-panic, move |item| {
                     wrap_flowbox_item(item, |item: &AlbumModel| {
                         let album = Album::new(item, worker.clone());
-                        let weak = weak_model.clone();
-                        album.connect_album_pressed(move |a| {
-                            if let (Some(id), Some(model)) = (a.uri().as_ref(), weak.upgrade()) {
+                        album.connect_album_pressed(clone!(@weak model => move |a| {
+                            if let Some(id) = a.uri().as_ref() {
                                 model.open_playlist(id);
                             }
-                        });
+                        }));
                         album.get_root_widget().clone()
                     })
-                });
+                }),
+            );
         }
 
         Self { widget, model }
