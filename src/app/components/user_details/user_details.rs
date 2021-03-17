@@ -35,12 +35,13 @@ impl UserDetails {
         let widget = UserDetailsWidget::new();
         let model = Rc::new(model);
 
-        let weak_model = Rc::downgrade(&model);
-        widget.root.connect_edge_reached(move |_, pos| {
-            if let (gtk::PositionType::Bottom, Some(model)) = (pos, weak_model.upgrade()) {
-                let _ = model.load_more();
-            }
-        });
+        widget
+            .root
+            .connect_edge_reached(clone!(@weak model => move |_, pos| {
+                if pos == gtk::PositionType::Bottom {
+                    let _ = model.load_more();
+                }
+            }));
 
         if let Some(store) = model.get_list_store() {
             let weak_model = Rc::downgrade(&model);
