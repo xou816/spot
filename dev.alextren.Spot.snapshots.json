@@ -16,6 +16,7 @@
         "--talk-name=org.freedesktop.secrets",
         "--own-name=org.mpris.MediaPlayer2.Spot"
     ],
+    "separate-locales": false,
     "build-options": {
         "append-path": "/usr/lib/sdk/rust-stable/bin",
         "env": {
