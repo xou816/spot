@@ -3,7 +3,9 @@ use gtk::prelude::*;
 use gtk::ScrolledWindowExt;
 use std::rc::{Rc, Weak};
 
-use crate::app::components::{screen_add_css_provider, Album, Component, EventListener};
+use crate::app::components::{
+    screen_add_css_provider, utils::wrap_flowbox_item, Album, Component, EventListener,
+};
 use crate::app::models::*;
 use crate::app::{AppEvent, BrowserEvent, Worker};
 
@@ -45,15 +47,20 @@ impl UserDetails {
 
         if let Some(store) = model.get_list_store() {
             let weak_model = Rc::downgrade(&model);
-            let worker_clone = worker.clone();
 
             widget
                 .user_playlists
                 .bind_model(Some(store.unsafe_store()), move |item| {
-                    let item = item.downcast_ref::<AlbumModel>().unwrap();
-                    let child = create_album_for(item, worker_clone.clone(), weak_model.clone());
-                    child.show_all();
-                    child.upcast::<gtk::Widget>()
+                    wrap_flowbox_item(item, |item: &AlbumModel| {
+                        let album = Album::new(item, worker.clone());
+                        let weak = weak_model.clone();
+                        album.connect_album_pressed(move |a| {
+                            if let (Some(id), Some(model)) = (a.uri().as_ref(), weak.upgrade()) {
+                                model.open_playlist(id);
+                            }
+                        });
+                        album.get_root_widget().clone()
+                    })
                 });
         }
 
@@ -86,23 +93,4 @@ impl EventListener for UserDetails {
             _ => {}
         }
     }
-}
-
-fn create_album_for(
-    album_model: &AlbumModel,
-    worker: Worker,
-    model: Weak<UserDetailsModel>,
-) -> gtk::FlowBoxChild {
-    let child = gtk::FlowBoxChild::new();
-
-    let album = Album::new(album_model, worker);
-    child.add(album.get_root_widget());
-
-    album.connect_album_pressed(move |a| {
-        if let (Some(model), Some(id)) = (model.upgrade(), a.uri()) {
-            model.open_playlist(&id);
-        }
-    });
-
-    child
 }
