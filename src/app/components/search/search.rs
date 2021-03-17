@@ -119,6 +119,7 @@ impl SearchResults {
         }
 
         if let Some(query) = self.model.get_query() {
+            // translators: This text is part of a larger text that says "Search results for <search term>".
             let formatted = format!("{} « {} »", gettext("Search results for"), *query);
             self.widget.results_label.set_label(&formatted[..]);
         }

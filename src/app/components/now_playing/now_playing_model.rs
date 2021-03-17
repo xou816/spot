@@ -1,11 +1,10 @@
-use gettextrs::*;
 use gio::prelude::*;
 use gio::{ActionMapExt, SimpleActionGroup};
 use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use crate::app::components::PlaylistModel;
+use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::SongModel;
 use crate::app::state::{
     PlaybackAction, PlaybackEvent, PlaybackState, SelectionAction, SelectionState,
@@ -88,16 +87,16 @@ impl PlaylistModel for NowPlayingModel {
         let song = queue.song(id)?;
 
         let menu = gio::Menu::new();
-        menu.append(Some(&gettext("View album")), Some("song.view_album"));
+        menu.append(Some(&*labels::VIEW_ALBUM), Some("song.view_album"));
         for artist in song.artists.iter() {
             menu.append(
-                Some(&format!("{} {}", gettext("More from"), artist.name)),
+                Some(&format!("{} {}", *labels::MORE_FROM, artist.name)),
                 Some(&format!("song.view_artist_{}", artist.id)),
             );
         }
 
-        menu.append(Some(&gettext("Copy link")), Some("song.copy_link"));
-        menu.append(Some(&gettext("Dequeue")), Some("song.dequeue"));
+        menu.append(Some(&*labels::COPY_LINK), Some("song.copy_link"));
+        menu.append(Some(&*labels::REMOVE_FROM_QUEUE), Some("song.dequeue"));
 
         Some(menu.upcast())
     }

@@ -1,6 +1,11 @@
 pkgdatadir = join_paths(get_option('prefix'), get_option('datadir'), meson.project_name())
 gnome = import('gnome')
 dependency('libhandy-1')
+dependency('gtk+-3.0')
+dependency('glib-2.0')
+dependency('openssl')
+dependency('alsa')
+dependency('libpulse')
 
 gnome.compile_resources('spot',
   'spot.gresource.xml',
@@ -87,6 +92,7 @@ sources = files(
 './app/components/user_details/mod.rs',
 './app/components/user_details/user_details_model.rs',
 './app/components/user_details/user_details.rs',
+'./app/components/labels.rs',
 './app/components/mod.rs',
 './app/components/selection_editor/mod.rs',
 './app/loader.rs',

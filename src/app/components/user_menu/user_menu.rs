@@ -57,11 +57,14 @@ impl UserMenu {
 
     fn update_menu(&self) {
         let menu = gio::Menu::new();
+        // translators: This is a menu entry.
         menu.append(Some(&gettext("About")), Some("menu.about"));
+        // translators: This is a menu entry.
         menu.append(Some(&gettext("Quit")), Some("app.quit"));
 
         if let Some(username) = self.model.username() {
             let user_menu = gio::Menu::new();
+            // translators: This is a menu entry.
             user_menu.append(Some(&gettext("Log out")), Some("menu.logout"));
             menu.insert_section(0, Some(&username), &user_menu);
         }

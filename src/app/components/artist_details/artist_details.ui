@@ -54,7 +54,7 @@
                     <property name="halign">start</property>
                     <property name="margin-start">8</property>
                     <property name="margin-end">8</property>
-                    <property name="label" translatable="yes">Top tracks</property>
+                    <property name="label" translatable="yes" comments="Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify.">Top tracks</property>
                     <style>
                       <class name="title-4"/>
                     </style>
@@ -109,7 +109,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Releases</property>
+                    <property name="label" translatable="yes" comments="Title of the sections that contains all releases from an artist (both singles and albums).">Releases</property>
                   </object>
                 </child>
               </object>

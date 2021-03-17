@@ -18,7 +18,7 @@
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="label" translatable="yes">Now playing</property>
+            <property name="label" translatable="yes" comments="This is the visible name for the play queue. It appears in the sidebar as well.">Now playing</property>
             <style>
               <class name="large-title"/>
             </style>

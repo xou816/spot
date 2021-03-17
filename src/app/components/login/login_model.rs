@@ -26,6 +26,7 @@ impl LoginModel {
         if credentials::save_credentials(credentials).is_err() {
             self.dispatcher
                 .dispatch(AppAction::ShowNotification(gettext(
+                    // translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
                     "Could not save password. Make sure the session keyring is unlocked.",
                 )));
         }
