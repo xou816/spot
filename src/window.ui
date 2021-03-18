@@ -524,7 +524,9 @@ Daniel Peukert
 Nils Tonnätt</property>
     <property name="translator-credits" translatable="yes">Heimen Stoffels
 daPhipz
-kleinHeiti</property>
+kleinHeiti
+Ondřej Sluka
+Ícar</property>
     <property name="logo-icon-name">dev.alextren.Spot</property>
     <property name="license-type">mit-x11</property>
     <child internal-child="vbox">
