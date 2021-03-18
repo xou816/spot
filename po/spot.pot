@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-16 19:27+0100\n"
+"POT-Creation-Date: 2021-03-18 19:38+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,12 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#. translators: Short text displayed instead of a song title when nothing plays
+#. Short text displayed instead of a song title when nothing plays
+#: src/app/components/playback/playback_info.rs:91 src/window.ui:458
+msgid "No song playing"
+msgstr ""
 
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:30
@@ -85,7 +91,7 @@ msgid "Remove from queue"
 msgstr ""
 
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/components/mod.rs:82
+#: src/app/components/mod.rs:85
 msgid "An error occured. Check logs for details!"
 msgstr ""
 
@@ -160,9 +166,4 @@ msgstr ""
 #. This is the title of a section of the search results
 #: src/app/components/search/search.ui:144
 msgid "Artists"
-msgstr ""
-
-#. Short text displayed instead of a song title when nothing plays
-#: src/window.ui:457
-msgid "No song playing"
 msgstr ""

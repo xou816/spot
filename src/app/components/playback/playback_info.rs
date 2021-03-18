@@ -1,3 +1,4 @@
+use gettextrs::*;
 use gtk::prelude::*;
 use gtk::{ImageExt, LabelExt};
 use std::ops::Deref;
@@ -85,7 +86,9 @@ impl PlaybackInfo {
                 });
             }
         } else {
-            self.current_song_info.set_label("No song playing");
+            self.current_song_info
+                // translators: Short text displayed instead of a song title when nothing plays
+                .set_label(&gettext("No song playing"));
             self.current_song_image
                 .set_from_icon_name(Some("emblem-music-symbolic"), gtk::IconSize::Button);
             self.current_song_image_small
