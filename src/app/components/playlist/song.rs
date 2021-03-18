@@ -9,6 +9,7 @@ use gtk::{MenuButtonExt, WidgetExt};
 struct SongWidget {
     root: gtk::Widget,
     song_index: gtk::Label,
+    song_icon: gtk::Image,
     song_title: gtk::Label,
     song_artist: gtk::Label,
     song_length: gtk::Label,

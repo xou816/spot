@@ -1,10 +1,25 @@
-.song .song__index {
+.song__index {
+  transition: opacity 150ms ease;
   font-size: 12px;
   margin: 4px 12px;
   padding: 0;
+  opacity: 1;
 }
 
-.song label.song__title {
+.song__icon {
+  transition: opacity 150ms ease;
+  opacity: 0;
+}
+
+.song--playing .song__index {
+  opacity: 0;
+}
+
+.song--playing .song__icon {
+  opacity: 1;
+}
+
+.song__title {
   font-size: 16px;
 }
 
@@ -12,13 +27,8 @@ row {
   margin: 1px 0;
 }
 
-row:not(:selected) .song--playing label.song__title, row:not(:selected) .song--playing label.song__index {
+.song--playing label.song__title, .song--playing label.song__index {
   font-weight: bold;
-  color: @theme_selected_bg_color;
-}
-
-row:not(:selected) .song--playing label.song__artist {
-  color: @theme_selected_bg_color;
 }
 
 .song label.song__artist {
