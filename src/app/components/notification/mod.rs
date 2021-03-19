@@ -1,6 +1,7 @@
 use gtk::prelude::*;
 use std::rc::Rc;
 
+use crate::app::components::utils::Debouncer;
 use crate::app::components::EventListener;
 use crate::app::{ActionDispatcher, AppAction, AppEvent};
 
@@ -22,6 +23,7 @@ pub struct Notification {
     model: Rc<NotificationModel>,
     root: gtk::Box,
     content: gtk::Label,
+    debouncer: Debouncer,
 }
 
 impl Notification {
@@ -38,23 +40,25 @@ impl Notification {
             model,
             root,
             content,
+            debouncer: Debouncer::new(),
         }
     }
     fn show(&self, content: &str) {
-        glib::timeout_add_local(
+        self.debouncer.debounce(
             4000,
-            clone!(@weak self.model as model => @default-return glib::Continue(false), move || {
+            clone!(@weak self.model as model => move || {
                 model.close();
-                glib::Continue(false)
             }),
         );
         self.content.set_text(content);
+        self.root.show();
         self.root
             .get_style_context()
             .add_class("notification--shown")
     }
 
     fn hide(&self) {
+        self.root.hide();
         self.root
             .get_style_context()
             .remove_class("notification--shown")
@@ -66,6 +70,7 @@ impl EventListener for Notification {
         match event {
             AppEvent::NotificationShown(content) => self.show(&content),
             AppEvent::NotificationHidden => self.hide(),
+            // _ if cfg!(debug_assertions) => self.show(&format!("{:?}", event)),
             _ => {}
         }
     }
