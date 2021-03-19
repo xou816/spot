@@ -3628,15 +3628,15 @@
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/regex/regex-1.4.3.crate",
-        "sha256": "d9251239e129e16308e70d853559389de218ac275b515068abc96829d05b948a",
+        "url": "https://static.crates.io/crates/regex/regex-1.4.5.crate",
+        "sha256": "957056ecddbeba1b26965114e191d2e8589ce74db242b6ea25fc4062427a5c19",
         "dest": "cargo/vendor",
-        "dest-filename": "regex-1.4.3.crate"
+        "dest-filename": "regex-1.4.5.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%22d9251239e129e16308e70d853559389de218ac275b515068abc96829d05b948a%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/regex-1.4.3",
+        "url": "data:%7B%22package%22%3A%20%22957056ecddbeba1b26965114e191d2e8589ce74db242b6ea25fc4062427a5c19%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/regex-1.4.5",
         "dest-filename": ".cargo-checksum.json"
     },
     {
@@ -4287,19 +4287,6 @@
         "type": "file",
         "url": "data:%7B%22package%22%3A%20%227765189610d8241a44529806d6fd1f2e0a08734313a35d5b3a556f92b381f3c0%22%2C%20%22files%22%3A%20%7B%7D%7D",
         "dest": "cargo/vendor/thiserror-impl-1.0.24",
-        "dest-filename": ".cargo-checksum.json"
-    },
-    {
-        "type": "file",
-        "url": "https://static.crates.io/crates/thread_local/thread_local-1.0.1.crate",
-        "sha256": "d40c6d1b69745a6ec6fb1ca717914848da4b44ae29d9b3080cbee91d72a69b14",
-        "dest": "cargo/vendor",
-        "dest-filename": "thread_local-1.0.1.crate"
-    },
-    {
-        "type": "file",
-        "url": "data:%7B%22package%22%3A%20%22d40c6d1b69745a6ec6fb1ca717914848da4b44ae29d9b3080cbee91d72a69b14%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/thread_local-1.0.1",
         "dest-filename": ".cargo-checksum.json"
     },
     {
