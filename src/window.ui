@@ -428,6 +428,7 @@
                         </child>
                         <child>
                           <object class="GtkLabel" id="current_song_info">
+                            <property name="width-request">100</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">start</property>
