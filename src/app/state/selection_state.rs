@@ -108,12 +108,24 @@ impl UpdatableState for SelectionState {
                 }
             }
             SelectionAction::Select(track) => {
-                let id = track.id.clone();
-                if self.select(track) {
-                    vec![SelectionEvent::Selected(id)]
+                let enable_event = if self.selected_songs.is_none() {
+                    self.selected_songs = Some(vec![]);
+                    Some(SelectionEvent::SelectionModeChanged(true))
                 } else {
-                    vec![]
-                }
+                    None
+                };
+
+                let id = track.id.clone();
+                let select_event = if self.select(track) {
+                    Some(SelectionEvent::Selected(id))
+                } else {
+                    None
+                };
+
+                let mut res = vec![];
+                res.extend(enable_event);
+                res.extend(select_event);
+                res
             }
             SelectionAction::Deselect(id) => {
                 if self.deselect(&id) {
