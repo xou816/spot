@@ -61,31 +61,29 @@ where
             }
         }));
 
-        let weak_model = Rc::downgrade(&model);
-        let weak_listbox = listbox.downgrade();
-        listbox.bind_model(Some(list_model.unsafe_store()), move |item| {
-            let item = item.downcast_ref::<SongModel>().unwrap();
-            let id = &item.get_id();
+        listbox.bind_model(
+            Some(list_model.unsafe_store()),
+            clone!(@weak model, @weak listbox => @default-panic, move |item| {
+                let item = item.downcast_ref::<SongModel>().unwrap();
+                let id = &item.get_id();
 
-            let row = gtk::ListBoxRow::new();
-            let event_box = gtk::EventBox::new();
-            row.add(&event_box);
+                let row = gtk::ListBoxRow::new();
+                let event_box = gtk::EventBox::new();
+                row.add(&event_box);
 
-            let song = Song::new(item.clone());
-            event_box.add(song.get_root_widget());
+                let song = Song::new(item.clone());
+                event_box.add(song.get_root_widget());
 
-            if let Some(model) = weak_model.upgrade() {
                 song.set_menu(model.menu_for(id).as_ref());
                 song.set_actions(model.actions_for(id).as_ref());
 
-                if let Some(listbox) = weak_listbox.upgrade() {
-                    Self::set_row_state(&listbox, item, &row, &*model);
-                    Self::connect_events(&listbox, item, &row, model);
-                }
-            }
-            row.show_all();
-            row.upcast::<gtk::Widget>()
-        });
+                Self::set_row_state(&listbox, item, &row, &*model);
+                Self::connect_events(&listbox, item, &row, model);
+
+                row.show_all();
+                row.upcast::<gtk::Widget>()
+            }),
+        );
 
         Self {
             listbox,
