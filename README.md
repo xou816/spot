@@ -109,6 +109,14 @@ ninja spot-pot -C target
 ninja spot-update-po -C target
 ```
 
+### Regenerating sources for flatpak
+
+Using [flatpak-cargo-generator.py](https://github.com/flatpak/flatpak-builder-tools/tree/master/cargo):
+
+```
+ninja cargo-sources.json -C target
+```
+
 ### Debugging
 
 Debug builds (flatpak) are available from the master branch on Github (see the `spot-snaphots` action).
