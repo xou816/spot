@@ -67,6 +67,10 @@ impl PlaylistModel for NowPlayingModel {
         )
     }
 
+    fn autoscroll_to_playing(&self) -> bool {
+        true
+    }
+
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
         let queue = self.queue();
         let song = queue.song(id)?;

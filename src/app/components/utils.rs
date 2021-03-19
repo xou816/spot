@@ -56,6 +56,54 @@ impl Debouncer {
     }
 }
 
+pub struct Animator<EasingFn> {
+    progress: Rc<Cell<u16>>,
+    ease_fn: EasingFn,
+}
+
+pub type AnimatorDefault = Animator<fn(f64) -> f64>;
+
+impl AnimatorDefault {
+    fn ease_in_out(x: f64) -> f64 {
+        match x {
+            x if x < 0.5 => 0.5 * 2f64.powf(20.0 * x - 10.0),
+            _ => 0.5 * (2.0 - 2f64.powf(-20.0 * x + 10.0)),
+        }
+    }
+
+    pub fn ease_in_out_animator() -> AnimatorDefault {
+        Animator {
+            progress: Rc::new(Cell::new(0)),
+            ease_fn: Self::ease_in_out,
+        }
+    }
+}
+
+impl<EasingFn> Animator<EasingFn>
+where
+    EasingFn: 'static + Copy + Fn(f64) -> f64,
+{
+    pub fn animate<F: Fn(f64) -> bool + 'static>(&self, steps: u16, f: F) {
+        self.progress.set(0);
+        let ease_fn = self.ease_fn;
+
+        let progress = Rc::downgrade(&self.progress);
+        glib::timeout_add_local(16, move || {
+            let mut continue_ = false;
+            if let Some(progress) = progress.upgrade() {
+                let step = progress.get();
+                continue_ = step < steps;
+                if continue_ {
+                    progress.set(step + 1);
+                    let p = ease_fn(step as f64 / steps as f64);
+                    continue_ = f(p);
+                }
+            }
+            glib::Continue(continue_)
+        });
+    }
+}
+
 pub fn wrap_flowbox_item<
     Model: glib::IsA<glib::Object>,
     Widget: glib::IsA<gtk::Widget>,
@@ -77,4 +125,30 @@ pub fn format_duration(duration: f64) -> String {
     let minutes = seconds.div_euclid(60);
     let seconds = seconds.rem_euclid(60);
     format!("{}:{:02}", minutes, seconds)
+}
+
+fn parent_scrolled_window(widget: &gtk::Widget) -> Option<gtk::ScrolledWindow> {
+    let parent = widget.get_parent()?;
+    match parent.downcast_ref::<gtk::ScrolledWindow>() {
+        Some(scrolled_window) => Some(scrolled_window.clone()),
+        None => parent_scrolled_window(&parent),
+    }
+}
+
+pub fn in_viewport(widget: &gtk::Widget) -> Option<bool> {
+    let window = parent_scrolled_window(widget)?;
+    let adjustment = window.get_vadjustment()?;
+    let (_, y) = widget.translate_coordinates(&window, 0, 0)?;
+    let y = y as f64;
+    Some(y > 0.0 && y < 0.9 * adjustment.get_page_size())
+}
+
+pub fn vscroll_to(widget: &gtk::Widget, progress: f64) -> Option<f64> {
+    let window = parent_scrolled_window(widget)?;
+    let adjustment = window.get_vadjustment()?;
+    let (_, y) = widget.translate_coordinates(&window, 0, 0)?;
+    let y = y as f64;
+    let target = adjustment.get_value() + y * progress;
+    adjustment.set_value(target);
+    Some(target)
 }

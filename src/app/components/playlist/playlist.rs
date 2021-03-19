@@ -4,6 +4,7 @@ use gtk::ListBoxExt;
 use std::ops::Deref;
 use std::rc::Rc;
 
+use crate::app::components::utils::{in_viewport, vscroll_to, AnimatorDefault};
 use crate::app::components::{Component, EventListener, Song};
 use crate::app::models::SongModel;
 use crate::app::{
@@ -16,6 +17,10 @@ pub trait PlaylistModel {
     fn current_song_id(&self) -> Option<String>;
     fn play_song(&self, id: &str);
     fn should_refresh_songs(&self, event: &AppEvent) -> bool;
+
+    fn autoscroll_to_playing(&self) -> bool {
+        false
+    }
 
     fn actions_for(&self, _id: &str) -> Option<gio::ActionGroup> {
         None
@@ -36,6 +41,7 @@ pub struct Playlist<Model> {
     listbox: gtk::ListBox,
     list_model: ListStore<SongModel>,
     model: Rc<Model>,
+    animator: AnimatorDefault,
 }
 
 impl<Model> Playlist<Model>
@@ -89,6 +95,7 @@ where
             listbox,
             list_model,
             model,
+            animator: AnimatorDefault::ease_in_out_animator(),
         }
     }
 
@@ -147,6 +154,7 @@ where
     }
 
     fn update_list(&self) {
+        let autoscroll = self.model.autoscroll_to_playing();
         for (i, song) in self.model.songs().iter().enumerate() {
             let is_current = self
                 .model
@@ -155,6 +163,15 @@ where
                 .unwrap_or(false);
             let model_song = self.list_model.get(i as u32);
             model_song.set_playing(is_current);
+
+            if is_current && autoscroll {
+                if let Some(row) = self.listbox.get_row_at_index(i as i32) {
+                    if !in_viewport(row.upcast_ref()).unwrap_or(true) {
+                        self.animator
+                            .animate(20, move |p| vscroll_to(row.upcast_ref(), p).is_some());
+                    }
+                }
+            }
         }
     }
 
