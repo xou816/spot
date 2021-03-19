@@ -145,7 +145,10 @@ impl PlaybackControl {
             .get_child()
             .and_then(|child| child.downcast::<gtk::Image>().ok())
             .map(|image| {
-                image.set_from_icon_name(Some(playback_image), gtk::IconSize::Button);
+                image.set_from_icon_name(
+                    Some(playback_image),
+                    image.get_property_icon_size().into(),
+                );
             })
             .expect("error updating icon");
     }
