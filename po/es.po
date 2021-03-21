@@ -160,7 +160,7 @@ msgstr "Iniciar sesión"
 #. This is the title of a section of the search results
 #: src/app/components/search/search.ui:95
 msgid "Albums"
-msgstr "Albums"
+msgstr "Álbumes"
 
 #. This is the title of a section of the search results
 #: src/app/components/search/search.ui:144
