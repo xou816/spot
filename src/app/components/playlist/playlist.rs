@@ -35,6 +35,12 @@ pub trait PlaylistModel {
     fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
         None
     }
+
+    fn is_selection_enabled(&self) -> bool {
+        self.selection()
+            .map(|s| s.is_selection_enabled())
+            .unwrap_or(false)
+    }
 }
 
 pub struct Playlist<Model> {
@@ -51,7 +57,7 @@ where
     pub fn new(listbox: gtk::ListBox, model: Rc<Model>) -> Self {
         let list_model = ListStore::new();
 
-        listbox.set_selection_mode(gtk::SelectionMode::None);
+        Self::set_selection_active(&listbox, model.is_selection_enabled());
         listbox.get_style_context().add_class("playlist");
         listbox.set_activate_on_single_click(true);
 
@@ -59,7 +65,7 @@ where
         listbox.connect_row_activated(clone!(@weak model => move |listbox, row| {
             let index = row.get_index() as u32;
             let song: SongModel = list_model_clone.get(index);
-            let selection_enabled = model.selection().map(|s| s.is_selection_enabled()).unwrap_or(false);
+            let selection_enabled = model.is_selection_enabled();
             if selection_enabled {
                 Self::select_song(&listbox, &row, &song, &*model);
             } else {
@@ -120,7 +126,7 @@ where
         row.connect_button_release_event(
             clone!(@weak model, @weak listbox, @strong item => @default-return Inhibit(false), move |row, event| {
                 if event.get_button() == 3 {
-                    listbox.set_selection_mode(gtk::SelectionMode::Multiple);
+                    Self::set_selection_active(&listbox, true);
                     Self::select_song(&listbox, row, &item, &*model);
                     Inhibit(true)
                 } else {
@@ -180,16 +186,15 @@ where
         list_model.replace_all(self.model.songs());
     }
 
-    fn set_selection_active(&self, active: bool) {
+    fn set_selection_active(listbox: &gtk::ListBox, active: bool) {
         if active {
-            self.listbox
-                .set_selection_mode(gtk::SelectionMode::Multiple);
+            listbox.set_selection_mode(gtk::SelectionMode::Multiple);
         } else {
-            for row in self.listbox.get_selected_rows() {
-                self.listbox.unselect_row(&row);
+            for row in listbox.get_selected_rows() {
+                listbox.unselect_row(&row);
                 row.set_selectable(false);
             }
-            self.listbox.set_selection_mode(gtk::SelectionMode::None);
+            listbox.set_selection_mode(gtk::SelectionMode::None);
         }
     }
 }
@@ -207,7 +212,7 @@ where
                 self.reset_list();
             }
             AppEvent::SelectionEvent(SelectionEvent::SelectionModeChanged(active)) => {
-                self.set_selection_active(*active);
+                Self::set_selection_active(&self.listbox, *active);
             }
             _ if self.model.should_refresh_songs(event) => self.reset_list(),
             _ => {}
