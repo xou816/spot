@@ -505,7 +505,9 @@ Nils Tonnätt</property>
 daPhipz
 kleinHeiti
 Ondřej Sluka
-Ícar</property>
+Ícar
+Jonasz Potoniec
+José Miguel Sarasola</property>
     <property name="logo-icon-name">dev.alextren.Spot</property>
     <property name="license-type">mit-x11</property>
     <child internal-child="vbox">
