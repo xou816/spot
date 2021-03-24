@@ -14,12 +14,15 @@
     </p>
     <p>Current features:</p>
     <ul>
-      <li>playback control (play/pause, previous/next, seeking, shuffle play)</li>
-      <li>library browser (saved albums and playlists)</li>
-      <li>album search</li>
-      <li>artist view</li>
-      <li>credentials management with Secret Service</li>
-      <li>MPRIS integration</li>
+      <li>playback control (play/pause, prev/next, seeking)</li>
+      <li>>play queue with shuffle option</li>
+      <li>>selection mode: easily browse and select mutliple tracks to queue them</li>
+      <li>>browse your saved albums and playlists</li>
+      <li>>search albums and artists</li>
+      <li>>view an artist's releases</li>
+      <li>>view users' playlists</li>
+      <li>>credentials management with Secret Service</li>
+      <li>>MPRIS integration</li>
     </ul>
   </description>
   <screenshots>
@@ -34,6 +37,18 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.1.12" date="2021-03-24">
+      <description>
+        <p>
+          What's new:
+        </p>
+        <ul>
+          <li>browse users' playlists by clicking on their name in playlists you follow (thanks a bunch, Douile!)</li>
+          <li>Catalan, Czech, Polish and Spanish translations; thanks to all the translators involved!</li>
+          <li>bug fixes</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.11" date="2021-03-17">
       <description>
         <p>

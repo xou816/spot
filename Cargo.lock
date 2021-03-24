@@ -3282,7 +3282,7 @@ dependencies = [
 
 [[package]]
 name = "spot"
-version = "0.1.11"
+version = "0.1.12"
 dependencies = [
  "async-std",
  "form_urlencoded",
