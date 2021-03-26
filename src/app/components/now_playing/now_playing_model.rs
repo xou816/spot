@@ -36,6 +36,20 @@ impl NowPlayingModel {
         self.dispatcher
             .dispatch(PlaybackAction::ToggleShuffle.into());
     }
+
+    pub fn clear_queue(&self) {
+        self.dispatcher.dispatch(PlaybackAction::ClearQueue.into());
+    }
+
+    pub fn should_load_more(&self) -> bool {
+        let queue = self.queue();
+        queue.position() == queue.max_size() - 1
+            && queue
+                .pagination
+                .as_ref()
+                .and_then(|p| p.next_offset)
+                .is_some()
+    }
 }
 
 impl PlaylistModel for NowPlayingModel {

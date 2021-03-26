@@ -307,7 +307,10 @@ impl SpotifyClient {
 
     pub(crate) fn get_playlist(&self, id: &str) -> SpotifyRequest<'_, (), Playlist> {
         let query = make_query_params()
-            .append_pair("fields", "id,name,images,owner")
+            .append_pair(
+                "fields",
+                "id,name,images,owner,tracks.items(is_local,track(name,id,duration_ms,artists(name,id),album(name,id,images,artists)))",
+            )
             .finish();
         self.request()
             .method(Method::GET)

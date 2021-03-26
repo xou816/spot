@@ -2,6 +2,7 @@ mod app_model;
 mod app_state;
 mod browser_state;
 mod login_state;
+mod pagination;
 mod playback_state;
 mod screen_states;
 mod selection_state;

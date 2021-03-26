@@ -135,8 +135,8 @@ impl PlaylistModel for DetailsModel {
     }
 
     fn play_song(&self, id: &str) {
-        let source = PlaylistSource::Album(self.id.clone());
-        if self.app_model.get_state().playback.source != source {
+        let source = Some(PlaylistSource::Album(self.id.clone()));
+        if self.app_model.get_state().playback.source() != source.as_ref() {
             let songs = self.songs_ref();
             if let Some(songs) = songs {
                 self.dispatcher

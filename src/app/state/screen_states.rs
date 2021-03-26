@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 use std::cmp::PartialEq;
 
-use super::{BrowserAction, BrowserEvent, UpdatableState};
+use super::{pagination::Pagination, BrowserAction, BrowserEvent, UpdatableState};
 use crate::app::models::*;
 use crate::app::ListStore;
 
@@ -117,52 +117,6 @@ impl UpdatableState for PlaylistDetailsState {
     }
 }
 
-pub struct Pagination<T> {
-    pub data: T,
-    pub next_offset: Option<u32>,
-    pub batch_size: u32,
-}
-
-impl<T> Pagination<T> {
-    fn new(data: T, batch_size: u32) -> Self {
-        Self {
-            data,
-            next_offset: Some(0),
-            batch_size,
-        }
-    }
-
-    fn reset(&mut self, new_length: u32) {
-        self.next_offset = if new_length >= self.batch_size {
-            Some(self.batch_size)
-        } else {
-            None
-        }
-    }
-
-    fn update(&mut self, new_length: u32) {
-        if let Some(offset) = self.next_offset.take() {
-            self.next_offset = if new_length >= offset + self.batch_size {
-                Some(offset + self.batch_size)
-            } else {
-                None
-            }
-        }
-    }
-
-    fn decrement(&mut self) {
-        if let Some(offset) = self.next_offset.take() {
-            self.next_offset = Some(offset - 1);
-        }
-    }
-
-    fn increment(&mut self) {
-        if let Some(offset) = self.next_offset.take() {
-            self.next_offset = Some(offset + 1);
-        }
-    }
-}
-
 pub struct ArtistState {
     pub id: String,
     pub name: ScreenName,
@@ -203,7 +157,7 @@ impl UpdatableState for ArtistState {
                 for album in albums {
                     self.albums.append(album.into());
                 }
-                self.next_page.reset(self.albums.len() as u32);
+                self.next_page.reset_count(self.albums.len() as u32);
 
                 top_tracks.truncate(5);
                 self.top_tracks = top_tracks;
@@ -211,10 +165,10 @@ impl UpdatableState for ArtistState {
                 vec![BrowserEvent::ArtistDetailsUpdated(id)]
             }
             BrowserAction::AppendArtistReleases(albums) => {
+                self.next_page.set_loaded_count(albums.len() as u32);
                 for album in albums {
                     self.albums.append(album.into());
                 }
-                self.next_page.update(self.albums.len() as u32);
                 vec![BrowserEvent::ArtistDetailsUpdated(self.id.clone())]
             }
             _ => vec![],
@@ -258,17 +212,17 @@ impl UpdatableState for HomeState {
                     for album in converted {
                         self.albums.append(album);
                     }
-                    self.next_albums_page.reset(self.albums.len() as u32);
+                    self.next_albums_page.reset_count(self.albums.len() as u32);
                     vec![BrowserEvent::LibraryUpdated]
                 } else {
                     vec![]
                 }
             }
             BrowserAction::AppendLibraryContent(content) => {
+                self.next_albums_page.set_loaded_count(content.len() as u32);
                 for album in content {
                     self.albums.append(album.into());
                 }
-                self.next_albums_page.update(self.albums.len() as u32);
                 vec![BrowserEvent::LibraryUpdated]
             }
             BrowserAction::SaveAlbum(album) => {
@@ -308,17 +262,19 @@ impl UpdatableState for HomeState {
                     for playlist in converted {
                         self.playlists.append(playlist);
                     }
-                    self.next_playlists_page.reset(self.playlists.len() as u32);
+                    self.next_playlists_page
+                        .reset_count(self.playlists.len() as u32);
                     vec![BrowserEvent::SavedPlaylistsUpdated]
                 } else {
                     vec![]
                 }
             }
             BrowserAction::AppendPlaylistsContent(content) => {
+                self.next_playlists_page
+                    .set_loaded_count(content.len() as u32);
                 for playlist in content {
                     self.playlists.append(playlist.into());
                 }
-                self.next_playlists_page.update(self.playlists.len() as u32);
                 vec![BrowserEvent::SavedPlaylistsUpdated]
             }
             _ => vec![],
@@ -402,16 +358,15 @@ impl UpdatableState for UserState {
                     self.playlists.append(playlist.into());
                 }
 
-                self.next_page.reset(self.playlists.len() as u32);
+                self.next_page.reset_count(self.playlists.len() as u32);
 
                 vec![BrowserEvent::UserDetailsUpdated(id)]
             }
             BrowserAction::AppendUserPlaylists(playlists) => {
+                self.next_page.set_loaded_count(playlists.len() as u32);
                 for playlist in playlists {
                     self.playlists.append(playlist.into());
                 }
-
-                self.next_page.update(self.playlists.len() as u32);
                 vec![BrowserEvent::UserDetailsUpdated(self.id.clone())]
             }
             _ => vec![],

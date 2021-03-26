@@ -134,6 +134,7 @@ sources = files(
 './app/state/browser_state.rs',
 './app/state/login_state.rs',
 './app/state/screen_states.rs',
+'./app/state/pagination.rs',
 './app/state/playback_state.rs',
 './app/state/app_state.rs',
 './app/state/mod.rs',

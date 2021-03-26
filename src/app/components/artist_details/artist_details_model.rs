@@ -7,7 +7,7 @@ use std::sync::Arc;
 use crate::app::components::{labels, PlaylistModel, SelectionTool, SelectionToolsModel};
 use crate::app::models::*;
 use crate::app::state::{
-    BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource, SelectionAction, SelectionState,
+    BrowserAction, BrowserEvent, PlaybackAction, SelectionAction, SelectionState,
 };
 use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, ListStore};
 
@@ -103,9 +103,8 @@ impl PlaylistModel for ArtistDetailsModel {
     fn play_song(&self, id: &str) {
         let tracks = self.tracks_ref();
         if let Some(tracks) = tracks {
-            self.dispatcher.dispatch(
-                PlaybackAction::LoadPlaylist(PlaylistSource::None, tracks.clone()).into(),
-            );
+            self.dispatcher
+                .dispatch(PlaybackAction::LoadPlaylist(None, tracks.clone()).into());
             self.dispatcher
                 .dispatch(PlaybackAction::Load(id.to_string()).into());
         }

@@ -1,6 +1,7 @@
 use rand::{rngs::SmallRng, seq::SliceRandom, RngCore, SeedableRng};
 use std::collections::HashMap;
 
+use super::pagination::Pagination;
 use crate::app::models::SongDescription;
 use crate::app::state::{AppAction, AppEvent, UpdatableState};
 
@@ -8,7 +9,6 @@ use crate::app::state::{AppAction, AppEvent, UpdatableState};
 pub enum PlaylistSource {
     Playlist(String),
     Album(String),
-    None,
 }
 
 impl PartialEq for PlaylistSource {
@@ -28,10 +28,12 @@ pub struct PlaybackState {
     indexed_songs: HashMap<String, SongDescription>,
     running_order: Vec<String>,
     running_order_shuffled: Option<Vec<String>>,
-    pub source: PlaylistSource,
+    pub pagination: Option<Pagination<PlaylistSource>>,
     is_playing: bool,
     pub current_song_id: Option<String>,
 }
+
+const QUEUE_SIZE: u32 = 100;
 
 impl PlaybackState {
     pub fn is_playing(&self) -> bool {
@@ -94,8 +96,12 @@ impl PlaybackState {
         self.running_order_shuffled = Some(final_list);
     }
 
-    fn set_playlist(&mut self, source: PlaylistSource, tracks: Vec<SongDescription>) {
-        self.source = source;
+    fn set_playlist(&mut self, source: Option<PlaylistSource>, tracks: Vec<SongDescription>) {
+        self.pagination = source.map(|source| {
+            let mut p = Pagination::new(source, QUEUE_SIZE);
+            p.reset_count(tracks.len() as u32);
+            p
+        });
         self.running_order = tracks.iter().map(|t| t.id.clone()).collect();
         self.indexed_songs = Self::index_tracks(tracks);
         if self.is_shuffled() {
@@ -105,7 +111,7 @@ impl PlaybackState {
 
     pub fn queue(&mut self, track: SongDescription) {
         if !self.indexed_songs.contains_key(&track.id) {
-            self.source = PlaylistSource::None;
+            self.pagination = None;
             self.running_order.push(track.id.clone());
             if let Some(shuffled) = self.running_order_shuffled.as_mut() {
                 let next = (self.rng.next_u32() as usize) % (shuffled.len() - 1);
@@ -117,7 +123,6 @@ impl PlaybackState {
 
     pub fn dequeue(&mut self, id: &str) {
         if self.indexed_songs.contains_key(id) {
-            self.source = PlaylistSource::None;
             self.running_order.retain(|t| t != id);
             if let Some(shuffled) = self.running_order_shuffled.as_mut() {
                 shuffled.retain(|t| t != id);
@@ -206,6 +211,21 @@ impl PlaybackState {
             self.running_order_shuffled = None;
         }
     }
+
+    pub fn source(&self) -> Option<&PlaylistSource> {
+        self.pagination.as_ref().map(|p| &p.data)
+    }
+
+    pub fn position(&self) -> usize {
+        match self.current_song_id.as_ref() {
+            Some(id) => self.songs().position(|s| id == &s.id).unwrap_or(0),
+            None => 0,
+        }
+    }
+
+    pub fn max_size(&self) -> usize {
+        QUEUE_SIZE as usize
+    }
 }
 
 impl Default for PlaybackState {
@@ -215,7 +235,7 @@ impl Default for PlaybackState {
             indexed_songs: HashMap::new(),
             running_order: vec![],
             running_order_shuffled: None,
-            source: PlaylistSource::None,
+            pagination: None,
             is_playing: false,
             current_song_id: None,
         }
@@ -232,10 +252,11 @@ pub enum PlaybackAction {
     Seek(u32),
     SyncSeek(u32),
     Load(String),
-    LoadPlaylist(PlaylistSource, Vec<SongDescription>),
+    LoadPlaylist(Option<PlaylistSource>, Vec<SongDescription>),
     Next,
     Previous,
     Queue(SongDescription),
+    QueueMany(Vec<SongDescription>),
     Dequeue(String),
 }
 
@@ -339,6 +360,12 @@ impl UpdatableState for PlaybackState {
             }
             PlaybackAction::Queue(track) => {
                 self.queue(track);
+                vec![PlaybackEvent::PlaylistChanged]
+            }
+            PlaybackAction::QueueMany(tracks) => {
+                for track in tracks {
+                    self.queue(track);
+                }
                 vec![PlaybackEvent::PlaylistChanged]
             }
             PlaybackAction::Dequeue(id) => {

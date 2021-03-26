@@ -34,9 +34,10 @@ pub enum CacheFile {
 
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub enum CachePolicy {
-    Default,
-    IgnoreExpiry,
-    AlwaysRevalidate,
+    Default,      // query remote cache when stale
+    IgnoreExpiry, // always use cached value
+    Revalidate,   // always query remote cache
+    IgnoreCached, // ignore cache alltogether
 }
 
 #[derive(PartialEq, Clone, Debug)]
@@ -127,12 +128,16 @@ impl CacheManager {
         resource: &str,
         policy: CachePolicy,
     ) -> Result<CacheFile, CacheError> {
+        if matches!(policy, CachePolicy::IgnoreCached) {
+            return Ok(CacheFile::None);
+        }
+
         let path = self.cache_path(resource);
         let (file, expiry) = join!(fs::read(&path), self.read_expiry_file(resource));
 
         match (file, policy) {
             (Ok(buf), CachePolicy::IgnoreExpiry) => Ok(CacheFile::Fresh(buf, None)),
-            (Ok(buf), CachePolicy::AlwaysRevalidate) => {
+            (Ok(buf), CachePolicy::Revalidate) => {
                 let expiry = expiry.unwrap_or(CacheExpiry::Never);
                 let etag = expiry.etag().cloned();
                 Ok(CacheFile::Expired(buf, etag))
@@ -146,6 +151,7 @@ impl CacheManager {
                     CacheFile::Fresh(buf, etag)
                 })
             }
+            (_, CachePolicy::IgnoreCached) => Ok(CacheFile::None),
             (Err(e), _) => match e.kind() {
                 io::ErrorKind::NotFound => Ok(CacheFile::None),
                 _ => Err(CacheError::ReadError(e)),
