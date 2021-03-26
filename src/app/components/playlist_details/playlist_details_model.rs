@@ -68,8 +68,8 @@ impl PlaylistDetailsModel {
 
         let state = self.app_model.get_state();
         let page = &state.browser.playlist_details_state(&id)?.next_page;
-        let next_offset = page.next_offset?;
-        let batch_size = page.batch_size;
+        let next_offset = page.next_offset? as u32;
+        let batch_size = page.batch_size as u32;
 
         self.dispatcher.dispatch_async(Box::pin(async move {
             match api.get_playlist_tracks(&id, next_offset, batch_size).await {

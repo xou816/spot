@@ -73,9 +73,12 @@ impl PlaybackState {
             .and_then(|id| self.songs().skip_while(|&song| song.id != *id).nth(1))
     }
 
-    fn index_tracks(tracks: Vec<SongDescription>) -> HashMap<String, SongDescription> {
-        let mut map: HashMap<String, SongDescription> = HashMap::with_capacity(tracks.len());
-        for track in tracks.into_iter() {
+    fn index_tracks(
+        tracks: impl Iterator<Item = SongDescription>,
+    ) -> HashMap<String, SongDescription> {
+        let mut map: HashMap<String, SongDescription> =
+            HashMap::with_capacity(tracks.size_hint().1.unwrap_or_else(Self::max_size));
+        for track in tracks {
             map.insert(track.id.clone(), track);
         }
         map
@@ -96,12 +99,12 @@ impl PlaybackState {
 
     fn set_playlist(&mut self, source: Option<PlaylistSource>, tracks: Vec<SongDescription>) {
         self.pagination = source.map(|source| {
-            let mut p = Pagination::new(source, self.max_size() as u32);
-            p.reset_count(tracks.len() as u32);
+            let mut p = Pagination::new(source, Self::max_size());
+            p.reset_count(tracks.len());
             p
         });
         self.running_order = tracks.iter().map(|t| t.id.clone()).collect();
-        self.indexed_songs = Self::index_tracks(tracks);
+        self.indexed_songs = Self::index_tracks(tracks.into_iter());
         if self.is_shuffled() {
             self.shuffle();
         }
@@ -221,7 +224,7 @@ impl PlaybackState {
         }
     }
 
-    pub fn max_size(&self) -> usize {
+    pub fn max_size() -> usize {
         100
     }
 }

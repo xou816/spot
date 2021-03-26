@@ -43,14 +43,14 @@ impl NowPlayingModel {
 
     pub fn load_more_if_needed(&self) -> Option<()> {
         let queue = self.queue();
-        if queue.position() < queue.max_size() - 1 {
+        if queue.position() < PlaybackState::max_size() - 1 {
             return None;
         }
 
         let api = self.app_model.get_spotify();
         let pagination = queue.pagination.as_ref()?;
-        let batch_size = pagination.batch_size;
-        let next_offset = pagination.next_offset?;
+        let batch_size = pagination.batch_size as u32;
+        let next_offset = pagination.next_offset? as u32;
 
         if let PlaylistSource::Playlist(id) = &pagination.data {
             let id = id.clone();
