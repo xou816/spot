@@ -47,7 +47,7 @@ msgstr "Cerrar sesión"
 #. translators: This is a sidebar entry to browse to saved albums.
 #: src/app/components/navigation/home.rs:33
 msgid "Library"
-msgstr "Libreria"
+msgstr "Biblioteca"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
 #: src/app/components/navigation/home.rs:38
