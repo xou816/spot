@@ -34,6 +34,18 @@ impl Into<AppAction> for BrowserAction {
     }
 }
 
+impl BrowserAction {
+    // additional screen names that should handle this action
+    fn additional_targets(&self) -> Vec<ScreenName> {
+        match self {
+            BrowserAction::SaveAlbum(_) | BrowserAction::UnsaveAlbum(_) => {
+                vec![ScreenName::Home]
+            }
+            _ => vec![],
+        }
+    }
+}
+
 #[derive(Eq, PartialEq, Clone, Debug)]
 pub enum BrowserEvent {
     LibraryUpdated,
@@ -167,7 +179,7 @@ where
         self.0.truncate(split + 1);
     }
 
-    fn screen_state(&self, name: &Screen::Name) -> ScreenState {
+    fn screen_visibility(&self, name: &Screen::Name) -> ScreenState {
         self.0
             .iter()
             .rev()
@@ -197,6 +209,10 @@ impl BrowserState {
 
     pub fn current_screen(&self) -> &ScreenName {
         self.navigation.current().name()
+    }
+
+    pub fn find_screen_mut(&mut self, name: &ScreenName) -> Option<&mut BrowserScreen> {
+        self.navigation.iter_mut().find(|s| s.name() == name)
     }
 
     pub fn can_pop(&self) -> bool {
@@ -251,9 +267,9 @@ impl BrowserState {
 
     fn push_if_needed(&mut self, name: ScreenName) -> Vec<BrowserEvent> {
         let navigation = &mut self.navigation;
-        let screen_state = navigation.screen_state(&name);
+        let screen_visibility = navigation.screen_visibility(&name);
 
-        match screen_state {
+        match screen_visibility {
             ScreenState::Current => vec![],
             ScreenState::Present => {
                 navigation.pop_to(&name);
@@ -291,12 +307,25 @@ impl UpdatableState for BrowserState {
                 self.navigation.pop();
                 vec![BrowserEvent::NavigationPopped]
             }
-            _ => self
-                .navigation
-                .iter_mut()
-                .map(|screen| screen.state().update_with(action.clone()))
-                .flatten()
-                .collect(),
+            _ => {
+                let mut events: Vec<Self::Event> = vec![];
+                events.extend(
+                    action
+                        .additional_targets()
+                        .iter()
+                        .filter_map(|name| {
+                            Some(
+                                self.find_screen_mut(name)?
+                                    .state()
+                                    .update_with(action.clone()),
+                            )
+                        })
+                        .flatten()
+                        .collect::<Vec<Self::Event>>(),
+                );
+                events.extend(self.navigation.current_mut().state().update_with(action));
+                events
+            }
         }
     }
 }
