@@ -9,7 +9,7 @@ use crate::app::models::SongModel;
 use crate::app::state::{
     PlaybackAction, PlaybackEvent, PlaybackState, PlaylistSource, SelectionAction, SelectionContext, SelectionState,
 };
-use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState};
+use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState, ListDiff};
 
 pub struct NowPlayingModel {
     app_model: Rc<AppModel>,
@@ -71,24 +71,26 @@ impl PlaylistModel for NowPlayingModel {
         self.queue().current_song_id.clone()
     }
 
-    fn songs(&self) -> Vec<SongModel> {
-        self.queue()
-            .songs()
-            .enumerate()
-            .map(|(i, s)| s.to_song_model(i))
-            .collect()
-    }
-
     fn play_song(&self, id: &str) {
         self.dispatcher
             .dispatch(PlaybackAction::Load(id.to_string()).into());
     }
 
-    fn should_refresh_songs(&self, event: &AppEvent) -> bool {
-        matches!(
+    fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>> {
+        if matches!(
             event,
             AppEvent::PlaybackEvent(PlaybackEvent::PlaylistChanged)
-        )
+        ) {
+            Some(ListDiff::Set(
+                self.queue()
+                    .songs()
+                    .enumerate()
+                    .map(|(i, s)| s.to_song_model(i))
+                    .collect(),
+            ))
+        } else {
+            None
+        }
     }
 
     fn autoscroll_to_playing(&self) -> bool {

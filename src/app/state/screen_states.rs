@@ -89,8 +89,7 @@ pub struct PlaylistDetailsState {
     pub id: String,
     pub name: ScreenName,
     pub next_page: Pagination<String>,
-    pub summary: Option<PlaylistDescription>,
-    pub tracks: ListStore<SongModel>,
+    pub playlist: Option<PlaylistDescription>,
 }
 
 impl PlaylistDetailsState {
@@ -99,8 +98,7 @@ impl PlaylistDetailsState {
             id: id.clone(),
             name: ScreenName::PlaylistDetails(id.clone()),
             next_page: Pagination::new(id, 100),
-            summary: None,
-            tracks: ListStore::new(),
+            playlist: None,
         }
     }
 }
@@ -111,30 +109,19 @@ impl UpdatableState for PlaylistDetailsState {
 
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
-            BrowserAction::SetPlaylistDetails(mut playlist) => {
+            BrowserAction::SetPlaylistDetails(playlist) => {
                 let id = playlist.id.clone();
                 self.next_page.reset_count(playlist.songs.len() as u32);
-                self.tracks.replace_all(
-                    std::mem::take(&mut playlist.songs)
-                        .into_iter()
-                        .enumerate()
-                        .map(|(i, s)| s.to_song_model(i)),
-                );
-                self.summary = Some(playlist);
-                vec![
-                    BrowserEvent::PlaylistDetailsLoaded(id.clone()),
-                    BrowserEvent::PlaylistTracksLoaded(id),
-                ]
+                self.playlist = Some(playlist);
+                vec![BrowserEvent::PlaylistDetailsLoaded(id)]
             }
             BrowserAction::AppendPlaylistTracks(id, tracks) if id == self.id => {
+                let next_index = self.playlist.as_ref().map(|p| p.songs.len()).unwrap_or(0);
                 self.next_page.set_loaded_count(tracks.len() as u32);
-                self.tracks.extend(
-                    tracks
-                        .into_iter()
-                        .enumerate()
-                        .map(|(i, s)| s.to_song_model(i)),
-                );
-                vec![BrowserEvent::PlaylistDetailsLoaded(id)]
+                if let Some(playlist) = self.playlist.as_mut() {
+                    playlist.songs.extend(tracks);
+                }
+                vec![BrowserEvent::PlaylistTracksAppended(id, next_index)]
             }
             _ => vec![],
         }

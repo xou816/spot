@@ -72,14 +72,13 @@ impl Details {
         }
     }
 
-    fn update_details(&self) {
+    fn update_details(&mut self) {
         if let Some(info) = self.model.get_album_info() {
             let album = &info.title[..];
             let artist = &info.artists_name();
 
             self.widget.album_label.set_label(album);
             self.widget.artist_button_label.set_label(artist);
-
             let weak_model = Rc::downgrade(&self.model);
             self.widget.artist_button.connect_activate_link(move |_| {
                 if let Some(model) = weak_model.upgrade() {

@@ -3,6 +3,11 @@ use gio::ListModelExt;
 use std::iter::Iterator;
 use std::marker::PhantomData;
 
+pub enum ListDiff<GType> {
+    Set(Vec<GType>),
+    Append(Vec<GType>),
+}
+
 pub struct ListStore<GType> {
     store: gio::ListStore,
     _marker: PhantomData<GType>,
@@ -16,6 +21,13 @@ where
         Self {
             store: gio::ListStore::new(GType::static_type()),
             _marker: PhantomData,
+        }
+    }
+
+    pub fn update(&mut self, diff: ListDiff<GType>) {
+        match diff {
+            ListDiff::Set(elements) => self.replace_all(elements.into_iter()),
+            ListDiff::Append(elements) => self.extend(elements.into_iter()),
         }
     }
 

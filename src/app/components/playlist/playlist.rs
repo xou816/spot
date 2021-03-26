@@ -9,7 +9,7 @@ use crate::app::components::{Component, EventListener, Song};
 use crate::app::models::SongModel;
 use crate::app::{
     state::{PlaybackEvent, SelectionEvent, SelectionState},
-    AppEvent, ListStore,
+    AppEvent, ListDiff, ListStore,
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -19,10 +19,9 @@ struct RowState {
 }
 
 pub trait PlaylistModel {
-    fn songs(&self) -> Vec<SongModel>;
     fn current_song_id(&self) -> Option<String>;
     fn play_song(&self, id: &str);
-    fn should_refresh_songs(&self, event: &AppEvent) -> bool;
+    fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>>;
 
     fn autoscroll_to_playing(&self) -> bool {
         false
@@ -207,11 +206,6 @@ where
         }
     }
 
-    fn reset_list(&mut self) {
-        let list_model = &mut self.list_model;
-        list_model.replace_all(self.model.songs().into_iter());
-    }
-
     fn set_selection_active(listbox: &gtk::ListBox, active: bool) {
         let context = listbox.get_style_context();
         if active {
@@ -243,8 +237,11 @@ where
                 Self::set_selection_active(&self.listbox, self.model.is_selection_enabled());
                 self.update_list(false);
             }
-            _ if self.model.should_refresh_songs(event) => self.reset_list(),
-            _ => {}
+            event => {
+                if let Some(diff) = self.model.diff_for_event(event) {
+                    self.list_model.update(diff);
+                }
+            }
         }
     }
 }

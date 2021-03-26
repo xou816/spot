@@ -53,7 +53,7 @@ pub enum BrowserEvent {
     SavedPlaylistsUpdated,
     AlbumDetailsLoaded(String),
     PlaylistDetailsLoaded(String),
-    PlaylistTracksLoaded(String),
+    PlaylistTracksAppended(String, usize),
     SearchUpdated,
     SearchResultsUpdated,
     ArtistDetailsUpdated(String),

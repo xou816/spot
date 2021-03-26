@@ -67,13 +67,13 @@ impl ArtistDetails {
         let playlist = Box::new(Playlist::new(widget.top_tracks.clone(), Rc::clone(&model)));
 
         Self {
-            widget,
             model,
+            widget,
             children: vec![playlist],
         }
     }
 
-    fn update_details(&self) {
+    fn update_details(&mut self) {
         if let Some(name) = self.model.get_artist_name() {
             let context = self.widget.root.get_style_context();
             context.add_class("artist__loaded");

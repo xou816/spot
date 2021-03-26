@@ -1,5 +1,6 @@
 use gladis::Gladis;
 use gtk::prelude::*;
+use gtk::ScrolledWindowExt;
 use std::rc::Rc;
 
 use super::PlaylistDetailsModel;
@@ -11,7 +12,7 @@ use crate::app::{AppEvent, BrowserEvent};
 
 #[derive(Gladis, Clone)]
 struct PlaylistDetailsWidget {
-    pub root: gtk::Widget,
+    pub root: gtk::ScrolledWindow,
     pub name_label: gtk::Label,
     pub owner_button: gtk::LinkButton,
     pub owner_button_label: gtk::Label,
@@ -45,6 +46,14 @@ impl PlaylistDetails {
         }
         let widget = PlaylistDetailsWidget::new();
         let playlist = Box::new(Playlist::new(widget.tracks.clone(), model.clone()));
+
+        widget
+            .root
+            .connect_edge_reached(clone!(@weak model => move |_, pos| {
+                if let gtk::PositionType::Bottom = pos {
+                    model.load_more_tracks();
+                }
+            }));
 
         widget.owner_button.connect_activate_link(
             clone!(@weak model => @default-return glib::signal::Inhibit(false), move |_| {
@@ -87,7 +96,7 @@ impl PlaylistDetails {
 
 impl Component for PlaylistDetails {
     fn get_root_widget(&self) -> &gtk::Widget {
-        &self.widget.root
+        self.widget.root.upcast_ref()
     }
 
     fn get_children(&mut self) -> Option<&mut Vec<Box<dyn EventListener>>> {
