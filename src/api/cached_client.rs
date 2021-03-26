@@ -6,7 +6,6 @@ use serde_json::from_slice;
 use std::convert::Into;
 use std::future::Future;
 
-use super::api_models::*;
 use super::cache::{CacheExpiry, CacheManager, CachePolicy, FetchResult};
 use super::client::{SpotifyApiError, SpotifyClient, SpotifyResponse, SpotifyResponseKind};
 use crate::app::models::*;
@@ -498,7 +497,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
 #[cfg(test)]
 pub mod tests {
 
-    use super::*;
+    use crate::api::api_models::*;
 
     #[test]
     fn test_search_query() {

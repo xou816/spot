@@ -4,10 +4,10 @@ use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use crate::app::components::{labels, PlaylistModel, SelectionTool, SelectionToolsModel};
+use crate::app::components::{handle_error, labels, PlaylistModel, SelectionTool, SelectionToolsModel};
 use crate::app::models::SongModel;
 use crate::app::state::{
-    PlaybackAction, PlaybackEvent, PlaybackState, SelectionAction, SelectionContext, SelectionState,
+    PlaybackAction, PlaybackEvent, PlaybackState, PlaylistSource, SelectionAction, SelectionContext, SelectionState,
 };
 use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState};
 
@@ -41,14 +41,28 @@ impl NowPlayingModel {
         self.dispatcher.dispatch(PlaybackAction::ClearQueue.into());
     }
 
-    pub fn should_load_more(&self) -> bool {
+    pub fn load_more_if_needed(&self) -> Option<()> {
         let queue = self.queue();
-        queue.position() == queue.max_size() - 1
-            && queue
-                .pagination
-                .as_ref()
-                .and_then(|p| p.next_offset)
-                .is_some()
+        if queue.position() < queue.max_size() - 1 {
+            return None;
+        }
+
+        let api = self.app_model.get_spotify();
+        let pagination = queue.pagination.as_ref()?;
+        let batch_size = pagination.batch_size;
+        let next_offset = pagination.next_offset?;
+
+        if let PlaylistSource::Playlist(id) = &pagination.data {
+            let id = id.clone();
+            self.dispatcher.dispatch_async(Box::pin(async move {
+                match api.get_playlist_tracks(&id, next_offset, batch_size).await {
+                    Ok(tracks) => Some(PlaybackAction::QueueMany(tracks).into()),
+                    Err(err) => handle_error(err),
+                }
+            }));
+        }
+
+        Some(())
     }
 }
 

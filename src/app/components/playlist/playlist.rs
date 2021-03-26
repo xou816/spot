@@ -209,7 +209,7 @@ where
 
     fn reset_list(&mut self) {
         let list_model = &mut self.list_model;
-        list_model.replace_all(self.model.songs());
+        list_model.replace_all(self.model.songs().into_iter());
     }
 
     fn set_selection_active(listbox: &gtk::ListBox, active: bool) {

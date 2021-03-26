@@ -3,7 +3,7 @@ use gtk::prelude::*;
 use std::rc::Rc;
 
 use crate::app::components::{screen_add_css_provider, Component, EventListener, Playlist};
-use crate::app::AppEvent;
+use crate::app::{state::PlaybackEvent, AppEvent};
 
 use super::NowPlayingModel;
 
@@ -23,6 +23,7 @@ impl NowPlayingWidget {
 
 pub struct NowPlaying {
     widget: NowPlayingWidget,
+    model: Rc<NowPlayingModel>,
     children: Vec<Box<dyn EventListener>>,
 }
 
@@ -40,6 +41,7 @@ impl NowPlaying {
 
         Self {
             widget,
+            model,
             children: vec![Box::new(playlist)],
         }
     }
@@ -57,6 +59,9 @@ impl Component for NowPlaying {
 
 impl EventListener for NowPlaying {
     fn on_event(&mut self, event: &AppEvent) {
+        if let AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) = event {
+            self.model.load_more_if_needed();
+        }
         self.broadcast_event(event);
     }
 }

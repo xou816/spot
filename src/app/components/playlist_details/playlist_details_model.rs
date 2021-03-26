@@ -32,7 +32,7 @@ impl PlaylistDetailsModel {
             Some(
                 &s.browser
                     .playlist_details_state(&self.id)?
-                    .content
+                    .summary
                     .as_ref()?
                     .songs,
             )
@@ -41,7 +41,7 @@ impl PlaylistDetailsModel {
 
     pub fn get_playlist_info(&self) -> Option<impl Deref<Target = PlaylistDescription> + '_> {
         self.app_model
-            .map_state_opt(|s| s.browser.playlist_details_state(&self.id)?.content.as_ref())
+            .map_state_opt(|s| s.browser.playlist_details_state(&self.id)?.summary.as_ref())
     }
 
     pub fn load_playlist_info(&self) {

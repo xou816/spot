@@ -33,8 +33,6 @@ pub struct PlaybackState {
     pub current_song_id: Option<String>,
 }
 
-const QUEUE_SIZE: u32 = 100;
-
 impl PlaybackState {
     pub fn is_playing(&self) -> bool {
         self.is_playing && self.current_song_id.is_some()
@@ -98,7 +96,7 @@ impl PlaybackState {
 
     fn set_playlist(&mut self, source: Option<PlaylistSource>, tracks: Vec<SongDescription>) {
         self.pagination = source.map(|source| {
-            let mut p = Pagination::new(source, QUEUE_SIZE);
+            let mut p = Pagination::new(source, self.max_size() as u32);
             p.reset_count(tracks.len() as u32);
             p
         });
@@ -224,7 +222,7 @@ impl PlaybackState {
     }
 
     pub fn max_size(&self) -> usize {
-        QUEUE_SIZE as usize
+        100
     }
 }
 

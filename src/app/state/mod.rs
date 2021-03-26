@@ -11,6 +11,7 @@ pub use app_model::AppModel;
 pub use app_state::*;
 pub use browser_state::*;
 pub use login_state::*;
+pub use pagination::*;
 pub use playback_state::*;
 pub use screen_states::*;
 pub use selection_state::*;

@@ -23,19 +23,14 @@ where
         &self.store
     }
 
-    pub fn remove_all(&mut self) {
-        self.store.remove_all();
+    pub fn extend(&mut self, elements: impl Iterator<Item = GType>) {
+        let upcast_vec: Vec<glib::Object> = elements.map(|e| e.upcast::<glib::Object>()).collect();
+        self.store
+            .splice(self.store.get_n_items(), 0, &upcast_vec[..]);
     }
 
-    pub fn append(&mut self, element: GType) {
-        self.store.append(&element);
-    }
-
-    pub fn replace_all(&mut self, content: Vec<GType>) {
-        let upcast_vec: Vec<glib::Object> = content
-            .into_iter()
-            .map(|e| e.upcast::<glib::Object>())
-            .collect();
+    pub fn replace_all(&mut self, elements: impl Iterator<Item = GType>) {
+        let upcast_vec: Vec<glib::Object> = elements.map(|e| e.upcast::<glib::Object>()).collect();
         self.store
             .splice(0, self.store.get_n_items(), &upcast_vec[..]);
     }
@@ -66,9 +61,9 @@ where
         self.store.get_n_items() as usize
     }
 
-    pub fn eq<F>(&self, other: &[GType], comparison: F) -> bool
+    pub fn eq<F, O>(&self, other: &[O], comparison: F) -> bool
     where
-        F: Fn(&GType, &GType) -> bool,
+        F: Fn(&GType, &O) -> bool,
     {
         self.len() == other.len()
             && self
