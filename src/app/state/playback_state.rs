@@ -162,10 +162,6 @@ impl PlaybackState {
         }
     }
 
-    fn clear(&mut self) {
-        *self = Default::default();
-    }
-
     fn play(&mut self, id: &str) {
         self.current_song_id = Some(id.to_string());
         self.is_playing = true;
@@ -241,7 +237,6 @@ pub enum PlaybackAction {
     Previous,
     Queue(SongDescription),
     Dequeue(String),
-    ClearQueue,
 }
 
 impl Into<AppAction> for PlaybackAction {
@@ -349,13 +344,6 @@ impl UpdatableState for PlaybackState {
             PlaybackAction::Dequeue(id) => {
                 self.dequeue(&id);
                 vec![PlaybackEvent::PlaylistChanged]
-            }
-            PlaybackAction::ClearQueue => {
-                self.clear();
-                vec![
-                    PlaybackEvent::PlaylistChanged,
-                    PlaybackEvent::PlaybackStopped,
-                ]
             }
             PlaybackAction::Seek(pos) => vec![PlaybackEvent::TrackSeeked(pos)],
             PlaybackAction::SyncSeek(pos) => vec![PlaybackEvent::SeekSynced(pos)],

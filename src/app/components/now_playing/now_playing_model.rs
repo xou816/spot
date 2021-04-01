@@ -36,10 +36,6 @@ impl NowPlayingModel {
         self.dispatcher
             .dispatch(PlaybackAction::ToggleShuffle.into());
     }
-
-    pub fn clear_queue(&self) {
-        self.dispatcher.dispatch(PlaybackAction::ClearQueue.into());
-    }
 }
 
 impl PlaylistModel for NowPlayingModel {

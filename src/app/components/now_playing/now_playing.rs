@@ -12,7 +12,6 @@ struct NowPlayingWidget {
     root: gtk::Widget,
     listbox: gtk::ListBox,
     shuffle: gtk::Button,
-    clear: gtk::Button,
 }
 
 impl NowPlayingWidget {
@@ -35,12 +34,6 @@ impl NowPlaying {
             .shuffle
             .connect_clicked(clone!(@weak model => move |_| {
                 model.toggle_shuffle();
-            }));
-
-        widget
-            .clear
-            .connect_clicked(clone!(@weak model => move |_| {
-                model.clear_queue();
             }));
 
         let playlist = Playlist::new(widget.listbox.clone(), model);
