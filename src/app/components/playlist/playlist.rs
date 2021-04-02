@@ -54,6 +54,7 @@ pub trait PlaylistModel {
 
 pub struct Playlist<Model> {
     listbox: gtk::ListBox,
+    _press_gesture: gtk::GestureLongPress,
     list_model: ListStore<SongModel>,
     model: Rc<Model>,
     animator: AnimatorDefault,
@@ -69,6 +70,14 @@ where
         Self::set_selection_active(&listbox, model.is_selection_enabled());
         listbox.get_style_context().add_class("playlist");
         listbox.set_activate_on_single_click(true);
+
+        let press_gesture = gtk::GestureLongPress::new(&listbox);
+        listbox.add_events(gdk::EventMask::TOUCH_MASK);
+        press_gesture.set_touch_only(false);
+        press_gesture.set_propagation_phase(gtk::PropagationPhase::Capture);
+        press_gesture.connect_pressed(clone!(@weak model => move |_, _, _| {
+            model.enable_selection();
+        }));
 
         let list_model_clone = list_model.clone();
         listbox.connect_row_activated(clone!(@weak model => move |_, row| {
@@ -99,7 +108,7 @@ where
                 song.set_actions(model.actions_for(id).as_ref());
 
                 Self::set_row_state(&listbox, item, &row, Self::get_row_state(item, &*model, None));
-                Self::connect_events(&listbox, item, &row, model);
+                Self::connect_events(item, &row, model);
 
                 row.show_all();
                 row.upcast::<gtk::Widget>()
@@ -108,6 +117,7 @@ where
 
         Self {
             listbox,
+            _press_gesture: press_gesture,
             list_model,
             model,
             animator: AnimatorDefault::ease_in_out_animator(),
@@ -124,16 +134,10 @@ where
         }
     }
 
-    fn connect_events(
-        listbox: &gtk::ListBox,
-        item: &SongModel,
-        row: &gtk::ListBoxRow,
-        model: Rc<Model>,
-    ) {
+    fn connect_events(item: &SongModel, row: &gtk::ListBoxRow, model: Rc<Model>) {
         row.connect_button_release_event(
-            clone!(@weak model, @weak listbox, @strong item => @default-return Inhibit(false), move |_, event| {
+            clone!(@weak model, @strong item => @default-return Inhibit(false), move |_, event| {
                 if event.get_button() == 3 && model.enable_selection() {
-                    Self::set_selection_active(&listbox, true);
                     Self::select_song(&*model, &item);
                     Inhibit(true)
                 } else {
