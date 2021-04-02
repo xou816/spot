@@ -38,6 +38,7 @@ impl SelectionButton {
     fn new(tool: SelectionTool, model: &Rc<impl SelectionToolsModel + 'static>) -> Self {
         let image = gtk::ImageBuilder::new()
             .icon_name(Self::icon_name(&tool))
+            .icon_size(gtk::IconSize::LargeToolbar.into())
             .build();
         let button = gtk::ButtonBuilder::new()
             .visible(true)
