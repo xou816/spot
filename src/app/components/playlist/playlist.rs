@@ -190,8 +190,8 @@ where
             .filter_map(move |(i, song)| listbox.get_row_at_index(i as i32).map(|r| (r, song)))
     }
 
-    fn update_list(&self) {
-        let autoscroll = self.model.autoscroll_to_playing();
+    fn update_list(&self, scroll: bool) {
+        let autoscroll = scroll && self.model.autoscroll_to_playing();
         let current_song_id = self.model.current_song_id();
         for (row, model_song) in self.rows_and_songs() {
             let state = Self::get_row_state(&model_song, &*self.model, current_song_id.as_ref());
@@ -230,9 +230,11 @@ where
 {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_))
-            | AppEvent::SelectionEvent(SelectionEvent::SelectionChanged) => {
-                self.update_list();
+            AppEvent::SelectionEvent(SelectionEvent::SelectionChanged) => {
+                self.update_list(false);
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
+                self.update_list(true);
             }
             AppEvent::PlaybackEvent(PlaybackEvent::PlaybackStopped) => {
                 self.reset_list();
