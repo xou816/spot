@@ -31,11 +31,10 @@ pub struct ArtistDetails {
 }
 
 impl ArtistDetails {
-    pub fn new(model: ArtistDetailsModel, worker: Worker) -> Self {
+    pub fn new(model: Rc<ArtistDetailsModel>, worker: Worker) -> Self {
         model.load_artist_details(model.id.clone());
 
         let widget = ArtistDetailsWidget::new();
-        let model = Rc::new(model);
 
         let weak_model = Rc::downgrade(&model);
         widget.root.connect_edge_reached(move |_, pos| {

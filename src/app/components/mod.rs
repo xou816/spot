@@ -67,8 +67,8 @@ pub use playlist_details::*;
 mod window;
 pub use window::*;
 
-mod selection_editor;
-pub use selection_editor::*;
+mod selection;
+pub use selection::*;
 
 pub mod utils;
 

@@ -3,6 +3,7 @@
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <requires lib="libhandy" version="1.0"/>
+  <!-- interface-css-provider-path app.css -->
   <object class="HdyApplicationWindow" id="window">
     <property name="height-request">500</property>
     <property name="can-focus">False</property>
@@ -20,18 +21,10 @@
             <property name="spacing">8</property>
             <property name="show-close-button">True</property>
             <child type="title">
-              <object class="GtkMenuButton" id="selection_button">
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <property name="relief">half</property>
-                <child>
-                  <object class="GtkLabel" id="selection_label">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes" comments="This text appears when entering selection mode. It should be as short as possible.">No song selected</property>
-                    <property name="ellipsize">end</property>
-                  </object>
-                </child>
+              <object class="GtkLabel" id="selection_label">
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes" comments="This text appears when entering selection mode. It should be as short as possible.">No song selected</property>
+                <property name="ellipsize">end</property>
               </object>
             </child>
             <child>

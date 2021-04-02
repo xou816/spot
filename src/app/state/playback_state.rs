@@ -126,6 +126,42 @@ impl PlaybackState {
         }
     }
 
+    pub fn move_down(&mut self, id: &str) -> bool {
+        let len = self.running_order.len();
+        let running_order = self
+            .running_order_shuffled
+            .as_mut()
+            .unwrap_or(&mut self.running_order);
+        let index = running_order
+            .iter()
+            .position(|s| s == id)
+            .filter(|&index| index + 1 < len);
+        if let Some(index) = index {
+            running_order.swap(index, index + 1);
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn move_up(&mut self, id: &str) -> bool {
+        let running_order = self
+            .running_order_shuffled
+            .as_mut()
+            .unwrap_or(&mut self.running_order);
+        let prev_index = running_order
+            .iter()
+            .position(|s| s == id)
+            .filter(|&index| index > 0)
+            .map(|index| index.saturating_sub(1));
+        if let Some(prev_index) = prev_index {
+            running_order.swap(prev_index, prev_index + 1);
+            true
+        } else {
+            false
+        }
+    }
+
     fn clear(&mut self) {
         *self = Default::default();
     }

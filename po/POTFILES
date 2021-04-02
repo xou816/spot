@@ -55,7 +55,9 @@ src/app/components/search/mod.rs
 src/app/components/search/search.rs
 src/app/components/labels.rs
 src/app/components/mod.rs
-src/app/components/selection_editor/mod.rs
+src/app/components/selection/mod.rs
+src/app/components/selection/selection_heading.rs
+src/app/components/selection/selection_tools.rs
 src/app/loader.rs
 src/app/list_store.rs
 src/app/credentials.rs

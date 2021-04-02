@@ -28,9 +28,8 @@ pub struct NowPlaying {
 }
 
 impl NowPlaying {
-    pub fn new(model: NowPlayingModel) -> Self {
+    pub fn new(model: Rc<NowPlayingModel>) -> Self {
         let widget = NowPlayingWidget::new();
-        let model = Rc::new(model);
 
         widget
             .shuffle

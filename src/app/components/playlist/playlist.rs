@@ -12,6 +12,12 @@ use crate::app::{
     AppEvent, ListStore,
 };
 
+#[derive(Clone, Copy, Debug)]
+struct RowState {
+    is_selected: bool,
+    is_playing: bool,
+}
+
 pub trait PlaylistModel {
     fn songs(&self) -> Vec<SongModel>;
     fn current_song_id(&self) -> Option<String>;
@@ -31,6 +37,9 @@ pub trait PlaylistModel {
 
     fn select_song(&self, _id: &str) {}
     fn deselect_song(&self, _id: &str) {}
+    fn enable_selection(&self) -> bool {
+        false
+    }
 
     fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
         None
@@ -62,12 +71,12 @@ where
         listbox.set_activate_on_single_click(true);
 
         let list_model_clone = list_model.clone();
-        listbox.connect_row_activated(clone!(@weak model => move |listbox, row| {
+        listbox.connect_row_activated(clone!(@weak model => move |_, row| {
             let index = row.get_index() as u32;
             let song: SongModel = list_model_clone.get(index);
             let selection_enabled = model.is_selection_enabled();
             if selection_enabled {
-                Self::select_song(&listbox, &row, &song, &*model);
+                Self::select_song(&*model, &song);
             } else {
                 model.play_song(&song.get_id());
             }
@@ -89,7 +98,7 @@ where
                 song.set_menu(model.menu_for(id).as_ref());
                 song.set_actions(model.actions_for(id).as_ref());
 
-                Self::set_row_state(&listbox, item, &row, &*model);
+                Self::set_row_state(&listbox, item, &row, Self::get_row_state(item, &*model, None));
                 Self::connect_events(&listbox, item, &row, model);
 
                 row.show_all();
@@ -105,15 +114,13 @@ where
         }
     }
 
-    fn select_song(listbox: &gtk::ListBox, row: &gtk::ListBoxRow, song: &SongModel, model: &Model) {
-        row.set_selectable(true);
-        if row.is_selected() {
-            listbox.unselect_row(row);
-            row.set_selectable(false);
-            model.deselect_song(&song.get_id());
-        } else {
-            listbox.select_row(Some(row));
-            model.select_song(&song.get_id());
+    fn select_song(model: &Model, song: &SongModel) {
+        if let Some(selection) = model.selection() {
+            if selection.is_song_selected(&song.get_id()) {
+                model.deselect_song(&song.get_id());
+            } else {
+                model.select_song(&song.get_id());
+            }
         }
     }
 
@@ -124,10 +131,10 @@ where
         model: Rc<Model>,
     ) {
         row.connect_button_release_event(
-            clone!(@weak model, @weak listbox, @strong item => @default-return Inhibit(false), move |row, event| {
-                if event.get_button() == 3 {
+            clone!(@weak model, @weak listbox, @strong item => @default-return Inhibit(false), move |_, event| {
+                if event.get_button() == 3 && model.enable_selection() {
                     Self::set_selection_active(&listbox, true);
-                    Self::select_song(&listbox, row, &item, &*model);
+                    Self::select_song(&*model, &item);
                     Inhibit(true)
                 } else {
                     Inhibit(false)
@@ -136,22 +143,34 @@ where
         );
     }
 
-    fn set_row_state(
-        listbox: &gtk::ListBox,
+    fn get_row_state(
         item: &SongModel,
-        row: &gtk::ListBoxRow,
         model: &Model,
-    ) {
+        current_song_id: Option<&String>,
+    ) -> RowState {
         let id = &item.get_id();
-        let current_song_id = model.current_song_id();
-        let is_current = current_song_id.as_ref().map(|s| s.eq(id)).unwrap_or(false);
+        let is_playing = current_song_id
+            .map(|s| s.eq(id))
+            .or_else(|| Some(model.current_song_id()?.eq(id)))
+            .unwrap_or(false);
         let is_selected = model
             .selection()
             .map(|s| s.is_song_selected(id))
             .unwrap_or(false);
+        RowState {
+            is_selected,
+            is_playing,
+        }
+    }
 
-        item.set_playing(is_current);
-        if is_selected {
+    fn set_row_state(
+        listbox: &gtk::ListBox,
+        item: &SongModel,
+        row: &gtk::ListBoxRow,
+        state: RowState,
+    ) {
+        item.set_playing(state.is_playing);
+        if state.is_selected {
             row.set_selectable(true);
             listbox.select_row(Some(row));
         } else {
@@ -159,23 +178,25 @@ where
         }
     }
 
+    fn rows_and_songs(&self) -> impl Iterator<Item = (gtk::ListBoxRow, SongModel)> + '_ {
+        let listbox = &self.listbox;
+        self.list_model
+            .iter()
+            .enumerate()
+            .filter_map(move |(i, song)| listbox.get_row_at_index(i as i32).map(|r| (r, song)))
+    }
+
     fn update_list(&self) {
         let autoscroll = self.model.autoscroll_to_playing();
-        for (i, song) in self.model.songs().iter().enumerate() {
-            let is_current = self
-                .model
-                .current_song_id()
-                .map(|s| s == song.get_id())
-                .unwrap_or(false);
-            let model_song = self.list_model.get(i as u32);
-            model_song.set_playing(is_current);
+        let current_song_id = self.model.current_song_id();
+        for (row, model_song) in self.rows_and_songs() {
+            let state = Self::get_row_state(&model_song, &*self.model, current_song_id.as_ref());
+            Self::set_row_state(&self.listbox, &model_song, &row, state);
 
-            if is_current && autoscroll {
-                if let Some(row) = self.listbox.get_row_at_index(i as i32) {
-                    if !in_viewport(row.upcast_ref()).unwrap_or(true) {
-                        self.animator
-                            .animate(20, move |p| vscroll_to(row.upcast_ref(), p).is_some());
-                    }
+            if state.is_playing && autoscroll {
+                if !in_viewport(row.upcast_ref()).unwrap_or(true) {
+                    self.animator
+                        .animate(20, move |p| vscroll_to(row.upcast_ref(), p).is_some());
                 }
             }
         }
@@ -205,7 +226,8 @@ where
 {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
+            AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_))
+            | AppEvent::SelectionEvent(SelectionEvent::SelectionChanged) => {
                 self.update_list();
             }
             AppEvent::PlaybackEvent(PlaybackEvent::PlaybackStopped) => {
@@ -217,5 +239,11 @@ where
             _ if self.model.should_refresh_songs(event) => self.reset_list(),
             _ => {}
         }
+    }
+}
+
+impl<Model> Component for Playlist<Model> {
+    fn get_root_widget(&self) -> &gtk::Widget {
+        self.listbox.upcast_ref()
     }
 }

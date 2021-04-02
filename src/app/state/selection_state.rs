@@ -3,9 +3,8 @@ use crate::app::state::{AppAction, AppEvent, UpdatableState};
 
 #[derive(Clone, Debug)]
 pub enum SelectionAction {
-    ChangeSelectionMode(bool),
-    Select(SongDescription),
-    Deselect(String),
+    Select(Vec<SongDescription>),
+    Deselect(Vec<String>),
 }
 
 impl Into<AppAction> for SelectionAction {
@@ -17,8 +16,7 @@ impl Into<AppAction> for SelectionAction {
 #[derive(Clone, Debug)]
 pub enum SelectionEvent {
     SelectionModeChanged(bool),
-    Selected(String),
-    Deselected(String),
+    SelectionChanged,
 }
 
 impl Into<AppEvent> for SelectionEvent {
@@ -27,14 +25,22 @@ impl Into<AppEvent> for SelectionEvent {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SelectionContext {
+    Queue,
+    Global,
+}
+
 pub struct SelectionState {
     selected_songs: Option<Vec<SongDescription>>,
+    pub context: SelectionContext,
 }
 
 impl Default for SelectionState {
     fn default() -> Self {
         Self {
             selected_songs: None,
+            context: SelectionContext::Global,
         }
     }
 }
@@ -61,6 +67,22 @@ impl SelectionState {
             selected
         } else {
             false
+        }
+    }
+
+    pub fn set_mode(&mut self, context: Option<SelectionContext>) -> Option<bool> {
+        let currently_active = self.selected_songs.is_some();
+        match (currently_active, context) {
+            (false, Some(context)) => {
+                self.selected_songs = Some(vec![]);
+                self.context = context;
+                Some(true)
+            }
+            (true, None) => {
+                self.selected_songs = None;
+                Some(false)
+            }
+            _ => None,
         }
     }
 
@@ -94,42 +116,20 @@ impl UpdatableState for SelectionState {
 
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
-            SelectionAction::ChangeSelectionMode(active) => {
-                if self.selected_songs.is_some() != active {
-                    if active {
-                        self.selected_songs = Some(vec![]);
-                        vec![SelectionEvent::SelectionModeChanged(true)]
-                    } else {
-                        self.selected_songs = None;
-                        vec![SelectionEvent::SelectionModeChanged(false)]
-                    }
+            SelectionAction::Select(tracks) => {
+                let changed = tracks
+                    .into_iter()
+                    .fold(false, |result, track| self.select(track) || result);
+                if changed {
+                    vec![SelectionEvent::SelectionChanged]
                 } else {
                     vec![]
                 }
             }
-            SelectionAction::Select(track) => {
-                let enable_event = if self.selected_songs.is_none() {
-                    self.selected_songs = Some(vec![]);
-                    Some(SelectionEvent::SelectionModeChanged(true))
-                } else {
-                    None
-                };
-
-                let id = track.id.clone();
-                let select_event = if self.select(track) {
-                    Some(SelectionEvent::Selected(id))
-                } else {
-                    None
-                };
-
-                let mut res = vec![];
-                res.extend(enable_event);
-                res.extend(select_event);
-                res
-            }
-            SelectionAction::Deselect(id) => {
-                if self.deselect(&id) {
-                    vec![SelectionEvent::Deselected(id)]
+            SelectionAction::Deselect(ids) => {
+                let changed = ids.iter().any(|id| self.deselect(id));
+                if changed {
+                    vec![SelectionEvent::SelectionChanged]
                 } else {
                     vec![]
                 }

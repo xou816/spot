@@ -4,12 +4,12 @@ use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use crate::app::components::{labels, PlaylistModel};
+use crate::app::components::{labels, PlaylistModel, SelectionTool, SelectionToolsModel};
 use crate::app::models::SongModel;
 use crate::app::state::{
-    PlaybackAction, PlaybackEvent, PlaybackState, SelectionAction, SelectionState,
+    PlaybackAction, PlaybackEvent, PlaybackState, SelectionAction, SelectionContext, SelectionState,
 };
-use crate::app::{ActionDispatcher, AppEvent, AppModel, AppState};
+use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState};
 
 pub struct NowPlayingModel {
     app_model: Rc<AppModel>,
@@ -109,16 +109,50 @@ impl PlaylistModel for NowPlayingModel {
         let queue = self.queue();
         if let Some(song) = queue.song(id) {
             self.dispatcher
-                .dispatch(SelectionAction::Select(song.clone()).into());
+                .dispatch(SelectionAction::Select(vec![song.clone()]).into());
         }
     }
 
     fn deselect_song(&self, id: &str) {
         self.dispatcher
-            .dispatch(SelectionAction::Deselect(id.to_string()).into());
+            .dispatch(SelectionAction::Deselect(vec![id.to_string()]).into());
+    }
+
+    fn enable_selection(&self) -> bool {
+        self.dispatcher
+            .dispatch(AppAction::ChangeSelectionMode(true));
+        true
     }
 
     fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
-        Some(Box::new(self.app_model.map_state(|s| &s.selection)))
+        let selection = self
+            .app_model
+            .map_state_opt(|s| Some(&s.selection))
+            .filter(|s| s.context == SelectionContext::Queue)?;
+        Some(Box::new(selection))
+    }
+}
+
+impl SelectionToolsModel for NowPlayingModel {
+    fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
+        let selection = self
+            .app_model
+            .map_state_opt(|s| Some(&s.selection))
+            .filter(|s| s.context == SelectionContext::Queue)?;
+        Some(Box::new(selection))
+    }
+
+    fn handle_tool_activated(&self, tool: &SelectionTool) {
+        let action = match (tool, tool.default_action()) {
+            (_, Some(action)) => Some(action),
+            (SelectionTool::SelectAll, None) => {
+                let queue = self.queue();
+                Some(SelectionAction::Select(queue.songs().cloned().collect()).into())
+            }
+            _ => None,
+        };
+        if let Some(action) = action {
+            self.dispatcher.dispatch(action);
+        }
     }
 }

@@ -33,14 +33,21 @@ impl ScreenFactory {
         SavedPlaylists::new(self.worker.clone(), model)
     }
 
-    pub fn make_now_playing(&self) -> NowPlaying {
-        let model = NowPlayingModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        NowPlaying::new(model)
+    pub fn make_now_playing(&self) -> impl ListenerComponent {
+        let model = Rc::new(NowPlayingModel::new(
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        ));
+        SelectionTools::new(NowPlaying::new(Rc::clone(&model)), model)
     }
 
-    pub fn make_album_details(&self, id: String) -> Details {
-        let model = DetailsModel::new(id, Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        Details::new(model, self.worker.clone())
+    pub fn make_album_details(&self, id: String) -> impl ListenerComponent {
+        let model = Rc::new(DetailsModel::new(
+            id,
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        ));
+        SelectionTools::new(Details::new(Rc::clone(&model), self.worker.clone()), model)
     }
 
     pub fn make_search_results(&self) -> SearchResults {
@@ -49,16 +56,28 @@ impl ScreenFactory {
         SearchResults::new(model, self.worker.clone())
     }
 
-    pub fn make_artist_details(&self, id: String) -> ArtistDetails {
-        let model =
-            ArtistDetailsModel::new(id, Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        ArtistDetails::new(model, self.worker.clone())
+    pub fn make_artist_details(&self, id: String) -> impl ListenerComponent {
+        let model = Rc::new(ArtistDetailsModel::new(
+            id,
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        ));
+        SelectionTools::new(
+            ArtistDetails::new(Rc::clone(&model), self.worker.clone()),
+            model,
+        )
     }
 
-    pub fn make_playlist_details(&self, id: String) -> PlaylistDetails {
-        let model =
-            PlaylistDetailsModel::new(id, Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        PlaylistDetails::new(model, self.worker.clone())
+    pub fn make_playlist_details(&self, id: String) -> impl ListenerComponent {
+        let model = Rc::new(PlaylistDetailsModel::new(
+            id,
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        ));
+        SelectionTools::new(
+            PlaylistDetails::new(Rc::clone(&model), self.worker.clone()),
+            model,
+        )
     }
 
     pub fn make_user_details(&self, id: String) -> UserDetails {

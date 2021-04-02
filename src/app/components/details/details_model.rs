@@ -4,7 +4,9 @@ use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use crate::app::components::{handle_error, labels, PlaylistModel};
+use crate::app::components::{
+    handle_error, labels, PlaylistModel, SelectionTool, SelectionToolsModel,
+};
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
 use crate::app::state::{
@@ -93,13 +95,19 @@ impl PlaylistModel for DetailsModel {
             .and_then(|songs| songs.iter().find(|&song| song.id == id).cloned());
         if let Some(song) = song {
             self.dispatcher
-                .dispatch(SelectionAction::Select(song).into());
+                .dispatch(SelectionAction::Select(vec![song]).into());
         }
     }
 
     fn deselect_song(&self, id: &str) {
         self.dispatcher
-            .dispatch(SelectionAction::Deselect(id.to_string()).into());
+            .dispatch(SelectionAction::Deselect(vec![id.to_string()]).into());
+    }
+
+    fn enable_selection(&self) -> bool {
+        self.dispatcher
+            .dispatch(AppAction::ChangeSelectionMode(true));
+        true
     }
 
     fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
@@ -172,5 +180,17 @@ impl PlaylistModel for DetailsModel {
         menu.append(Some(&*labels::COPY_LINK), Some("song.copy_link"));
         menu.append(Some(&*labels::ADD_TO_QUEUE), Some("song.queue"));
         Some(menu.upcast())
+    }
+}
+
+impl SelectionToolsModel for DetailsModel {
+    fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
+        Some(Box::new(self.app_model.map_state(|s| &s.selection)))
+    }
+
+    fn handle_tool_activated(&self, tool: &SelectionTool) {
+        if let Some(action) = tool.default_action() {
+            self.dispatcher.dispatch(action);
+        }
     }
 }

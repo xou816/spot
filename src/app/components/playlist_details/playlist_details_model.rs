@@ -4,7 +4,9 @@ use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use crate::app::components::{handle_error, labels, PlaylistModel};
+use crate::app::components::{
+    handle_error, labels, PlaylistModel, SelectionTool, SelectionToolsModel,
+};
 use crate::app::models::*;
 use crate::app::state::{
     BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource, SelectionAction, SelectionState,
@@ -147,16 +149,34 @@ impl PlaylistModel for PlaylistDetailsModel {
             .and_then(|songs| songs.iter().find(|&song| song.id == id).cloned());
         if let Some(song) = song {
             self.dispatcher
-                .dispatch(SelectionAction::Select(song).into());
+                .dispatch(SelectionAction::Select(vec![song]).into());
         }
     }
 
     fn deselect_song(&self, id: &str) {
         self.dispatcher
-            .dispatch(SelectionAction::Deselect(id.to_string()).into());
+            .dispatch(SelectionAction::Deselect(vec![id.to_string()]).into());
+    }
+
+    fn enable_selection(&self) -> bool {
+        self.dispatcher
+            .dispatch(AppAction::ChangeSelectionMode(true));
+        true
     }
 
     fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
         Some(Box::new(self.app_model.map_state(|s| &s.selection)))
+    }
+}
+
+impl SelectionToolsModel for PlaylistDetailsModel {
+    fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
+        Some(Box::new(self.app_model.map_state(|s| &s.selection)))
+    }
+
+    fn handle_tool_activated(&self, tool: &SelectionTool) {
+        if let Some(action) = tool.default_action() {
+            self.dispatcher.dispatch(action);
+        }
     }
 }
