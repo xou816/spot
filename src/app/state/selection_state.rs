@@ -97,6 +97,10 @@ impl SelectionState {
             .unwrap_or(false)
     }
 
+    pub fn all_selected<'a>(&self, mut ids: impl Iterator<Item = &'a String>) -> bool {
+        ids.all(|id| self.is_song_selected(id))
+    }
+
     pub fn count(&self) -> usize {
         self.selected_songs.as_ref().map(|s| s.len()).unwrap_or(0)
     }
@@ -127,7 +131,9 @@ impl UpdatableState for SelectionState {
                 }
             }
             SelectionAction::Deselect(ids) => {
-                let changed = ids.iter().any(|id| self.deselect(id));
+                let changed = ids
+                    .iter()
+                    .fold(false, |result, id| self.deselect(id) || result);
                 if changed {
                     vec![SelectionEvent::SelectionChanged]
                 } else {

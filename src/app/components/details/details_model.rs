@@ -188,8 +188,23 @@ impl SelectionToolsModel for DetailsModel {
         Some(Box::new(self.app_model.map_state(|s| &s.selection)))
     }
 
-    fn handle_tool_activated(&self, tool: &SelectionTool) {
-        if let Some(action) = tool.default_action() {
+    fn handle_tool_activated(&self, selection: &SelectionState, tool: &SelectionTool) {
+        let action = match (tool, tool.default_action()) {
+            (_, Some(action)) => Some(action),
+            (SelectionTool::SelectAll, None) => self.songs_ref().map(|songs| {
+                let songs = &*songs;
+                let all_selected = selection.all_selected(songs.iter().map(|s| &s.id));
+
+                if all_selected {
+                    SelectionAction::Deselect(songs.iter().map(|s| &s.id).cloned().collect())
+                } else {
+                    SelectionAction::Select(songs.iter().cloned().collect())
+                }
+                .into()
+            }),
+            _ => None,
+        };
+        if let Some(action) = action {
             self.dispatcher.dispatch(action);
         }
     }

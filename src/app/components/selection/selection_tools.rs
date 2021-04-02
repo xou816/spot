@@ -45,7 +45,10 @@ impl SelectionButton {
             .build();
         button.get_style_context().add_class("osd");
         button.connect_clicked(clone!(@weak model => move |_| {
-            model.handle_tool_activated(&tool);
+            let selection = model.enabled_selection();
+            if let Some(selection) = selection {
+                model.handle_tool_activated(&*selection, &tool);
+            }
         }));
         Self { button, tool }
     }
@@ -74,9 +77,9 @@ pub trait SelectionToolsModel {
         }
     }
 
-    fn tools_visible(&self, selection: &SelectionState) -> Vec<SelectionTool> {
-        match &selection.context {
-            SelectionContext::Global => vec![SelectionTool::Add],
+    fn tools_for_context(context: &SelectionContext) -> Vec<SelectionTool> {
+        match context {
+            SelectionContext::Global => vec![SelectionTool::SelectAll, SelectionTool::Add],
             SelectionContext::Queue => vec![
                 SelectionTool::SelectAll,
                 SelectionTool::MoveDown,
@@ -86,12 +89,16 @@ pub trait SelectionToolsModel {
         }
     }
 
+    fn tools_visible(&self, selection: &SelectionState) -> Vec<SelectionTool> {
+        Self::tools_for_context(&selection.context)
+    }
+
     fn enabled_selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
         self.selection().filter(|s| s.is_selection_enabled())
     }
 
     fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>>;
-    fn handle_tool_activated(&self, tool: &SelectionTool);
+    fn handle_tool_activated(&self, selection: &SelectionState, tool: &SelectionTool);
 }
 
 pub struct SelectionTools<Model> {

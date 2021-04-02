@@ -138,12 +138,20 @@ impl SelectionToolsModel for NowPlayingModel {
         Some(Box::new(selection))
     }
 
-    fn handle_tool_activated(&self, tool: &SelectionTool) {
+    fn handle_tool_activated(&self, selection: &SelectionState, tool: &SelectionTool) {
         let action = match (tool, tool.default_action()) {
             (_, Some(action)) => Some(action),
             (SelectionTool::SelectAll, None) => {
                 let queue = self.queue();
-                Some(SelectionAction::Select(queue.songs().cloned().collect()).into())
+                let all_selected = selection.all_selected(queue.songs().map(|s| &s.id));
+                Some(
+                    if all_selected {
+                        SelectionAction::Deselect(queue.songs().map(|s| &s.id).cloned().collect())
+                    } else {
+                        SelectionAction::Select(queue.songs().cloned().collect())
+                    }
+                    .into(),
+                )
             }
             _ => None,
         };
