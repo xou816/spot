@@ -4,10 +4,13 @@ use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use crate::app::components::{handle_error, labels, PlaylistModel, SelectionTool, SelectionToolsModel};
+use crate::app::components::{
+    handle_error, labels, PlaylistModel, SelectionTool, SelectionToolsModel,
+};
 use crate::app::models::SongModel;
 use crate::app::state::{
-    PlaybackAction, PlaybackEvent, PlaybackState, PlaylistSource, SelectionAction, SelectionContext, SelectionState,
+    PlaybackAction, PlaybackEvent, PlaybackState, PlaylistSource, SelectionAction,
+    SelectionContext, SelectionState,
 };
 use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState, ListDiff};
 
@@ -35,10 +38,6 @@ impl NowPlayingModel {
     pub fn toggle_shuffle(&self) {
         self.dispatcher
             .dispatch(PlaybackAction::ToggleShuffle.into());
-    }
-
-    pub fn clear_queue(&self) {
-        self.dispatcher.dispatch(PlaybackAction::ClearQueue.into());
     }
 
     pub fn load_more_if_needed(&self) -> Option<()> {

@@ -37,7 +37,7 @@ impl NowPlaying {
                 model.toggle_shuffle();
             }));
 
-        let playlist = Playlist::new(widget.listbox.clone(), model);
+        let playlist = Playlist::new(widget.listbox.clone(), model.clone());
 
         Self {
             widget,
