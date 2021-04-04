@@ -42,7 +42,7 @@ impl NowPlayingModel {
 
     pub fn load_more_if_needed(&self) -> Option<()> {
         let queue = self.queue();
-        if queue.position() < PlaybackState::max_size() - 1 {
+        if queue.position.unwrap_or(0) < PlaybackState::max_size() - 1 {
             return None;
         }
 
@@ -67,7 +67,7 @@ impl NowPlayingModel {
 
 impl PlaylistModel for NowPlayingModel {
     fn current_song_id(&self) -> Option<String> {
-        self.queue().current_song_id.clone()
+        self.queue().current_song_id().cloned()
     }
 
     fn play_song(&self, id: &str) {
