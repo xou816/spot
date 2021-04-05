@@ -2,7 +2,7 @@ use crate::app::state::{
     browser_state::{BrowserAction, BrowserEvent, BrowserState},
     login_state::{LoginAction, LoginEvent, LoginState},
     playback_state::{PlaybackAction, PlaybackEvent, PlaybackState},
-    selection_state::{SelectionAction, SelectionEvent, SelectionState},
+    selection_state::{SelectionAction, SelectionContext, SelectionEvent, SelectionState},
     ScreenName, UpdatableState,
 };
 
@@ -17,8 +17,12 @@ pub enum AppAction {
     ShowNotification(String),
     HideNotification,
     ViewNowPlaying,
+    // cross-state actions
     QueueSelection,
     DequeueSelection,
+    MoveUpSelection,
+    MoveDownSelection,
+    ChangeSelectionMode(bool),
 }
 
 impl AppAction {
@@ -73,11 +77,14 @@ impl AppState {
         }
     }
 
-    pub fn selection_is_from_queue(&self) -> bool {
-        self.selection
-            .peek_selection()
-            .iter()
-            .all(|s| self.playback.song(&s.id).is_some())
+    pub fn recommanded_context(&self) -> SelectionContext {
+        // TODO: this does not necessarily mean we're actually viewing the playqueue :(
+        let is_home = self.browser.current_screen() == &ScreenName::Home;
+        if is_home {
+            SelectionContext::Queue
+        } else {
+            SelectionContext::Global
+        }
     }
 
     pub fn update_state(&mut self, message: AppAction) -> Vec<AppEvent> {
@@ -104,6 +111,34 @@ impl AppState {
                     SelectionEvent::SelectionModeChanged(false).into(),
                     PlaybackEvent::PlaylistChanged.into(),
                 ]
+            }
+            AppAction::MoveDownSelection => {
+                if let Some(song) = self.selection.peek_selection().first() {
+                    if self.playback.move_down(&song.id) {
+                        return vec![PlaybackEvent::PlaylistChanged.into()];
+                    }
+                }
+                vec![]
+            }
+            AppAction::MoveUpSelection => {
+                if let Some(song) = self.selection.peek_selection().first() {
+                    if self.playback.move_up(&song.id) {
+                        return vec![PlaybackEvent::PlaylistChanged.into()];
+                    }
+                }
+                vec![]
+            }
+            AppAction::ChangeSelectionMode(active) => {
+                let context = if active {
+                    Some(self.recommanded_context())
+                } else {
+                    None
+                };
+                if let Some(active) = self.selection.set_mode(context) {
+                    vec![SelectionEvent::SelectionModeChanged(active).into()]
+                } else {
+                    vec![]
+                }
             }
             AppAction::PlaybackAction(a) => self
                 .playback

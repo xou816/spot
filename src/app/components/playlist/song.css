@@ -6,7 +6,7 @@
   opacity: 1;
 }
 
-.song__icon {
+.song__icon, .song__checkbox {
   transition: opacity 150ms ease;
   opacity: 0;
 }
@@ -16,6 +16,14 @@
 }
 
 .song--playing .song__icon {
+  opacity: 1;
+}
+
+.playlist--selectable .song__index {
+  opacity: 0;
+}
+
+.playlist--selectable .song__checkbox {
   opacity: 1;
 }
 

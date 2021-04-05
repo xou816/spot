@@ -3,7 +3,9 @@ use gio::{ActionMapExt, SimpleActionGroup};
 use std::ops::Deref;
 use std::rc::Rc;
 
-use crate::app::components::{handle_error, labels, PlaylistModel};
+use crate::app::components::{
+    handle_error, labels, PlaylistModel, SelectionTool, SelectionToolsModel,
+};
 use crate::app::models::*;
 use crate::app::state::{
     BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource, SelectionAction, SelectionState,
@@ -150,16 +152,49 @@ impl PlaylistModel for ArtistDetailsModel {
             .and_then(|songs| songs.iter().find(|&song| song.id == id).cloned());
         if let Some(song) = song {
             self.dispatcher
-                .dispatch(SelectionAction::Select(song).into());
+                .dispatch(SelectionAction::Select(vec![song]).into());
         }
     }
 
     fn deselect_song(&self, id: &str) {
         self.dispatcher
-            .dispatch(SelectionAction::Deselect(id.to_string()).into());
+            .dispatch(SelectionAction::Deselect(vec![id.to_string()]).into());
+    }
+
+    fn enable_selection(&self) -> bool {
+        self.dispatcher
+            .dispatch(AppAction::ChangeSelectionMode(true));
+        true
     }
 
     fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
         Some(Box::new(self.app_model.map_state(|s| &s.selection)))
+    }
+}
+
+impl SelectionToolsModel for ArtistDetailsModel {
+    fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
+        Some(Box::new(self.app_model.map_state(|s| &s.selection)))
+    }
+
+    fn handle_tool_activated(&self, selection: &SelectionState, tool: &SelectionTool) {
+        let action = match (tool, tool.default_action()) {
+            (_, Some(action)) => Some(action),
+            (SelectionTool::SelectAll, None) => self.tracks_ref().map(|songs| {
+                let songs = &*songs;
+                let all_selected = selection.all_selected(songs.iter().map(|s| &s.id));
+
+                if all_selected {
+                    SelectionAction::Deselect(songs.iter().map(|s| &s.id).cloned().collect())
+                } else {
+                    SelectionAction::Select(songs.iter().cloned().collect())
+                }
+                .into()
+            }),
+            _ => None,
+        };
+        if let Some(action) = action {
+            self.dispatcher.dispatch(action);
+        }
     }
 }

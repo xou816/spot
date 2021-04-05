@@ -41,12 +41,11 @@ pub struct Details {
 }
 
 impl Details {
-    pub fn new(model: DetailsModel, worker: Worker) -> Self {
+    pub fn new(model: Rc<DetailsModel>, worker: Worker) -> Self {
         if model.get_album_info().is_none() {
             model.load_album_info();
         }
 
-        let model = Rc::new(model);
         let widget = DetailsWidget::new();
         let playlist = Box::new(Playlist::new(widget.album_tracks.clone(), model.clone()));
 

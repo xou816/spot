@@ -126,8 +126,40 @@ impl PlaybackState {
         }
     }
 
-    fn clear(&mut self) {
-        *self = Default::default();
+    pub fn move_down(&mut self, id: &str) -> bool {
+        let len = self.running_order.len();
+        let running_order = self
+            .running_order_shuffled
+            .as_mut()
+            .unwrap_or(&mut self.running_order);
+        let index = running_order
+            .iter()
+            .position(|s| s == id)
+            .filter(|&index| index + 1 < len);
+        if let Some(index) = index {
+            running_order.swap(index, index + 1);
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn move_up(&mut self, id: &str) -> bool {
+        let running_order = self
+            .running_order_shuffled
+            .as_mut()
+            .unwrap_or(&mut self.running_order);
+        let prev_index = running_order
+            .iter()
+            .position(|s| s == id)
+            .filter(|&index| index > 0)
+            .map(|index| index.saturating_sub(1));
+        if let Some(prev_index) = prev_index {
+            running_order.swap(prev_index, prev_index + 1);
+            true
+        } else {
+            false
+        }
     }
 
     fn play(&mut self, id: &str) {
@@ -205,7 +237,6 @@ pub enum PlaybackAction {
     Previous,
     Queue(SongDescription),
     Dequeue(String),
-    ClearQueue,
 }
 
 impl Into<AppAction> for PlaybackAction {
@@ -313,13 +344,6 @@ impl UpdatableState for PlaybackState {
             PlaybackAction::Dequeue(id) => {
                 self.dequeue(&id);
                 vec![PlaybackEvent::PlaylistChanged]
-            }
-            PlaybackAction::ClearQueue => {
-                self.clear();
-                vec![
-                    PlaybackEvent::PlaylistChanged,
-                    PlaybackEvent::PlaybackStopped,
-                ]
             }
             PlaybackAction::Seek(pos) => vec![PlaybackEvent::TrackSeeked(pos)],
             PlaybackAction::SyncSeek(pos) => vec![PlaybackEvent::SeekSynced(pos)],

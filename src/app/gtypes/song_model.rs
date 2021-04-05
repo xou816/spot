@@ -37,8 +37,21 @@ impl SongModel {
             .expect("set 'playing' failed");
     }
 
+    pub fn set_selected(&self, is_selected: bool) {
+        self.set_property("selected", &Value::from(&is_selected))
+            .expect("set 'selected' failed");
+    }
+
     pub fn get_playing(&self) -> bool {
         self.get_property("playing")
+            .unwrap()
+            .get::<bool>()
+            .unwrap()
+            .unwrap()
+    }
+
+    pub fn get_selected(&self) -> bool {
+        self.get_property("selected")
             .unwrap()
             .get::<bool>()
             .unwrap()
@@ -63,6 +76,16 @@ impl SongModel {
         })
         .expect("connecting to prop 'playing' failed");
     }
+
+    pub fn connect_selected_local<F: Fn(&Self) + 'static>(&self, handler: F) {
+        self.connect_local("notify::selected", true, move |values| {
+            if let Ok(Some(_self)) = values[0].get::<Self>() {
+                handler(&_self);
+            }
+            None
+        })
+        .expect("connecting to prop 'selected' failed");
+    }
 }
 
 mod imp {
@@ -73,7 +96,7 @@ mod imp {
     use std::cell::RefCell;
 
     // Static array for defining the properties of the new type.
-    static PROPERTIES: [subclass::Property; 6] = [
+    static PROPERTIES: [subclass::Property; 7] = [
         subclass::Property("index", |index| {
             glib::ParamSpec::uint(
                 index,
@@ -103,8 +126,8 @@ mod imp {
         subclass::Property("duration", |duration| {
             glib::ParamSpec::string(
                 duration,
-                "duration",
-                "dur",
+                "Duration",
+                "Duration",
                 None,
                 glib::ParamFlags::READWRITE,
             )
@@ -118,18 +141,28 @@ mod imp {
                 glib::ParamFlags::READWRITE,
             )
         }),
+        subclass::Property("selected", |playing| {
+            glib::ParamSpec::boolean(
+                playing,
+                "Selected",
+                "Selected",
+                false,
+                glib::ParamFlags::READWRITE,
+            )
+        }),
     ];
 
     // This is the struct containing all state carried with
     // the new type. Generally this has to make use of
     // interior mutability.
     pub struct SongModel {
+        id: RefCell<Option<String>>,
         index: RefCell<u32>,
         title: RefCell<Option<String>>,
         artist: RefCell<Option<String>>,
-        id: RefCell<Option<String>>,
         duration: RefCell<Option<String>>,
         playing: RefCell<bool>,
+        selected: RefCell<bool>,
     }
 
     // ObjectSubclass is the trait that defines the new type and
@@ -164,12 +197,13 @@ mod imp {
         // a new instance of our type with its basic values.
         fn new() -> Self {
             Self {
+                id: RefCell::new(None),
                 index: RefCell::new(1),
                 title: RefCell::new(None),
                 artist: RefCell::new(None),
-                id: RefCell::new(None),
-                playing: RefCell::new(false),
                 duration: RefCell::new(None),
+                playing: RefCell::new(false),
+                selected: RefCell::new(false),
             }
         }
     }
@@ -223,6 +257,13 @@ mod imp {
                         .unwrap();
                     self.playing.replace(playing);
                 }
+                subclass::Property("selected", ..) => {
+                    let selected = value
+                        .get()
+                        .expect("type conformity checked by `Object::set_property`")
+                        .unwrap();
+                    self.selected.replace(selected);
+                }
                 _ => unimplemented!(),
             }
         }
@@ -239,6 +280,7 @@ mod imp {
                 subclass::Property("id", ..) => Ok(self.id.borrow().to_value()),
                 subclass::Property("duration", ..) => Ok(self.duration.borrow().to_value()),
                 subclass::Property("playing", ..) => Ok(self.playing.borrow().to_value()),
+                subclass::Property("selected", ..) => Ok(self.selected.borrow().to_value()),
                 _ => unimplemented!(),
             }
         }

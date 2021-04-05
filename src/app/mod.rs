@@ -131,14 +131,12 @@ impl App {
     ) -> Box<impl EventListener> {
         let headerbar: libhandy::HeaderBar = builder.get_object("header_bar").unwrap();
         let selection_toggle: gtk::ToggleButton = builder.get_object("selection_toggle").unwrap();
-        let selection_button: gtk::MenuButton = builder.get_object("selection_button").unwrap();
         let selection_label: gtk::Label = builder.get_object("selection_label").unwrap();
-        let model = SelectionEditorModel::new(app_model, dispatcher);
-        Box::new(SelectionEditor::new(
+        let model = SelectionHeadingModel::new(app_model, dispatcher);
+        Box::new(SelectionHeading::new(
             model,
             headerbar,
             selection_toggle,
-            selection_button,
             selection_label,
         ))
     }
