@@ -3,13 +3,14 @@ use crate::app::models::SongModel;
 use gio::MenuModel;
 use gladis::Gladis;
 use gtk::prelude::*;
-use gtk::{MenuButtonExt, WidgetExt};
+use gtk::{MenuButtonExt, ToggleButtonExt, WidgetExt};
 
 #[derive(Gladis, Clone)]
 struct SongWidget {
     root: gtk::Widget,
     song_index: gtk::Label,
     song_icon: gtk::Image,
+    song_checkbox: gtk::CheckButton,
     song_title: gtk::Label,
     song_artist: gtk::Label,
     song_length: gtk::Label,
@@ -65,6 +66,14 @@ impl Song {
         model.connect_playing_local(clone!(@weak widget.root as root => move |song| {
             SongWidget::set_playing(&root, song.get_playing());
         }));
+
+        model.connect_selected_local(
+            clone!(@weak widget.song_checkbox as checkbox => move |song| {
+                checkbox.set_active(song.get_selected());
+            }),
+        );
+
+        widget.song_checkbox.set_sensitive(false);
 
         Self { widget }
     }

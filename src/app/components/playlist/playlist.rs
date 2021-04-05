@@ -174,6 +174,7 @@ where
         state: RowState,
     ) {
         item.set_playing(state.is_playing);
+        item.set_selected(state.is_selected);
         if state.is_selected {
             row.set_selectable(true);
             listbox.select_row(Some(row));
@@ -212,13 +213,12 @@ where
     }
 
     fn set_selection_active(listbox: &gtk::ListBox, active: bool) {
+        let context = listbox.get_style_context();
         if active {
+            context.add_class("playlist--selectable");
             listbox.set_selection_mode(gtk::SelectionMode::Multiple);
         } else {
-            for row in listbox.get_selected_rows() {
-                listbox.unselect_row(&row);
-                row.set_selectable(false);
-            }
+            context.remove_class("playlist--selectable");
             listbox.set_selection_mode(gtk::SelectionMode::None);
         }
     }
@@ -241,6 +241,7 @@ where
             }
             AppEvent::SelectionEvent(SelectionEvent::SelectionModeChanged(active)) => {
                 Self::set_selection_active(&self.listbox, *active);
+                self.update_list(false);
             }
             _ if self.model.should_refresh_songs(event) => self.reset_list(),
             _ => {}
