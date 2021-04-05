@@ -101,7 +101,7 @@ impl WithImages for Playlist {
 #[derive(Deserialize, Debug, Clone)]
 pub struct PlaylistTrack {
     pub is_local: bool,
-    pub track: Option<TrackItem>,
+    pub track: FailibleTrackItem,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -180,6 +180,25 @@ pub struct TrackItem {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+pub struct BadTrackItem {}
+
+#[derive(Deserialize, Debug, Clone)]
+#[serde(untagged)]
+pub enum FailibleTrackItem {
+    Ok(TrackItem),
+    Failing(BadTrackItem),
+}
+
+impl FailibleTrackItem {
+    fn get(self) -> Option<TrackItem> {
+        match self {
+            Self::Ok(track) => Some(track),
+            Self::Failing(_) => None,
+        }
+    }
+}
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct RawSearchResults {
     pub albums: Option<Page<Album>>,
     pub artists: Option<Page<Artist>>,
@@ -198,7 +217,7 @@ impl Into<Vec<SongDescription>> for Page<PlaylistTrack> {
         let items = self
             .items
             .into_iter()
-            .filter_map(|PlaylistTrack { is_local, track }| track.filter(|_| !is_local))
+            .filter_map(|PlaylistTrack { is_local, track }| track.get().filter(|_| !is_local))
             .collect::<Vec<TrackItem>>();
         Tracks { items }.into()
     }
