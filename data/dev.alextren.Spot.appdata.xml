@@ -15,14 +15,14 @@
     <p>Current features:</p>
     <ul>
       <li>playback control (play/pause, prev/next, seeking)</li>
-      <li>>play queue with shuffle option</li>
-      <li>>selection mode: easily browse and select mutliple tracks to queue them</li>
-      <li>>browse your saved albums and playlists</li>
-      <li>>search albums and artists</li>
-      <li>>view an artist's releases</li>
-      <li>>view users' playlists</li>
-      <li>>credentials management with Secret Service</li>
-      <li>>MPRIS integration</li>
+      <li>play queue with shuffle option</li>
+      <li>selection mode: easily browse and select mutliple tracks to queue them</li>
+      <li>browse your saved albums and playlists</li>
+      <li>search albums and artists</li>
+      <li>view an artist's releases</li>
+      <li>view users' playlists</li>
+      <li>credentials management with Secret Service</li>
+      <li>MPRIS integration</li>
     </ul>
   </description>
   <screenshots>
