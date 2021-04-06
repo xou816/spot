@@ -239,8 +239,8 @@ where
             AppEvent::PlaybackEvent(PlaybackEvent::PlaybackStopped) => {
                 self.reset_list();
             }
-            AppEvent::SelectionEvent(SelectionEvent::SelectionModeChanged(active)) => {
-                Self::set_selection_active(&self.listbox, *active);
+            AppEvent::SelectionEvent(SelectionEvent::SelectionModeChanged(_)) => {
+                Self::set_selection_active(&self.listbox, self.model.is_selection_enabled());
                 self.update_list(false);
             }
             _ if self.model.should_refresh_songs(event) => self.reset_list(),
