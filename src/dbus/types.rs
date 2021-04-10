@@ -74,7 +74,9 @@ pub struct TrackMetadata {
     pub id: String,
     pub length: u64,
     pub artist: Vec<String>,
+    pub album: String,
     pub title: String,
+    pub art: Option<String>,
 }
 
 impl Type for TrackMetadata {
@@ -96,6 +98,11 @@ impl From<TrackMetadata> for Value<'_> {
             .unwrap();
         d.append("xesam:albumArtist".into(), boxed_value(meta.artist))
             .unwrap();
+        d.append("xesam:album".into(), boxed_value(meta.album))
+            .unwrap();
+        if let Some(art) = meta.art {
+            d.append("mpris:artUrl".into(), boxed_value(art)).unwrap();
+        }
         Value::Dict(d)
     }
 }
