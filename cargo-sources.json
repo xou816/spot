@@ -1964,15 +1964,15 @@
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/isahc/isahc-1.1.0.crate",
-        "sha256": "af3d0a62435883f745c825ec06a03a38d24bf5fa65c43e2c083b6a60ce0058ae",
+        "url": "https://static.crates.io/crates/isahc/isahc-1.2.0.crate",
+        "sha256": "33b24d2aed6bbe6faeab0e164ec2e9e6193fcfcfe489b6eb59fb0d0d34947d73",
         "dest": "cargo/vendor",
-        "dest-filename": "isahc-1.1.0.crate"
+        "dest-filename": "isahc-1.2.0.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%22af3d0a62435883f745c825ec06a03a38d24bf5fa65c43e2c083b6a60ce0058ae%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/isahc-1.1.0",
+        "url": "data:%7B%22package%22%3A%20%2233b24d2aed6bbe6faeab0e164ec2e9e6193fcfcfe489b6eb59fb0d0d34947d73%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/isahc-1.2.0",
         "dest-filename": ".cargo-checksum.json"
     },
     {
