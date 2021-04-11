@@ -2,10 +2,9 @@ use gio::prelude::*;
 use gio::{ActionMapExt, SimpleActionGroup};
 use std::ops::Deref;
 use std::rc::Rc;
+use std::sync::Arc;
 
-use crate::app::components::{
-    handle_error, labels, PlaylistModel, SelectionTool, SelectionToolsModel,
-};
+use crate::app::components::{labels, PlaylistModel, SelectionTool, SelectionToolsModel};
 use crate::app::models::*;
 use crate::app::state::{
     BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource, SelectionAction, SelectionState,
@@ -44,12 +43,16 @@ impl ArtistDetailsModel {
 
     pub fn load_artist_details(&self, id: String) {
         let api = self.app_model.get_spotify();
-        self.dispatcher.dispatch_async(Box::pin(async move {
-            match api.get_artist(&id[..]).await {
-                Ok(artist) => Some(BrowserAction::SetArtistDetails(artist).into()),
-                Err(err) => handle_error(err),
+        let id = id.clone();
+        self.dispatcher.dispatch_spotify_call(move || {
+            let api = Arc::clone(&api);
+            let id = id.clone();
+            async move {
+                api.get_artist(&id)
+                    .await
+                    .map(|artist| BrowserAction::SetArtistDetails(artist).into())
             }
-        }));
+        });
     }
 
     pub fn open_album(&self, id: &str) {
@@ -66,12 +69,15 @@ impl ArtistDetailsModel {
         let batch_size = next_page.batch_size;
         let offset = next_page.next_offset?;
 
-        self.dispatcher.dispatch_async(Box::pin(async move {
-            match api.get_artist_albums(&id, offset, batch_size).await {
-                Ok(albums) => Some(BrowserAction::AppendArtistReleases(albums).into()),
-                Err(err) => handle_error(err),
+        self.dispatcher.dispatch_spotify_call(move || {
+            let api = Arc::clone(&api);
+            let id = id.clone();
+            async move {
+                api.get_artist_albums(&id, offset, batch_size)
+                    .await
+                    .map(|albums| BrowserAction::AppendArtistReleases(albums).into())
             }
-        }));
+        });
 
         Some(())
     }

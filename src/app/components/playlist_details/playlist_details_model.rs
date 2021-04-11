@@ -3,10 +3,9 @@ use gio::{ActionMapExt, SimpleActionGroup};
 use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
+use std::sync::Arc;
 
-use crate::app::components::{
-    handle_error, labels, PlaylistModel, SelectionTool, SelectionToolsModel,
-};
+use crate::app::components::{labels, PlaylistModel, SelectionTool, SelectionToolsModel};
 use crate::app::models::*;
 use crate::app::state::{
     BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource, SelectionAction, SelectionState,
@@ -48,12 +47,15 @@ impl PlaylistDetailsModel {
     pub fn load_playlist_info(&self) {
         let api = self.app_model.get_spotify();
         let id = self.id.clone();
-        self.dispatcher.dispatch_async(Box::pin(async move {
-            match api.get_playlist(&id).await {
-                Ok(playlist) => Some(BrowserAction::SetPlaylistDetails(playlist).into()),
-                Err(err) => handle_error(err),
+        self.dispatcher.dispatch_spotify_call(move || {
+            let api = Arc::clone(&api);
+            let id = id.clone();
+            async move {
+                api.get_playlist(&id)
+                    .await
+                    .map(|playlist| BrowserAction::SetPlaylistDetails(playlist).into())
             }
-        }));
+        });
     }
 
     pub fn view_owner(&self) {

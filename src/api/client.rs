@@ -172,6 +172,12 @@ impl SpotifyClient {
         }
     }
 
+    fn clear_token(&self) {
+        if let Ok(mut token) = self.token.lock() {
+            *token = None
+        }
+    }
+
     fn parse_cache_control(cache_control: &str) -> Option<u64> {
         cache_control
             .split(',')
@@ -202,12 +208,15 @@ impl SpotifyClient {
             .and_then(|s| Self::parse_cache_control(s));
 
         match result.status() {
-            StatusCode::UNAUTHORIZED => Err(SpotifyApiError::InvalidToken),
             s if s.is_success() => Ok(SpotifyResponse {
                 kind: SpotifyResponseKind::Ok(result.text().await?, PhantomData),
                 max_age: cache_control.unwrap_or(10),
                 etag,
             }),
+            StatusCode::UNAUTHORIZED => {
+                self.clear_token();
+                Err(SpotifyApiError::InvalidToken)
+            }
             StatusCode::NOT_MODIFIED => Ok(SpotifyResponse {
                 kind: SpotifyResponseKind::NotModified,
                 max_age: cache_control.unwrap_or(10),
@@ -223,7 +232,10 @@ impl SpotifyClient {
     {
         let result = self.client.send_async(request).await?;
         match result.status() {
-            StatusCode::UNAUTHORIZED => Err(SpotifyApiError::InvalidToken),
+            StatusCode::UNAUTHORIZED => {
+                self.clear_token();
+                Err(SpotifyApiError::InvalidToken)
+            }
             StatusCode::NOT_MODIFIED => Ok(()),
             s if s.is_success() => Ok(()),
             s => Err(SpotifyApiError::BadStatus(s.as_u16())),

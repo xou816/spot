@@ -9,9 +9,10 @@ use gettextrs::*;
 use gtk::prelude::*;
 use std::cell::RefCell;
 use std::collections::HashSet;
+use std::future::Future;
 
 use crate::api::SpotifyApiError;
-use crate::app::{state::LoginAction, AppAction, AppEvent};
+use crate::app::{state::LoginAction, ActionDispatcher, AppAction, AppEvent};
 
 mod navigation;
 pub use navigation::*;
@@ -74,17 +75,33 @@ pub mod utils;
 
 pub mod labels;
 
-pub fn handle_error(err: SpotifyApiError) -> Option<AppAction> {
-    match err {
-        SpotifyApiError::InvalidToken => Some(LoginAction::RefreshToken.into()),
-        SpotifyApiError::NoToken => None,
-        _ => {
-            println!("Error: {:?}", err);
-            Some(AppAction::ShowNotification(gettext(
-                // translators: This notification is the default message for unhandled errors. Logs refer to console output.
-                "An error occured. Check logs for details!",
-            )))
-        }
+impl dyn ActionDispatcher {
+    fn dispatch_spotify_call<F, C>(&self, call: C)
+    where
+        C: 'static + Send + Sync + Fn() -> F,
+        F: Send + Future<Output = Result<AppAction, SpotifyApiError>>,
+    {
+        self.dispatch_many_async(Box::pin(async move {
+            match call().await {
+                Ok(action) => vec![action],
+                Err(SpotifyApiError::NoToken) => vec![],
+                Err(SpotifyApiError::InvalidToken) => {
+                    let mut retried = call()
+                        .await
+                        .map(|it| vec![it])
+                        .unwrap_or_else(|_| Vec::new());
+                    retried.push(LoginAction::RefreshToken.into());
+                    retried
+                }
+                Err(err) => {
+                    println!("Error: {:?}", err);
+                    vec![AppAction::ShowNotification(gettext(
+                        // translators: This notification is the default message for unhandled errors. Logs refer to console output.
+                        "An error occured. Check logs for details!",
+                    ))]
+                }
+            }
+        }))
     }
 }
 

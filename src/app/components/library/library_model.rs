@@ -1,8 +1,8 @@
 use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
+use std::sync::Arc;
 
-use crate::app::components::handle_error;
 use crate::app::models::*;
 use crate::app::state::HomeState;
 use crate::app::{ActionDispatcher, AppAction, AppModel, BrowserAction, ListStore};
@@ -32,12 +32,14 @@ impl LibraryModel {
         let api = self.app_model.get_spotify();
         let batch_size = self.state()?.next_albums_page.batch_size;
 
-        self.dispatcher.dispatch_async(Box::pin(async move {
-            match api.get_saved_albums(0, batch_size).await {
-                Ok(albums) => Some(BrowserAction::SetLibraryContent(albums).into()),
-                Err(err) => handle_error(err),
+        self.dispatcher.dispatch_spotify_call(move || {
+            let api = Arc::clone(&api);
+            async move {
+                api.get_saved_albums(0, batch_size)
+                    .await
+                    .map(|albums| BrowserAction::SetLibraryContent(albums).into())
             }
-        }));
+        });
 
         Some(())
     }
@@ -49,12 +51,14 @@ impl LibraryModel {
         let batch_size = next_page.batch_size;
         let offset = next_page.next_offset?;
 
-        self.dispatcher.dispatch_async(Box::pin(async move {
-            match api.get_saved_albums(offset, batch_size).await {
-                Ok(albums) => Some(BrowserAction::AppendLibraryContent(albums).into()),
-                Err(err) => handle_error(err),
+        self.dispatcher.dispatch_spotify_call(move || {
+            let api = Arc::clone(&api);
+            async move {
+                api.get_saved_albums(offset, batch_size)
+                    .await
+                    .map(|albums| BrowserAction::AppendLibraryContent(albums).into())
             }
-        }));
+        });
 
         Some(())
     }

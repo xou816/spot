@@ -238,7 +238,11 @@ impl SpotifyApiClient for CachedSpotifyClient {
 
             let liked = self.cache_get_or_write(
                 SpotCacheKey::AlbumLiked(&id),
-                Some(CachePolicy::AlwaysRevalidate),
+                Some(if self.client.has_token() {
+                    CachePolicy::AlwaysRevalidate
+                } else {
+                    CachePolicy::IgnoreExpiry
+                }),
                 |etag| self.client.is_album_saved(&id).etag(etag).send(),
             );
 

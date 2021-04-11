@@ -1,7 +1,7 @@
 use std::ops::Deref;
 use std::rc::Rc;
+use std::sync::Arc;
 
-use crate::app::components::handle_error;
 use crate::app::models::*;
 use crate::app::state::BrowserAction;
 use crate::app::{ActionDispatcher, AppAction, AppModel, ListStore};
@@ -32,12 +32,15 @@ impl UserDetailsModel {
 
     pub fn load_user_details(&self, id: String) {
         let api = self.app_model.get_spotify();
-        self.dispatcher.dispatch_async(Box::pin(async move {
-            match api.get_user(&id[..]).await {
-                Ok(user) => Some(BrowserAction::SetUserDetails(user).into()),
-                Err(err) => handle_error(err),
+        self.dispatcher.dispatch_spotify_call(move || {
+            let api = Arc::clone(&api);
+            let id = id.clone();
+            async move {
+                api.get_user(&id)
+                    .await
+                    .map(|user| BrowserAction::SetUserDetails(user).into())
             }
-        }));
+        });
     }
 
     pub fn open_playlist(&self, id: &str) {
@@ -53,13 +56,15 @@ impl UserDetailsModel {
         let id = next_page.data.clone();
         let batch_size = next_page.batch_size;
         let offset = next_page.next_offset?;
-
-        self.dispatcher.dispatch_async(Box::pin(async move {
-            match api.get_user_playlists(&id, offset, batch_size).await {
-                Ok(playlists) => Some(BrowserAction::AppendUserPlaylists(playlists).into()),
-                Err(err) => handle_error(err),
+        self.dispatcher.dispatch_spotify_call(move || {
+            let api = Arc::clone(&api);
+            let id = id.clone();
+            async move {
+                api.get_user_playlists(&id, offset, batch_size)
+                    .await
+                    .map(|playlists| BrowserAction::AppendUserPlaylists(playlists).into())
             }
-        }));
+        });
 
         Some(())
     }

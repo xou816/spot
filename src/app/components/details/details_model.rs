@@ -3,10 +3,9 @@ use gio::{ActionMapExt, SimpleActionGroup};
 use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
+use std::sync::Arc;
 
-use crate::app::components::{
-    handle_error, labels, PlaylistModel, SelectionTool, SelectionToolsModel,
-};
+use crate::app::components::{labels, PlaylistModel, SelectionTool, SelectionToolsModel};
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
 use crate::app::state::{
@@ -42,12 +41,15 @@ impl DetailsModel {
     pub fn load_album_info(&self) {
         let id = self.id.clone();
         let api = self.app_model.get_spotify();
-        self.dispatcher.dispatch_async(Box::pin(async move {
-            match api.get_album(&id).await {
-                Ok(album) => Some(BrowserAction::SetAlbumDetails(album).into()),
-                Err(err) => handle_error(err),
+        self.dispatcher.dispatch_spotify_call(move || {
+            let api = Arc::clone(&api);
+            let id = id.clone();
+            async move {
+                api.get_album(&id)
+                    .await
+                    .map(|album| BrowserAction::SetAlbumDetails(album).into())
             }
-        }));
+        });
     }
 
     pub fn view_artist(&self) {
@@ -65,19 +67,21 @@ impl DetailsModel {
 
             let api = self.app_model.get_spotify();
 
-            self.dispatcher.dispatch_async(Box::pin(async move {
-                if !is_liked {
-                    match api.save_album(&id).await {
-                        Ok(album) => Some(BrowserAction::SaveAlbum(album).into()),
-                        Err(err) => handle_error(err),
-                    }
-                } else {
-                    match api.remove_saved_album(&id).await {
-                        Ok(_) => Some(BrowserAction::UnsaveAlbum(id).into()),
-                        Err(err) => handle_error(err),
+            self.dispatcher.dispatch_spotify_call(move || {
+                let api = Arc::clone(&api);
+                let id = id.clone();
+                async move {
+                    if !is_liked {
+                        api.save_album(&id)
+                            .await
+                            .map(|album| BrowserAction::SaveAlbum(album).into())
+                    } else {
+                        api.remove_saved_album(&id)
+                            .await
+                            .map(|_| BrowserAction::UnsaveAlbum(id).into())
                     }
                 }
-            }));
+            });
         }
     }
 }

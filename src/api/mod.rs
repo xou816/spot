@@ -4,7 +4,7 @@ mod client;
 
 pub mod cache;
 
-pub use cached_client::{CachedSpotifyClient, SpotifyApiClient};
+pub use cached_client::{CachedSpotifyClient, SpotifyApiClient, SpotifyResult};
 pub use client::SpotifyApiError;
 
 pub async fn _clear_old_cache() -> Option<()> {

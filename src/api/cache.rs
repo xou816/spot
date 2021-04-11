@@ -32,7 +32,7 @@ pub enum CacheFile {
     None,
 }
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy, Debug)]
 pub enum CachePolicy {
     Default,
     IgnoreExpiry,

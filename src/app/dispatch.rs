@@ -11,6 +11,7 @@ pub trait ActionDispatcher {
     fn dispatch(&self, action: AppAction);
     fn dispatch_local_async(&self, action: LocalBoxFuture<'static, Option<AppAction>>);
     fn dispatch_async(&self, action: BoxFuture<'static, Option<AppAction>>);
+    fn dispatch_many_async(&self, actions: BoxFuture<'static, Vec<AppAction>>);
     fn box_clone(&self) -> Box<dyn ActionDispatcher>;
 }
 
@@ -45,6 +46,15 @@ impl ActionDispatcher for ActionDispatcherImpl {
         let clone = self.sender.borrow().clone();
         self.worker.send_task(async move {
             if let Some(action) = action.await {
+                clone.unbounded_send(action).unwrap();
+            }
+        });
+    }
+
+    fn dispatch_many_async(&self, actions: BoxFuture<'static, Vec<AppAction>>) {
+        let clone = self.sender.borrow().clone();
+        self.worker.send_task(async move {
+            for action in actions.await.into_iter() {
                 clone.unbounded_send(action).unwrap();
             }
         });
