@@ -15,9 +15,16 @@ gnome.compile_resources('spot',
 )
 
 conf = configuration_data()
-conf.set_quoted('VERSION', meson.project_version())
 conf.set_quoted('LOCALEDIR', join_paths(get_option('prefix'), get_option('localedir')))
 conf.set_quoted('PKGDATADIR', pkgdatadir)
+
+if get_option('buildtype') == 'debug'
+  conf.set_quoted('APPID', 'dev.alextren.Spot.Devel')
+  conf.set_quoted('VERSION', meson.project_version() + '-dev')
+else
+  conf.set_quoted('APPID', 'dev.alextren.Spot')
+  conf.set_quoted('VERSION', meson.project_version())
+endif
 
 configure_file(
     input: 'config.rs.in',
