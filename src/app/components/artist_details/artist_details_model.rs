@@ -66,8 +66,8 @@ impl ArtistDetailsModel {
         let next_page = &state.browser.artist_state(&self.id)?.next_page;
 
         let id = next_page.data.clone();
-        let batch_size = next_page.batch_size as u32;
-        let offset = next_page.next_offset? as u32;
+        let batch_size = next_page.batch_size;
+        let offset = next_page.next_offset?;
 
         self.dispatcher.dispatch_spotify_call(move || {
             let api = Arc::clone(&api);
@@ -96,7 +96,7 @@ impl PlaylistModel for ArtistDetailsModel {
         let tracks = self.tracks_ref();
         if let Some(tracks) = tracks {
             self.dispatcher
-                .dispatch(PlaybackAction::LoadPlaylist(None, tracks.clone()).into());
+                .dispatch(PlaybackAction::LoadSongs(None, tracks.clone()).into());
             self.dispatcher
                 .dispatch(PlaybackAction::Load(id.to_string()).into());
         }

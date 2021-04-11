@@ -67,16 +67,25 @@ impl PlaylistDetailsModel {
         let id = self.id.clone();
 
         let state = self.app_model.get_state();
-        let page = &state.browser.playlist_details_state(&id)?.next_page;
-        let next_offset = page.next_offset? as u32;
-        let batch_size = page.batch_size as u32;
+        let next_batch = &state
+            .browser
+            .playlist_details_state(&id)?
+            .playlist
+            .as_ref()?
+            .last_batch
+            .next()?;
+        let next_offset = next_batch.offset;
+        let batch_size = next_batch.batch_size;
 
-        self.dispatcher.dispatch_async(Box::pin(async move {
-            match api.get_playlist_tracks(&id, next_offset, batch_size).await {
-                Ok(tracks) => Some(BrowserAction::AppendPlaylistTracks(id, tracks).into()),
-                Err(err) => handle_error(err),
+        self.dispatcher.dispatch_spotify_call(move || {
+            let api = Arc::clone(&api);
+            let id = id.clone();
+            async move {
+                api.get_playlist_tracks(&id, next_offset, batch_size)
+                    .await
+                    .map(|tracks| BrowserAction::AppendPlaylistTracks(id, tracks).into())
             }
-        }));
+        });
 
         Some(())
     }
@@ -103,11 +112,18 @@ impl PlaylistModel for PlaylistDetailsModel {
 
     fn play_song(&self, id: &str) {
         let source = Some(PlaylistSource::Playlist(self.id.clone()));
-        if self.app_model.get_state().playback.source() != source.as_ref() {
-            let songs = self.songs_ref();
-            if let Some(songs) = songs {
-                self.dispatcher
-                    .dispatch(PlaybackAction::LoadPlaylist(source, songs.clone()).into());
+        if self.app_model.get_state().playback.source != source {
+            if let Some(playlist) = self.get_playlist_info() {
+                self.dispatcher.dispatch(
+                    PlaybackAction::LoadPagedSongs(
+                        source,
+                        SongBatch {
+                            batch: playlist.last_batch,
+                            songs: playlist.songs.clone(),
+                        },
+                    )
+                    .into(),
+                );
             }
         }
         self.dispatcher

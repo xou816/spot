@@ -22,8 +22,8 @@ impl SearchType {
 pub struct SearchQuery {
     pub query: String,
     pub types: Vec<SearchType>,
-    pub limit: u32,
-    pub offset: u32,
+    pub limit: usize,
+    pub offset: usize,
 }
 
 impl SearchQuery {
@@ -51,15 +51,22 @@ impl SearchQuery {
 #[derive(Deserialize, Debug, Clone)]
 pub struct Page<T> {
     items: Option<Vec<T>>,
+    pub total: usize,
 }
 
 impl<T> Page<T> {
     pub fn new(items: Vec<T>) -> Self {
-        Self { items: Some(items) }
+        Self {
+            total: items.len(),
+            items: Some(items),
+        }
     }
 
     pub fn empty() -> Self {
-        Self { items: None }
+        Self {
+            items: None,
+            total: 0,
+        }
     }
 }
 
@@ -338,8 +345,12 @@ impl Into<AlbumDescription> for Album {
     }
 }
 
-impl Into<PlaylistDescription> for Playlist {
-    fn into(self) -> PlaylistDescription {
+impl Playlist {
+    pub fn into_playlist_description(
+        self,
+        batch_size: usize,
+        offset: usize,
+    ) -> PlaylistDescription {
         let art = self.best_image_for_width(200).map(|i| i.url.clone());
         let Playlist {
             id,
@@ -352,11 +363,17 @@ impl Into<PlaylistDescription> for Playlist {
             id: owner_id,
             display_name,
         } = owner;
+        let total = tracks.total;
         PlaylistDescription {
             id,
             title: name,
             art,
             songs: tracks.into(),
+            last_batch: Batch {
+                batch_size,
+                offset,
+                total,
+            },
             owner: UserRef {
                 id: owner_id,
                 display_name,

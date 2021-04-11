@@ -15,7 +15,7 @@ impl SongDescription {
         let queue = SimpleAction::new(name.unwrap_or("queue"), None);
         let song = self.clone();
         queue.connect_activate(move |_, _| {
-            dispatcher.dispatch(PlaybackAction::Queue(song.clone()).into());
+            dispatcher.dispatch(PlaybackAction::Queue(vec![song.clone()]).into());
         });
         queue
     }

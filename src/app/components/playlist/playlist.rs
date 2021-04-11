@@ -191,7 +191,7 @@ where
     }
 
     fn update_list(&self, scroll: bool) {
-        let autoscroll = scroll && self.model.autoscroll_to_playing();
+        let autoscroll = scroll && self.model.autoscroll_to_playing() && false;
         let current_song_id = self.model.current_song_id();
         for (row, model_song) in self.rows_and_songs() {
             let state = Self::get_row_state(&model_song, &*self.model, current_song_id.as_ref());
@@ -223,6 +223,9 @@ where
     Model: PlaylistModel + 'static,
 {
     fn on_event(&mut self, event: &AppEvent) {
+        if let Some(diff) = self.model.diff_for_event(event) {
+            self.list_model.update(diff);
+        }
         match event {
             AppEvent::SelectionEvent(SelectionEvent::SelectionChanged) => {
                 self.update_list(false);
@@ -230,18 +233,11 @@ where
             AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
                 self.update_list(true);
             }
-            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackStopped) => {
-                self.reset_list();
-            }
             AppEvent::SelectionEvent(SelectionEvent::SelectionModeChanged(_)) => {
                 Self::set_selection_active(&self.listbox, self.model.is_selection_enabled());
                 self.update_list(false);
             }
-            event => {
-                if let Some(diff) = self.model.diff_for_event(event) {
-                    self.list_model.update(diff);
-                }
-            }
+            _ => {}
         }
     }
 }

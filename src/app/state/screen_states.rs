@@ -88,7 +88,6 @@ impl UpdatableState for DetailsState {
 pub struct PlaylistDetailsState {
     pub id: String,
     pub name: ScreenName,
-    pub next_page: Pagination<String>,
     pub playlist: Option<PlaylistDescription>,
 }
 
@@ -97,7 +96,6 @@ impl PlaylistDetailsState {
         Self {
             id: id.clone(),
             name: ScreenName::PlaylistDetails(id.clone()),
-            next_page: Pagination::new(id, 100),
             playlist: None,
         }
     }
@@ -111,17 +109,17 @@ impl UpdatableState for PlaylistDetailsState {
         match action {
             BrowserAction::SetPlaylistDetails(playlist) => {
                 let id = playlist.id.clone();
-                self.next_page.reset_count(playlist.songs.len());
                 self.playlist = Some(playlist);
                 vec![BrowserEvent::PlaylistDetailsLoaded(id)]
             }
-            BrowserAction::AppendPlaylistTracks(id, tracks) if id == self.id => {
-                let next_index = self.playlist.as_ref().map(|p| p.songs.len()).unwrap_or(0);
-                self.next_page.set_loaded_count(tracks.len());
+            BrowserAction::AppendPlaylistTracks(id, SongBatch { songs, batch })
+                if id == self.id =>
+            {
                 if let Some(playlist) = self.playlist.as_mut() {
-                    playlist.songs.extend(tracks);
+                    playlist.songs.extend(songs);
+                    playlist.last_batch = batch;
                 }
-                vec![BrowserEvent::PlaylistTracksAppended(id, next_index)]
+                vec![BrowserEvent::PlaylistTracksAppended(id, batch.offset)]
             }
             _ => vec![],
         }

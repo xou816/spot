@@ -124,11 +124,11 @@ impl PlaylistModel for DetailsModel {
 
     fn play_song(&self, id: &str) {
         let source = Some(PlaylistSource::Album(self.id.clone()));
-        if self.app_model.get_state().playback.source() != source.as_ref() {
+        if self.app_model.get_state().playback.source != source {
             let songs = self.songs_ref();
             if let Some(songs) = songs {
                 self.dispatcher
-                    .dispatch(PlaybackAction::LoadPlaylist(source, songs.clone()).into());
+                    .dispatch(PlaybackAction::LoadSongs(source, songs.clone()).into());
             }
         }
         self.dispatcher

@@ -30,7 +30,7 @@ impl SavedPlaylistsModel {
 
     pub fn refresh_saved_playlists(&self) -> Option<()> {
         let api = self.app_model.get_spotify();
-        let batch_size = self.state()?.next_playlists_page.batch_size as u32;
+        let batch_size = self.state()?.next_playlists_page.batch_size;
 
         self.dispatcher.dispatch_spotify_call(move || {
             let api = Arc::clone(&api);
@@ -48,8 +48,8 @@ impl SavedPlaylistsModel {
         let api = self.app_model.get_spotify();
 
         let next_page = &self.state()?.next_playlists_page;
-        let batch_size = next_page.batch_size as u32;
-        let offset = next_page.next_offset? as u32;
+        let batch_size = next_page.batch_size;
+        let offset = next_page.next_offset?;
 
         self.dispatcher.dispatch_spotify_call(move || {
             let api = Arc::clone(&api);

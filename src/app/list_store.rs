@@ -1,15 +1,25 @@
 use gio::prelude::*;
 use gio::ListModelExt;
+use glib::clone::{Downgrade, Upgrade};
 use std::iter::Iterator;
 use std::marker::PhantomData;
 
-pub enum ListDiff<GType> {
+#[derive(Debug, Clone)]
+pub enum ListDiff<GType>
+where
+    GType: Clone,
+{
     Set(Vec<GType>),
     Append(Vec<GType>),
 }
 
 pub struct ListStore<GType> {
     store: gio::ListStore,
+    _marker: PhantomData<GType>,
+}
+
+pub struct WeakListStore<GType> {
+    store: <gio::ListStore as Downgrade>::Weak,
     _marker: PhantomData<GType>,
 }
 
@@ -91,5 +101,27 @@ impl<GType> Clone for ListStore<GType> {
             store: self.store.clone(),
             _marker: PhantomData,
         }
+    }
+}
+
+impl<GType> Downgrade for ListStore<GType> {
+    type Weak = WeakListStore<GType>;
+
+    fn downgrade(&self) -> Self::Weak {
+        Self::Weak {
+            store: Downgrade::downgrade(&self.store),
+            _marker: PhantomData,
+        }
+    }
+}
+
+impl<GType> Upgrade for WeakListStore<GType> {
+    type Strong = ListStore<GType>;
+
+    fn upgrade(&self) -> Option<Self::Strong> {
+        Some(Self::Strong {
+            store: self.store.upgrade()?,
+            _marker: PhantomData,
+        })
     }
 }

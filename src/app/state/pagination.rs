@@ -1,10 +1,17 @@
-pub struct Pagination<T> {
+#[derive(Clone, Debug)]
+pub struct Pagination<T>
+where
+    T: Clone,
+{
     pub data: T,
     pub next_offset: Option<usize>,
     pub batch_size: usize,
 }
 
-impl<T> Pagination<T> {
+impl<T> Pagination<T>
+where
+    T: Clone,
+{
     pub fn new(data: T, batch_size: usize) -> Self {
         Self {
             data,

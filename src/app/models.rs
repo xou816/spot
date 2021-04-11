@@ -101,6 +101,7 @@ pub struct PlaylistDescription {
     pub title: String,
     pub art: Option<String>,
     pub songs: Vec<SongDescription>,
+    pub last_batch: Batch,
     pub owner: UserRef,
 }
 
@@ -122,6 +123,36 @@ impl SongDescription {
             .collect::<Vec<String>>()
             .join(", ")
     }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct Batch {
+    pub offset: usize,
+    pub batch_size: usize,
+    pub total: usize,
+}
+
+impl Batch {
+    pub fn next(self) -> Option<Self> {
+        let Self {
+            offset,
+            batch_size,
+            total,
+        } = self;
+
+        Some(Self {
+            offset: offset + batch_size,
+            batch_size,
+            total,
+        })
+        .filter(|b| b.offset < total)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct SongBatch {
+    pub songs: Vec<SongDescription>,
+    pub batch: Batch,
 }
 
 #[derive(Clone, Debug)]
