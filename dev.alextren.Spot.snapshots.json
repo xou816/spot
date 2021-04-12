@@ -1,7 +1,7 @@
 {
     "app-id": "dev.alextren.Spot",
     "runtime": "org.gnome.Platform",
-    "runtime-version": "3.38",
+    "runtime-version": "40",
     "sdk": "org.gnome.Sdk",
     "sdk-extensions": [
         "org.freedesktop.Sdk.Extension.rust-stable"
@@ -39,21 +39,6 @@
         "*.a"
     ],
     "modules": [
-        {
-            "name": "libhandy-1",
-            "buildsystem": "meson",
-            "builddir": true,
-            "config-opts": [
-                "-Dexamples=false",
-                "-Dtests=false"
-            ],
-            "sources": [
-                {
-                    "type": "git",
-                    "url": "https://gitlab.gnome.org/GNOME/libhandy.git"
-                }
-            ]
-        },
         {
             "name": "spot",
             "builddir": true,
