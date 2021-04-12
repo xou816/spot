@@ -37,6 +37,20 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.1.13" date="2021-04-12">
+      <description>
+        <p>
+          What's new:
+        </p>
+        <ul>
+          <li>new selection tools: move tracks up and down in queue, quickly select multiple tracks from current view...</li>
+          <li>touch and hold a song list (or right click) to enter selection mode</li>
+          <li>Portuguese translation</li>
+          <li>fixed session restoration requiring manually repeating last action after a long period of inactivity</li>
+          <li>fixed parsing for playlists with local tracks</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.12" date="2021-03-24">
       <description>
         <p>
