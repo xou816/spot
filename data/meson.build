@@ -1,5 +1,5 @@
 install_data('dev.alextren.Spot.desktop',
-  install_dir: join_paths(get_option('datadir'), 'applications')
+  install_dir: get_option('datadir') / 'applications'
 )
 
 install_subdir('hicolor',
@@ -17,7 +17,7 @@ install_data('dev.alextren.Spot.gschema.xml',
 compile_schemas = find_program('glib-compile-schemas', required: true)
 if compile_schemas.found()
   test('Validate schema file', compile_schemas,
-    args: ['--strict', '--dry-run', meson.current_source_dir()]
+    args: ['--strict', '--dry-run', meson.source_root()]
   )
 endif
 
@@ -26,6 +26,6 @@ if appstream_util.found()
   test(
     'Validate appstream appdata', 
     appstream_util,
-    args: ['validate-relax', meson.current_source_dir() / 'dev.alextren.Spot.appdata.xml']
+    args: ['validate-relax', meson.source_root() / 'dev.alextren.Spot.appdata.xml']
   )
 endif
