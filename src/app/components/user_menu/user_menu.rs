@@ -1,6 +1,6 @@
 use gettextrs::*;
 use gio::{ActionMapExt, SimpleAction, SimpleActionGroup};
-use gtk::{DialogExt, MenuButtonExt, WidgetExt};
+use gtk::{AboutDialogExt, DialogExt, MenuButtonExt, WidgetExt};
 use std::rc::Rc;
 
 use super::UserMenuModel;
@@ -20,6 +20,7 @@ impl UserMenu {
     ) -> Self {
         let model = Rc::new(model);
 
+        about.set_version(Some(crate::VERSION));
         about.connect_delete_event(
             clone!(@weak about => @default-return gtk::Inhibit(false), move |_, _| {
                 about.hide();

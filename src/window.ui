@@ -485,10 +485,22 @@
     <property name="type-hint">dialog</property>
     <property name="transient-for">window</property>
     <property name="program-name">Spot</property>
-    <property name="version">@VERSION@</property>
+    <property name="version">Development version</property>
     <property name="website">https://github.com/xou816/spot</property>
-    <property name="authors">@AUTHORS@</property>
-    <property name="translator-credits">@TRANSLATORS@</property>
+    <property name="authors">Alexandre Trendel
+Douile
+realJavabot
+Gabriele Musco
+Alistair Francis
+Daniel Peukert
+Nils Tonnätt</property>
+    <property name="translator-credits">Heimen Stoffels
+daPhipz
+kleinHeiti
+Ondřej Sluka
+Ícar
+Jonasz Potoniec
+José Miguel Sarasola</property>
     <property name="logo-icon-name">dev.alextren.Spot</property>
     <property name="license-type">mit-x11</property>
     <child internal-child="vbox">

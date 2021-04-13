@@ -1,4 +1,4 @@
 pub static PKGDATADIR: &str = @PKGDATADIR@;
-pub static VERSION: &str = "@VERSION@";
+pub static VERSION: &str = @VERSION@;
 pub static LOCALEDIR: &str = @LOCALEDIR@;
 pub static APPID: &str = @APPID@;

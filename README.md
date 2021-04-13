@@ -69,8 +69,7 @@ To contribute translations:
 - copy the `po/spot.pot` file and rename it to match your language code, or edit the relevant `po` file if it already exists;
 - if needed, add your language code to `po/LINGUAS`;
 - make sur the `Language` and `Plural-Forms` keys are correct;
-- edit the `msgstr` entries;
-- if you wish, add yourself to the `TRANSLATORS` file.
+- edit the `msgstr` entries.
 
 Note that nice tools exist to help you work with `po` files ([Poedit](https://poedit.net/) for instance).
 
