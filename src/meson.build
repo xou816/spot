@@ -1,5 +1,6 @@
-pkgdatadir = join_paths(get_option('prefix'), get_option('datadir'), meson.project_name())
 gnome = import('gnome')
+fs = import('fs')
+
 dependency('libhandy-1')
 dependency('gtk+-3.0')
 dependency('glib-2.0')
@@ -7,24 +8,40 @@ dependency('openssl')
 dependency('alsa')
 dependency('libpulse')
 
+conf = configuration_data()
+
+conf.set_quoted('LOCALEDIR', get_option('prefix') / get_option('localedir'))
+
+pkgdatadir = get_option('prefix') / get_option('datadir') / meson.project_name()
+conf.set_quoted('PKGDATADIR', pkgdatadir)
+
+translators = fs.read(meson.project_source_root() / 'TRANSLATORS')
+conf.set('TRANSLATORS', translators)
+
+authors = fs.read(meson.project_source_root() / 'AUTHORS')
+conf.set('AUTHORS', authors)
+
+if get_option('buildtype') == 'debug'
+  conf.set_quoted('APPID', 'dev.alextren.Spot.Devel')
+  conf.set('VERSION', meson.project_version() + '-dev')
+else
+  conf.set_quoted('APPID', 'dev.alextren.Spot')
+  conf.set('VERSION', meson.project_version())
+endif
+
+window_ui = configure_file(
+    input: 'window.ui.in',
+    output: 'window.ui',
+    configuration: conf
+)
+
 gnome.compile_resources('spot',
   'spot.gresource.xml',
   gresource_bundle: true,
   install: true,
   install_dir: pkgdatadir,
+  dependencies: [window_ui]
 )
-
-conf = configuration_data()
-conf.set_quoted('LOCALEDIR', join_paths(get_option('prefix'), get_option('localedir')))
-conf.set_quoted('PKGDATADIR', pkgdatadir)
-
-if get_option('buildtype') == 'debug'
-  conf.set_quoted('APPID', 'dev.alextren.Spot.Devel')
-  conf.set_quoted('VERSION', meson.project_version() + '-dev')
-else
-  conf.set_quoted('APPID', 'dev.alextren.Spot')
-  conf.set_quoted('VERSION', meson.project_version())
-endif
 
 configure_file(
     input: 'config.rs.in',
@@ -35,8 +52,8 @@ configure_file(
 # Copy the config.rs output to the source directory.
 run_command(
   'cp',
-  join_paths(meson.build_root(), 'src', 'config.rs'),
-  join_paths(meson.source_root(), 'src', 'config.rs'),
+  meson.current_build_dir() / 'config.rs',
+  meson.current_source_dir() / 'config.rs',
   check: true
 )
 
@@ -126,12 +143,11 @@ sources = files(
 './dbus/types.rs',
 './player/player.rs',
 './player/mod.rs',
-'./config.rs',
 './main.rs',
 './settings.rs',
 )
 
-cargo_script = find_program(join_paths(meson.source_root(), 'build-aux/cargo.sh'))
+cargo_script = find_program(meson.project_source_root() / 'build-aux/cargo.sh')
 cargo_release = custom_target(
   'cargo-build',
   build_by_default: true,
@@ -142,8 +158,8 @@ cargo_release = custom_target(
   install_dir: get_option('bindir'),
   command: [
     cargo_script,
-    meson.source_root(),
-    meson.build_root(),
+    meson.project_source_root(),
+    meson.project_build_root(),
     meson.project_name(),
     '@OUTPUT@',
     get_option('buildtype'),
@@ -152,12 +168,12 @@ cargo_release = custom_target(
   ]
 )
 
-cargo_test = find_program(join_paths(meson.source_root(), 'build-aux/test.sh'))
+cargo_test = find_program(meson.project_source_root() / 'build-aux/test.sh')
 test('Unit tests',
   cargo_test,
   args: [
-    meson.source_root(),
-    meson.build_root(),
+    meson.project_source_root(),
+    meson.project_build_root(),
     get_option('buildtype'),
     get_option('offline') ? 'true' : 'false'
   ]
