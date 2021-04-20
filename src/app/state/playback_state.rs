@@ -239,6 +239,7 @@ impl PlaybackState {
         let len = self.running_order().len();
         let next = self.position.filter(|&p| p + 1 < len).map(|p| p + 1);
         if let Some(next) = next {
+            self.is_playing = true;
             self.position = Some(next);
             Some(self.running_order()[next].clone())
         } else {
@@ -249,6 +250,7 @@ impl PlaybackState {
     fn play_prev(&mut self) -> Option<String> {
         let prev = self.position.filter(|&p| p > 0).map(|p| p - 1);
         if let Some(prev) = prev {
+            self.is_playing = true;
             self.position = Some(prev);
             Some(self.running_order()[prev].clone())
         } else {
@@ -510,6 +512,9 @@ mod tests {
         assert_eq!(state.prev_song().map(|s| &s.id[..]), Some("1"));
         assert_eq!(state.current_song().map(|s| &s.id[..]), Some("2"));
         assert_eq!(state.next_song().map(|s| &s.id[..]), Some("3"));
+
+        state.toggle_play();
+        assert!(!state.is_playing());
 
         state.play_next();
         assert!(state.is_playing());
