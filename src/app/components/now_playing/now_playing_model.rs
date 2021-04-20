@@ -46,7 +46,7 @@ impl NowPlayingModel {
         }
 
         let api = self.app_model.get_spotify();
-        let batch = queue.current_batch?.next()?;
+        let batch = queue.next_batch()?;
         let batch_size = batch.batch_size;
         let next_offset = batch.offset;
 
@@ -83,9 +83,6 @@ impl PlaylistModel for NowPlayingModel {
 
         match event {
             AppEvent::PlaybackEvent(PlaybackEvent::PlaylistChanged) => {
-                Some(ListDiff::Set(songs.collect()))
-            }
-            AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
                 Some(ListDiff::Set(songs.collect()))
             }
             _ => None,

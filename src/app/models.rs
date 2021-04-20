@@ -1,6 +1,7 @@
+use std::convert::From;
+
 pub use super::gtypes::*;
 use crate::app::components::utils::format_duration;
-use std::convert::From;
 
 impl From<&AlbumDescription> for AlbumModel {
     fn from(album: &AlbumDescription) -> Self {
