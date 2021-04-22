@@ -26,7 +26,7 @@ impl PartialEq for PlaylistSource {
 impl Eq for PlaylistSource {}
 
 const RANGE_SIZE: usize = 25;
-pub const QUEUE_MAX_SIZE: usize = 100;
+pub const QUEUE_DEFAULT_SIZE: usize = 100;
 
 #[derive(Debug, Copy, Clone)]
 struct Position {
@@ -80,6 +80,10 @@ pub struct PlaybackState {
 }
 
 impl PlaybackState {
+    pub fn current_offset(&self) -> Option<usize> {
+        self.position.map(|p| p.start)
+    }
+
     pub fn is_playing(&self) -> bool {
         self.is_playing && self.position.is_some()
     }
@@ -145,7 +149,7 @@ impl PlaybackState {
         tracks: impl Iterator<Item = SongDescription>,
     ) -> HashMap<String, SongDescription> {
         let mut map: HashMap<String, SongDescription> =
-            HashMap::with_capacity(tracks.size_hint().1.unwrap_or(QUEUE_MAX_SIZE));
+            HashMap::with_capacity(tracks.size_hint().1.unwrap_or(QUEUE_DEFAULT_SIZE));
         for track in tracks {
             map.insert(track.id.clone(), track);
         }
@@ -187,10 +191,6 @@ impl PlaybackState {
 
     pub fn queue(&mut self, track: SongDescription) {
         if !self.indexed_songs.contains_key(&track.id) {
-            if self.running_order.len() == QUEUE_MAX_SIZE {
-                self.pop_front();
-            }
-
             self.running_order.push_back(track.id.clone());
             if let Some(shuffled) = self.running_order_shuffled.as_mut() {
                 let next = (self.rng.next_u32() as usize) % (shuffled.len() - 1);
@@ -345,7 +345,7 @@ impl Default for PlaybackState {
         Self {
             rng: SmallRng::from_entropy(),
             indexed_songs: HashMap::new(),
-            running_order: VecDeque::with_capacity(QUEUE_MAX_SIZE),
+            running_order: VecDeque::with_capacity(QUEUE_DEFAULT_SIZE),
             running_order_shuffled: None,
             position: None,
             source: None,
