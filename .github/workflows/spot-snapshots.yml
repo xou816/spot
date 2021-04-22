@@ -10,11 +10,12 @@ jobs:
     name: "Flatpak Builder"
     runs-on: ubuntu-latest
     container:
-      image: bilelmoussaoui/flatpak-github-actions:gnome-3.38
+      image: bilelmoussaoui/flatpak-github-actions:gnome-40
       options: --privileged
     steps:
     - uses: actions/checkout@v2
-    - uses: bilelmoussaoui/flatpak-github-actions@v2
+    - uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v3
       with:
         bundle: "spot.flatpak"
         manifest-path: "dev.alextren.Spot.snapshots.json"
+        run-tests: true
