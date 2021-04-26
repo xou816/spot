@@ -21,7 +21,7 @@ msgstr ""
 #: src/app/components/login/login_model.rs:30
 msgid "Could not save password. Make sure the session keyring is unlocked."
 msgstr ""
-"Le mot de passe n'a pu être enregistré, assurez vous que le Trousseau de "
+"Le mot de passe n'a pu être enregistré, assurez-vous que le Trousseau de "
 "session est déverouillé."
 
 #. translators: This is a menu entry.
