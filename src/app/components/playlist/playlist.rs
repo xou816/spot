@@ -9,7 +9,7 @@ use crate::app::components::{Component, EventListener, Song};
 use crate::app::models::SongModel;
 use crate::app::{
     state::{PlaybackEvent, SelectionEvent, SelectionState},
-    AppEvent, ListStore,
+    AppEvent, ListDiff, ListStore,
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -19,10 +19,9 @@ struct RowState {
 }
 
 pub trait PlaylistModel {
-    fn songs(&self) -> Vec<SongModel>;
     fn current_song_id(&self) -> Option<String>;
     fn play_song(&self, id: &str);
-    fn should_refresh_songs(&self, event: &AppEvent) -> bool;
+    fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>>;
 
     fn autoscroll_to_playing(&self) -> bool {
         false
@@ -198,18 +197,11 @@ where
             let state = Self::get_row_state(&model_song, &*self.model, current_song_id.as_ref());
             Self::set_row_state(&self.listbox, &model_song, &row, state);
 
-            if state.is_playing && autoscroll {
-                if !in_viewport(row.upcast_ref()).unwrap_or(true) {
-                    self.animator
-                        .animate(20, move |p| vscroll_to(row.upcast_ref(), p).is_some());
-                }
+            if state.is_playing && autoscroll && !in_viewport(row.upcast_ref()).unwrap_or(true) {
+                self.animator
+                    .animate(20, move |p| vscroll_to(row.upcast_ref(), p).is_some());
             }
         }
-    }
-
-    fn reset_list(&mut self) {
-        let list_model = &mut self.list_model;
-        list_model.replace_all(self.model.songs());
     }
 
     fn set_selection_active(listbox: &gtk::ListBox, active: bool) {
@@ -229,22 +221,22 @@ where
     Model: PlaylistModel + 'static,
 {
     fn on_event(&mut self, event: &AppEvent) {
-        match event {
-            AppEvent::SelectionEvent(SelectionEvent::SelectionChanged) => {
-                self.update_list(false);
+        if let Some(diff) = self.model.diff_for_event(event) {
+            self.list_model.update(diff);
+        } else {
+            match event {
+                AppEvent::SelectionEvent(SelectionEvent::SelectionChanged) => {
+                    self.update_list(false);
+                }
+                AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
+                    self.update_list(true);
+                }
+                AppEvent::SelectionEvent(SelectionEvent::SelectionModeChanged(_)) => {
+                    Self::set_selection_active(&self.listbox, self.model.is_selection_enabled());
+                    self.update_list(false);
+                }
+                _ => {}
             }
-            AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
-                self.update_list(true);
-            }
-            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackStopped) => {
-                self.reset_list();
-            }
-            AppEvent::SelectionEvent(SelectionEvent::SelectionModeChanged(_)) => {
-                Self::set_selection_active(&self.listbox, self.model.is_selection_enabled());
-                self.update_list(false);
-            }
-            _ if self.model.should_refresh_songs(event) => self.reset_list(),
-            _ => {}
         }
     }
 }

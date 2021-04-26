@@ -1,10 +1,25 @@
 use gio::prelude::*;
 use gio::ListModelExt;
+use glib::clone::{Downgrade, Upgrade};
 use std::iter::Iterator;
 use std::marker::PhantomData;
 
+#[derive(Debug, Clone)]
+pub enum ListDiff<GType>
+where
+    GType: Clone,
+{
+    Set(Vec<GType>),
+    Append(Vec<GType>),
+}
+
 pub struct ListStore<GType> {
     store: gio::ListStore,
+    _marker: PhantomData<GType>,
+}
+
+pub struct WeakListStore<GType> {
+    store: <gio::ListStore as Downgrade>::Weak,
     _marker: PhantomData<GType>,
 }
 
@@ -19,23 +34,25 @@ where
         }
     }
 
+    pub fn update(&mut self, diff: ListDiff<GType>) {
+        match diff {
+            ListDiff::Set(elements) => self.replace_all(elements.into_iter()),
+            ListDiff::Append(elements) => self.extend(elements.into_iter()),
+        }
+    }
+
     pub fn unsafe_store(&self) -> &gio::ListStore {
         &self.store
     }
 
-    pub fn remove_all(&mut self) {
-        self.store.remove_all();
+    pub fn extend(&mut self, elements: impl Iterator<Item = GType>) {
+        let upcast_vec: Vec<glib::Object> = elements.map(|e| e.upcast::<glib::Object>()).collect();
+        self.store
+            .splice(self.store.get_n_items(), 0, &upcast_vec[..]);
     }
 
-    pub fn append(&mut self, element: GType) {
-        self.store.append(&element);
-    }
-
-    pub fn replace_all(&mut self, content: Vec<GType>) {
-        let upcast_vec: Vec<glib::Object> = content
-            .into_iter()
-            .map(|e| e.upcast::<glib::Object>())
-            .collect();
+    pub fn replace_all(&mut self, elements: impl Iterator<Item = GType>) {
+        let upcast_vec: Vec<glib::Object> = elements.map(|e| e.upcast::<glib::Object>()).collect();
         self.store
             .splice(0, self.store.get_n_items(), &upcast_vec[..]);
     }
@@ -66,9 +83,9 @@ where
         self.store.get_n_items() as usize
     }
 
-    pub fn eq<F>(&self, other: &[GType], comparison: F) -> bool
+    pub fn eq<F, O>(&self, other: &[O], comparison: F) -> bool
     where
-        F: Fn(&GType, &GType) -> bool,
+        F: Fn(&GType, &O) -> bool,
     {
         self.len() == other.len()
             && self
@@ -84,5 +101,27 @@ impl<GType> Clone for ListStore<GType> {
             store: self.store.clone(),
             _marker: PhantomData,
         }
+    }
+}
+
+impl<GType> Downgrade for ListStore<GType> {
+    type Weak = WeakListStore<GType>;
+
+    fn downgrade(&self) -> Self::Weak {
+        Self::Weak {
+            store: Downgrade::downgrade(&self.store),
+            _marker: PhantomData,
+        }
+    }
+}
+
+impl<GType> Upgrade for WeakListStore<GType> {
+    type Strong = ListStore<GType>;
+
+    fn upgrade(&self) -> Option<Self::Strong> {
+        Some(Self::Strong {
+            store: self.store.upgrade()?,
+            _marker: PhantomData,
+        })
     }
 }

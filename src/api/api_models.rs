@@ -22,8 +22,8 @@ impl SearchType {
 pub struct SearchQuery {
     pub query: String,
     pub types: Vec<SearchType>,
-    pub limit: u32,
-    pub offset: u32,
+    pub limit: usize,
+    pub offset: usize,
 }
 
 impl SearchQuery {
@@ -50,12 +50,38 @@ impl SearchQuery {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Page<T> {
-    pub items: Vec<T>,
+    items: Option<Vec<T>>,
+    pub total: usize,
 }
 
 impl<T> Page<T> {
+    pub fn new(items: Vec<T>) -> Self {
+        Self {
+            total: items.len(),
+            items: Some(items),
+        }
+    }
+
     pub fn empty() -> Self {
-        Page { items: vec![] }
+        Self {
+            items: None,
+            total: 0,
+        }
+    }
+}
+
+impl<T> IntoIterator for Page<T> {
+    type Item = T;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.items.unwrap_or_else(Vec::new).into_iter()
+    }
+}
+
+impl<T> Default for Page<T> {
+    fn default() -> Self {
+        Self::empty()
     }
 }
 
@@ -83,6 +109,7 @@ pub struct Playlist {
     pub id: String,
     pub name: String,
     pub images: Vec<Image>,
+    pub tracks: Page<PlaylistTrack>,
     pub owner: PlaylistOwner,
 }
 
@@ -112,7 +139,7 @@ pub struct SavedAlbum {
 #[derive(Deserialize, Debug, Clone)]
 pub struct Album {
     pub id: String,
-    pub tracks: Option<Tracks<TrackItem>>,
+    pub tracks: Option<Page<TrackItem>>,
     pub artists: Vec<Artist>,
     pub name: String,
     pub images: Vec<Image>,
@@ -155,19 +182,8 @@ pub struct User {
 }
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct Tracks<Item> {
-    pub items: Vec<Item>,
-}
-
-#[derive(Deserialize, Debug, Clone)]
 pub struct TopTracks {
     pub tracks: Vec<TrackItem>,
-}
-
-impl<Item> Default for Tracks<Item> {
-    fn default() -> Self {
-        Self { items: vec![] }
-    }
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -215,24 +231,22 @@ impl Into<ArtistSummary> for Artist {
 impl Into<Vec<SongDescription>> for Page<PlaylistTrack> {
     fn into(self) -> Vec<SongDescription> {
         let items = self
-            .items
             .into_iter()
             .filter_map(|PlaylistTrack { is_local, track }| track.get().filter(|_| !is_local))
             .collect::<Vec<TrackItem>>();
-        Tracks { items }.into()
+        Page::new(items).into()
     }
 }
 
 impl Into<Vec<SongDescription>> for TopTracks {
     fn into(self) -> Vec<SongDescription> {
-        Tracks { items: self.tracks }.into()
+        Page::new(self.tracks).into()
     }
 }
 
-impl Into<Vec<SongDescription>> for Tracks<TrackItem> {
+impl Into<Vec<SongDescription>> for Page<TrackItem> {
     fn into(self) -> Vec<SongDescription> {
-        self.items
-            .into_iter()
+        self.into_iter()
             .map(
                 |TrackItem {
                      album,
@@ -278,12 +292,11 @@ impl Into<Vec<SongDescription>> for Tracks<TrackItem> {
 impl Into<Vec<SongDescription>> for Album {
     fn into(self) -> Vec<SongDescription> {
         let art = self.best_image_for_width(200).map(|i| &i.url).cloned();
-        let items = self.tracks.unwrap_or_default().items;
-
         let Album { id, name, .. } = self;
         let album_ref = AlbumRef { id, name };
 
-        items
+        self.tracks
+            .unwrap_or_default()
             .into_iter()
             .map(|item| {
                 let artists = item
@@ -332,16 +345,39 @@ impl Into<AlbumDescription> for Album {
     }
 }
 
-impl Into<PlaylistDescription> for Playlist {
-    fn into(self) -> PlaylistDescription {
+impl Playlist {
+    pub fn into_playlist_description(
+        self,
+        batch_size: usize,
+        offset: usize,
+    ) -> PlaylistDescription {
         let art = self.best_image_for_width(200).map(|i| i.url.clone());
-        let PlaylistOwner { id, display_name } = self.owner;
+        let Playlist {
+            id,
+            name,
+            tracks,
+            owner,
+            ..
+        } = self;
+        let PlaylistOwner {
+            id: owner_id,
+            display_name,
+        } = owner;
+        let total = tracks.total;
         PlaylistDescription {
-            id: self.id,
-            title: self.name,
+            id,
+            title: name,
             art,
-            songs: vec![],
-            owner: UserRef { id, display_name },
+            songs: tracks.into(),
+            last_batch: Batch {
+                batch_size,
+                offset,
+                total,
+            },
+            owner: UserRef {
+                id: owner_id,
+                display_name,
+            },
         }
     }
 }

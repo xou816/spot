@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 use std::cmp::PartialEq;
 
-use super::{BrowserAction, BrowserEvent, UpdatableState};
+use super::{pagination::Pagination, BrowserAction, BrowserEvent, UpdatableState};
 use crate::app::models::*;
 use crate::app::ListStore;
 
@@ -88,15 +88,15 @@ impl UpdatableState for DetailsState {
 pub struct PlaylistDetailsState {
     pub id: String,
     pub name: ScreenName,
-    pub content: Option<PlaylistDescription>,
+    pub playlist: Option<PlaylistDescription>,
 }
 
 impl PlaylistDetailsState {
     pub fn new(id: String) -> Self {
         Self {
             id: id.clone(),
-            name: ScreenName::PlaylistDetails(id),
-            content: None,
+            name: ScreenName::PlaylistDetails(id.clone()),
+            playlist: None,
         }
     }
 }
@@ -109,56 +109,19 @@ impl UpdatableState for PlaylistDetailsState {
         match action {
             BrowserAction::SetPlaylistDetails(playlist) => {
                 let id = playlist.id.clone();
-                self.content = Some(playlist);
+                self.playlist = Some(playlist);
                 vec![BrowserEvent::PlaylistDetailsLoaded(id)]
             }
-            _ => vec![],
-        }
-    }
-}
-
-pub struct Pagination<T> {
-    pub data: T,
-    pub next_offset: Option<u32>,
-    pub batch_size: u32,
-}
-
-impl<T> Pagination<T> {
-    fn new(data: T, batch_size: u32) -> Self {
-        Self {
-            data,
-            next_offset: Some(0),
-            batch_size,
-        }
-    }
-
-    fn reset(&mut self, new_length: u32) {
-        self.next_offset = if new_length >= self.batch_size {
-            Some(self.batch_size)
-        } else {
-            None
-        }
-    }
-
-    fn update(&mut self, new_length: u32) {
-        if let Some(offset) = self.next_offset.take() {
-            self.next_offset = if new_length >= offset + self.batch_size {
-                Some(offset + self.batch_size)
-            } else {
-                None
+            BrowserAction::AppendPlaylistTracks(id, SongBatch { songs, batch })
+                if id == self.id =>
+            {
+                if let Some(playlist) = self.playlist.as_mut() {
+                    playlist.songs.extend(songs);
+                    playlist.last_batch = batch;
+                }
+                vec![BrowserEvent::PlaylistTracksAppended(id, batch.offset)]
             }
-        }
-    }
-
-    fn decrement(&mut self) {
-        if let Some(offset) = self.next_offset.take() {
-            self.next_offset = Some(offset - 1);
-        }
-    }
-
-    fn increment(&mut self) {
-        if let Some(offset) = self.next_offset.take() {
-            self.next_offset = Some(offset + 1);
+            _ => vec![],
         }
     }
 }
@@ -198,12 +161,9 @@ impl UpdatableState for ArtistState {
                 mut top_tracks,
             }) => {
                 self.artist = Some(name);
-
-                self.albums.remove_all();
-                for album in albums {
-                    self.albums.append(album.into());
-                }
-                self.next_page.reset(self.albums.len() as u32);
+                self.albums
+                    .replace_all(albums.into_iter().map(|a| a.into()));
+                self.next_page.reset_count(self.albums.len());
 
                 top_tracks.truncate(5);
                 self.top_tracks = top_tracks;
@@ -211,10 +171,8 @@ impl UpdatableState for ArtistState {
                 vec![BrowserEvent::ArtistDetailsUpdated(id)]
             }
             BrowserAction::AppendArtistReleases(albums) => {
-                for album in albums {
-                    self.albums.append(album.into());
-                }
-                self.next_page.update(self.albums.len() as u32);
+                self.next_page.set_loaded_count(albums.len());
+                self.albums.extend(albums.into_iter().map(|a| a.into()));
                 vec![BrowserEvent::ArtistDetailsUpdated(self.id.clone())]
             }
             _ => vec![],
@@ -249,26 +207,21 @@ impl UpdatableState for HomeState {
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
             BrowserAction::SetLibraryContent(content) => {
-                let converted = content
-                    .iter()
-                    .map(|a| a.into())
-                    .collect::<Vec<AlbumModel>>();
-                if !self.albums.eq(&converted, |a, b| a.uri() == b.uri()) {
-                    self.albums.remove_all();
-                    for album in converted {
-                        self.albums.append(album);
-                    }
-                    self.next_albums_page.reset(self.albums.len() as u32);
+                if !self
+                    .albums
+                    .eq(&content, |a, b| a.uri().as_ref() == Some(&b.id))
+                {
+                    self.albums
+                        .replace_all(content.into_iter().map(|a| a.into()));
+                    self.next_albums_page.reset_count(self.albums.len());
                     vec![BrowserEvent::LibraryUpdated]
                 } else {
                     vec![]
                 }
             }
             BrowserAction::AppendLibraryContent(content) => {
-                for album in content {
-                    self.albums.append(album.into());
-                }
-                self.next_albums_page.update(self.albums.len() as u32);
+                self.next_albums_page.set_loaded_count(content.len());
+                self.albums.extend(content.into_iter().map(|a| a.into()));
                 vec![BrowserEvent::LibraryUpdated]
             }
             BrowserAction::SaveAlbum(album) => {
@@ -299,26 +252,21 @@ impl UpdatableState for HomeState {
                 }
             }
             BrowserAction::SetPlaylistsContent(content) => {
-                let converted = content
-                    .iter()
-                    .map(|a| a.into())
-                    .collect::<Vec<AlbumModel>>();
-                if !self.playlists.eq(&converted, |a, b| a.uri() == b.uri()) {
-                    self.playlists.remove_all();
-                    for playlist in converted {
-                        self.playlists.append(playlist);
-                    }
-                    self.next_playlists_page.reset(self.playlists.len() as u32);
+                if !self
+                    .playlists
+                    .eq(&content, |a, b| a.uri().as_ref() == Some(&b.id))
+                {
+                    self.playlists
+                        .replace_all(content.into_iter().map(|a| a.into()));
+                    self.next_playlists_page.reset_count(self.playlists.len());
                     vec![BrowserEvent::SavedPlaylistsUpdated]
                 } else {
                     vec![]
                 }
             }
             BrowserAction::AppendPlaylistsContent(content) => {
-                for playlist in content {
-                    self.playlists.append(playlist.into());
-                }
-                self.next_playlists_page.update(self.playlists.len() as u32);
+                self.next_playlists_page.set_loaded_count(content.len());
+                self.playlists.extend(content.into_iter().map(|p| p.into()));
                 vec![BrowserEvent::SavedPlaylistsUpdated]
             }
             _ => vec![],
@@ -396,22 +344,16 @@ impl UpdatableState for UserState {
                 playlists,
             }) => {
                 self.user = Some(name);
-
-                self.playlists.remove_all();
-                for playlist in playlists {
-                    self.playlists.append(playlist.into());
-                }
-
-                self.next_page.reset(self.playlists.len() as u32);
+                self.playlists
+                    .replace_all(playlists.into_iter().map(|p| p.into()));
+                self.next_page.reset_count(self.playlists.len());
 
                 vec![BrowserEvent::UserDetailsUpdated(id)]
             }
             BrowserAction::AppendUserPlaylists(playlists) => {
-                for playlist in playlists {
-                    self.playlists.append(playlist.into());
-                }
-
-                self.next_page.update(self.playlists.len() as u32);
+                self.next_page.set_loaded_count(playlists.len());
+                self.playlists
+                    .extend(playlists.into_iter().map(|p| p.into()));
                 vec![BrowserEvent::UserDetailsUpdated(self.id.clone())]
             }
             _ => vec![],

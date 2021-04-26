@@ -7,9 +7,9 @@ use std::sync::Arc;
 use crate::app::components::{labels, PlaylistModel, SelectionTool, SelectionToolsModel};
 use crate::app::models::*;
 use crate::app::state::{
-    BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource, SelectionAction, SelectionState,
+    BrowserAction, BrowserEvent, PlaybackAction, SelectionAction, SelectionState,
 };
-use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, ListStore};
+use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, ListDiff, ListStore};
 
 pub struct ArtistDetailsModel {
     pub id: String,
@@ -84,38 +84,40 @@ impl ArtistDetailsModel {
 }
 
 impl PlaylistModel for ArtistDetailsModel {
-    fn songs(&self) -> Vec<SongModel> {
-        let tracks = self.tracks_ref();
-        match tracks {
-            Some(tracks) => tracks
-                .iter()
-                .enumerate()
-                .map(|(i, s)| s.to_song_model(i))
-                .collect(),
-            None => vec![],
-        }
-    }
-
     fn current_song_id(&self) -> Option<String> {
-        self.app_model.get_state().playback.current_song_id.clone()
+        self.app_model
+            .get_state()
+            .playback
+            .current_song_id()
+            .cloned()
     }
 
     fn play_song(&self, id: &str) {
         let tracks = self.tracks_ref();
         if let Some(tracks) = tracks {
-            self.dispatcher.dispatch(
-                PlaybackAction::LoadPlaylist(PlaylistSource::None, tracks.clone()).into(),
-            );
+            self.dispatcher
+                .dispatch(PlaybackAction::LoadSongs(None, tracks.clone()).into());
             self.dispatcher
                 .dispatch(PlaybackAction::Load(id.to_string()).into());
         }
     }
 
-    fn should_refresh_songs(&self, event: &AppEvent) -> bool {
-        matches!(
+    fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>> {
+        if matches!(
             event,
             AppEvent::BrowserEvent(BrowserEvent::ArtistDetailsUpdated(id)) if id == &self.id
-        )
+        ) {
+            let tracks = self.tracks_ref()?;
+            Some(ListDiff::Set(
+                tracks
+                    .iter()
+                    .enumerate()
+                    .map(|(i, s)| s.to_song_model(i))
+                    .collect(),
+            ))
+        } else {
+            None
+        }
     }
 
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {

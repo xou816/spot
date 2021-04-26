@@ -11,7 +11,7 @@ use crate::app::models::*;
 use crate::app::state::{
     BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource, SelectionAction, SelectionState,
 };
-use crate::app::{AppAction, AppEvent, AppModel, AppState};
+use crate::app::{AppAction, AppEvent, AppModel, AppState, ListDiff};
 
 pub struct DetailsModel {
     pub id: String,
@@ -119,39 +119,38 @@ impl PlaylistModel for DetailsModel {
     }
 
     fn current_song_id(&self) -> Option<String> {
-        self.state().playback.current_song_id.clone()
-    }
-
-    fn songs(&self) -> Vec<SongModel> {
-        let songs = self.songs_ref();
-        match songs {
-            Some(songs) => songs
-                .iter()
-                .enumerate()
-                .map(|(i, s)| s.to_song_model(i))
-                .collect(),
-            None => vec![],
-        }
+        self.state().playback.current_song_id().cloned()
     }
 
     fn play_song(&self, id: &str) {
-        let source = PlaylistSource::Album(self.id.clone());
+        let source = Some(PlaylistSource::Album(self.id.clone()));
         if self.app_model.get_state().playback.source != source {
             let songs = self.songs_ref();
             if let Some(songs) = songs {
                 self.dispatcher
-                    .dispatch(PlaybackAction::LoadPlaylist(source, songs.clone()).into());
+                    .dispatch(PlaybackAction::LoadSongs(source, songs.clone()).into());
             }
         }
         self.dispatcher
             .dispatch(PlaybackAction::Load(id.to_string()).into());
     }
 
-    fn should_refresh_songs(&self, event: &AppEvent) -> bool {
-        matches!(
+    fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>> {
+        if matches!(
             event,
             AppEvent::BrowserEvent(BrowserEvent::AlbumDetailsLoaded(id)) if id == &self.id
-        )
+        ) {
+            let songs = self.songs_ref()?;
+            Some(ListDiff::Set(
+                songs
+                    .iter()
+                    .enumerate()
+                    .map(|(i, s)| s.to_song_model(i))
+                    .collect(),
+            ))
+        } else {
+            None
+        }
     }
 
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {

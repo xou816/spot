@@ -253,8 +253,8 @@ impl SpotifyClient {
     pub(crate) fn get_artist_albums(
         &self,
         id: &str,
-        offset: u32,
-        limit: u32,
+        offset: usize,
+        limit: usize,
     ) -> SpotifyRequest<'_, (), Page<Album>> {
         let query = make_query_params()
             .append_pair("include_groups", "album,single")
@@ -307,7 +307,10 @@ impl SpotifyClient {
 
     pub(crate) fn get_playlist(&self, id: &str) -> SpotifyRequest<'_, (), Playlist> {
         let query = make_query_params()
-            .append_pair("fields", "id,name,images,owner")
+            .append_pair(
+                "fields",
+                "id,name,images,owner,tracks(total,items(is_local,track(name,id,duration_ms,artists(name,id),album(name,id,images,artists))))",
+            )
             .finish();
         self.request()
             .method(Method::GET)
@@ -317,8 +320,8 @@ impl SpotifyClient {
     pub(crate) fn get_playlist_tracks(
         &self,
         id: &str,
-        offset: u32,
-        limit: u32,
+        offset: usize,
+        limit: usize,
     ) -> SpotifyRequest<'_, (), Page<PlaylistTrack>> {
         let query = make_query_params()
             .append_pair("offset", &offset.to_string()[..])
@@ -332,8 +335,8 @@ impl SpotifyClient {
 
     pub(crate) fn get_saved_albums(
         &self,
-        offset: u32,
-        limit: u32,
+        offset: usize,
+        limit: usize,
     ) -> SpotifyRequest<'_, (), Page<SavedAlbum>> {
         let query = make_query_params()
             .append_pair("offset", &offset.to_string()[..])
@@ -347,8 +350,8 @@ impl SpotifyClient {
 
     pub(crate) fn get_saved_playlists(
         &self,
-        offset: u32,
-        limit: u32,
+        offset: usize,
+        limit: usize,
     ) -> SpotifyRequest<'_, (), Page<Playlist>> {
         let query = make_query_params()
             .append_pair("offset", &offset.to_string()[..])
@@ -363,8 +366,8 @@ impl SpotifyClient {
     pub(crate) fn search(
         &self,
         query: String,
-        offset: u32,
-        limit: u32,
+        offset: usize,
+        limit: usize,
     ) -> SpotifyRequest<'_, (), RawSearchResults> {
         let query = SearchQuery {
             query,
@@ -387,8 +390,8 @@ impl SpotifyClient {
     pub(crate) fn get_user_playlists(
         &self,
         id: &str,
-        offset: u32,
-        limit: u32,
+        offset: usize,
+        limit: usize,
     ) -> SpotifyRequest<'_, (), Page<Playlist>> {
         let query = make_query_params()
             .append_pair("offset", &offset.to_string()[..])

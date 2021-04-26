@@ -10,7 +10,7 @@ use crate::app::models::*;
 use crate::app::state::{
     BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource, SelectionAction, SelectionState,
 };
-use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState};
+use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState, ListDiff};
 
 pub struct PlaylistDetailsModel {
     pub id: String,
@@ -32,7 +32,7 @@ impl PlaylistDetailsModel {
             Some(
                 &s.browser
                     .playlist_details_state(&self.id)?
-                    .content
+                    .playlist
                     .as_ref()?
                     .songs,
             )
@@ -40,8 +40,12 @@ impl PlaylistDetailsModel {
     }
 
     pub fn get_playlist_info(&self) -> Option<impl Deref<Target = PlaylistDescription> + '_> {
-        self.app_model
-            .map_state_opt(|s| s.browser.playlist_details_state(&self.id)?.content.as_ref())
+        self.app_model.map_state_opt(|s| {
+            s.browser
+                .playlist_details_state(&self.id)?
+                .playlist
+                .as_ref()
+        })
     }
 
     pub fn load_playlist_info(&self) {
@@ -56,6 +60,34 @@ impl PlaylistDetailsModel {
                     .map(|playlist| BrowserAction::SetPlaylistDetails(playlist).into())
             }
         });
+    }
+
+    pub fn load_more_tracks(&self) -> Option<()> {
+        let api = self.app_model.get_spotify();
+        let id = self.id.clone();
+
+        let state = self.app_model.get_state();
+        let next_batch = &state
+            .browser
+            .playlist_details_state(&id)?
+            .playlist
+            .as_ref()?
+            .last_batch
+            .next()?;
+        let next_offset = next_batch.offset;
+        let batch_size = next_batch.batch_size;
+
+        self.dispatcher.dispatch_spotify_call(move || {
+            let api = Arc::clone(&api);
+            let id = id.clone();
+            async move {
+                api.get_playlist_tracks(&id, next_offset, batch_size)
+                    .await
+                    .map(|tracks| BrowserAction::AppendPlaylistTracks(id, tracks).into())
+            }
+        });
+
+        Some(())
     }
 
     pub fn view_owner(&self) {
@@ -75,39 +107,56 @@ impl PlaylistDetailsModel {
 
 impl PlaylistModel for PlaylistDetailsModel {
     fn current_song_id(&self) -> Option<String> {
-        self.state().playback.current_song_id.clone()
-    }
-
-    fn songs(&self) -> Vec<SongModel> {
-        let songs = self.songs_ref();
-        match songs {
-            Some(songs) => songs
-                .iter()
-                .enumerate()
-                .map(|(i, s)| s.to_song_model(i))
-                .collect(),
-            None => vec![],
-        }
+        self.state().playback.current_song_id().cloned()
     }
 
     fn play_song(&self, id: &str) {
-        let source = PlaylistSource::Playlist(self.id.clone());
+        let source = Some(PlaylistSource::Playlist(self.id.clone()));
         if self.app_model.get_state().playback.source != source {
-            let songs = self.songs_ref();
-            if let Some(songs) = songs {
-                self.dispatcher
-                    .dispatch(PlaybackAction::LoadPlaylist(source, songs.clone()).into());
+            if let Some(playlist) = self.get_playlist_info() {
+                self.dispatcher.dispatch(
+                    PlaybackAction::LoadPagedSongs(
+                        source,
+                        SongBatch {
+                            batch: playlist.last_batch,
+                            songs: playlist.songs.clone(),
+                        },
+                    )
+                    .into(),
+                );
             }
         }
         self.dispatcher
             .dispatch(PlaybackAction::Load(id.to_string()).into());
     }
 
-    fn should_refresh_songs(&self, event: &AppEvent) -> bool {
-        matches!(
-            event,
-            AppEvent::BrowserEvent(BrowserEvent::PlaylistDetailsLoaded(id)) if id == &self.id
-        )
+    fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>> {
+        match event {
+            AppEvent::BrowserEvent(BrowserEvent::PlaylistDetailsLoaded(id)) if id == &self.id => {
+                let songs = self.songs_ref()?;
+                Some(ListDiff::Set(
+                    songs
+                        .iter()
+                        .enumerate()
+                        .map(|(i, s)| s.to_song_model(i))
+                        .collect(),
+                ))
+            }
+            AppEvent::BrowserEvent(BrowserEvent::PlaylistTracksAppended(id, index))
+                if id == &self.id =>
+            {
+                let songs = self.songs_ref()?;
+                Some(ListDiff::Append(
+                    songs
+                        .iter()
+                        .enumerate()
+                        .skip(*index)
+                        .map(|(i, s)| s.to_song_model(i))
+                        .collect(),
+                ))
+            }
+            _ => None,
+        }
     }
 
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
