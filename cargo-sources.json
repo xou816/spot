@@ -1262,41 +1262,41 @@
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/futures/futures-0.3.13.crate",
-        "sha256": "7f55667319111d593ba876406af7c409c0ebb44dc4be6132a783ccf163ea14c1",
+        "url": "https://static.crates.io/crates/futures/futures-0.3.14.crate",
+        "sha256": "a9d5813545e459ad3ca1bff9915e9ad7f1a47dc6a91b627ce321d5863b7dd253",
         "dest": "cargo/vendor",
-        "dest-filename": "futures-0.3.13.crate"
+        "dest-filename": "futures-0.3.14.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%227f55667319111d593ba876406af7c409c0ebb44dc4be6132a783ccf163ea14c1%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/futures-0.3.13",
+        "url": "data:%7B%22package%22%3A%20%22a9d5813545e459ad3ca1bff9915e9ad7f1a47dc6a91b627ce321d5863b7dd253%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/futures-0.3.14",
         "dest-filename": ".cargo-checksum.json"
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/futures-channel/futures-channel-0.3.13.crate",
-        "sha256": "8c2dd2df839b57db9ab69c2c9d8f3e8c81984781937fe2807dc6dcf3b2ad2939",
+        "url": "https://static.crates.io/crates/futures-channel/futures-channel-0.3.14.crate",
+        "sha256": "ce79c6a52a299137a6013061e0cf0e688fce5d7f1bc60125f520912fdb29ec25",
         "dest": "cargo/vendor",
-        "dest-filename": "futures-channel-0.3.13.crate"
+        "dest-filename": "futures-channel-0.3.14.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%228c2dd2df839b57db9ab69c2c9d8f3e8c81984781937fe2807dc6dcf3b2ad2939%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/futures-channel-0.3.13",
+        "url": "data:%7B%22package%22%3A%20%22ce79c6a52a299137a6013061e0cf0e688fce5d7f1bc60125f520912fdb29ec25%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/futures-channel-0.3.14",
         "dest-filename": ".cargo-checksum.json"
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/futures-core/futures-core-0.3.13.crate",
-        "sha256": "15496a72fabf0e62bdc3df11a59a3787429221dd0710ba8ef163d6f7a9112c94",
+        "url": "https://static.crates.io/crates/futures-core/futures-core-0.3.14.crate",
+        "sha256": "098cd1c6dda6ca01650f1a37a794245eb73181d0d4d4e955e2f3c37db7af1815",
         "dest": "cargo/vendor",
-        "dest-filename": "futures-core-0.3.13.crate"
+        "dest-filename": "futures-core-0.3.14.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%2215496a72fabf0e62bdc3df11a59a3787429221dd0710ba8ef163d6f7a9112c94%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/futures-core-0.3.13",
+        "url": "data:%7B%22package%22%3A%20%22098cd1c6dda6ca01650f1a37a794245eb73181d0d4d4e955e2f3c37db7af1815%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/futures-core-0.3.14",
         "dest-filename": ".cargo-checksum.json"
     },
     {
@@ -1314,28 +1314,28 @@
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/futures-executor/futures-executor-0.3.13.crate",
-        "sha256": "891a4b7b96d84d5940084b2a37632dd65deeae662c114ceaa2c879629c9c0ad1",
+        "url": "https://static.crates.io/crates/futures-executor/futures-executor-0.3.14.crate",
+        "sha256": "10f6cb7042eda00f0049b1d2080aa4b93442997ee507eb3828e8bd7577f94c9d",
         "dest": "cargo/vendor",
-        "dest-filename": "futures-executor-0.3.13.crate"
+        "dest-filename": "futures-executor-0.3.14.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%22891a4b7b96d84d5940084b2a37632dd65deeae662c114ceaa2c879629c9c0ad1%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/futures-executor-0.3.13",
+        "url": "data:%7B%22package%22%3A%20%2210f6cb7042eda00f0049b1d2080aa4b93442997ee507eb3828e8bd7577f94c9d%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/futures-executor-0.3.14",
         "dest-filename": ".cargo-checksum.json"
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/futures-io/futures-io-0.3.13.crate",
-        "sha256": "d71c2c65c57704c32f5241c1223167c2c3294fd34ac020c807ddbe6db287ba59",
+        "url": "https://static.crates.io/crates/futures-io/futures-io-0.3.14.crate",
+        "sha256": "365a1a1fb30ea1c03a830fdb2158f5236833ac81fa0ad12fe35b29cddc35cb04",
         "dest": "cargo/vendor",
-        "dest-filename": "futures-io-0.3.13.crate"
+        "dest-filename": "futures-io-0.3.14.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%22d71c2c65c57704c32f5241c1223167c2c3294fd34ac020c807ddbe6db287ba59%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/futures-io-0.3.13",
+        "url": "data:%7B%22package%22%3A%20%22365a1a1fb30ea1c03a830fdb2158f5236833ac81fa0ad12fe35b29cddc35cb04%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/futures-io-0.3.14",
         "dest-filename": ".cargo-checksum.json"
     },
     {
@@ -1353,54 +1353,54 @@
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/futures-macro/futures-macro-0.3.13.crate",
-        "sha256": "ea405816a5139fb39af82c2beb921d52143f556038378d6db21183a5c37fbfb7",
+        "url": "https://static.crates.io/crates/futures-macro/futures-macro-0.3.14.crate",
+        "sha256": "668c6733a182cd7deb4f1de7ba3bf2120823835b3bcfbeacf7d2c4a773c1bb8b",
         "dest": "cargo/vendor",
-        "dest-filename": "futures-macro-0.3.13.crate"
+        "dest-filename": "futures-macro-0.3.14.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%22ea405816a5139fb39af82c2beb921d52143f556038378d6db21183a5c37fbfb7%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/futures-macro-0.3.13",
+        "url": "data:%7B%22package%22%3A%20%22668c6733a182cd7deb4f1de7ba3bf2120823835b3bcfbeacf7d2c4a773c1bb8b%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/futures-macro-0.3.14",
         "dest-filename": ".cargo-checksum.json"
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/futures-sink/futures-sink-0.3.13.crate",
-        "sha256": "85754d98985841b7d4f5e8e6fbfa4a4ac847916893ec511a2917ccd8525b8bb3",
+        "url": "https://static.crates.io/crates/futures-sink/futures-sink-0.3.14.crate",
+        "sha256": "5c5629433c555de3d82861a7a4e3794a4c40040390907cfbfd7143a92a426c23",
         "dest": "cargo/vendor",
-        "dest-filename": "futures-sink-0.3.13.crate"
+        "dest-filename": "futures-sink-0.3.14.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%2285754d98985841b7d4f5e8e6fbfa4a4ac847916893ec511a2917ccd8525b8bb3%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/futures-sink-0.3.13",
+        "url": "data:%7B%22package%22%3A%20%225c5629433c555de3d82861a7a4e3794a4c40040390907cfbfd7143a92a426c23%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/futures-sink-0.3.14",
         "dest-filename": ".cargo-checksum.json"
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/futures-task/futures-task-0.3.13.crate",
-        "sha256": "fa189ef211c15ee602667a6fcfe1c1fd9e07d42250d2156382820fba33c9df80",
+        "url": "https://static.crates.io/crates/futures-task/futures-task-0.3.14.crate",
+        "sha256": "ba7aa51095076f3ba6d9a1f702f74bd05ec65f555d70d2033d55ba8d69f581bc",
         "dest": "cargo/vendor",
-        "dest-filename": "futures-task-0.3.13.crate"
+        "dest-filename": "futures-task-0.3.14.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%22fa189ef211c15ee602667a6fcfe1c1fd9e07d42250d2156382820fba33c9df80%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/futures-task-0.3.13",
+        "url": "data:%7B%22package%22%3A%20%22ba7aa51095076f3ba6d9a1f702f74bd05ec65f555d70d2033d55ba8d69f581bc%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/futures-task-0.3.14",
         "dest-filename": ".cargo-checksum.json"
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/futures-util/futures-util-0.3.13.crate",
-        "sha256": "1812c7ab8aedf8d6f2701a43e1243acdbcc2b36ab26e2ad421eb99ac963d96d1",
+        "url": "https://static.crates.io/crates/futures-util/futures-util-0.3.14.crate",
+        "sha256": "3c144ad54d60f23927f0a6b6d816e4271278b64f005ad65e4e35291d2de9c025",
         "dest": "cargo/vendor",
-        "dest-filename": "futures-util-0.3.13.crate"
+        "dest-filename": "futures-util-0.3.14.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%221812c7ab8aedf8d6f2701a43e1243acdbcc2b36ab26e2ad421eb99ac963d96d1%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/futures-util-0.3.13",
+        "url": "data:%7B%22package%22%3A%20%223c144ad54d60f23927f0a6b6d816e4271278b64f005ad65e4e35291d2de9c025%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/futures-util-0.3.14",
         "dest-filename": ".cargo-checksum.json"
     },
     {
