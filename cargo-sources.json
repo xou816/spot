@@ -1535,15 +1535,15 @@
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/gettext-rs/gettext-rs-0.6.0.crate",
-        "sha256": "3df4e7a9dc238dddd30f183d43e4f497990885daa211fcf01657159ade8f1610",
+        "url": "https://static.crates.io/crates/gettext-rs/gettext-rs-0.7.0.crate",
+        "sha256": "e49ea8a8fad198aaa1f9655a2524b64b70eb06b2f3ff37da407566c93054f364",
         "dest": "cargo/vendor",
-        "dest-filename": "gettext-rs-0.6.0.crate"
+        "dest-filename": "gettext-rs-0.7.0.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%223df4e7a9dc238dddd30f183d43e4f497990885daa211fcf01657159ade8f1610%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/gettext-rs-0.6.0",
+        "url": "data:%7B%22package%22%3A%20%22e49ea8a8fad198aaa1f9655a2524b64b70eb06b2f3ff37da407566c93054f364%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/gettext-rs-0.7.0",
         "dest-filename": ".cargo-checksum.json"
     },
     {
