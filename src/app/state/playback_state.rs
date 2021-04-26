@@ -67,8 +67,9 @@ impl Position {
         *self = s.update_into(pos, max);
     }
 
-    fn update_count_into(self, max: usize) -> Self {
-        self.update_into(self.index, max)
+    fn update_count(&mut self, max: usize) {
+        let s = *self;
+        *self = s.update_into(self.index, max);
     }
 }
 
@@ -202,11 +203,11 @@ impl PlaybackState {
             }
 
             self.indexed_songs.insert(track.id.clone(), track);
-            self.position = Some(
-                self.position
-                    .unwrap_or_default()
-                    .update_count_into(self.running_order().len()),
-            );
+
+            let max = self.running_order().len();
+            if let Some(position) = self.position.as_mut() {
+                position.update_count(max);
+            }
         }
     }
 
@@ -216,12 +217,13 @@ impl PlaybackState {
             if let Some(shuffled) = self.running_order_shuffled.as_mut() {
                 shuffled.retain(|t| t != id);
             }
+
             self.indexed_songs.remove(id);
-            self.position = Some(
-                self.position
-                    .unwrap_or_default()
-                    .update_count_into(self.running_order().len()),
-            );
+
+            let max = self.running_order().len();
+            if let Some(position) = self.position.as_mut() {
+                position.update_count(max);
+            }
         }
     }
 
