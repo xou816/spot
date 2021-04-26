@@ -201,19 +201,6 @@ impl PlaybackState {
         }
     }
 
-    fn pop_front(&mut self) {
-        if let (Some(normal_front), Some(shuffled_front)) = (
-            self.running_order.pop_front(),
-            self.running_order_shuffled
-                .as_mut()
-                .and_then(|s| s.pop_front()),
-        ) {
-            if normal_front == shuffled_front {
-                self.indexed_songs.remove(&normal_front);
-            }
-        }
-    }
-
     pub fn dequeue(&mut self, id: &str) {
         if self.indexed_songs.contains_key(id) {
             self.running_order.retain(|t| t != id);

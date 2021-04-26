@@ -197,11 +197,9 @@ where
             let state = Self::get_row_state(&model_song, &*self.model, current_song_id.as_ref());
             Self::set_row_state(&self.listbox, &model_song, &row, state);
 
-            if state.is_playing && autoscroll {
-                if !in_viewport(row.upcast_ref()).unwrap_or(true) {
-                    self.animator
-                        .animate(20, move |p| vscroll_to(row.upcast_ref(), p).is_some());
-                }
+            if state.is_playing && autoscroll && !in_viewport(row.upcast_ref()).unwrap_or(true) {
+                self.animator
+                    .animate(20, move |p| vscroll_to(row.upcast_ref(), p).is_some());
             }
         }
     }
