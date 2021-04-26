@@ -66,6 +66,10 @@ impl Position {
         let s = *self;
         *self = s.update_into(pos, max);
     }
+
+    fn update_count_into(self, max: usize) -> Self {
+        self.update_into(self.index, max)
+    }
 }
 
 pub struct PlaybackState {
@@ -198,6 +202,11 @@ impl PlaybackState {
             }
 
             self.indexed_songs.insert(track.id.clone(), track);
+            self.position = Some(
+                self.position
+                    .unwrap_or_default()
+                    .update_count_into(self.running_order().len()),
+            );
         }
     }
 
@@ -208,6 +217,11 @@ impl PlaybackState {
                 shuffled.retain(|t| t != id);
             }
             self.indexed_songs.remove(id);
+            self.position = Some(
+                self.position
+                    .unwrap_or_default()
+                    .update_count_into(self.running_order().len()),
+            );
         }
     }
 
@@ -556,11 +570,27 @@ mod tests {
     }
 
     #[test]
+    fn test_queue() {
+        let mut state = PlaybackState::default();
+        state.queue(song("1"));
+        state.queue(song("2"));
+        state.queue(song("3"));
+
+        assert_eq!(state.songs().count(), 3);
+
+        state.play("2");
+
+        state.queue(song("4"));
+        assert_eq!(state.songs().count(), 4);
+    }
+
+    #[test]
     fn test_play_multiple() {
         let mut state = PlaybackState::default();
         state.queue(song("1"));
         state.queue(song("2"));
         state.queue(song("3"));
+        assert_eq!(state.songs().count(), 3);
 
         state.play("2");
         assert!(state.is_playing());
@@ -606,6 +636,8 @@ mod tests {
         state.queue(song("2"));
         state.queue(song("3"));
         state.queue(song("4"));
+
+        assert_eq!(state.songs().count(), 4);
 
         state.play("2");
         assert_eq!(state.current_position(), Some(1));
