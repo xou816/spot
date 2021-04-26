@@ -3628,15 +3628,15 @@
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/regex/regex-1.4.5.crate",
-        "sha256": "957056ecddbeba1b26965114e191d2e8589ce74db242b6ea25fc4062427a5c19",
+        "url": "https://static.crates.io/crates/regex/regex-1.4.6.crate",
+        "sha256": "2a26af418b574bd56588335b3a3659a65725d4e636eb1016c2f9e3b38c7cc759",
         "dest": "cargo/vendor",
-        "dest-filename": "regex-1.4.5.crate"
+        "dest-filename": "regex-1.4.6.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%22957056ecddbeba1b26965114e191d2e8589ce74db242b6ea25fc4062427a5c19%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/regex-1.4.5",
+        "url": "data:%7B%22package%22%3A%20%222a26af418b574bd56588335b3a3659a65725d4e636eb1016c2f9e3b38c7cc759%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/regex-1.4.6",
         "dest-filename": ".cargo-checksum.json"
     },
     {
