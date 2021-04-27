@@ -86,14 +86,7 @@ impl SpotMprisPlayer {
     }
 
     pub fn open_uri(&self, Uri: &str) -> Result<()> {
-        println!("Open Uri={}", Uri);
-        if let Some(id) = Uri.strip_prefix("/dev/alextren/Spot/Track/") {
-            self.sender
-                .unbounded_send(PlaybackAction::Load(id.to_string()).into())
-                .map_err(|_| Error::Failed("Coult not send action".to_string()))
-        } else {
-            Err(Error::NotSupported("Unsupported URI".to_string()))
-        }
+        Err(Error::NotSupported("Not implemented".to_string()))
     }
 
     pub fn pause(&self) -> Result<()> {
