@@ -172,13 +172,17 @@ impl SpotMprisPlayer {
             return Ok(());
         }
 
+        let length: i64 = self.metadata().length.try_into().map_err(|_| {
+            zbus::fdo::Error::Failed("Could not cast length (too large)".to_string())
+        })?;
+
+        if Position > length {
+            return Ok(());
+        }
+
         let pos: u32 = (Position / 1000)
             .try_into()
             .map_err(|_| zbus::fdo::Error::Failed("Could not parse position".to_string()))?;
-
-        if pos as u64 > self.metadata().length / 1000 {
-            return Ok(());
-        }
 
         self.sender
             .unbounded_send(PlaybackAction::Seek(pos).into())
