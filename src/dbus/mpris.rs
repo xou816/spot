@@ -172,7 +172,6 @@ impl SpotMprisPlayer {
             return Ok(());
         }
 
-        // FIXME: Implicit position < 0 check by casting to u32
         let pos: u32 = (Position / 1000)
             .try_into()
             .map_err(|_| zbus::fdo::Error::Failed("Could not parse position".to_string()))?;
