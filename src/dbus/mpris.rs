@@ -2,10 +2,11 @@
 #![allow(unused_variables)]
 
 use futures::channel::mpsc::UnboundedSender;
-use std::convert::Into;
+use std::convert::{Into, TryInto};
 use zbus::dbus_interface;
 use zbus::fdo::{Error, Result};
 use zbus::ObjectServer;
+use zvariant::ObjectPath;
 
 use super::types::*;
 use crate::app::{state::PlaybackAction, AppAction};
@@ -145,11 +146,47 @@ impl SpotMprisPlayer {
     }
 
     pub fn seek(&self, Offset: i64) -> Result<()> {
-        Ok(())
+        if !self.state.current_track().is_some() {
+            return Ok(());
+        }
+
+        let pos: u32 = (self.state.position() / 1000)
+            .try_into()
+            .map_err(|_| zbus::fdo::Error::Failed("Could not parse position".to_string()))?;
+
+        let offset: u32 = (Offset / 1000)
+            .try_into()
+            .map_err(|_| zbus::fdo::Error::Failed("Could not parse position".to_string()))?;
+
+        self.sender
+            .unbounded_send(PlaybackAction::Seek(pos + offset).into())
+            .map_err(|_| zbus::fdo::Error::Failed("Could not send action".to_string()))
     }
 
-    fn set_position(&self, TrackId: String, Position: i64) -> Result<()> {
-        Ok(())
+    pub fn set_position(&self, TrackId: ObjectPath, Position: i64) -> Result<()> {
+        if !self.state.current_track().is_some() {
+            return Ok(());
+        }
+
+        if TrackId.to_string() != self.metadata().id {
+            return Ok(());
+        }
+
+        let length: i64 = self.metadata().length.try_into().map_err(|_| {
+            zbus::fdo::Error::Failed("Could not cast length (too large)".to_string())
+        })?;
+
+        if Position > length {
+            return Ok(());
+        }
+
+        let pos: u32 = (Position / 1000)
+            .try_into()
+            .map_err(|_| zbus::fdo::Error::Failed("Could not parse position".to_string()))?;
+
+        self.sender
+            .unbounded_send(PlaybackAction::Seek(pos).into())
+            .map_err(|_| zbus::fdo::Error::Failed("Could not send action".to_string()))
     }
 
     pub fn stop(&self) -> Result<()> {
@@ -187,7 +224,7 @@ impl SpotMprisPlayer {
 
     #[dbus_interface(property)]
     pub fn can_seek(&self) -> bool {
-        false
+        self.state.current_track().is_some()
     }
 
     #[dbus_interface(property)]
@@ -202,6 +239,8 @@ impl SpotMprisPlayer {
             length: 0,
             title: "Not playing".to_string(),
             artist: vec![],
+            album: String::new(),
+            art: None,
         })
     }
 

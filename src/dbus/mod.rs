@@ -51,13 +51,16 @@ impl AppPlaybackStateListener {
                      id,
                      title,
                      artists,
+                     album,
                      duration,
-                     ..
+                     art,
                  }| TrackMetadata {
                     id: format!("/dev/alextren/Spot/Track/{}", id),
                     length: 1000 * duration as u64,
                     title,
+                    album: album.name,
                     artist: artists.into_iter().map(|a| a.name).collect(),
+                    art,
                 },
             )
     }
