@@ -150,17 +150,27 @@ impl SpotMprisPlayer {
             return Ok(());
         }
 
-        let pos: u32 = (self.state.position() / 1000)
+        let mut new_pos: i128 = (self.state.position() as i128 + i128::from(Offset)) / 1000;
+        // As per spec, if new position is less than 0 round to 0
+        if new_pos < 0 {
+            new_pos = 0;
+        }
+
+        let new_pos: u32 = (new_pos)
             .try_into()
             .map_err(|_| zbus::fdo::Error::Failed("Could not parse position".to_string()))?;
 
-        let offset: u32 = (Offset / 1000)
-            .try_into()
-            .map_err(|_| zbus::fdo::Error::Failed("Could not parse position".to_string()))?;
-
-        self.sender
-            .unbounded_send(PlaybackAction::Seek(pos + offset).into())
-            .map_err(|_| zbus::fdo::Error::Failed("Could not send action".to_string()))
+        // As per spec, if new position is past the length of the song skip to
+        // the next song
+        if u64::from(new_pos) >= self.metadata().length / 1000 {
+            self.sender
+                .unbounded_send(PlaybackAction::Next.into())
+                .map_err(|_| Error::Failed("Could not send action".to_string()))
+        } else {
+            self.sender
+                .unbounded_send(PlaybackAction::Seek(new_pos).into())
+                .map_err(|_| zbus::fdo::Error::Failed("Could not send action".to_string()))
+        }
     }
 
     pub fn set_position(&self, TrackId: ObjectPath, Position: i64) -> Result<()> {
