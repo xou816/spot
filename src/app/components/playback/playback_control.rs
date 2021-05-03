@@ -213,7 +213,8 @@ impl EventListener for PlaybackControl {
                 self.update_playing();
                 self.update_current_info();
             }
-            AppEvent::PlaybackEvent(PlaybackEvent::SeekSynced(pos)) => {
+            AppEvent::PlaybackEvent(PlaybackEvent::SeekSynced(pos))
+            | AppEvent::PlaybackEvent(PlaybackEvent::TrackSeeked(pos)) => {
                 self.sync_seek(*pos);
             }
             _ => {}
