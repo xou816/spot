@@ -100,7 +100,7 @@ msgid "song selected"
 msgid_plural "songs selected"
 msgstr[0] "песня выбрана"
 msgstr[1] "песни выбраны"
-msgstr[1] "песни были выбраны"
+msgstr[2] "песни были выбраны"
 
 #. translators: This is a menu entry (shouldn't be too long) that might appear when the user has selected multiple tracks.
 #: src/app/components/selection_editor/mod.rs:132
