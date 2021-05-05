@@ -1,9 +1,11 @@
 use crate::api::clear_user_cache;
 use crate::app::credentials;
+use crate::app::models::{PlaylistDescription, PlaylistSummary};
 use crate::app::state::{LoginAction, PlaybackAction};
 use crate::app::{ActionDispatcher, AppModel};
 use std::ops::Deref;
 use std::rc::Rc;
+use std::sync::Arc;
 
 pub struct UserMenuModel {
     app_model: Rc<AppModel>,
@@ -19,7 +21,8 @@ impl UserMenuModel {
     }
 
     pub fn username(&self) -> Option<impl Deref<Target = String> + '_> {
-        self.app_model.map_state_opt(|s| s.login.user.as_ref())
+        self.app_model
+            .map_state_opt(|s| s.logged_user.user.as_ref())
     }
 
     pub fn logout(&self) {
@@ -29,5 +32,29 @@ impl UserMenuModel {
             let _ = clear_user_cache().await;
             Some(LoginAction::Logout.into())
         }));
+    }
+
+    pub fn fetch_user_playlists(&self) {
+        let api = self.app_model.get_spotify();
+        if let Some(current_user) = self.username() {
+            let current_user = current_user.clone();
+            self.dispatcher.dispatch_spotify_call(move || {
+                let current_user = current_user.clone();
+                let api = Arc::clone(&api);
+                async move {
+                    api.get_saved_playlists(0, 30).await.map(|playlists| {
+                        let summaries = playlists
+                            .into_iter()
+                            .filter(|p| p.owner.display_name == current_user)
+                            .map(|PlaylistDescription { id, title, .. }| PlaylistSummary {
+                                id,
+                                title,
+                            })
+                            .collect();
+                        LoginAction::SetUserPlaylists(summaries).into()
+                    })
+                }
+            });
+        }
     }
 }

@@ -524,6 +524,7 @@ mod tests {
     fn song(id: &str) -> SongDescription {
         SongDescription {
             id: id.to_string(),
+            uri: "".to_string(),
             title: "Title".to_string(),
             artists: vec![],
             album: AlbumRef {

@@ -1,12 +1,14 @@
 use gettextrs::*;
 
 use crate::app::credentials;
+use crate::app::models::PlaylistSummary;
 use crate::app::state::{AppAction, AppEvent, UpdatableState};
 
 #[derive(Clone, Debug)]
 pub enum LoginAction {
     TryLogin(String, String),
     SetLoginSuccess(credentials::Credentials),
+    SetUserPlaylists(Vec<PlaylistSummary>),
     SetLoginFailure,
     RefreshToken,
     SetRefreshedToken(String),
@@ -23,6 +25,7 @@ impl Into<AppAction> for LoginAction {
 pub enum LoginEvent {
     LoginStarted(String, String),
     LoginCompleted(credentials::Credentials),
+    UserPlaylistsLoaded,
     LoginFailed,
     FreshTokenRequested,
     LogoutCompleted,
@@ -36,11 +39,15 @@ impl Into<AppEvent> for LoginEvent {
 
 pub struct LoginState {
     pub user: Option<String>,
+    pub playlists: Vec<PlaylistSummary>,
 }
 
 impl Default for LoginState {
     fn default() -> Self {
-        Self { user: None }
+        Self {
+            user: None,
+            playlists: vec![],
+        }
     }
 }
 
@@ -64,6 +71,10 @@ impl UpdatableState for LoginState {
             LoginAction::Logout => {
                 self.user = None;
                 vec![LoginEvent::LogoutCompleted.into()]
+            }
+            LoginAction::SetUserPlaylists(playlists) => {
+                self.playlists = playlists;
+                vec![LoginEvent::UserPlaylistsLoaded.into()]
             }
         }
     }

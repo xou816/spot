@@ -5,7 +5,11 @@ use std::ops::Deref;
 use std::rc::Rc;
 use std::sync::Arc;
 
-use crate::app::components::{labels, PlaylistModel, SelectionTool, SelectionToolsModel};
+use crate::api::SpotifyApiClient;
+use crate::app::components::PlaylistModel;
+use crate::app::components::{
+    labels, AddSelectionTool, SelectionTool, SelectionToolsModel, SimpleSelectionTool,
+};
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
 use crate::app::state::{
@@ -187,28 +191,43 @@ impl PlaylistModel for DetailsModel {
 }
 
 impl SelectionToolsModel for DetailsModel {
+    fn dispatcher(&self) -> Box<dyn ActionDispatcher> {
+        self.dispatcher.box_clone()
+    }
+
+    fn spotify_client(&self) -> Arc<dyn SpotifyApiClient + Send + Sync> {
+        self.app_model.get_spotify()
+    }
+
+    fn tools_visible(&self, _: &SelectionState) -> Vec<SelectionTool> {
+        let mut playlists: Vec<SelectionTool> = self
+            .app_model
+            .get_state()
+            .logged_user
+            .playlists
+            .iter()
+            .map(|p| SelectionTool::Add(AddSelectionTool::AddToPlaylist(p.clone())))
+            .collect();
+        let mut tools = vec![
+            SelectionTool::Simple(SimpleSelectionTool::SelectAll),
+            SelectionTool::Add(AddSelectionTool::AddToQueue),
+        ];
+        tools.append(&mut playlists);
+        tools
+    }
+
     fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
         Some(Box::new(self.app_model.map_state(|s| &s.selection)))
     }
 
     fn handle_tool_activated(&self, selection: &SelectionState, tool: &SelectionTool) {
-        let action = match (tool, tool.default_action()) {
-            (_, Some(action)) => Some(action),
-            (SelectionTool::SelectAll, None) => self.songs_ref().map(|songs| {
-                let songs = &*songs;
-                let all_selected = selection.all_selected(songs.iter().map(|s| &s.id));
-
-                if all_selected {
-                    SelectionAction::Deselect(songs.iter().map(|s| &s.id).cloned().collect())
-                } else {
-                    SelectionAction::Select(songs.iter().cloned().collect())
+        match tool {
+            SelectionTool::Simple(SimpleSelectionTool::SelectAll) => {
+                if let Some(songs) = self.songs_ref() {
+                    self.handle_select_all_tool(selection, &songs[..]);
                 }
-                .into()
-            }),
-            _ => None,
+            }
+            _ => self.default_handle_tool_activated(selection, tool),
         };
-        if let Some(action) = action {
-            self.dispatcher.dispatch(action);
-        }
     }
 }

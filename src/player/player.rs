@@ -204,7 +204,9 @@ playlist-read-collaborative,\
 user-library-read,\
 user-library-modify,\
 user-top-read,\
-user-read-recently-played";
+user-read-recently-played,\
+playlist-modify-public,\
+playlist-modify-private";
 
 async fn get_access_token(session: &Session) -> Result<String, SpotifyError> {
     let token = keymaster::get_token(session, CLIENT_ID, SCOPES)

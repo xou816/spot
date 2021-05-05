@@ -52,6 +52,8 @@ pub trait SpotifyApiClient {
         limit: usize,
     ) -> BoxFuture<SpotifyResult<Vec<PlaylistDescription>>>;
 
+    fn add_to_playlist(&self, id: &str, uris: Vec<String>) -> BoxFuture<SpotifyResult<()>>;
+
     fn search(
         &self,
         query: &str,
@@ -188,7 +190,8 @@ impl CachedSpotifyClient {
         match result {
             Ok(t) => Ok(t),
             // parsing failed: cache is likely invalid, request again, ignoring cache
-            Err(_) => {
+            Err(e) => {
+                dbg!(e);
                 let new_raw = self
                     .cache
                     .get_or_write(&cache_key, CachePolicy::IgnoreCached, |etag| {
@@ -254,6 +257,18 @@ impl SpotifyApiClient for CachedSpotifyClient {
         })
     }
 
+    fn add_to_playlist(&self, id: &str, uris: Vec<String>) -> BoxFuture<SpotifyResult<()>> {
+        let id = id.to_owned();
+
+        Box::pin(async move {
+            self.client
+                .add_to_playlist(&id, uris)
+                .send_no_response()
+                .await?;
+            Ok(())
+        })
+    }
+
     fn get_album(&self, id: &str) -> BoxFuture<SpotifyResult<AlbumDescription>> {
         let id = id.to_owned();
 
@@ -286,7 +301,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
 
         Box::pin(async move {
             self.cache
-                .set_expired_pattern("net", &*ME_ALBUMS_CACHE)
+                .set_expired_pattern("spot/net", &*ME_ALBUMS_CACHE)
                 .await
                 .unwrap_or(());
             self.client.save_album(&id).send_no_response().await?;
