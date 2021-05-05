@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-03-16 19:27+0100\n"
-"PO-Revision-Date: 2021-05-5 16:21+0100\n"
+"PO-Revision-Date: 2021-05-05 16:21+0300\n"
 "Last-Translator: Paul Bragin <zeusmods@protonmail.com>\n"
 "Language-Team: Paul Bragin <zeusmods@protonmail.com>\n"
 "Language: ru\n"
@@ -100,6 +100,7 @@ msgid "song selected"
 msgid_plural "songs selected"
 msgstr[0] "песня выбрана"
 msgstr[1] "песни выбраны"
+msgstr[1] "песни были выбраны"
 
 #. translators: This is a menu entry (shouldn't be too long) that might appear when the user has selected multiple tracks.
 #: src/app/components/selection_editor/mod.rs:132
