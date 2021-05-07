@@ -1,4 +1,4 @@
-# English translations for spot package.
+# Russian translation for spot package.
 # Copyright (C) 2021 THE spot'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the spot package.
 # Automatically generated, 2021.
