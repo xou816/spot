@@ -1,4 +1,4 @@
-# Russian translation for spot package.
+# English translations for spot package.
 # Copyright (C) 2021 THE spot'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the spot package.
 # Automatically generated, 2021.
@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-03-16 19:27+0100\n"
-"PO-Revision-Date: 2021-05-05 16:21+0300\n"
-"Last-Translator: Paul Bragin <zeusmods@protonmail.com>\n"
+"PO-Revision-Date: 2021-05-07 13:40+0300\n"
+"Last-Translator: Automatically generated\n"
 "Language-Team: Paul Bragin <zeusmods@protonmail.com>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"X-Generator: Poedit 2.4.3\n"
 
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:30
@@ -31,7 +31,7 @@ msgstr "Об"
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:63
 msgid "Quit"
-msgstr "Выйти"
+msgstr "Выйти из программы"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:68
@@ -87,12 +87,12 @@ msgstr "Удалить из очереди"
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
 #: src/app/components/mod.rs:82
 msgid "An error occured. Check logs for details!"
-msgstr "Появилась ошибка. Посмотрите в логи за подробностями!"
+msgstr "Ошибка появилась. Посмотрите в логи за подробностями!"
 
 #. This text appears when entering selection mode. It should be as short as possible.
 #: src/app/components/selection_editor/mod.rs:99 src/window.ui:31
 msgid "No song selected"
-msgstr "Песня не выброна"
+msgstr "Песня не выбрана"
 
 #. translators: This is part of a larger text that says "<n> songs selected" when in selection mode. This text should be as short as possible.
 #: src/app/components/selection_editor/mod.rs:119
@@ -135,7 +135,7 @@ msgstr "Войти в Spotify Premium"
 #. Placeholder for the username field
 #: src/app/components/login/login.ui:97
 msgid "Username"
-msgstr "Юзернейм"
+msgstr "Имя аккаунта"
 
 #. Placeholder for the password field
 #: src/app/components/login/login.ui:112
@@ -144,10 +144,8 @@ msgstr "Пароль"
 
 #. This error is shown when authentication fails. It's important to stress the fact that a restart is required (for now at least).
 #: src/app/components/login/login.ui:156
-msgid ""
-"Authentication failed! Please restart Spot before attempting to log in again."
-msgstr ""
-"Аутентификация не удалась! Пожалуйста, перезапустите Spot до того как вы снова зайдётё."
+msgid "Authentication failed! Please restart Spot before attempting to log in again."
+msgstr "Вход не удался! Пожалуйста, перезапустите Spot до того как вы снова зайдётё."
 
 #. Log in button label
 #: src/app/components/login/login.ui:181
@@ -168,4 +166,3 @@ msgstr "Артисты"
 #: src/window.ui:457
 msgid "No song playing"
 msgstr "Песня сейчас не играет"
-
