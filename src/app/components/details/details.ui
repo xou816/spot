@@ -69,8 +69,8 @@
                             <property name="halign">start</property>
                             <property name="label">Album</property>
                             <property name="wrap">True</property>
-                            <property name="wrap-mode">word-char</property>
                             <property name="ellipsize">end</property>
+                            <property name="max-width-chars">50</property>
                             <property name="lines">4</property>
                             <property name="xalign">0</property>
                             <style>
