@@ -56,7 +56,7 @@ impl Position {
         let start = pos.saturating_sub(RANGE_SIZE + cutoff);
         let count = usize::min(2 * RANGE_SIZE, max - start);
         Self {
-            index: pos,
+            index: usize::min(pos, max - 1),
             start,
             count,
         }
@@ -221,8 +221,12 @@ impl PlaybackState {
             self.indexed_songs.remove(id);
 
             let max = self.running_order().len();
-            if let Some(position) = self.position.as_mut() {
-                position.update_count(max);
+            if max > 0 {
+                if let Some(position) = self.position.as_mut() {
+                    position.update_count(max);
+                }
+            } else {
+                self.position = None;
             }
         }
     }
@@ -709,5 +713,31 @@ mod tests {
         assert_eq!(state.current_song().map(|s| &s.id[..]), Some("2"));
         let ids = state.song_ids();
         assert_eq!(ids, vec!["1", "2", "3"]);
+    }
+
+    #[test]
+    fn test_dequeue_last() {
+        let mut state = PlaybackState::default();
+        state.queue(song("1"));
+        state.queue(song("2"));
+        state.queue(song("3"));
+
+        state.play("3");
+        assert!(state.is_playing());
+
+        state.dequeue("3");
+        assert_eq!(state.current_song().map(|s| &s.id[..]), Some("2"));
+    }
+
+    #[test]
+    fn test_dequeue_all() {
+        let mut state = PlaybackState::default();
+        state.queue(song("3"));
+
+        state.play("3");
+        assert!(state.is_playing());
+
+        state.dequeue("3");
+        assert_eq!(state.current_song().map(|s| &s.id[..]), None);
     }
 }
