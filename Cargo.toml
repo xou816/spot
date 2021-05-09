@@ -1,6 +1,6 @@
 [package]
 name = "spot"
-version = "0.1.13"
+version = "0.1.14"
 edition = "2018"
 license = "MIT"
 
@@ -54,7 +54,7 @@ features = ["json"]
 
 [dependencies.rand]
 version = "^0.8.3"
-features = ["small_rng"] 
+features = ["small_rng"]
 
 [dependencies.gettext-rs]
 version = "0.7.0"

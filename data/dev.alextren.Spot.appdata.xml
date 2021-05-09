@@ -37,6 +37,22 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.1.14" date="2021-05-09">
+      <description>
+        <p>
+          What's new:
+        </p>
+        <ul>
+          <li>long playlists are now handled (somewhat) properly, although this has some drawbacks (shuffling isn't so random...)</li>
+          <li>the MPRIS implementation now supports seeking, and should report the proper album art and album name; thanks Douile!</li>
+          <li>selection tools now allow adding to a playlist (not yet removing, though)</li>
+          <li>Russian translation</li>
+        </ul>
+        <p>
+          Thanks to all contributors, translators and bug reporters!
+        </p>
+      </description>
+    </release>
     <release version="0.1.13" date="2021-04-12">
       <description>
         <p>

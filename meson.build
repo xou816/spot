@@ -1,6 +1,6 @@
 project(
   'spot',
-  version: '0.1.13',
+  version: '0.1.14',
   meson_version: '>= 0.50.0',
   default_options: ['warning_level=2', 'buildtype=release'],
 )
