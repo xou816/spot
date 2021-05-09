@@ -1,4 +1,3 @@
-use gettextrs::*;
 use gio::{ActionMapExt, SimpleAction, SimpleActionGroup};
 use gtk::prelude::*;
 use gtk::ButtonExt;
@@ -63,7 +62,7 @@ impl AddSelectionButton {
                     });
                     menu.append(
                         // translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
-                        Some(&format!("{} {}", gettext("Add to"), title)),
+                        Some(&labels::add_to_playlist_label(&title)),
                         Some(&format!("add_to.{}", action_name)),
                     );
                 }

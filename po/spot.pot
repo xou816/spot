@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-09 12:55+0200\n"
+"POT-Creation-Date: 2021-05-09 13:58+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -90,6 +90,11 @@ msgstr ""
 msgid "Remove from queue"
 msgstr ""
 
+#. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
+#: src/app/components/labels.rs:24
+msgid "Add to {}"
+msgstr ""
+
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
 #: src/app/components/mod.rs:100
 msgid "An error occured. Check logs for details!"
@@ -106,11 +111,6 @@ msgid "song selected"
 msgid_plural "songs selected"
 msgstr[0] ""
 msgstr[1] ""
-
-#. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
-#: src/app/components/selection/selection_widgets.rs:65
-msgid "Add to"
-msgstr ""
 
 #. translators: This notification is shown when, after some inactivity, the session is successfully restored. The user might have to repeat its last action.
 #: src/app/state/login_state.rs:69

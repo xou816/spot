@@ -16,3 +16,12 @@ lazy_static! {
     // translators: This is part of a contextual menu attached to a single track; this entry removes a track from the play queue.
     pub static ref REMOVE_FROM_QUEUE: String = gettext("Remove from queue");
 }
+
+pub fn add_to_playlist_label(playlist: &str) -> String {
+    // this is just to fool xgettext, it doesn't like macros (or rust for that matter) :(
+    if cfg!(debug_assertions) {
+        // translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
+        gettext("Add to {}");
+    }
+    gettext!("Add to {}", playlist)
+}

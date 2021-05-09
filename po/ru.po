@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-16 19:27+0100\n"
+"POT-Creation-Date: 2021-05-09 13:58+0200\n"
 "PO-Revision-Date: 2021-05-07 13:40+0300\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: Paul Bragin <zeusmods@protonmail.com>\n"
@@ -15,26 +15,34 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 "X-Generator: Poedit 2.4.3\n"
+
+#. translators: Short text displayed instead of a song title when nothing plays
+#. Short text displayed instead of a song title when nothing plays
+#: src/app/components/playback/playback_info.rs:91 src/window.ui.in:429
+msgid "No song playing"
+msgstr "Песня сейчас не играет"
 
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:30
 msgid "Could not save password. Make sure the session keyring is unlocked."
-msgstr "Не удалось сохранить пароль. Проверьте, GNOME Keyring/KDE wallet открыта."
+msgstr ""
+"Не удалось сохранить пароль. Проверьте, GNOME Keyring/KDE wallet открыта."
 
 #. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:61
+#: src/app/components/user_menu/user_menu.rs:60
 msgid "About"
 msgstr "Об"
 
 #. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:63
+#: src/app/components/user_menu/user_menu.rs:62
 msgid "Quit"
 msgstr "Выйти из программы"
 
 #. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:68
+#: src/app/components/user_menu/user_menu.rs:67
 msgid "Log out"
 msgstr "Выйти из аккаунта"
 
@@ -84,36 +92,31 @@ msgstr "Добавить в очередь"
 msgid "Remove from queue"
 msgstr "Удалить из очереди"
 
+#. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
+#: src/app/components/labels.rs:24
+msgid "Add to {}"
+msgstr ""
+
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/components/mod.rs:82
+#: src/app/components/mod.rs:100
 msgid "An error occured. Check logs for details!"
 msgstr "Ошибка появилась. Посмотрите в логи за подробностями!"
 
 #. This text appears when entering selection mode. It should be as short as possible.
-#: src/app/components/selection_editor/mod.rs:99 src/window.ui:31
+#: src/app/components/selection/selection_heading.rs:74 src/window.ui.in:26
 msgid "No song selected"
 msgstr "Песня не выбрана"
 
 #. translators: This is part of a larger text that says "<n> songs selected" when in selection mode. This text should be as short as possible.
-#: src/app/components/selection_editor/mod.rs:119
+#: src/app/components/selection/selection_heading.rs:88
 msgid "song selected"
 msgid_plural "songs selected"
 msgstr[0] "песня выбрана"
 msgstr[1] "песни выбраны"
 msgstr[2] "песни были выбраны"
 
-#. translators: This is a menu entry (shouldn't be too long) that might appear when the user has selected multiple tracks.
-#: src/app/components/selection_editor/mod.rs:132
-msgid "Remove selected tracks from queue"
-msgstr "Удалить выбранные треки из очереди"
-
-#. translators: This is a menu entry (shouldn't be too long) that might appear when the user has selected multiple tracks.
-#: src/app/components/selection_editor/mod.rs:138
-msgid "Add selected tracks to queue"
-msgstr "Добавить выбранные треки в очередь"
-
 #. translators: This notification is shown when, after some inactivity, the session is successfully restored. The user might have to repeat its last action.
-#: src/app/state/login_state.rs:62
+#: src/app/state/login_state.rs:69
 msgid "Connection restored"
 msgstr "Подключение восстановлено"
 
@@ -144,8 +147,10 @@ msgstr "Пароль"
 
 #. This error is shown when authentication fails. It's important to stress the fact that a restart is required (for now at least).
 #: src/app/components/login/login.ui:156
-msgid "Authentication failed! Please restart Spot before attempting to log in again."
-msgstr "Вход не удался! Пожалуйста, перезапустите Spot до того как вы снова зайдётё."
+msgid ""
+"Authentication failed! Please restart Spot before attempting to log in again."
+msgstr ""
+"Вход не удался! Пожалуйста, перезапустите Spot до того как вы снова зайдётё."
 
 #. Log in button label
 #: src/app/components/login/login.ui:181
@@ -162,7 +167,8 @@ msgstr "Альбомы"
 msgid "Artists"
 msgstr "Артисты"
 
-#. Short text displayed instead of a song title when nothing plays
-#: src/window.ui:457
-msgid "No song playing"
-msgstr "Песня сейчас не играет"
+#~ msgid "Remove selected tracks from queue"
+#~ msgstr "Удалить выбранные треки из очереди"
+
+#~ msgid "Add selected tracks to queue"
+#~ msgstr "Добавить выбранные треки в очередь"
