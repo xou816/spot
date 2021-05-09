@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-18 19:38+0100\n"
+"POT-Creation-Date: 2021-05-09 12:55+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,7 +20,7 @@ msgstr ""
 
 #. translators: Short text displayed instead of a song title when nothing plays
 #. Short text displayed instead of a song title when nothing plays
-#: src/app/components/playback/playback_info.rs:91 src/window.ui:458
+#: src/app/components/playback/playback_info.rs:91 src/window.ui.in:429
 msgid "No song playing"
 msgstr ""
 
@@ -30,17 +30,17 @@ msgid "Could not save password. Make sure the session keyring is unlocked."
 msgstr ""
 
 #. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:61
+#: src/app/components/user_menu/user_menu.rs:60
 msgid "About"
 msgstr ""
 
 #. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:63
+#: src/app/components/user_menu/user_menu.rs:62
 msgid "Quit"
 msgstr ""
 
 #. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:68
+#: src/app/components/user_menu/user_menu.rs:67
 msgid "Log out"
 msgstr ""
 
@@ -91,34 +91,29 @@ msgid "Remove from queue"
 msgstr ""
 
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/components/mod.rs:85
+#: src/app/components/mod.rs:100
 msgid "An error occured. Check logs for details!"
 msgstr ""
 
 #. This text appears when entering selection mode. It should be as short as possible.
-#: src/app/components/selection_editor/mod.rs:99 src/window.ui:31
+#: src/app/components/selection/selection_heading.rs:74 src/window.ui.in:26
 msgid "No song selected"
 msgstr ""
 
 #. translators: This is part of a larger text that says "<n> songs selected" when in selection mode. This text should be as short as possible.
-#: src/app/components/selection_editor/mod.rs:119
+#: src/app/components/selection/selection_heading.rs:88
 msgid "song selected"
 msgid_plural "songs selected"
 msgstr[0] ""
 msgstr[1] ""
 
-#. translators: This is a menu entry (shouldn't be too long) that might appear when the user has selected multiple tracks.
-#: src/app/components/selection_editor/mod.rs:132
-msgid "Remove selected tracks from queue"
-msgstr ""
-
-#. translators: This is a menu entry (shouldn't be too long) that might appear when the user has selected multiple tracks.
-#: src/app/components/selection_editor/mod.rs:138
-msgid "Add selected tracks to queue"
+#. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
+#: src/app/components/selection/selection_widgets.rs:65
+msgid "Add to"
 msgstr ""
 
 #. translators: This notification is shown when, after some inactivity, the session is successfully restored. The user might have to repeat its last action.
-#: src/app/state/login_state.rs:62
+#: src/app/state/login_state.rs:69
 msgid "Connection restored"
 msgstr ""
 

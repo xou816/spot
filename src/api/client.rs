@@ -2,7 +2,7 @@ use form_urlencoded::Serializer;
 use isahc::config::Configurable;
 use isahc::http::{method::Method, request::Builder, StatusCode, Uri};
 use isahc::{AsyncReadResponseExt, HttpClient, Request};
-use serde::de::Deserialize;
+use serde::{de::Deserialize, Serialize};
 use serde_json::from_str;
 use std::convert::Into;
 use std::marker::PhantomData;
@@ -64,6 +64,24 @@ where
             self.request = self.request.header("If-None-Match", etag);
         }
         self
+    }
+
+    pub(crate) fn json_body<NewBody>(self, body: NewBody) -> SpotifyRequest<'a, Vec<u8>, R>
+    where
+        NewBody: Serialize,
+    {
+        let Self {
+            client,
+            request,
+            _type,
+            ..
+        } = self;
+        SpotifyRequest {
+            client,
+            request: request.header("Content-Type", "application/json"),
+            body: serde_json::to_vec(&body).unwrap(),
+            _type,
+        }
     }
 
     pub(crate) async fn send(self) -> Result<SpotifyResponse<R>, SpotifyApiError> {
@@ -309,7 +327,7 @@ impl SpotifyClient {
         let query = make_query_params()
             .append_pair(
                 "fields",
-                "id,name,images,owner,tracks(total,items(is_local,track(name,id,duration_ms,artists(name,id),album(name,id,images,artists))))",
+                "id,name,images,owner,tracks(total,items(is_local,track(name,id,uri,duration_ms,artists(name,id),album(name,id,images,artists))))",
             )
             .finish();
         self.request()
@@ -331,6 +349,17 @@ impl SpotifyClient {
         self.request()
             .method(Method::GET)
             .uri(format!("/v1/playlists/{}/tracks", id), Some(&query))
+    }
+
+    pub(crate) fn add_to_playlist(
+        &self,
+        playlist: &str,
+        uris: Vec<String>,
+    ) -> SpotifyRequest<'_, Vec<u8>, ()> {
+        self.request()
+            .method(Method::POST)
+            .uri(format!("/v1/playlists/{}/tracks", playlist), None)
+            .json_body(Uris { uris })
     }
 
     pub(crate) fn get_saved_albums(

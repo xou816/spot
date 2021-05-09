@@ -5,6 +5,7 @@ use crate::app::state::{AppAction, AppEvent, UpdatableState};
 pub enum SelectionAction {
     Select(Vec<SongDescription>),
     Deselect(Vec<String>),
+    Clear,
 }
 
 impl Into<AppAction> for SelectionAction {
@@ -139,6 +140,10 @@ impl UpdatableState for SelectionState {
                 } else {
                     vec![]
                 }
+            }
+            SelectionAction::Clear => {
+                self.selected_songs = None;
+                vec![SelectionEvent::SelectionModeChanged(false)]
             }
         }
     }

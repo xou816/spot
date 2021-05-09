@@ -54,6 +54,7 @@ impl AppPlaybackStateListener {
                      album,
                      duration,
                      art,
+                     ..
                  }| TrackMetadata {
                     id: format!("/dev/alextren/Spot/Track/{}", id),
                     length: 1000 * duration as u64,

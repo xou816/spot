@@ -77,6 +77,7 @@ impl EventListener for UserMenu {
         match event {
             AppEvent::LoginEvent(LoginEvent::LoginCompleted(_)) | AppEvent::Started => {
                 self.update_menu();
+                self.model.fetch_user_playlists();
             }
             _ => {}
         }

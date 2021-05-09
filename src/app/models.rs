@@ -107,8 +107,15 @@ pub struct PlaylistDescription {
 }
 
 #[derive(Clone, Debug)]
+pub struct PlaylistSummary {
+    pub id: String,
+    pub title: String,
+}
+
+#[derive(Clone, Debug)]
 pub struct SongDescription {
     pub id: String,
+    pub uri: String,
     pub title: String,
     pub artists: Vec<ArtistRef>,
     pub album: AlbumRef,

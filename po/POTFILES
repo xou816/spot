@@ -58,6 +58,7 @@ src/app/components/mod.rs
 src/app/components/selection/mod.rs
 src/app/components/selection/selection_heading.rs
 src/app/components/selection/selection_tools.rs
+src/app/components/selection/selection_widgets.rs
 src/app/loader.rs
 src/app/list_store.rs
 src/app/credentials.rs
@@ -93,4 +94,4 @@ src/app/components/library/library.ui
 src/app/components/now_playing/now_playing.ui
 src/app/components/playlist/song.ui
 src/app/components/search/search.ui
-src/window.ui
+src/window.ui.in

@@ -125,6 +125,7 @@ sources = files(
 './app/components/selection/mod.rs',
 './app/components/selection/selection_heading.rs',
 './app/components/selection/selection_tools.rs',
+'./app/components/selection/selection_widgets.rs',
 './app/loader.rs',
 './app/list_store.rs',
 './app/credentials.rs',

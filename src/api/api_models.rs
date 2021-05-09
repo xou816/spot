@@ -1,9 +1,14 @@
 use form_urlencoded::Serializer;
 use regex::Regex;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::convert::Into;
 
 use crate::app::models::*;
+
+#[derive(Serialize)]
+pub struct Uris {
+    pub uris: Vec<String>,
+}
 
 pub enum SearchType {
     Artist,
@@ -189,6 +194,7 @@ pub struct TopTracks {
 #[derive(Deserialize, Debug, Clone)]
 pub struct TrackItem {
     pub id: String,
+    pub uri: String,
     pub name: String,
     pub duration_ms: i64,
     pub artists: Vec<Artist>,
@@ -252,6 +258,7 @@ impl Into<Vec<SongDescription>> for Page<TrackItem> {
                      album,
                      artists,
                      id,
+                     uri,
                      name,
                      duration_ms,
                  }| {
@@ -277,6 +284,7 @@ impl Into<Vec<SongDescription>> for Page<TrackItem> {
 
                     SongDescription {
                         id,
+                        uri,
                         title: name,
                         artists,
                         album: album_ref,
@@ -310,6 +318,7 @@ impl Into<Vec<SongDescription>> for Album {
 
                 SongDescription {
                     id: item.id,
+                    uri: item.uri,
                     title: item.name,
                     artists,
                     album: album_ref.clone(),

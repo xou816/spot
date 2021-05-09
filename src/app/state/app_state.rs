@@ -64,7 +64,7 @@ pub struct AppState {
     pub playback: PlaybackState,
     pub browser: BrowserState,
     pub selection: SelectionState,
-    pub login: LoginState,
+    pub logged_user: LoginState,
 }
 
 impl AppState {
@@ -73,7 +73,7 @@ impl AppState {
             playback: Default::default(),
             browser: BrowserState::new(),
             selection: Default::default(),
-            login: Default::default(),
+            logged_user: Default::default(),
         }
     }
 
@@ -158,7 +158,7 @@ impl AppState {
                 .into_iter()
                 .map(AppEvent::SelectionEvent)
                 .collect(),
-            AppAction::LoginAction(a) => self.login.update_with(a).into_iter().collect(),
+            AppAction::LoginAction(a) => self.logged_user.update_with(a).into_iter().collect(),
         }
     }
 }

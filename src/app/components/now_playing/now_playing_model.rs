@@ -6,12 +6,14 @@ use std::rc::Rc;
 use std::sync::Arc;
 
 use crate::app::components::{labels, PlaylistModel, SelectionTool, SelectionToolsModel};
+use crate::app::models::SongDescription;
 use crate::app::models::SongModel;
 use crate::app::state::{
     PlaybackAction, PlaybackEvent, PlaybackState, PlaylistSource, SelectionAction,
     SelectionContext, SelectionState,
 };
 use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState, ListDiff};
+use crate::{api::SpotifyApiClient, app::components::SimpleSelectionTool};
 
 pub struct NowPlayingModel {
     app_model: Rc<AppModel>,
@@ -160,6 +162,14 @@ impl PlaylistModel for NowPlayingModel {
 }
 
 impl SelectionToolsModel for NowPlayingModel {
+    fn dispatcher(&self) -> Box<dyn ActionDispatcher> {
+        self.dispatcher.box_clone()
+    }
+
+    fn spotify_client(&self) -> Arc<dyn SpotifyApiClient + Send + Sync> {
+        self.app_model.get_spotify()
+    }
+
     fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
         let selection = self
             .app_model
@@ -168,25 +178,23 @@ impl SelectionToolsModel for NowPlayingModel {
         Some(Box::new(selection))
     }
 
+    fn tools_visible(&self, _: &SelectionState) -> Vec<SelectionTool> {
+        vec![
+            SelectionTool::Simple(SimpleSelectionTool::SelectAll),
+            SelectionTool::Simple(SimpleSelectionTool::MoveDown),
+            SelectionTool::Simple(SimpleSelectionTool::MoveUp),
+            SelectionTool::Simple(SimpleSelectionTool::RemoveFromQueue),
+        ]
+    }
+
     fn handle_tool_activated(&self, selection: &SelectionState, tool: &SelectionTool) {
-        let action = match (tool, tool.default_action()) {
-            (_, Some(action)) => Some(action),
-            (SelectionTool::SelectAll, None) => {
+        match tool {
+            SelectionTool::Simple(SimpleSelectionTool::SelectAll) => {
                 let queue = self.queue();
-                let all_selected = selection.all_selected(queue.songs().map(|s| &s.id));
-                Some(
-                    if all_selected {
-                        SelectionAction::Deselect(queue.songs().map(|s| &s.id).cloned().collect())
-                    } else {
-                        SelectionAction::Select(queue.songs().cloned().collect())
-                    }
-                    .into(),
-                )
+                let songs = queue.songs().collect::<Vec<&SongDescription>>();
+                self.handle_select_all_tool_borrowed(selection, &songs);
             }
-            _ => None,
+            _ => self.default_handle_tool_activated(selection, tool),
         };
-        if let Some(action) = action {
-            self.dispatcher.dispatch(action);
-        }
     }
 }

@@ -1,211 +1,111 @@
-use gtk::prelude::*;
-use gtk::ButtonExt;
-use gtk::OverlayExt;
-use std::ops::Deref;
-use std::rc::Rc;
+use std::{ops::Deref, sync::Arc};
 
-use crate::app::components::{Component, EventListener, ListenerComponent};
-use crate::app::state::{SelectionContext, SelectionEvent, SelectionState};
-use crate::app::{AppAction, AppEvent};
+use crate::app::models::SongDescription;
+use crate::app::state::SelectionState;
+use crate::app::ActionDispatcher;
+use crate::app::{models::PlaylistSummary, state::SelectionAction};
+use crate::{api::SpotifyApiClient, app::AppAction};
 
 #[derive(Debug, Clone, Copy)]
-pub enum SelectionTool {
+pub enum SimpleSelectionTool {
     MoveUp,
     MoveDown,
-    Add,
-    Remove,
+    RemoveFromQueue,
     SelectAll,
 }
 
-impl SelectionTool {
-    pub fn default_action(&self) -> Option<AppAction> {
-        match self {
-            Self::MoveDown => Some(AppAction::MoveDownSelection),
-            Self::MoveUp => Some(AppAction::MoveUpSelection),
-            Self::Remove => Some(AppAction::DequeueSelection),
-            Self::Add => Some(AppAction::QueueSelection),
-            Self::SelectAll => None,
-        }
-    }
+#[derive(Debug, Clone)]
+pub enum AddSelectionTool {
+    AddToQueue,
+    AddToPlaylist(PlaylistSummary),
 }
 
-struct SelectionButton {
-    button: gtk::Button,
-    pub tool: SelectionTool,
-}
-
-impl SelectionButton {
-    fn new(tool: SelectionTool, model: &Rc<impl SelectionToolsModel + 'static>) -> Self {
-        let image = gtk::ImageBuilder::new()
-            .icon_name(Self::icon_name(&tool))
-            .icon_size(gtk::IconSize::LargeToolbar.into())
-            .build();
-        let button = gtk::ButtonBuilder::new()
-            .visible(true)
-            .image(&image)
-            .build();
-        button.get_style_context().add_class("osd");
-        button.connect_clicked(clone!(@weak model => move |_| {
-            let selection = model.enabled_selection();
-            if let Some(selection) = selection {
-                model.handle_tool_activated(&*selection, &tool);
-            }
-        }));
-        Self { button, tool }
-    }
-
-    fn icon_name(tool: &SelectionTool) -> &'static str {
-        match tool {
-            SelectionTool::MoveDown => "go-down-symbolic",
-            SelectionTool::MoveUp => "go-up-symbolic",
-            SelectionTool::Remove => "list-remove-symbolic",
-            SelectionTool::Add => "list-add-symbolic",
-            SelectionTool::SelectAll => "checkbox-checked-symbolic",
-        }
-    }
-
-    fn set_enabled(&self, enabled: bool) {
-        self.button.set_sensitive(enabled);
-    }
+#[derive(Debug, Clone)]
+pub enum SelectionTool {
+    Add(AddSelectionTool),
+    Simple(SimpleSelectionTool),
 }
 
 pub trait SelectionToolsModel {
-    fn tool_enabled(&self, selection: &SelectionState, tool: &SelectionTool) -> bool {
-        match tool {
-            SelectionTool::MoveUp | SelectionTool::MoveDown => selection.count() == 1,
-            SelectionTool::SelectAll => true,
-            _ => selection.count() > 0,
-        }
-    }
+    // dependencies
+    fn dispatcher(&self) -> Box<dyn ActionDispatcher>;
+    fn spotify_client(&self) -> Arc<dyn SpotifyApiClient + Send + Sync>;
 
-    fn tools_for_context(context: &SelectionContext) -> Vec<SelectionTool> {
-        match context {
-            SelectionContext::Global => vec![SelectionTool::SelectAll, SelectionTool::Add],
-            SelectionContext::Queue => vec![
-                SelectionTool::SelectAll,
-                SelectionTool::MoveDown,
-                SelectionTool::MoveUp,
-                SelectionTool::Remove,
-            ],
-        }
-    }
-
-    fn tools_visible(&self, selection: &SelectionState) -> Vec<SelectionTool> {
-        Self::tools_for_context(&selection.context)
-    }
-
+    fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>>;
     fn enabled_selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
         self.selection().filter(|s| s.is_selection_enabled())
     }
 
-    fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>>;
-    fn handle_tool_activated(&self, selection: &SelectionState, tool: &SelectionTool);
-}
+    fn tools_visible(&self, selection: &SelectionState) -> Vec<SelectionTool>;
 
-pub struct SelectionTools<Model> {
-    root: gtk::Widget,
-    button_box: gtk::Box,
-    children: Vec<Box<dyn EventListener>>,
-    buttons: Vec<SelectionButton>,
-    model: Rc<Model>,
-}
-
-impl<Model> SelectionTools<Model>
-where
-    Model: SelectionToolsModel + 'static,
-{
-    pub fn new(wrapped: impl ListenerComponent + 'static, model: Rc<Model>) -> Self {
-        let (root, button_box) = Self::make_widgets(wrapped.get_root_widget());
-        let buttons = Self::replace_buttons(&button_box, &model);
-        Self {
-            root,
-            button_box,
-            children: vec![Box::new(wrapped)],
-            buttons,
-            model,
-        }
+    fn handle_tool_activated(&self, selection: &SelectionState, tool: &SelectionTool) {
+        self.default_handle_tool_activated(selection, tool)
     }
 
-    fn update_active_tools(&self) {
-        if let Some(selection) = self.model.enabled_selection() {
-            for button in self.buttons.iter() {
-                button.set_enabled(self.model.tool_enabled(&*selection, &button.tool));
+    fn default_handle_tool_activated(&self, selection: &SelectionState, tool: &SelectionTool) {
+        match tool {
+            SelectionTool::Add(AddSelectionTool::AddToPlaylist(playlist)) => {
+                self.handle_add_to_playlist_tool(selection, &playlist.id);
             }
-        }
-    }
-
-    fn update_visible_tools(&mut self) {
-        self.buttons = vec![];
-        self.button_box.foreach(|w| self.button_box.remove(w));
-
-        if self.model.enabled_selection().is_some() {
-            self.buttons = Self::replace_buttons(&self.button_box, &self.model);
-            self.button_box.show();
-        } else {
-            self.button_box.hide();
-        }
-    }
-
-    fn replace_buttons(button_box: &gtk::Box, model: &Rc<Model>) -> Vec<SelectionButton> {
-        if let Some(selection) = model.enabled_selection() {
-            model
-                .tools_visible(&*selection)
-                .iter()
-                .map(|tool| {
-                    let button = SelectionButton::new(*tool, model);
-                    button.set_enabled(model.tool_enabled(&*selection, &tool));
-                    button_box.add(&button.button);
-                    button
-                })
-                .collect()
-        } else {
-            vec![]
-        }
-    }
-
-    fn make_button_box() -> gtk::Box {
-        let button_box = gtk::BoxBuilder::new()
-            .halign(gtk::Align::Center)
-            .valign(gtk::Align::End)
-            .margin(20)
-            .build();
-        button_box.get_style_context().add_class("linked");
-        button_box
-    }
-
-    fn make_widgets(main_child: &gtk::Widget) -> (gtk::Widget, gtk::Box) {
-        let root = gtk::OverlayBuilder::new().expand(true).build();
-        let button_box = Self::make_button_box();
-        root.add(main_child);
-        root.add_overlay(&button_box);
-        (root.upcast(), button_box)
-    }
-}
-
-impl<Model> Component for SelectionTools<Model> {
-    fn get_root_widget(&self) -> &gtk::Widget {
-        &self.root
-    }
-
-    fn get_children(&mut self) -> Option<&mut Vec<Box<dyn EventListener>>> {
-        Some(&mut self.children)
-    }
-}
-
-impl<Model> EventListener for SelectionTools<Model>
-where
-    Model: SelectionToolsModel + 'static,
-{
-    fn on_event(&mut self, event: &AppEvent) {
-        match event {
-            AppEvent::SelectionEvent(SelectionEvent::SelectionModeChanged(_)) => {
-                self.update_visible_tools();
+            SelectionTool::Add(AddSelectionTool::AddToQueue) => {
+                self.dispatcher().dispatch(AppAction::QueueSelection);
             }
-            AppEvent::SelectionEvent(SelectionEvent::SelectionChanged) => {
-                self.update_active_tools();
+            SelectionTool::Simple(SimpleSelectionTool::RemoveFromQueue) => {
+                self.dispatcher().dispatch(AppAction::DequeueSelection);
+            }
+            SelectionTool::Simple(SimpleSelectionTool::MoveDown) => {
+                self.dispatcher().dispatch(AppAction::MoveDownSelection);
+            }
+            SelectionTool::Simple(SimpleSelectionTool::MoveUp) => {
+                self.dispatcher().dispatch(AppAction::MoveUpSelection);
             }
             _ => {}
         }
-        self.broadcast_event(event);
+    }
+
+    // common tools implementations
+
+    fn handle_select_all_tool<'a>(&self, selection: &SelectionState, songs: &'a [SongDescription]) {
+        let all_selected = selection.all_selected(songs.iter().map(|s| &s.id));
+        let action = if all_selected {
+            SelectionAction::Deselect(songs.iter().map(|s| &s.id).cloned().collect())
+        } else {
+            SelectionAction::Select(songs.iter().cloned().collect())
+        };
+        self.dispatcher().dispatch(action.into());
+    }
+
+    fn handle_select_all_tool_borrowed<'a>(
+        &self,
+        selection: &SelectionState,
+        songs: &'a [&'a SongDescription],
+    ) {
+        let all_selected = selection.all_selected(songs.iter().map(|s| &s.id));
+        let action = if all_selected {
+            SelectionAction::Deselect(songs.iter().map(|s| &s.id).cloned().collect())
+        } else {
+            SelectionAction::Select(songs.iter().map(|&s| s.clone()).collect())
+        };
+        self.dispatcher().dispatch(action.into());
+    }
+
+    fn handle_add_to_playlist_tool(&self, selection: &SelectionState, playlist: &str) {
+        let api = self.spotify_client();
+        let id = playlist.to_string();
+        let uris: Vec<String> = selection
+            .peek_selection()
+            .iter()
+            .map(|s| &s.uri)
+            .cloned()
+            .collect();
+        self.dispatcher().dispatch_spotify_call(move || {
+            let api = Arc::clone(&api);
+            let uris = uris.clone();
+            let id = id.clone();
+            async move {
+                api.add_to_playlist(&id, uris).await?;
+                Ok(SelectionAction::Clear.into())
+            }
+        })
     }
 }
