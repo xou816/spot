@@ -24,7 +24,7 @@ pub trait PlaylistModel {
     fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>>;
 
     fn autoscroll_to_playing(&self) -> bool {
-        false
+        true
     }
 
     fn actions_for(&self, _id: &str) -> Option<gio::ActionGroup> {
