@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-09 13:58+0200\n"
+"POT-Creation-Date: 2021-05-10 11:24+0200\n"
 "PO-Revision-Date: 2021-05-07 13:40+0300\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: Paul Bragin <zeusmods@protonmail.com>\n"
@@ -145,12 +145,10 @@ msgstr "Имя аккаунта"
 msgid "Password"
 msgstr "Пароль"
 
-#. This error is shown when authentication fails. It's important to stress the fact that a restart is required (for now at least).
+#. This error is shown when authentication fails.
 #: src/app/components/login/login.ui:156
-msgid ""
-"Authentication failed! Please restart Spot before attempting to log in again."
-msgstr ""
-"Вход не удался! Пожалуйста, перезапустите Spot до того как вы снова зайдётё."
+msgid "Authentication failed!"
+msgstr "Вход не удался!"
 
 #. Log in button label
 #: src/app/components/login/login.ui:181
