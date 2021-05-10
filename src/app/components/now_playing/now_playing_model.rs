@@ -54,14 +54,10 @@ impl NowPlayingModel {
 
         if let Some(PlaylistSource::Playlist(id)) = queue.source.as_ref() {
             let id = id.clone();
-            self.dispatcher.dispatch_spotify_call(move || {
-                let api = Arc::clone(&api);
-                let id = id.clone();
-                async move {
-                    api.get_playlist_tracks(&id, next_offset, batch_size)
-                        .await
-                        .map(move |song_batch| PlaybackAction::QueuePaged(song_batch).into())
-                }
+            self.dispatcher.dispatch_spotify_call(move || async move {
+                api.get_playlist_tracks(&id, next_offset, batch_size)
+                    .await
+                    .map(move |song_batch| PlaybackAction::QueuePaged(song_batch).into())
             });
         }
 

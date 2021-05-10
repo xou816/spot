@@ -1,6 +1,5 @@
 use std::ops::Deref;
 use std::rc::Rc;
-use std::sync::Arc;
 
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
@@ -28,14 +27,10 @@ impl SearchResultsModel {
         let api = self.app_model.get_spotify();
         if let Some(query) = self.get_query() {
             let query = query.to_owned();
-            self.dispatcher.dispatch_spotify_call(move || {
-                let api = Arc::clone(&api);
-                let query = query.clone();
-                async move {
-                    api.search(&query, 0, 5)
-                        .await
-                        .map(|albums| BrowserAction::SetSearchResults(albums).into())
-                }
+            self.dispatcher.dispatch_spotify_call(move || async move {
+                api.search(&query, 0, 5)
+                    .await
+                    .map(|albums| BrowserAction::SetSearchResults(albums).into())
             });
         }
     }

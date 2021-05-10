@@ -78,11 +78,12 @@ pub mod labels;
 impl dyn ActionDispatcher {
     fn dispatch_spotify_call<F, C>(&self, call: C)
     where
-        C: 'static + Send + Sync + Fn() -> F,
+        C: 'static + Send + Clone + FnOnce() -> F,
         F: Send + Future<Output = Result<AppAction, SpotifyApiError>>,
     {
         self.dispatch_many_async(Box::pin(async move {
-            match call().await {
+            let first_call = call.clone();
+            match first_call().await {
                 Ok(action) => vec![action],
                 Err(SpotifyApiError::NoToken) => vec![],
                 Err(SpotifyApiError::InvalidToken) => {

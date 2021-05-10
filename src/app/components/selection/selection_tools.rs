@@ -98,14 +98,9 @@ pub trait SelectionToolsModel {
             .map(|s| &s.uri)
             .cloned()
             .collect();
-        self.dispatcher().dispatch_spotify_call(move || {
-            let api = Arc::clone(&api);
-            let uris = uris.clone();
-            let id = id.clone();
-            async move {
-                api.add_to_playlist(&id, uris).await?;
-                Ok(SelectionAction::Clear.into())
-            }
+        self.dispatcher().dispatch_spotify_call(move || async move {
+            api.add_to_playlist(&id, uris).await?;
+            Ok(SelectionAction::Clear.into())
         })
     }
 }

@@ -45,14 +45,10 @@ impl DetailsModel {
     pub fn load_album_info(&self) {
         let id = self.id.clone();
         let api = self.app_model.get_spotify();
-        self.dispatcher.dispatch_spotify_call(move || {
-            let api = Arc::clone(&api);
-            let id = id.clone();
-            async move {
-                api.get_album(&id)
-                    .await
-                    .map(|album| BrowserAction::SetAlbumDetails(album).into())
-            }
+        self.dispatcher.dispatch_spotify_call(move || async move {
+            api.get_album(&id)
+                .await
+                .map(|album| BrowserAction::SetAlbumDetails(album).into())
         });
     }
 
@@ -71,19 +67,15 @@ impl DetailsModel {
 
             let api = self.app_model.get_spotify();
 
-            self.dispatcher.dispatch_spotify_call(move || {
-                let api = Arc::clone(&api);
-                let id = id.clone();
-                async move {
-                    if !is_liked {
-                        api.save_album(&id)
-                            .await
-                            .map(|album| BrowserAction::SaveAlbum(album).into())
-                    } else {
-                        api.remove_saved_album(&id)
-                            .await
-                            .map(|_| BrowserAction::UnsaveAlbum(id).into())
-                    }
+            self.dispatcher.dispatch_spotify_call(move || async move {
+                if !is_liked {
+                    api.save_album(&id)
+                        .await
+                        .map(|album| BrowserAction::SaveAlbum(album).into())
+                } else {
+                    api.remove_saved_album(&id)
+                        .await
+                        .map(|_| BrowserAction::UnsaveAlbum(id).into())
                 }
             });
         }

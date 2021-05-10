@@ -1,6 +1,5 @@
 use std::ops::Deref;
 use std::rc::Rc;
-use std::sync::Arc;
 
 use crate::app::models::*;
 use crate::app::state::BrowserAction;
@@ -32,14 +31,10 @@ impl UserDetailsModel {
 
     pub fn load_user_details(&self, id: String) {
         let api = self.app_model.get_spotify();
-        self.dispatcher.dispatch_spotify_call(move || {
-            let api = Arc::clone(&api);
-            let id = id.clone();
-            async move {
-                api.get_user(&id)
-                    .await
-                    .map(|user| BrowserAction::SetUserDetails(user).into())
-            }
+        self.dispatcher.dispatch_spotify_call(move || async move {
+            api.get_user(&id)
+                .await
+                .map(|user| BrowserAction::SetUserDetails(user).into())
         });
     }
 
@@ -56,14 +51,10 @@ impl UserDetailsModel {
         let id = next_page.data.clone();
         let batch_size = next_page.batch_size;
         let offset = next_page.next_offset?;
-        self.dispatcher.dispatch_spotify_call(move || {
-            let api = Arc::clone(&api);
-            let id = id.clone();
-            async move {
-                api.get_user_playlists(&id, offset, batch_size)
-                    .await
-                    .map(|playlists| BrowserAction::AppendUserPlaylists(playlists).into())
-            }
+        self.dispatcher.dispatch_spotify_call(move || async move {
+            api.get_user_playlists(&id, offset, batch_size)
+                .await
+                .map(|playlists| BrowserAction::AppendUserPlaylists(playlists).into())
         });
 
         Some(())

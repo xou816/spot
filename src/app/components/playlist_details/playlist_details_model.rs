@@ -53,14 +53,10 @@ impl PlaylistDetailsModel {
     pub fn load_playlist_info(&self) {
         let api = self.app_model.get_spotify();
         let id = self.id.clone();
-        self.dispatcher.dispatch_spotify_call(move || {
-            let api = Arc::clone(&api);
-            let id = id.clone();
-            async move {
-                api.get_playlist(&id)
-                    .await
-                    .map(|playlist| BrowserAction::SetPlaylistDetails(playlist).into())
-            }
+        self.dispatcher.dispatch_spotify_call(move || async move {
+            api.get_playlist(&id)
+                .await
+                .map(|playlist| BrowserAction::SetPlaylistDetails(playlist).into())
         });
     }
 
@@ -79,14 +75,10 @@ impl PlaylistDetailsModel {
         let next_offset = next_batch.offset;
         let batch_size = next_batch.batch_size;
 
-        self.dispatcher.dispatch_spotify_call(move || {
-            let api = Arc::clone(&api);
-            let id = id.clone();
-            async move {
-                api.get_playlist_tracks(&id, next_offset, batch_size)
-                    .await
-                    .map(|tracks| BrowserAction::AppendPlaylistTracks(id, tracks).into())
-            }
+        self.dispatcher.dispatch_spotify_call(move || async move {
+            api.get_playlist_tracks(&id, next_offset, batch_size)
+                .await
+                .map(|tracks| BrowserAction::AppendPlaylistTracks(id, tracks).into())
         });
 
         Some(())

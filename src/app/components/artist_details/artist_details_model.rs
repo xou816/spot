@@ -45,15 +45,10 @@ impl ArtistDetailsModel {
 
     pub fn load_artist_details(&self, id: String) {
         let api = self.app_model.get_spotify();
-        let id = id.clone();
-        self.dispatcher.dispatch_spotify_call(move || {
-            let api = Arc::clone(&api);
-            let id = id.clone();
-            async move {
-                api.get_artist(&id)
-                    .await
-                    .map(|artist| BrowserAction::SetArtistDetails(artist).into())
-            }
+        self.dispatcher.dispatch_spotify_call(move || async move {
+            api.get_artist(&id)
+                .await
+                .map(|artist| BrowserAction::SetArtistDetails(artist).into())
         });
     }
 
@@ -71,14 +66,10 @@ impl ArtistDetailsModel {
         let batch_size = next_page.batch_size;
         let offset = next_page.next_offset?;
 
-        self.dispatcher.dispatch_spotify_call(move || {
-            let api = Arc::clone(&api);
-            let id = id.clone();
-            async move {
-                api.get_artist_albums(&id, offset, batch_size)
-                    .await
-                    .map(|albums| BrowserAction::AppendArtistReleases(albums).into())
-            }
+        self.dispatcher.dispatch_spotify_call(move || async move {
+            api.get_artist_albums(&id, offset, batch_size)
+                .await
+                .map(|albums| BrowserAction::AppendArtistReleases(albums).into())
         });
 
         Some(())
