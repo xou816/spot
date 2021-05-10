@@ -1,15 +1,10 @@
 use futures::channel::mpsc::UnboundedReceiver;
-use futures::compat::Future01CompatExt;
 use futures::stream::StreamExt;
-use futures01::future::Future as OldFuture;
-use futures01::stream::Stream as OldStream;
 
-use tokio_core::reactor::Handle;
-
-use librespot::core::authentication::Credentials;
 use librespot::core::config::SessionConfig;
 use librespot::core::keymaster;
 use librespot::core::session::Session;
+use librespot::{core::authentication::Credentials, playback::config::AudioFormat};
 
 use librespot::playback::audio_backend;
 use librespot::playback::config::{Bitrate, PlayerConfig};
@@ -18,7 +13,7 @@ use librespot::playback::player::{Player, PlayerEvent, PlayerEventChannel};
 use std::cell::RefCell;
 use std::error::Error;
 use std::fmt;
-use std::rc::{Rc, Weak};
+use std::rc::Rc;
 
 use super::Command;
 use crate::app::credentials;
@@ -88,7 +83,7 @@ impl SpotifyPlayer {
         }
     }
 
-    async fn handle(&self, action: Command, handle: &Handle) -> Result<(), SpotifyError> {
+    async fn handle(&self, action: Command) -> Result<(), SpotifyError> {
         let mut player = self.player.borrow_mut();
         let mut session = self.session.borrow_mut();
         match action {
@@ -132,8 +127,7 @@ impl SpotifyPlayer {
                 Ok(())
             }
             Command::Login(username, password) => {
-                let new_session =
-                    create_session(username.clone(), password.clone(), handle.clone()).await?;
+                let new_session = create_session(username.clone(), password.clone()).await?;
                 let token = get_access_token(&new_session).await?;
                 let credentials = credentials::Credentials {
                     username,
@@ -144,10 +138,7 @@ impl SpotifyPlayer {
                 self.delegate.login_successful(credentials);
 
                 let (new_player, channel) = self.create_player(new_session.clone());
-                handle.spawn(player_setup_delegate(
-                    channel,
-                    Rc::downgrade(&self.delegate),
-                ));
+                tokio::task::spawn_local(player_setup_delegate(channel, Rc::clone(&self.delegate)));
                 player.replace(new_player);
                 session.replace(new_session);
 
@@ -167,26 +158,21 @@ impl SpotifyPlayer {
             AudioBackend::PulseAudio => {
                 println!("using pulseaudio");
                 let backend = audio_backend::find(Some("pulseaudio".to_string())).unwrap();
-                backend(None)
+                backend(None, AudioFormat::default())
             }
             AudioBackend::Alsa(device) => {
                 println!("using alsa ({})", &device);
                 let backend = audio_backend::find(Some("alsa".to_string())).unwrap();
-                backend(Some(device.to_string()))
+                backend(Some(device.to_string()), AudioFormat::default())
             }
         })
     }
 
-    pub async fn start(
-        self,
-        handle: Handle,
-        receiver: UnboundedReceiver<Command>,
-    ) -> Result<(), ()> {
+    pub async fn start(self, receiver: UnboundedReceiver<Command>) -> Result<(), ()> {
         let _self = &self;
-        let handle = &handle;
         receiver
             .for_each(|action| async move {
-                match _self.handle(action, handle).await {
+                match _self.handle(action).await {
                     Ok(_) => {}
                     Err(err) => _self.delegate.report_error(err),
                 }
@@ -209,33 +195,24 @@ playlist-modify-public,\
 playlist-modify-private";
 
 async fn get_access_token(session: &Session) -> Result<String, SpotifyError> {
-    let token = keymaster::get_token(session, CLIENT_ID, SCOPES)
-        .compat()
-        .await;
+    let token = keymaster::get_token(session, CLIENT_ID, SCOPES).await;
     token
         .map(|t| t.access_token)
         .map_err(|_| SpotifyError::TokenFailed)
 }
 
-async fn create_session(
-    username: String,
-    password: String,
-    handle: Handle,
-) -> Result<Session, SpotifyError> {
+async fn create_session(username: String, password: String) -> Result<Session, SpotifyError> {
     let session_config = SessionConfig::default();
     let credentials = Credentials::with_password(username, password);
-    let result = Session::connect(session_config, credentials, None, handle)
-        .compat()
-        .await;
+    let result = Session::connect(session_config, credentials, None).await;
     result.map_err(|_| SpotifyError::LoginFailed)
 }
 
-fn player_setup_delegate(
-    channel: PlayerEventChannel,
-    delegate: Weak<dyn SpotifyPlayerDelegate>,
-) -> impl OldFuture<Item = (), Error = ()> {
-    channel.for_each(move |event| {
-        let delegate = delegate.upgrade().ok_or(())?;
+async fn player_setup_delegate(
+    mut channel: PlayerEventChannel,
+    delegate: Rc<dyn SpotifyPlayerDelegate>,
+) {
+    while let Some(event) = channel.recv().await {
         match event {
             PlayerEvent::EndOfTrack { .. } | PlayerEvent::Stopped { .. } => {
                 delegate.end_of_track_reached();
@@ -245,6 +222,5 @@ fn player_setup_delegate(
             }
             _ => {}
         }
-        Ok(())
-    })
+    }
 }

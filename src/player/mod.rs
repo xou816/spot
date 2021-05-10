@@ -1,10 +1,8 @@
-use futures::channel::mpsc::{unbounded, UnboundedSender};
-use futures::future::{FutureExt, TryFutureExt};
+use futures::channel::mpsc::{unbounded, UnboundedReceiver, UnboundedSender};
 use librespot::core::spotify_id::SpotifyId;
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::thread;
-use tokio_core::reactor::Core;
+use tokio::task;
 
 use crate::app::state::{LoginAction, PlaybackAction};
 use crate::app::{credentials, AppAction};
@@ -60,7 +58,10 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
     fn report_error(&self, error: SpotifyError) {
         self.sender
             .borrow_mut()
-            .unbounded_send(AppAction::ShowNotification(format!("{}", error)))
+            .unbounded_send(match error {
+                SpotifyError::LoginFailed => LoginAction::SetLoginFailure.into(),
+                _ => AppAction::ShowNotification(format!("{}", error)),
+            })
             .unwrap();
     }
 
@@ -72,21 +73,30 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
     }
 }
 
+#[tokio::main]
+async fn player_main(
+    player_settings: SpotifyPlayerSettings,
+    appaction_sender: UnboundedSender<AppAction>,
+    receiver: UnboundedReceiver<Command>,
+) {
+    task::LocalSet::new()
+        .run_until(async move {
+            task::spawn_local(async move {
+                let delegate = Rc::new(AppPlayerDelegate::new(appaction_sender.clone()));
+                let player = SpotifyPlayer::new(player_settings, delegate);
+                player.start(receiver).await.unwrap();
+            })
+            .await
+            .unwrap();
+        })
+        .await;
+}
+
 pub fn start_player_service(
     player_settings: SpotifyPlayerSettings,
     appaction_sender: UnboundedSender<AppAction>,
 ) -> UnboundedSender<Command> {
     let (sender, receiver) = unbounded::<Command>();
-    thread::spawn(move || {
-        let mut core = Core::new().unwrap();
-        let delegate = Rc::new(AppPlayerDelegate::new(appaction_sender.clone()));
-        core.run(
-            SpotifyPlayer::new(player_settings, delegate)
-                .start(core.handle(), receiver)
-                .boxed_local()
-                .compat(),
-        )
-        .unwrap()
-    });
+    std::thread::spawn(move || player_main(player_settings, appaction_sender, receiver));
     sender
 }

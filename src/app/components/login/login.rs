@@ -48,20 +48,20 @@ impl Login {
         } = LoginWidget::new();
 
         login_button.connect_clicked(
-            clone!(@weak username, @weak password,  @weak model => move |_| {
-                Self::submit_login_form(username, password, model);
+            clone!(@weak username, @weak password, @weak error_container,  @weak model => move |_| {
+                Self::submit_login_form(username, password, error_container, model);
             }),
         );
 
         username.connect_key_press_event(
-            clone!(@weak username, @weak password, @weak model => @default-return Inhibit(false), move |_, event | {
-                Self::handle_keypress(username, password, model, event)
+            clone!(@weak username, @weak password, @weak error_container, @weak model => @default-return Inhibit(false), move |_, event | {
+                Self::handle_keypress(username, password, error_container, model, event)
             }),
         );
 
         password.connect_key_press_event(
-            clone!(@weak username, @weak password, @weak model => @default-return Inhibit(false), move |_, event | {
-                Self::handle_keypress(username, password, model, event)
+            clone!(@weak username, @weak password, @weak error_container, @weak model => @default-return Inhibit(false), move |_, event | {
+                Self::handle_keypress(username, password, error_container, model, event)
             }),
         );
 
@@ -101,18 +101,25 @@ impl Login {
     fn handle_keypress(
         username: gtk::Entry,
         password: gtk::Entry,
+        error_container: gtk::Revealer,
         model: Rc<LoginModel>,
         event: &EventKey,
     ) -> Inhibit {
         if event.get_keyval() == Return {
-            Login::submit_login_form(username, password, model);
+            Login::submit_login_form(username, password, error_container, model);
             Inhibit(true)
         } else {
             Inhibit(false)
         }
     }
 
-    fn submit_login_form(username: gtk::Entry, password: gtk::Entry, model: Rc<LoginModel>) {
+    fn submit_login_form(
+        username: gtk::Entry,
+        password: gtk::Entry,
+        error_container: gtk::Revealer,
+        model: Rc<LoginModel>,
+    ) {
+        error_container.set_reveal_child(false);
         let username_text = username.get_text().as_str().to_string();
         let password_text = password.get_text().as_str().to_string();
         if username_text.is_empty() {
