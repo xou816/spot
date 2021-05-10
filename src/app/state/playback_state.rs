@@ -381,9 +381,9 @@ pub enum PlaybackAction {
     Dequeue(String),
 }
 
-impl Into<AppAction> for PlaybackAction {
-    fn into(self) -> AppAction {
-        AppAction::PlaybackAction(self)
+impl From<PlaybackAction> for AppAction {
+    fn from(playback_action: PlaybackAction) -> Self {
+        Self::PlaybackAction(playback_action)
     }
 }
 
@@ -398,9 +398,9 @@ pub enum PlaybackEvent {
     PlaybackStopped,
 }
 
-impl Into<AppEvent> for PlaybackEvent {
-    fn into(self) -> AppEvent {
-        AppEvent::PlaybackEvent(self)
+impl From<PlaybackEvent> for AppEvent {
+    fn from(playback_event: PlaybackEvent) -> Self {
+        Self::PlaybackEvent(playback_event)
     }
 }
 

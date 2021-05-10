@@ -226,17 +226,17 @@ pub struct RawSearchResults {
     pub artists: Option<Page<Artist>>,
 }
 
-impl Into<ArtistSummary> for Artist {
-    fn into(self) -> ArtistSummary {
-        let photo = self.best_image_for_width(200).map(|i| &i.url).cloned();
-        let Artist { id, name, .. } = self;
-        ArtistSummary { id, name, photo }
+impl From<Artist> for ArtistSummary {
+    fn from(artist: Artist) -> Self {
+        let photo = artist.best_image_for_width(200).map(|i| &i.url).cloned();
+        let Artist { id, name, .. } = artist;
+        Self { id, name, photo }
     }
 }
 
-impl Into<Vec<SongDescription>> for Page<PlaylistTrack> {
-    fn into(self) -> Vec<SongDescription> {
-        let items = self
+impl From<Page<PlaylistTrack>> for Vec<SongDescription> {
+    fn from(page: Page<PlaylistTrack>) -> Self {
+        let items = page
             .into_iter()
             .filter_map(|PlaylistTrack { is_local, track }| track.get().filter(|_| !is_local))
             .collect::<Vec<TrackItem>>();
@@ -244,15 +244,15 @@ impl Into<Vec<SongDescription>> for Page<PlaylistTrack> {
     }
 }
 
-impl Into<Vec<SongDescription>> for TopTracks {
-    fn into(self) -> Vec<SongDescription> {
-        Page::new(self.tracks).into()
+impl From<TopTracks> for Vec<SongDescription> {
+    fn from(top_tracks: TopTracks) -> Self {
+        Page::new(top_tracks.tracks).into()
     }
 }
 
-impl Into<Vec<SongDescription>> for Page<TrackItem> {
-    fn into(self) -> Vec<SongDescription> {
-        self.into_iter()
+impl From<Page<TrackItem>> for Vec<SongDescription> {
+    fn from(page: Page<TrackItem>) -> Self {
+        page.into_iter()
             .map(
                 |TrackItem {
                      album,
@@ -297,13 +297,14 @@ impl Into<Vec<SongDescription>> for Page<TrackItem> {
     }
 }
 
-impl Into<Vec<SongDescription>> for Album {
-    fn into(self) -> Vec<SongDescription> {
-        let art = self.best_image_for_width(200).map(|i| &i.url).cloned();
-        let Album { id, name, .. } = self;
+impl From<Album> for Vec<SongDescription> {
+    fn from(album: Album) -> Self {
+        let art = album.best_image_for_width(200).map(|i| &i.url).cloned();
+        let Album { id, name, .. } = album;
         let album_ref = AlbumRef { id, name };
 
-        self.tracks
+        album
+            .tracks
             .unwrap_or_default()
             .into_iter()
             .map(|item| {
@@ -330,9 +331,9 @@ impl Into<Vec<SongDescription>> for Album {
     }
 }
 
-impl Into<AlbumDescription> for Album {
-    fn into(self) -> AlbumDescription {
-        let artists = self
+impl From<Album> for AlbumDescription {
+    fn from(album: Album) -> Self {
+        let artists = album
             .artists
             .iter()
             .map(|a| ArtistRef {
@@ -340,12 +341,12 @@ impl Into<AlbumDescription> for Album {
                 name: a.name.clone(),
             })
             .collect::<Vec<ArtistRef>>();
-        let songs: Vec<SongDescription> = self.clone().into();
-        let art = self.best_image_for_width(200).map(|i| i.url.clone());
+        let songs: Vec<SongDescription> = album.clone().into();
+        let art = album.best_image_for_width(200).map(|i| i.url.clone());
 
-        AlbumDescription {
-            id: self.id,
-            title: self.name,
+        Self {
+            id: album.id,
+            title: album.name,
             artists,
             art,
             songs,

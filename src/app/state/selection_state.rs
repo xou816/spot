@@ -8,9 +8,9 @@ pub enum SelectionAction {
     Clear,
 }
 
-impl Into<AppAction> for SelectionAction {
-    fn into(self) -> AppAction {
-        AppAction::SelectionAction(self)
+impl From<SelectionAction> for AppAction {
+    fn from(selection_action: SelectionAction) -> Self {
+        Self::SelectionAction(selection_action)
     }
 }
 
@@ -20,9 +20,9 @@ pub enum SelectionEvent {
     SelectionChanged,
 }
 
-impl Into<AppEvent> for SelectionEvent {
-    fn into(self) -> AppEvent {
-        AppEvent::SelectionEvent(self)
+impl From<SelectionEvent> for AppEvent {
+    fn from(selection_event: SelectionEvent) -> Self {
+        Self::SelectionEvent(selection_event)
     }
 }
 

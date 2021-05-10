@@ -4,7 +4,6 @@ use super::{
 };
 use crate::app::models::*;
 use crate::app::state::AppAction;
-use std::convert::Into;
 use std::iter::Iterator;
 
 #[derive(Clone, Debug)]
@@ -29,9 +28,9 @@ pub enum BrowserAction {
     AppendUserPlaylists(Vec<PlaylistDescription>),
 }
 
-impl Into<AppAction> for BrowserAction {
-    fn into(self) -> AppAction {
-        AppAction::BrowserAction(self)
+impl From<BrowserAction> for AppAction {
+    fn from(browser_action: BrowserAction) -> Self {
+        Self::BrowserAction(browser_action)
     }
 }
 

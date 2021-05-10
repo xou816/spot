@@ -15,9 +15,9 @@ pub enum LoginAction {
     Logout,
 }
 
-impl Into<AppAction> for LoginAction {
-    fn into(self) -> AppAction {
-        AppAction::LoginAction(self)
+impl From<LoginAction> for AppAction {
+    fn from(login_action: LoginAction) -> Self {
+        Self::LoginAction(login_action)
     }
 }
 
@@ -31,9 +31,9 @@ pub enum LoginEvent {
     LogoutCompleted,
 }
 
-impl Into<AppEvent> for LoginEvent {
-    fn into(self) -> AppEvent {
-        AppEvent::LoginEvent(self)
+impl From<LoginEvent> for AppEvent {
+    fn from(login_event: LoginEvent) -> Self {
+        Self::LoginEvent(login_event)
     }
 }
 
