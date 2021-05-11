@@ -62,7 +62,7 @@ impl UserDetails {
             );
         }
 
-        Self { widget, model }
+        Self { model, widget }
     }
 
     fn update_details(&self) {

@@ -380,8 +380,8 @@ impl Playlist {
             art,
             songs: tracks.into(),
             last_batch: Batch {
-                batch_size,
                 offset,
+                batch_size,
                 total,
             },
             owner: UserRef {
