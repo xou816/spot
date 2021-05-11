@@ -163,7 +163,7 @@ impl SpotifyPlayer {
             AudioBackend::Alsa(device) => {
                 println!("using alsa ({})", &device);
                 let backend = audio_backend::find(Some("alsa".to_string())).unwrap();
-                backend(Some(device.to_string()), AudioFormat::default())
+                backend(Some(device), AudioFormat::default())
             }
         })
     }

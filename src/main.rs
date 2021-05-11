@@ -122,7 +122,7 @@ fn register_actions(app: &gtk::Application, sender: UnboundedSender<AppAction>) 
     app.add_action(&make_action(
         "nav_pop",
         AppAction::BrowserAction(BrowserAction::NavigationPop),
-        sender.clone(),
+        sender,
     ));
     app.set_accels_for_action("app.nav_pop", &["<Alt>Left"]);
 }
