@@ -73,7 +73,7 @@ where
             .unwrap()
     }
 
-    pub fn iter<'a>(&'a self) -> impl Iterator<Item = GType> + 'a {
+    pub fn iter(&self) -> impl Iterator<Item = GType> + '_ {
         let store = &self.store;
         let count = store.get_n_items();
         (0..count).into_iter().map(move |i| self.get(i))

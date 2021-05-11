@@ -117,7 +117,7 @@ impl PlaybackState {
             .unwrap_or(&mut self.running_order)
     }
 
-    pub fn songs<'s>(&'s self) -> impl Iterator<Item = &'s SongDescription> + 's {
+    pub fn songs(&self) -> impl Iterator<Item = &'_ SongDescription> + '_ {
         let indexed = &self.indexed_songs;
         let Position { start, count, .. } = self.position.unwrap_or_default();
         self.running_order()
