@@ -146,7 +146,7 @@ impl SpotMprisPlayer {
     }
 
     pub fn seek(&self, Offset: i64) -> Result<()> {
-        if !self.state.current_track().is_some() {
+        if self.state.current_track().is_none() {
             return Ok(());
         }
 
@@ -174,7 +174,7 @@ impl SpotMprisPlayer {
     }
 
     pub fn set_position(&self, TrackId: ObjectPath, Position: i64) -> Result<()> {
-        if !self.state.current_track().is_some() {
+        if self.state.current_track().is_none() {
             return Ok(());
         }
 
