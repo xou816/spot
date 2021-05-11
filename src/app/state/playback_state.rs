@@ -172,9 +172,9 @@ impl PlaybackState {
             self.current_song_id().cloned().into_iter().collect();
         to_shuffle.shuffle(&mut self.rng);
         final_list.append(&mut to_shuffle.into());
-        self.position
-            .as_mut()
-            .map(|p| p.update(0, final_list.len()));
+        if let Some(p) = self.position.as_mut() {
+            p.update(0, final_list.len())
+        }
         self.running_order_shuffled = Some(final_list);
     }
 
