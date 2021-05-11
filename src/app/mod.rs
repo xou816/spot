@@ -51,8 +51,8 @@ impl App {
         Self {
             settings,
             builder,
-            model,
             components,
+            model,
             sender,
             worker,
         }

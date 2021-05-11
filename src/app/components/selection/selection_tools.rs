@@ -70,7 +70,7 @@ pub trait SelectionToolsModel {
         let action = if all_selected {
             SelectionAction::Deselect(songs.iter().map(|s| &s.id).cloned().collect())
         } else {
-            SelectionAction::Select(songs.iter().cloned().collect())
+            SelectionAction::Select(songs.to_vec())
         };
         self.dispatcher().dispatch(action.into());
     }

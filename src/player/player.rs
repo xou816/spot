@@ -150,8 +150,10 @@ impl SpotifyPlayer {
     fn create_player(&self, session: Session) -> (Player, PlayerEventChannel) {
         let backend = self.settings.backend.clone();
 
-        let mut player_config = PlayerConfig::default();
-        player_config.bitrate = self.settings.bitrate;
+        let player_config = PlayerConfig {
+            bitrate: self.settings.bitrate,
+            ..Default::default()
+        };
         println!("bitrate: {:?}", &player_config.bitrate);
 
         Player::new(player_config, session, None, move || match backend {
@@ -163,7 +165,7 @@ impl SpotifyPlayer {
             AudioBackend::Alsa(device) => {
                 println!("using alsa ({})", &device);
                 let backend = audio_backend::find(Some("alsa".to_string())).unwrap();
-                backend(Some(device.to_string()), AudioFormat::default())
+                backend(Some(device), AudioFormat::default())
             }
         })
     }

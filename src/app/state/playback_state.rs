@@ -1,8 +1,5 @@
 use rand::{rngs::SmallRng, seq::SliceRandom, RngCore, SeedableRng};
-use std::{
-    collections::{HashMap, VecDeque},
-    convert::identity,
-};
+use std::collections::{HashMap, VecDeque};
 
 use crate::app::models::{Batch, SongBatch, SongDescription};
 use crate::app::state::{AppAction, AppEvent, UpdatableState};
@@ -117,7 +114,7 @@ impl PlaybackState {
             .unwrap_or(&mut self.running_order)
     }
 
-    pub fn songs<'s>(&'s self) -> impl Iterator<Item = &'s SongDescription> + 's {
+    pub fn songs(&self) -> impl Iterator<Item = &'_ SongDescription> + '_ {
         let indexed = &self.indexed_songs;
         let Position { start, count, .. } = self.position.unwrap_or_default();
         self.running_order()
@@ -172,9 +169,9 @@ impl PlaybackState {
             self.current_song_id().cloned().into_iter().collect();
         to_shuffle.shuffle(&mut self.rng);
         final_list.append(&mut to_shuffle.into());
-        self.position
-            .as_mut()
-            .map(|p| p.update(0, final_list.len()));
+        if let Some(p) = self.position.as_mut() {
+            p.update(0, final_list.len())
+        }
         self.running_order_shuffled = Some(final_list);
     }
 
@@ -405,7 +402,7 @@ impl From<PlaybackEvent> for AppEvent {
 }
 
 fn make_events(opt_events: Vec<Option<PlaybackEvent>>) -> Vec<PlaybackEvent> {
-    opt_events.into_iter().filter_map(identity).collect()
+    opt_events.into_iter().flatten().collect()
 }
 
 impl UpdatableState for PlaybackState {

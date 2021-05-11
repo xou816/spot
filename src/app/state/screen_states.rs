@@ -95,7 +95,7 @@ impl PlaylistDetailsState {
     pub fn new(id: String) -> Self {
         Self {
             id: id.clone(),
-            name: ScreenName::PlaylistDetails(id.clone()),
+            name: ScreenName::PlaylistDetails(id),
             playlist: None,
         }
     }
