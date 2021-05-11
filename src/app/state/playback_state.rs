@@ -1,8 +1,5 @@
 use rand::{rngs::SmallRng, seq::SliceRandom, RngCore, SeedableRng};
-use std::{
-    collections::{HashMap, VecDeque},
-    convert::identity,
-};
+use std::collections::{HashMap, VecDeque};
 
 use crate::app::models::{Batch, SongBatch, SongDescription};
 use crate::app::state::{AppAction, AppEvent, UpdatableState};
@@ -405,7 +402,7 @@ impl From<PlaybackEvent> for AppEvent {
 }
 
 fn make_events(opt_events: Vec<Option<PlaybackEvent>>) -> Vec<PlaybackEvent> {
-    opt_events.into_iter().filter_map(identity).collect()
+    opt_events.into_iter().flatten().collect()
 }
 
 impl UpdatableState for PlaybackState {
