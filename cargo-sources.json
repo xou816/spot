@@ -3680,28 +3680,28 @@
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/thiserror/thiserror-1.0.24.crate",
-        "sha256": "e0f4a65597094d4483ddaed134f409b2cb7c1beccf25201a9f73c719254fa98e",
+        "url": "https://static.crates.io/crates/thiserror/thiserror-1.0.25.crate",
+        "sha256": "fa6f76457f59514c7eeb4e59d891395fab0b2fd1d40723ae737d64153392e9c6",
         "dest": "cargo/vendor",
-        "dest-filename": "thiserror-1.0.24.crate"
+        "dest-filename": "thiserror-1.0.25.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%22e0f4a65597094d4483ddaed134f409b2cb7c1beccf25201a9f73c719254fa98e%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/thiserror-1.0.24",
+        "url": "data:%7B%22package%22%3A%20%22fa6f76457f59514c7eeb4e59d891395fab0b2fd1d40723ae737d64153392e9c6%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/thiserror-1.0.25",
         "dest-filename": ".cargo-checksum.json"
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/thiserror-impl/thiserror-impl-1.0.24.crate",
-        "sha256": "7765189610d8241a44529806d6fd1f2e0a08734313a35d5b3a556f92b381f3c0",
+        "url": "https://static.crates.io/crates/thiserror-impl/thiserror-impl-1.0.25.crate",
+        "sha256": "8a36768c0fbf1bb15eca10defa29526bda730a2376c2ab4393ccfa16fb1a318d",
         "dest": "cargo/vendor",
-        "dest-filename": "thiserror-impl-1.0.24.crate"
+        "dest-filename": "thiserror-impl-1.0.25.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%227765189610d8241a44529806d6fd1f2e0a08734313a35d5b3a556f92b381f3c0%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/thiserror-impl-1.0.24",
+        "url": "data:%7B%22package%22%3A%20%228a36768c0fbf1bb15eca10defa29526bda730a2376c2ab4393ccfa16fb1a318d%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/thiserror-impl-1.0.25",
         "dest-filename": ".cargo-checksum.json"
     },
     {
@@ -3745,15 +3745,15 @@
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/tokio/tokio-1.6.0.crate",
-        "sha256": "bd3076b5c8cc18138b8f8814895c11eb4de37114a5d127bafdc5e55798ceef37",
+        "url": "https://static.crates.io/crates/tokio/tokio-1.6.1.crate",
+        "sha256": "0a38d31d7831c6ed7aad00aa4c12d9375fd225a6dd77da1d25b707346319a975",
         "dest": "cargo/vendor",
-        "dest-filename": "tokio-1.6.0.crate"
+        "dest-filename": "tokio-1.6.1.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%22bd3076b5c8cc18138b8f8814895c11eb4de37114a5d127bafdc5e55798ceef37%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/tokio-1.6.0",
+        "url": "data:%7B%22package%22%3A%20%220a38d31d7831c6ed7aad00aa4c12d9375fd225a6dd77da1d25b707346319a975%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/tokio-1.6.1",
         "dest-filename": ".cargo-checksum.json"
     },
     {
