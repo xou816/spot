@@ -68,6 +68,11 @@ impl Position {
         let s = *self;
         *self = s.update_into(self.index, max);
     }
+
+    fn decrement(&mut self) {
+        let s = *self;
+        *self = s.update_into(self.index.saturating_sub(1), self.count.saturating_sub(1));
+    }
 }
 
 pub struct PlaybackState {
@@ -192,40 +197,54 @@ impl PlaybackState {
     }
 
     pub fn queue(&mut self, track: SongDescription) {
-        if !self.indexed_songs.contains_key(&track.id) {
-            self.running_order.push_back(track.id.clone());
-            if let Some(shuffled) = self.running_order_shuffled.as_mut() {
-                let next = (self.rng.next_u32() as usize) % (shuffled.len() - 1);
-                shuffled.insert(next + 1, track.id.clone());
-            }
+        if self.indexed_songs.contains_key(&track.id) {
+            return;
+        }
 
-            self.indexed_songs.insert(track.id.clone(), track);
+        self.running_order.push_back(track.id.clone());
+        if let Some(shuffled) = self.running_order_shuffled.as_mut() {
+            let next = (self.rng.next_u32() as usize) % (shuffled.len() - 1);
+            shuffled.insert(next + 1, track.id.clone());
+        }
 
-            let max = self.running_order().len();
-            if let Some(position) = self.position.as_mut() {
-                position.update_count(max);
-            }
+        self.indexed_songs.insert(track.id.clone(), track);
+
+        let max = self.running_order().len();
+        if let Some(position) = self.position.as_mut() {
+            position.update_count(max);
         }
     }
 
     pub fn dequeue(&mut self, id: &str) {
-        if self.indexed_songs.contains_key(id) {
-            self.running_order.retain(|t| t != id);
-            if let Some(shuffled) = self.running_order_shuffled.as_mut() {
-                shuffled.retain(|t| t != id);
-            }
+        if !self.indexed_songs.contains_key(id) {
+            return;
+        }
 
-            self.indexed_songs.remove(id);
-
-            let max = self.running_order().len();
-            if max > 0 {
-                if let Some(position) = self.position.as_mut() {
-                    position.update_count(max);
+        if let Some(position) = self.running_order().iter().position(|t| t == id) {
+            let new_max = {
+                let running_order = self.running_order_mut();
+                running_order.remove(position);
+                running_order.len()
+            };
+            let current_comes_after = self.position.map(|p| p.index >= position).unwrap_or(false);
+            // fix the position of the current song
+            if current_comes_after {
+                if new_max > 0 {
+                    if let Some(position) = self.position.as_mut() {
+                        position.decrement();
+                    }
+                } else {
+                    self.position = None;
                 }
-            } else {
-                self.position = None;
             }
         }
+
+        // if the playlist is shuffled, we also need to remove the track from the unshuffled list
+        if self.is_shuffled() {
+            self.running_order.retain(|t| t != id);
+        }
+
+        self.indexed_songs.remove(id);
     }
 
     fn swap(&mut self, index: usize, other_index: usize) {
@@ -724,6 +743,25 @@ mod tests {
 
         state.dequeue("3");
         assert_eq!(state.current_song().map(|s| &s.id[..]), Some("2"));
+    }
+
+    #[test]
+    fn test_dequeue_a_few_songs() {
+        let mut state = PlaybackState::default();
+        state.queue(song("1"));
+        state.queue(song("2"));
+        state.queue(song("3"));
+        state.queue(song("4"));
+        state.queue(song("5"));
+        state.queue(song("6"));
+
+        state.play("5");
+        assert!(state.is_playing());
+
+        state.dequeue("1");
+        state.dequeue("2");
+        state.dequeue("3");
+        assert_eq!(state.current_song().map(|s| &s.id[..]), Some("5"));
     }
 
     #[test]
