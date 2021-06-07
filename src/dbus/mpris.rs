@@ -63,6 +63,11 @@ impl SpotMpris {
     fn supported_uri_schemes(&self) -> Vec<String> {
         vec![]
     }
+
+    #[dbus_interface(property)]
+    fn desktop_entry(&self) -> &'static str {
+        "dev.alextren.Spot"
+    }
 }
 
 #[derive(Clone)]
