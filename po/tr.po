@@ -1,5 +1,6 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# Turkish translation for spot package
+# Copyright (C) 2021 THE spot'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the spot package.
 msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
