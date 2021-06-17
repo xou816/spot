@@ -130,7 +130,7 @@ impl SpotifyPlayer {
                 let new_session = create_session(username.clone(), password.clone()).await?;
                 let token = get_access_token(&new_session).await?;
                 let credentials = credentials::Credentials {
-                    username,
+                    username: new_session.username(),
                     password,
                     token,
                     country: new_session.country(),
