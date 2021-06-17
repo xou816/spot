@@ -78,12 +78,11 @@ impl AppState {
     }
 
     pub fn recommanded_context(&self) -> SelectionContext {
-        // TODO: this does not necessarily mean we're actually viewing the playqueue :(
-        let is_home = self.browser.current_screen() == &ScreenName::Home;
-        if is_home {
-            SelectionContext::Queue
-        } else {
-            SelectionContext::Global
+        match self.browser.current_screen() {
+            ScreenName::PlaylistDetails(_) => SelectionContext::Playlist,
+            // TODO: this does not necessarily mean we're actually viewing the playqueue :(
+            ScreenName::Home => SelectionContext::Queue,
+            _ => SelectionContext::Global,
         }
     }
 

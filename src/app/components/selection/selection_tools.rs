@@ -2,15 +2,15 @@ use std::{ops::Deref, sync::Arc};
 
 use crate::app::models::SongDescription;
 use crate::app::state::SelectionState;
-use crate::app::ActionDispatcher;
 use crate::app::{models::PlaylistSummary, state::SelectionAction};
+use crate::app::{ActionDispatcher, BrowserAction};
 use crate::{api::SpotifyApiClient, app::AppAction};
 
 #[derive(Debug, Clone, Copy)]
 pub enum SimpleSelectionTool {
     MoveUp,
     MoveDown,
-    RemoveFromQueue,
+    Remove,
     SelectAll,
 }
 
@@ -50,7 +50,7 @@ pub trait SelectionToolsModel {
             SelectionTool::Add(AddSelectionTool::AddToQueue) => {
                 self.dispatcher().dispatch(AppAction::QueueSelection);
             }
-            SelectionTool::Simple(SimpleSelectionTool::RemoveFromQueue) => {
+            SelectionTool::Simple(SimpleSelectionTool::Remove) => {
                 self.dispatcher().dispatch(AppAction::DequeueSelection);
             }
             SelectionTool::Simple(SimpleSelectionTool::MoveDown) => {
@@ -98,9 +98,29 @@ pub trait SelectionToolsModel {
             .map(|s| &s.uri)
             .cloned()
             .collect();
-        self.dispatcher().dispatch_spotify_call(move || async move {
-            api.add_to_playlist(&id, uris).await?;
-            Ok(SelectionAction::Clear.into())
-        })
+        self.dispatcher()
+            .call_spotify_and_dispatch(move || async move {
+                api.add_to_playlist(&id, uris).await?;
+                Ok(SelectionAction::Clear.into())
+            })
+    }
+
+    fn handle_remove_from_playlist_tool(&self, selection: &SelectionState, playlist: &str) {
+        let api = self.spotify_client();
+        let id = playlist.to_string();
+        let uris: Vec<String> = selection
+            .peek_selection()
+            .iter()
+            .map(|s| &s.uri)
+            .cloned()
+            .collect();
+        self.dispatcher()
+            .call_spotify_and_dispatch_many(move || async move {
+                api.remove_from_playlist(&id, uris.clone()).await?;
+                Ok(vec![
+                    BrowserAction::RemoveTracksFromPlaylist(uris).into(),
+                    SelectionAction::Clear.into(),
+                ])
+            })
     }
 }

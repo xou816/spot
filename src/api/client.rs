@@ -362,6 +362,17 @@ impl SpotifyClient {
             .json_body(Uris { uris })
     }
 
+    pub(crate) fn remove_from_playlist(
+        &self,
+        playlist: &str,
+        uris: Vec<String>,
+    ) -> SpotifyRequest<'_, Vec<u8>, ()> {
+        self.request()
+            .method(Method::DELETE)
+            .uri(format!("/v1/playlists/{}/tracks", playlist), None)
+            .json_body(Uris { uris })
+    }
+
     pub(crate) fn get_saved_albums(
         &self,
         offset: usize,

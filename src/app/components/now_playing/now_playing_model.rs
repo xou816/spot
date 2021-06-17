@@ -54,11 +54,12 @@ impl NowPlayingModel {
 
         if let Some(PlaylistSource::Playlist(id)) = queue.source.as_ref() {
             let id = id.clone();
-            self.dispatcher.dispatch_spotify_call(move || async move {
-                api.get_playlist_tracks(&id, next_offset, batch_size)
-                    .await
-                    .map(move |song_batch| PlaybackAction::QueuePaged(song_batch).into())
-            });
+            self.dispatcher
+                .call_spotify_and_dispatch(move || async move {
+                    api.get_playlist_tracks(&id, next_offset, batch_size)
+                        .await
+                        .map(move |song_batch| PlaybackAction::QueuePaged(song_batch).into())
+                });
         }
 
         Some(())
@@ -179,7 +180,7 @@ impl SelectionToolsModel for NowPlayingModel {
             SelectionTool::Simple(SimpleSelectionTool::SelectAll),
             SelectionTool::Simple(SimpleSelectionTool::MoveDown),
             SelectionTool::Simple(SimpleSelectionTool::MoveUp),
-            SelectionTool::Simple(SimpleSelectionTool::RemoveFromQueue),
+            SelectionTool::Simple(SimpleSelectionTool::Remove),
         ]
     }
 

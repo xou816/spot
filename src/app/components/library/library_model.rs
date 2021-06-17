@@ -31,11 +31,12 @@ impl LibraryModel {
         let api = self.app_model.get_spotify();
         let batch_size = self.state()?.next_albums_page.batch_size;
 
-        self.dispatcher.dispatch_spotify_call(move || async move {
-            api.get_saved_albums(0, batch_size)
-                .await
-                .map(|albums| BrowserAction::SetLibraryContent(albums).into())
-        });
+        self.dispatcher
+            .call_spotify_and_dispatch(move || async move {
+                api.get_saved_albums(0, batch_size)
+                    .await
+                    .map(|albums| BrowserAction::SetLibraryContent(albums).into())
+            });
 
         Some(())
     }
@@ -47,11 +48,12 @@ impl LibraryModel {
         let batch_size = next_page.batch_size;
         let offset = next_page.next_offset?;
 
-        self.dispatcher.dispatch_spotify_call(move || async move {
-            api.get_saved_albums(offset, batch_size)
-                .await
-                .map(|albums| BrowserAction::AppendLibraryContent(albums).into())
-        });
+        self.dispatcher
+            .call_spotify_and_dispatch(move || async move {
+                api.get_saved_albums(offset, batch_size)
+                    .await
+                    .map(|albums| BrowserAction::AppendLibraryContent(albums).into())
+            });
 
         Some(())
     }

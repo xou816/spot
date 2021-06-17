@@ -45,11 +45,12 @@ impl ArtistDetailsModel {
 
     pub fn load_artist_details(&self, id: String) {
         let api = self.app_model.get_spotify();
-        self.dispatcher.dispatch_spotify_call(move || async move {
-            api.get_artist(&id)
-                .await
-                .map(|artist| BrowserAction::SetArtistDetails(artist).into())
-        });
+        self.dispatcher
+            .call_spotify_and_dispatch(move || async move {
+                api.get_artist(&id)
+                    .await
+                    .map(|artist| BrowserAction::SetArtistDetails(artist).into())
+            });
     }
 
     pub fn open_album(&self, id: &str) {
@@ -66,11 +67,12 @@ impl ArtistDetailsModel {
         let batch_size = next_page.batch_size;
         let offset = next_page.next_offset?;
 
-        self.dispatcher.dispatch_spotify_call(move || async move {
-            api.get_artist_albums(&id, offset, batch_size)
-                .await
-                .map(|albums| BrowserAction::AppendArtistReleases(albums).into())
-        });
+        self.dispatcher
+            .call_spotify_and_dispatch(move || async move {
+                api.get_artist_albums(&id, offset, batch_size)
+                    .await
+                    .map(|albums| BrowserAction::AppendArtistReleases(albums).into())
+            });
 
         Some(())
     }
