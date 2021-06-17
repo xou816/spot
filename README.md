@@ -29,10 +29,25 @@ Bear special attention to the fact that to enable automatic login, you might hav
 
 See [this comment](https://github.com/xou816/spot/issues/92#issuecomment-801852593) for more details!
 
-
 ### Settings
 
-Spot can also be configured via `gsettings` if you want to change the audio backend, the song bitrate, etc.
+Spot can also be configured via `gsettings` if you want to change the audio backend, the song bitrate, etc. [A GUI is planned but not available yet.](https://github.com/xou816/spot/issues/142)
+
+### Scrobbling
+
+Scrobbling is not supported directly by Spot. However, you can use a tool such a [rescrobbled](https://github.com/InputUsername/rescrobbled) ([see #85](https://github.com/xou816/spot/issues/85)).
+
+### Lyrics
+
+Similarly, Spot does not display lyrics for songs, but you can use [osdlyrics](https://github.com/osdlyrics/osdlyrics)  ([see #226](https://github.com/xou816/spot/issues/226)).
+
+### Gtk theme
+
+Spot uses the dark theme variant by default; this can be changed using `gsettings`.
+
+If you are using the flatpak version, don't forget to install your theme with flatpak as well -- even for Adwaita-dark!
+
+See [this comment](https://github.com/xou816/spot/issues/209#issuecomment-860180537) for details.
 
 ## Features
 
@@ -58,21 +73,22 @@ Spot can also be configured via `gsettings` if you want to change the audio back
 
 ## Contributing
 
-Contributions are welcome!
+Contributions are welcome! If you wish, add yourself to the `AUTHORS` files when submitting your contribution.
 
 ### Translating
 
 Translations are managed using `gettext` and are available in the `po/` subdirectory.
 
-To contribute translations:
+
+**Before attempting to edit the potfiles manually, note that nice tools exist to help you work with them ([Poedit](https://poedit.net/) for instance).**
+
+Otherwise, here is a rough overview of how to contribute translations:
 - fork the repository;
 - copy the `po/spot.pot` file and rename it to match your language code, or edit the relevant `po` file if it already exists;
 - if needed, add your language code to `po/LINGUAS`;
 - make sur the `Language` and `Plural-Forms` keys are correct;
 - edit the `msgstr` entries;
 - if you wish, add yourself to the `TRANSLATORS` file.
-
-Note that nice tools exist to help you work with `po` files ([Poedit](https://poedit.net/) for instance).
 
 If you can't build Spot locally, you may run the `spot-snapshots` action against your branch from your Github fork (...I think?) to obtain a flatpak debug build.
 
