@@ -1076,7 +1076,7 @@ dependencies = [
  "anyhow",
  "heck",
  "itertools",
- "proc-macro-crate",
+ "proc-macro-crate 0.1.5",
  "proc-macro-error",
  "proc-macro2",
  "quote",
@@ -1972,7 +1972,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "05d1c6307dc424d0f65b9b06e94f88248e6305726b14729fd67a5e47b2dc481d"
 dependencies = [
  "darling",
- "proc-macro-crate",
+ "proc-macro-crate 0.1.5",
  "proc-macro2",
  "quote",
  "syn",
@@ -2165,7 +2165,7 @@ version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1c0fd9eba1d5db0994a239e09c1be402d35622277e35468ba891aa5e3188ce7e"
 dependencies = [
- "proc-macro-crate",
+ "proc-macro-crate 0.1.5",
  "proc-macro2",
  "quote",
  "syn",
@@ -2442,6 +2442,16 @@ version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1d6ea3c4595b96363c13943497db34af4460fb474a95c43f4446ad341b8c9785"
 dependencies = [
+ "toml",
+]
+
+[[package]]
+name = "proc-macro-crate"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "41fdbd1df62156fbc5945f4762632564d7d038153091c3fcf1067f6aef7cff92"
+dependencies = [
+ "thiserror",
  "toml",
 ]
 
@@ -2933,6 +2943,12 @@ dependencies = [
  "zvariant",
  "zvariant_derive",
 ]
+
+[[package]]
+name = "static_assertions"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "stdweb"
@@ -3510,7 +3526,7 @@ version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "87cc141cda72384bef359badf1808e391d3968f9299e8f3c3cbb78dafa1e0930"
 dependencies = [
- "proc-macro-crate",
+ "proc-macro-crate 0.1.5",
  "proc-macro2",
  "quote",
  "syn",
@@ -3522,7 +3538,7 @@ version = "2.0.0-beta.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fcd4cb372bc2cade3f2323e4104112dceb6819f5dd9afa98515b4e821d232932"
 dependencies = [
- "proc-macro-crate",
+ "proc-macro-crate 0.1.5",
  "proc-macro2",
  "quote",
  "syn",
@@ -3551,23 +3567,24 @@ dependencies = [
 
 [[package]]
 name = "zvariant"
-version = "2.6.0"
+version = "2.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "678e7262502a135f49b1ece65010526649be7ee68acb80e1fc5377fc71fef878"
+checksum = "fa9a0fc1c0ea8400723fdaddd3b381147d50991a40da39e6ea935b7d63204722"
 dependencies = [
  "byteorder",
  "enumflags2",
  "serde",
+ "static_assertions",
  "zvariant_derive",
 ]
 
 [[package]]
 name = "zvariant_derive"
-version = "2.6.0"
+version = "2.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "27d7c34325a35020b94343389cc9391e0f8ac245cca9155429c4022d93141241"
+checksum = "4cf1d7953d902d1bad61878a7c79bd224d4a83bdfc93c84cc703ec760b8b70e9"
 dependencies = [
- "proc-macro-crate",
+ "proc-macro-crate 1.0.0",
  "proc-macro2",
  "quote",
  "syn",
