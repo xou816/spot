@@ -191,6 +191,15 @@ impl SelectionToolsModel for NowPlayingModel {
                 let songs = queue.songs().collect::<Vec<&SongDescription>>();
                 self.handle_select_all_tool_borrowed(selection, &songs);
             }
+            SelectionTool::Simple(SimpleSelectionTool::Remove) => {
+                self.dispatcher().dispatch(AppAction::DequeueSelection);
+            }
+            SelectionTool::Simple(SimpleSelectionTool::MoveDown) => {
+                self.dispatcher().dispatch(AppAction::MoveDownSelection);
+            }
+            SelectionTool::Simple(SimpleSelectionTool::MoveUp) => {
+                self.dispatcher().dispatch(AppAction::MoveUpSelection);
+            }
             _ => self.default_handle_tool_activated(selection, tool),
         };
     }

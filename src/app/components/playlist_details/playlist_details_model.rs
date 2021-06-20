@@ -277,3 +277,24 @@ impl SelectionToolsModel for PlaylistDetailsModel {
         };
     }
 }
+
+impl PlaylistDetailsModel {
+    fn handle_remove_from_playlist_tool(&self, selection: &SelectionState, playlist: &str) {
+        let api = self.spotify_client();
+        let id = playlist.to_string();
+        let uris: Vec<String> = selection
+            .peek_selection()
+            .iter()
+            .map(|s| &s.uri)
+            .cloned()
+            .collect();
+        self.dispatcher()
+            .call_spotify_and_dispatch_many(move || async move {
+                api.remove_from_playlist(&id, uris.clone()).await?;
+                Ok(vec![
+                    BrowserAction::RemoveTracksFromPlaylist(uris).into(),
+                    SelectionAction::Clear.into(),
+                ])
+            })
+    }
+}
