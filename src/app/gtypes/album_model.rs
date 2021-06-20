@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+
 use gio::prelude::*;
 use glib::glib_wrapper;
 use glib::subclass;

@@ -184,3 +184,13 @@ test('Unit tests',
     get_option('offline') ? 'true' : 'false'
   ]
 )
+
+cargo_clipyy = find_program(meson.source_root() / 'build-aux/clippy.sh')
+test('Clippy',
+  cargo_test,
+  args: [
+    meson.source_root(),
+    meson.build_root(),
+    get_option('offline') ? 'true' : 'false'
+  ]
+)
