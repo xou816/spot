@@ -49,11 +49,11 @@ impl Default for SelectionState {
 impl SelectionState {
     fn select(&mut self, song: SongDescription) -> bool {
         if let Some(selected_songs) = self.selected_songs.as_mut() {
-            let not_selected = selected_songs.iter().find(|&t| t.id == song.id).is_none();
-            if not_selected {
+            let selected = selected_songs.iter().any(|t| t.id == song.id);
+            if !selected {
                 selected_songs.push(song);
             }
-            not_selected
+            !selected
         } else {
             false
         }
