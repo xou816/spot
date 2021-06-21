@@ -3771,15 +3771,15 @@
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/tokio/tokio-1.6.1.crate",
-        "sha256": "0a38d31d7831c6ed7aad00aa4c12d9375fd225a6dd77da1d25b707346319a975",
+        "url": "https://static.crates.io/crates/tokio/tokio-1.7.1.crate",
+        "sha256": "5fb2ed024293bb19f7a5dc54fe83bf86532a44c12a2bb8ba40d64a4509395ca2",
         "dest": "cargo/vendor",
-        "dest-filename": "tokio-1.6.1.crate"
+        "dest-filename": "tokio-1.7.1.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%220a38d31d7831c6ed7aad00aa4c12d9375fd225a6dd77da1d25b707346319a975%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/tokio-1.6.1",
+        "url": "data:%7B%22package%22%3A%20%225fb2ed024293bb19f7a5dc54fe83bf86532a44c12a2bb8ba40d64a4509395ca2%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/tokio-1.7.1",
         "dest-filename": ".cargo-checksum.json"
     },
     {
