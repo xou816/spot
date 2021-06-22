@@ -1584,7 +1584,7 @@ dependencies = [
  "if-addrs",
  "log",
  "multimap",
- "rand 0.8.3",
+ "rand 0.8.4",
  "socket2 0.4.0",
  "thiserror",
  "tokio",
@@ -1713,7 +1713,7 @@ dependencies = [
  "librespot-protocol",
  "log",
  "protobuf",
- "rand 0.8.3",
+ "rand 0.8.4",
  "serde",
  "serde_json",
  "sha-1",
@@ -1749,7 +1749,7 @@ dependencies = [
  "pbkdf2",
  "priority-queue",
  "protobuf",
- "rand 0.8.3",
+ "rand 0.8.4",
  "serde",
  "serde_json",
  "sha-1",
@@ -2074,7 +2074,7 @@ dependencies = [
  "autocfg",
  "num-integer",
  "num-traits",
- "rand 0.8.3",
+ "rand 0.8.4",
 ]
 
 [[package]]
@@ -2549,9 +2549,9 @@ dependencies = [
 
 [[package]]
 name = "rand"
-version = "0.8.3"
+version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ef9e7e66b4468674bfcb0c81af8b7fa0bb154fa9f28eb840da5c447baeb8d7e"
+checksum = "2e7573632e6454cf6b99d7aac4ccca54be06da05aca2ef7423d22d27d4d4bcd8"
 dependencies = [
  "libc",
  "rand_chacha 0.3.0",
@@ -2735,7 +2735,7 @@ dependencies = [
  "hkdf",
  "lazy_static",
  "num",
- "rand 0.8.3",
+ "rand 0.8.4",
  "serde",
  "sha2",
  "zbus 1.8.0",
@@ -2931,7 +2931,7 @@ dependencies = [
  "libhandy",
  "librespot",
  "protobuf",
- "rand 0.8.3",
+ "rand 0.8.4",
  "ref_filter_map",
  "regex",
  "secret-service",
@@ -3510,7 +3510,7 @@ dependencies = [
  "hex",
  "nix 0.19.1",
  "once_cell",
- "rand 0.8.3",
+ "rand 0.8.4",
  "scoped-tls",
  "serde",
  "serde_repr",
