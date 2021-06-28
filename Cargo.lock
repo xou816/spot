@@ -3052,7 +3052,7 @@ dependencies = [
  "gdk",
  "gdk-pixbuf 0.14.0",
  "gettext-rs",
- "gio 0.9.1",
+ "gio 0.14.0",
  "gladis",
  "glib 0.14.0",
  "gtk",
