@@ -888,10 +888,10 @@ dependencies = [
  "bitflags",
  "cairo-rs",
  "cairo-sys-rs",
- "gdk-pixbuf",
+ "gdk-pixbuf 0.9.0",
  "gdk-sys",
- "gio",
- "gio-sys",
+ "gio 0.9.1",
+ "gio-sys 0.10.1",
  "glib 0.10.3",
  "glib-sys 0.10.1",
  "gobject-sys 0.10.0",
@@ -905,12 +905,24 @@ version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f6dae3cb99dd49b758b88f0132f8d401108e63ae8edd45f432d42cdff99998a"
 dependencies = [
- "gdk-pixbuf-sys",
- "gio",
- "gio-sys",
+ "gdk-pixbuf-sys 0.10.0",
+ "gio 0.9.1",
+ "gio-sys 0.10.1",
  "glib 0.10.3",
  "glib-sys 0.10.1",
  "gobject-sys 0.10.0",
+ "libc",
+]
+
+[[package]]
+name = "gdk-pixbuf"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "534192cb8f01daeb8fab2c8d4baa8f9aae5b7a39130525779f5c2608e235b10f"
+dependencies = [
+ "gdk-pixbuf-sys 0.14.0",
+ "gio 0.14.0",
+ "glib 0.14.0",
  "libc",
 ]
 
@@ -920,11 +932,24 @@ version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3bfe468a7f43e97b8d193a762b6c5cf67a7d36cacbc0b9291dbcae24bfea1e8f"
 dependencies = [
- "gio-sys",
+ "gio-sys 0.10.1",
  "glib-sys 0.10.1",
  "gobject-sys 0.10.0",
  "libc",
  "system-deps 1.3.2",
+]
+
+[[package]]
+name = "gdk-pixbuf-sys"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f097c0704201fbc8f69c1762dc58c6947c8bb188b8ed0bc7e65259f1894fe590"
+dependencies = [
+ "gio-sys 0.14.0",
+ "glib-sys 0.14.0",
+ "gobject-sys 0.14.0",
+ "libc",
+ "system-deps 3.1.1",
 ]
 
 [[package]]
@@ -934,8 +959,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0a9653cfc500fd268015b1ac055ddbc3df7a5c9ea3f4ccef147b3957bd140d69"
 dependencies = [
  "cairo-sys-rs",
- "gdk-pixbuf-sys",
- "gio-sys",
+ "gdk-pixbuf-sys 0.10.0",
+ "gio-sys 0.10.1",
  "glib-sys 0.10.1",
  "gobject-sys 0.10.0",
  "libc",
@@ -1017,10 +1042,27 @@ dependencies = [
  "futures-core",
  "futures-io",
  "futures-util",
- "gio-sys",
+ "gio-sys 0.10.1",
  "glib 0.10.3",
  "glib-sys 0.10.1",
  "gobject-sys 0.10.0",
+ "libc",
+ "once_cell",
+ "thiserror",
+]
+
+[[package]]
+name = "gio"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "86c6823b39d46d22cac2466de261f28d7f049ebc18f7b35296a42c7ed8a88325"
+dependencies = [
+ "bitflags",
+ "futures-channel",
+ "futures-core",
+ "futures-io",
+ "gio-sys 0.14.0",
+ "glib 0.14.0",
  "libc",
  "once_cell",
  "thiserror",
@@ -1036,6 +1078,19 @@ dependencies = [
  "gobject-sys 0.10.0",
  "libc",
  "system-deps 1.3.2",
+ "winapi",
+]
+
+[[package]]
+name = "gio-sys"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c0a41df66e57fcc287c4bcf74fc26b884f31901ea9792ec75607289b456f48fa"
+dependencies = [
+ "glib-sys 0.14.0",
+ "gobject-sys 0.14.0",
+ "libc",
+ "system-deps 3.1.1",
  "winapi",
 ]
 
@@ -1201,11 +1256,11 @@ dependencies = [
  "cairo-sys-rs",
  "cc",
  "gdk",
- "gdk-pixbuf",
- "gdk-pixbuf-sys",
+ "gdk-pixbuf 0.9.0",
+ "gdk-pixbuf-sys 0.10.0",
  "gdk-sys",
- "gio",
- "gio-sys",
+ "gio 0.9.1",
+ "gio-sys 0.10.1",
  "glib 0.10.3",
  "glib-sys 0.10.1",
  "gobject-sys 0.10.0",
@@ -1225,9 +1280,9 @@ checksum = "89acda6f084863307d948ba64a4b1ef674e8527dddab147ee4cdcc194c880457"
 dependencies = [
  "atk-sys",
  "cairo-sys-rs",
- "gdk-pixbuf-sys",
+ "gdk-pixbuf-sys 0.10.0",
  "gdk-sys",
- "gio-sys",
+ "gio-sys 0.10.1",
  "glib-sys 0.10.1",
  "gobject-sys 0.10.0",
  "libc",
@@ -1601,11 +1656,11 @@ checksum = "d776bf5b92993b8006688652cda2683261317dcc82bb4d91d3996bda2f7019e0"
 dependencies = [
  "bitflags",
  "gdk",
- "gdk-pixbuf",
- "gdk-pixbuf-sys",
+ "gdk-pixbuf 0.9.0",
+ "gdk-pixbuf-sys 0.10.0",
  "gdk-sys",
- "gio",
- "gio-sys",
+ "gio 0.9.1",
+ "gio-sys 0.10.1",
  "glib 0.10.3",
  "glib-sys 0.10.1",
  "gobject-sys 0.10.0",
@@ -1624,10 +1679,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0017044b92ade6704a301212feea9e754be62f58d39d01aae8fcf2c1a982e3d9"
 dependencies = [
  "gdk",
- "gdk-pixbuf-sys",
+ "gdk-pixbuf-sys 0.10.0",
  "gdk-sys",
- "gio",
- "gio-sys",
+ "gio 0.9.1",
+ "gio-sys 0.10.1",
  "glib-sys 0.10.1",
  "gobject-sys 0.10.0",
  "gtk-sys",
@@ -2995,9 +3050,9 @@ dependencies = [
  "form_urlencoded",
  "futures",
  "gdk",
- "gdk-pixbuf",
+ "gdk-pixbuf 0.14.0",
  "gettext-rs",
- "gio",
+ "gio 0.9.1",
  "gladis",
  "glib 0.14.0",
  "gtk",
