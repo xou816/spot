@@ -113,8 +113,8 @@ impl App {
         app_model: Rc<AppModel>,
         worker: Worker,
     ) -> Box<impl EventListener> {
-        let window: libhandy::ApplicationWindow = builder.get_object("window").unwrap();
-        let search_bar: libhandy::SearchBar = builder.get_object("search_bar").unwrap();
+        let window: libhandy::ApplicationWindow = builder.object("window").unwrap();
+        let search_bar: libhandy::SearchBar = builder.object("search_bar").unwrap();
         Box::new(MainWindow::new(
             settings.window.clone(),
             app_model,
@@ -129,9 +129,9 @@ impl App {
         app_model: Rc<AppModel>,
         dispatcher: Box<dyn ActionDispatcher>,
     ) -> Box<impl EventListener> {
-        let headerbar: libhandy::HeaderBar = builder.get_object("header_bar").unwrap();
-        let selection_toggle: gtk::ToggleButton = builder.get_object("selection_toggle").unwrap();
-        let selection_label: gtk::Label = builder.get_object("selection_label").unwrap();
+        let headerbar: libhandy::HeaderBar = builder.object("header_bar").unwrap();
+        let selection_toggle: gtk::ToggleButton = builder.object("selection_toggle").unwrap();
+        let selection_label: gtk::Label = builder.object("selection_label").unwrap();
         let model = SelectionHeadingModel::new(app_model, dispatcher);
         Box::new(SelectionHeading::new(
             model,
@@ -147,11 +147,10 @@ impl App {
         dispatcher: Box<dyn ActionDispatcher>,
         worker: Worker,
     ) -> Box<Navigation> {
-        let back_btn: gtk::Button = builder.get_object("nav_back").unwrap();
-        let leaflet: libhandy::Leaflet = builder.get_object("leaflet").unwrap();
-        let navigation_stack: gtk::Stack = builder.get_object("navigation_stack").unwrap();
-        let home_stack_sidebar: gtk::StackSidebar =
-            builder.get_object("home_stack_sidebar").unwrap();
+        let back_btn: gtk::Button = builder.object("nav_back").unwrap();
+        let leaflet: libhandy::Leaflet = builder.object("leaflet").unwrap();
+        let navigation_stack: gtk::Stack = builder.object("navigation_stack").unwrap();
+        let home_stack_sidebar: gtk::StackSidebar = builder.object("home_stack_sidebar").unwrap();
 
         let model = NavigationModel::new(Rc::clone(&app_model), dispatcher.box_clone());
         let screen_factory =
@@ -167,7 +166,7 @@ impl App {
     }
 
     fn make_login(builder: &gtk::Builder, dispatcher: Box<dyn ActionDispatcher>) -> Box<Login> {
-        let parent: gtk::Window = builder.get_object("window").unwrap();
+        let parent: gtk::Window = builder.object("window").unwrap();
         let model = LoginModel::new(dispatcher);
         Box::new(Login::new(parent, model))
     }
@@ -178,11 +177,11 @@ impl App {
         dispatcher: Box<dyn ActionDispatcher>,
         worker: Worker,
     ) -> Box<PlaybackInfo> {
-        let now_playing: gtk::Button = builder.get_object("now_playing").unwrap();
-        let now_playing_small: gtk::Button = builder.get_object("now_playing_small").unwrap();
-        let image: gtk::Image = builder.get_object("playing_image").unwrap();
-        let image_small: gtk::Image = builder.get_object("playing_image_small").unwrap();
-        let current_song_info: gtk::Label = builder.get_object("current_song_info").unwrap();
+        let now_playing: gtk::Button = builder.object("now_playing").unwrap();
+        let now_playing_small: gtk::Button = builder.object("now_playing_small").unwrap();
+        let image: gtk::Image = builder.object("playing_image").unwrap();
+        let image_small: gtk::Image = builder.object("playing_image_small").unwrap();
+        let current_song_info: gtk::Label = builder.object("current_song_info").unwrap();
 
         let model = PlaybackInfoModel::new(app_model, dispatcher);
         Box::new(PlaybackInfo::new(
@@ -201,12 +200,12 @@ impl App {
         app_model: Rc<AppModel>,
         dispatcher: Box<dyn ActionDispatcher>,
     ) -> Box<PlaybackControl> {
-        let play_button: gtk::Button = builder.get_object("play_pause").unwrap();
-        let next: gtk::Button = builder.get_object("next").unwrap();
-        let prev: gtk::Button = builder.get_object("prev").unwrap();
-        let seek_bar: gtk::Scale = builder.get_object("seek_bar").unwrap();
-        let track_position: gtk::Label = builder.get_object("track_position").unwrap();
-        let track_duration: gtk::Label = builder.get_object("track_duration").unwrap();
+        let play_button: gtk::Button = builder.object("play_pause").unwrap();
+        let next: gtk::Button = builder.object("next").unwrap();
+        let prev: gtk::Button = builder.object("prev").unwrap();
+        let seek_bar: gtk::Scale = builder.object("seek_bar").unwrap();
+        let track_position: gtk::Label = builder.object("track_position").unwrap();
+        let track_duration: gtk::Label = builder.object("track_duration").unwrap();
 
         let widget = PlaybackControlWidget::new(
             play_button,
@@ -225,9 +224,9 @@ impl App {
         builder: &gtk::Builder,
         dispatcher: Box<dyn ActionDispatcher>,
     ) -> Box<SearchBar> {
-        let search_button: gtk::ToggleButton = builder.get_object("search_button").unwrap();
-        let search_entry: gtk::SearchEntry = builder.get_object("search_entry").unwrap();
-        let search_bar: libhandy::SearchBar = builder.get_object("search_bar").unwrap();
+        let search_button: gtk::ToggleButton = builder.object("search_button").unwrap();
+        let search_entry: gtk::SearchEntry = builder.object("search_entry").unwrap();
+        let search_bar: libhandy::SearchBar = builder.object("search_bar").unwrap();
         let model = SearchBarModel(dispatcher);
         Box::new(SearchBar::new(
             model,
@@ -242,8 +241,8 @@ impl App {
         app_model: Rc<AppModel>,
         dispatcher: Box<dyn ActionDispatcher>,
     ) -> Box<UserMenu> {
-        let button: gtk::MenuButton = builder.get_object("user").unwrap();
-        let about: gtk::AboutDialog = builder.get_object("about").unwrap();
+        let button: gtk::MenuButton = builder.object("user").unwrap();
+        let about: gtk::AboutDialog = builder.object("about").unwrap();
         let model = UserMenuModel::new(app_model, dispatcher);
         let user_menu = UserMenu::new(button, about, model);
         Box::new(user_menu)
@@ -253,9 +252,9 @@ impl App {
         builder: &gtk::Builder,
         dispatcher: Box<dyn ActionDispatcher>,
     ) -> Box<Notification> {
-        let root: gtk::Box = builder.get_object("notification").unwrap();
-        let content: gtk::Label = builder.get_object("notification_content").unwrap();
-        let close: gtk::Button = builder.get_object("close_notification").unwrap();
+        let root: gtk::Box = builder.object("notification").unwrap();
+        let content: gtk::Label = builder.object("notification_content").unwrap();
+        let close: gtk::Button = builder.object("close_notification").unwrap();
         let model = NotificationModel::new(dispatcher);
         Box::new(Notification::new(model, root, content, close))
     }

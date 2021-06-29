@@ -1,5 +1,6 @@
 use crate::api::cache::*;
-use gdk_pixbuf::{Pixbuf, PixbufLoader, PixbufLoaderExt};
+use gdk_pixbuf::traits::PixbufLoaderExt;
+use gdk_pixbuf::{Pixbuf, PixbufLoader};
 use isahc::config::Configurable;
 use isahc::{AsyncBody, AsyncReadResponseExt, HttpClient, Response};
 use std::collections::hash_map::DefaultHasher;
@@ -85,6 +86,6 @@ impl ImageLoader {
         };
 
         pixbuf_loader.close().ok()?;
-        pixbuf_loader.get_pixbuf()
+        pixbuf_loader.pixbuf()
     }
 }

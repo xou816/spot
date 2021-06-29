@@ -1,6 +1,5 @@
 use gettextrs::*;
 use gtk::prelude::*;
-use gtk::ButtonExt;
 use std::rc::Rc;
 
 use crate::app::components::EventListener;
@@ -53,7 +52,7 @@ impl SelectionHeading {
         let model = Rc::new(model);
 
         selection_toggle.connect_clicked(clone!(@weak model => move |t| {
-            model.set_selection_mode(t.get_active());
+            model.set_selection_mode(t.is_active());
         }));
 
         Self {
@@ -65,7 +64,7 @@ impl SelectionHeading {
     }
 
     fn set_selection_active(&self, active: bool) {
-        let context = self.headerbar.get_style_context();
+        let context = self.headerbar.style_context();
         if active {
             self.selection_label.show();
             context.add_class("selection-mode");
@@ -74,7 +73,7 @@ impl SelectionHeading {
             self.selection_label.set_label(&gettext("No song selected"));
             context.remove_class("selection-mode");
         }
-        if self.selection_toggle.get_active() != active {
+        if self.selection_toggle.is_active() != active {
             self.selection_toggle.set_active(active);
         }
     }

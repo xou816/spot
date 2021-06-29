@@ -1,6 +1,5 @@
 use gladis::Gladis;
 use gtk::prelude::*;
-use gtk::ScrolledWindowExt;
 
 use std::rc::{Rc, Weak};
 

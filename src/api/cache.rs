@@ -81,7 +81,7 @@ pub struct CacheManager {
 
 impl CacheManager {
     pub fn new(dirs: &[&str]) -> Option<Self> {
-        let root: PathBuf = glib::get_user_cache_dir()?.into();
+        let root: PathBuf = glib::user_cache_dir().into();
         let mask = 0o744;
 
         for &dir in dirs.iter() {

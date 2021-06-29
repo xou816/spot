@@ -1,8 +1,6 @@
 use gdk::{keys::constants::Return, EventKey};
-use gio::ApplicationExt;
 use gladis::Gladis;
 use gtk::prelude::*;
-use gtk::{EntryExt, GtkWindowExt, RevealerExt, WidgetExt};
 use std::rc::Rc;
 
 use crate::app::components::EventListener;
@@ -66,7 +64,7 @@ impl Login {
         );
 
         close_button.connect_clicked(clone!(@weak parent => move |_| {
-            if let Some(app) = parent.get_application().as_ref() {
+            if let Some(app) = parent.application().as_ref() {
                 app.quit();
             }
         }));
@@ -105,7 +103,7 @@ impl Login {
         model: Rc<LoginModel>,
         event: &EventKey,
     ) -> Inhibit {
-        if event.get_keyval() == Return {
+        if event.keyval() == Return {
             Login::submit_login_form(username, password, error_container, model);
             Inhibit(true)
         } else {
@@ -120,8 +118,8 @@ impl Login {
         model: Rc<LoginModel>,
     ) {
         error_container.set_reveal_child(false);
-        let username_text = username.get_text().as_str().to_string();
-        let password_text = password.get_text().as_str().to_string();
+        let username_text = username.text().as_str().to_string();
+        let password_text = password.text().as_str().to_string();
         if username_text.is_empty() {
             username.grab_focus();
         } else if password_text.is_empty() {

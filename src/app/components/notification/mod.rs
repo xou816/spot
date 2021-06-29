@@ -52,15 +52,13 @@ impl Notification {
         );
         self.content.set_text(content);
         self.root.show();
-        self.root
-            .get_style_context()
-            .add_class("notification--shown")
+        self.root.style_context().add_class("notification--shown")
     }
 
     fn hide(&self) {
         self.root.hide();
         self.root
-            .get_style_context()
+            .style_context()
             .remove_class("notification--shown")
     }
 }

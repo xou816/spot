@@ -1,6 +1,5 @@
 use gladis::Gladis;
 use gtk::prelude::*;
-use gtk::LinkButtonExt;
 use std::rc::Rc;
 
 use super::DetailsModel;
@@ -28,7 +27,7 @@ impl DetailsWidget {
     }
 
     fn set_loaded(&self) {
-        let context = self.root.get_style_context();
+        let context = self.root.style_context();
         context.add_class("details--loaded");
     }
 }

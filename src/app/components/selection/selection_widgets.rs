@@ -1,7 +1,5 @@
-use gio::{ActionMapExt, SimpleAction, SimpleActionGroup};
+use gio::{prelude::ActionMapExt, SimpleAction, SimpleActionGroup};
 use gtk::prelude::*;
-use gtk::ButtonExt;
-use gtk::OverlayExt;
 use std::rc::Rc;
 
 use crate::app::components::{labels, Component, EventListener, ListenerComponent};
@@ -33,13 +31,13 @@ impl AddSelectionButton {
     fn new(tools: Vec<AddSelectionTool>, model: &Rc<impl SelectionToolsModel + 'static>) -> Self {
         let image = gtk::ImageBuilder::new()
             .icon_name("list-add-symbolic")
-            .icon_size(gtk::IconSize::LargeToolbar.into())
+            .icon_size(gtk::IconSize::LargeToolbar)
             .build();
         let button = gtk::MenuButtonBuilder::new()
             .visible(true)
             .image(&image)
             .build();
-        button.get_style_context().add_class("osd");
+        button.style_context().add_class("osd");
 
         let action_group = SimpleActionGroup::new();
         button.insert_action_group("add_to", Some(&action_group));
@@ -83,9 +81,9 @@ impl AddSelectionButton {
         }
 
         let popover = gtk::Popover::from_model(Some(&button), &menu);
-        popover.get_style_context().add_class("osd");
+        popover.style_context().add_class("osd");
         button.set_popover(Some(&popover));
-        gtk::MenuButtonExt::set_direction(&button, gtk::ArrowType::Up);
+        MenuButtonExt::set_direction(&button, gtk::ArrowType::Up);
 
         Self { button }
     }
@@ -106,13 +104,13 @@ impl SelectionButton {
     fn new(tool: SimpleSelectionTool, model: &Rc<impl SelectionToolsModel + 'static>) -> Self {
         let image = gtk::ImageBuilder::new()
             .icon_name(tool.icon_name())
-            .icon_size(gtk::IconSize::LargeToolbar.into())
+            .icon_size(gtk::IconSize::LargeToolbar)
             .build();
         let button = gtk::ButtonBuilder::new()
             .visible(true)
             .image(&image)
             .build();
-        button.get_style_context().add_class("osd");
+        button.style_context().add_class("osd");
         button.connect_clicked(clone!(@weak model => move |_| {
             let selection = model.enabled_selection();
             if let Some(selection) = selection {
@@ -219,7 +217,7 @@ where
             .valign(gtk::Align::End)
             .margin(20)
             .build();
-        button_box.get_style_context().add_class("linked");
+        button_box.style_context().add_class("linked");
         button_box
     }
 

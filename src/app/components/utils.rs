@@ -1,6 +1,7 @@
 use gtk::prelude::*;
 use std::cell::Cell;
 use std::rc::Rc;
+use std::time::Duration;
 
 pub struct Clock {
     interval_ms: u32,
@@ -16,10 +17,13 @@ impl Clock {
     }
 
     pub fn start<F: Fn() + 'static>(&self, tick: F) {
-        let new_source = Some(glib::timeout_add_local(self.interval_ms, move || {
-            tick();
-            glib::Continue(true)
-        }));
+        let new_source = Some(glib::timeout_add_local(
+            Duration::from_millis(self.interval_ms.into()),
+            move || {
+                tick();
+                glib::Continue(true)
+            },
+        ));
         if let Some(previous_source) = self.source.replace(new_source) {
             glib::source_remove(previous_source);
         }
@@ -43,13 +47,14 @@ impl Debouncer {
 
     pub fn debounce<F: Fn() + 'static>(&self, interval_ms: u32, f: F) {
         let source_clone = Rc::downgrade(&self.0);
-        let new_source = glib::timeout_add_local(interval_ms, move || {
-            f();
-            if let Some(cell) = source_clone.upgrade() {
-                cell.set(None);
-            }
-            glib::Continue(false)
-        });
+        let new_source =
+            glib::timeout_add_local(Duration::from_millis(interval_ms.into()), move || {
+                f();
+                if let Some(cell) = source_clone.upgrade() {
+                    cell.set(None);
+                }
+                glib::Continue(false)
+            });
         if let Some(previous_source) = self.0.replace(Some(new_source)) {
             glib::source_remove(previous_source);
         }
@@ -88,7 +93,7 @@ where
         let ease_fn = self.ease_fn;
 
         let progress = Rc::downgrade(&self.progress);
-        glib::timeout_add_local(16, move || {
+        glib::timeout_add_local(Duration::from_millis(16), move || {
             let mut continue_ = false;
             if let Some(progress) = progress.upgrade() {
                 let step = progress.get();
@@ -106,7 +111,7 @@ where
 
 pub fn wrap_flowbox_item<
     Model: glib::IsA<glib::Object>,
-    Widget: glib::IsA<gtk::Widget>,
+    Widget: gtk::glib::IsA<gtk::Widget>,
     F: Fn(&Model) -> Widget,
 >(
     item: &glib::Object,
@@ -128,7 +133,7 @@ pub fn format_duration(duration: f64) -> String {
 }
 
 fn parent_scrolled_window(widget: &gtk::Widget) -> Option<gtk::ScrolledWindow> {
-    let parent = widget.get_parent()?;
+    let parent = widget.parent()?;
     match parent.downcast_ref::<gtk::ScrolledWindow>() {
         Some(scrolled_window) => Some(scrolled_window.clone()),
         None => parent_scrolled_window(&parent),
@@ -137,18 +142,18 @@ fn parent_scrolled_window(widget: &gtk::Widget) -> Option<gtk::ScrolledWindow> {
 
 pub fn in_viewport(widget: &gtk::Widget) -> Option<bool> {
     let window = parent_scrolled_window(widget)?;
-    let adjustment = window.get_vadjustment()?;
+    let adjustment = window.vadjustment();
     let (_, y) = widget.translate_coordinates(&window, 0, 0)?;
     let y = y as f64;
-    Some(y > 0.0 && y < 0.9 * adjustment.get_page_size())
+    Some(y > 0.0 && y < 0.9 * adjustment.page_size())
 }
 
 pub fn vscroll_to(widget: &gtk::Widget, progress: f64) -> Option<f64> {
     let window = parent_scrolled_window(widget)?;
-    let adjustment = window.get_vadjustment()?;
+    let adjustment = window.vadjustment();
     let (_, y) = widget.translate_coordinates(&window, 0, 0)?;
     let y = y as f64;
-    let target = adjustment.get_value() + y * progress;
+    let target = adjustment.value() + y * progress;
     adjustment.set_value(target);
     Some(target)
 }

@@ -1,6 +1,5 @@
 use gladis::Gladis;
 use gtk::prelude::*;
-use gtk::ScrolledWindowExt;
 use std::rc::Rc;
 
 use crate::app::components::{screen_add_css_provider, Album, Component, EventListener, Playlist};
@@ -75,7 +74,7 @@ impl ArtistDetails {
 
     fn update_details(&mut self) {
         if let Some(name) = self.model.get_artist_name() {
-            let context = self.widget.root.get_style_context();
+            let context = self.widget.root.style_context();
             context.add_class("artist__loaded");
             self.widget.artist_name.set_text(&name);
         }

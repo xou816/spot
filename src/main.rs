@@ -6,9 +6,9 @@ extern crate lazy_static;
 use futures::channel::mpsc::UnboundedSender;
 use gettextrs::*;
 use gio::prelude::*;
-use gio::{ActionMapExt, SimpleAction};
+use gio::SimpleAction;
 use gtk::prelude::*;
-use gtk::SettingsExt;
+use gtk::traits::SettingsExt;
 
 mod api;
 mod app;
@@ -29,11 +29,11 @@ fn main() {
 
     let settings = settings::SpotSettings::new_from_gsettings().unwrap_or_default();
     startup(&settings);
-    let gtk_app = gtk::Application::new(Some(config::APPID), Default::default()).unwrap();
+    let gtk_app = gtk::Application::new(Some(config::APPID), Default::default());
     let builder = gtk::Builder::from_resource("/dev/alextren/Spot/window.ui");
-    let window: libhandy::ApplicationWindow = builder.get_object("window").unwrap();
+    let window: libhandy::ApplicationWindow = builder.object("window").unwrap();
     if cfg!(debug_assertions) {
-        window.get_style_context().add_class("devel");
+        window.style_context().add_class("devel");
     }
 
     let context = glib::MainContext::default();
@@ -52,7 +52,7 @@ fn main() {
     context.spawn_local(app.attach(dispatch_loop));
 
     gtk_app.connect_activate(move |gtk_app| {
-        if let Some(existing_window) = gtk_app.get_active_window() {
+        if let Some(existing_window) = gtk_app.active_window() {
             existing_window.present();
         } else {
             window.set_application(Some(gtk_app));
@@ -62,7 +62,7 @@ fn main() {
     });
 
     context.invoke_local(move || {
-        gtk_app.run(&std::env::args().collect::<Vec<_>>());
+        gtk_app.run();
     });
 
     std::process::exit(0);
@@ -76,15 +76,15 @@ fn startup(settings: &settings::SpotSettings) {
         .expect("Could not load resources");
     gio::resources_register(&res);
 
-    gtk::Settings::get_default()
+    gtk::Settings::default()
         .unwrap()
-        .set_property_gtk_application_prefer_dark_theme(settings.prefers_dark_theme);
+        .set_gtk_application_prefer_dark_theme(settings.prefers_dark_theme);
 
     let provider = gtk::CssProvider::new();
     provider.load_from_resource("/dev/alextren/Spot/app.css");
 
     gtk::StyleContext::add_provider_for_screen(
-        &gdk::Screen::get_default().expect("Error initializing gtk css provider."),
+        &gdk::Screen::default().expect("Error initializing gtk css provider."),
         &provider,
         gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
     );

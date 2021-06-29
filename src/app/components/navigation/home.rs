@@ -1,6 +1,5 @@
 use gettextrs::*;
 use gtk::prelude::*;
-use gtk::{ListBoxExt, StackExt, StackSidebarExt};
 
 use crate::app::components::{Component, EventListener, ScreenFactory};
 use crate::app::AppEvent;
@@ -9,7 +8,7 @@ fn find_listbox_descendant(w: &gtk::Widget) -> Option<gtk::ListBox> {
     match w.clone().downcast::<gtk::ListBox>() {
         Ok(listbox) => Some(listbox),
         Err(widget) => {
-            let next = widget.downcast::<gtk::Bin>().ok()?.get_child()?;
+            let next = widget.downcast::<gtk::Bin>().ok()?.child()?;
             find_listbox_descendant(&next)
         }
     }

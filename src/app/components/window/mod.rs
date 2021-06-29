@@ -1,7 +1,6 @@
-use gio::SettingsExt;
+use gio::prelude::SettingsExt;
 use gtk::prelude::*;
-use gtk::DialogExt;
-use libhandy::SearchBarExt;
+use libhandy::traits::SearchBarExt;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -23,7 +22,7 @@ Do you wish to clear the cache now?";
 // see https://github.com/xou816/spot/issues/107
 fn _clear_old_cache_warn(window: &gtk::Window, worker: Worker) {
     let settings = gio::Settings::new("dev.alextren.Spot");
-    if settings.get_boolean("old-cache-cleared") {
+    if settings.boolean("old-cache-cleared") {
         return;
     }
     let do_clear = move || {
@@ -89,7 +88,7 @@ impl MainWindow {
         });
 
         window.connect_size_allocate(|window, _| {
-            let (width, height) = window.get_size();
+            let (width, height) = window.size();
             let is_maximized = window.is_maximized();
             WINDOW_GEOMETRY.with(|g| {
                 let mut g = g.borrow_mut();
