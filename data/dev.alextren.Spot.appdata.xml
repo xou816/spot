@@ -37,6 +37,22 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.1.15" date="2021-06-30">
+      <description>
+        <p>
+          What's new:
+        </p>
+        <ul>
+          <li>ability to remove tracks from writable playlists</li>
+          <li>improved login error handling</li>
+          <li>fixed an issue with playlists not being modifiable when login in with email</li>
+          <li>MPRIS: the desktop entry for Spot is now properly referenced (thanks nicolasfella!)</li>
+          <li>quality: various clippy fixes (thanks nn1ks!)</li>
+          <li>new translations: Turkish, Indonesian and Brazilian Portuguese (thanks YusufOzmen01, cho2 and lucraraujo, as well as ondras12345 for the reviews!)</li>
+          <li></li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.14" date="2021-05-09">
       <description>
         <p>
