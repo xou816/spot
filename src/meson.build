@@ -185,9 +185,9 @@ test('Unit tests',
   ]
 )
 
-cargo_clipyy = find_program(meson.source_root() / 'build-aux/clippy.sh')
+cargo_clippy = find_program(meson.source_root() / 'build-aux/clippy.sh')
 test('Clippy',
-  cargo_test,
+  cargo_clippy,
   args: [
     meson.source_root(),
     meson.build_root(),
