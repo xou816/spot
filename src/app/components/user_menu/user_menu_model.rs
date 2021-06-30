@@ -37,16 +37,20 @@ impl UserMenuModel {
         let api = self.app_model.get_spotify();
         if let Some(current_user) = self.username() {
             let current_user = current_user.clone();
-            self.dispatcher.dispatch_spotify_call(move || async move {
-                api.get_saved_playlists(0, 30).await.map(|playlists| {
-                    let summaries = playlists
-                        .into_iter()
-                        .filter(|p| p.owner.display_name == current_user)
-                        .map(|PlaylistDescription { id, title, .. }| PlaylistSummary { id, title })
-                        .collect();
-                    LoginAction::SetUserPlaylists(summaries).into()
-                })
-            });
+            self.dispatcher
+                .call_spotify_and_dispatch(move || async move {
+                    api.get_saved_playlists(0, 30).await.map(|playlists| {
+                        let summaries = playlists
+                            .into_iter()
+                            .filter(|p| p.owner.display_name == current_user)
+                            .map(|PlaylistDescription { id, title, .. }| PlaylistSummary {
+                                id,
+                                title,
+                            })
+                            .collect();
+                        LoginAction::SetUserPlaylists(summaries).into()
+                    })
+                });
         }
     }
 }

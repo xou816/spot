@@ -31,11 +31,12 @@ impl SavedPlaylistsModel {
         let api = self.app_model.get_spotify();
         let batch_size = self.state()?.next_playlists_page.batch_size;
 
-        self.dispatcher.dispatch_spotify_call(move || async move {
-            api.get_saved_playlists(0, batch_size)
-                .await
-                .map(|playlists| BrowserAction::SetPlaylistsContent(playlists).into())
-        });
+        self.dispatcher
+            .call_spotify_and_dispatch(move || async move {
+                api.get_saved_playlists(0, batch_size)
+                    .await
+                    .map(|playlists| BrowserAction::SetPlaylistsContent(playlists).into())
+            });
 
         Some(())
     }
@@ -47,11 +48,12 @@ impl SavedPlaylistsModel {
         let batch_size = next_page.batch_size;
         let offset = next_page.next_offset?;
 
-        self.dispatcher.dispatch_spotify_call(move || async move {
-            api.get_saved_playlists(offset, batch_size)
-                .await
-                .map(|playlists| BrowserAction::AppendPlaylistsContent(playlists).into())
-        });
+        self.dispatcher
+            .call_spotify_and_dispatch(move || async move {
+                api.get_saved_playlists(offset, batch_size)
+                    .await
+                    .map(|playlists| BrowserAction::AppendPlaylistsContent(playlists).into())
+            });
 
         Some(())
     }

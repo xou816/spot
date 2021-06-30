@@ -27,11 +27,12 @@ impl SearchResultsModel {
         let api = self.app_model.get_spotify();
         if let Some(query) = self.get_query() {
             let query = query.to_owned();
-            self.dispatcher.dispatch_spotify_call(move || async move {
-                api.search(&query, 0, 5)
-                    .await
-                    .map(|albums| BrowserAction::SetSearchResults(albums).into())
-            });
+            self.dispatcher
+                .call_spotify_and_dispatch(move || async move {
+                    api.search(&query, 0, 5)
+                        .await
+                        .map(|albums| BrowserAction::SetSearchResults(albums).into())
+                });
         }
     }
 

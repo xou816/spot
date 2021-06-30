@@ -76,21 +76,26 @@ pub mod utils;
 pub mod labels;
 
 impl dyn ActionDispatcher {
-    fn dispatch_spotify_call<F, C>(&self, call: C)
+    fn call_spotify_and_dispatch<F, C>(&self, call: C)
     where
         C: 'static + Send + Clone + FnOnce() -> F,
         F: Send + Future<Output = Result<AppAction, SpotifyApiError>>,
     {
+        self.call_spotify_and_dispatch_many(move || async { call().await.map(|a| vec![a]) })
+    }
+
+    fn call_spotify_and_dispatch_many<F, C>(&self, call: C)
+    where
+        C: 'static + Send + Clone + FnOnce() -> F,
+        F: Send + Future<Output = Result<Vec<AppAction>, SpotifyApiError>>,
+    {
         self.dispatch_many_async(Box::pin(async move {
             let first_call = call.clone();
             match first_call().await {
-                Ok(action) => vec![action],
+                Ok(actions) => actions,
                 Err(SpotifyApiError::NoToken) => vec![],
                 Err(SpotifyApiError::InvalidToken) => {
-                    let mut retried = call()
-                        .await
-                        .map(|it| vec![it])
-                        .unwrap_or_else(|_| Vec::new());
+                    let mut retried = call().await.map(|it| it).unwrap_or_else(|_| Vec::new());
                     retried.push(LoginAction::RefreshToken.into());
                     retried
                 }

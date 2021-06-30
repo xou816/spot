@@ -10,7 +10,8 @@ use crate::app::components::{labels, PlaylistModel, SelectionTool, SelectionTool
 use crate::app::components::{AddSelectionTool, SimpleSelectionTool};
 use crate::app::models::*;
 use crate::app::state::{
-    BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource, SelectionAction, SelectionState,
+    BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource, SelectionAction, SelectionContext,
+    SelectionState,
 };
 use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState, ListDiff};
 
@@ -50,14 +51,20 @@ impl PlaylistDetailsModel {
         })
     }
 
+    fn is_playlist_writable(&self) -> bool {
+        let state = self.app_model.get_state();
+        state.logged_user.playlists.iter().any(|p| p.id == self.id)
+    }
+
     pub fn load_playlist_info(&self) {
         let api = self.app_model.get_spotify();
         let id = self.id.clone();
-        self.dispatcher.dispatch_spotify_call(move || async move {
-            api.get_playlist(&id)
-                .await
-                .map(|playlist| BrowserAction::SetPlaylistDetails(playlist).into())
-        });
+        self.dispatcher
+            .call_spotify_and_dispatch(move || async move {
+                api.get_playlist(&id)
+                    .await
+                    .map(|playlist| BrowserAction::SetPlaylistDetails(playlist).into())
+            });
     }
 
     pub fn load_more_tracks(&self) -> Option<()> {
@@ -75,11 +82,12 @@ impl PlaylistDetailsModel {
         let next_offset = next_batch.offset;
         let batch_size = next_batch.batch_size;
 
-        self.dispatcher.dispatch_spotify_call(move || async move {
-            api.get_playlist_tracks(&id, next_offset, batch_size)
-                .await
-                .map(|tracks| BrowserAction::AppendPlaylistTracks(id, tracks).into())
-        });
+        self.dispatcher
+            .call_spotify_and_dispatch(move || async move {
+                api.get_playlist_tracks(&id, next_offset, batch_size)
+                    .await
+                    .map(|tracks| BrowserAction::AppendPlaylistTracks(id, tracks).into())
+            });
 
         Some(())
     }
@@ -126,7 +134,10 @@ impl PlaylistModel for PlaylistDetailsModel {
 
     fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>> {
         match event {
-            AppEvent::BrowserEvent(BrowserEvent::PlaylistDetailsLoaded(id)) if id == &self.id => {
+            AppEvent::BrowserEvent(BrowserEvent::PlaylistDetailsLoaded(id))
+            | AppEvent::BrowserEvent(BrowserEvent::PlaylistTracksRemoved(id, _))
+                if id == &self.id =>
+            {
                 let songs = self.songs_ref()?;
                 Some(ListDiff::Set(
                     songs
@@ -238,11 +249,18 @@ impl SelectionToolsModel for PlaylistDetailsModel {
             SelectionTool::Add(AddSelectionTool::AddToQueue),
         ];
         tools.append(&mut playlists);
+        if self.is_playlist_writable() {
+            tools.push(SelectionTool::Simple(SimpleSelectionTool::Remove));
+        }
         tools
     }
 
     fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
-        Some(Box::new(self.app_model.map_state(|s| &s.selection)))
+        let selection = self
+            .app_model
+            .map_state_opt(|s| Some(&s.selection))
+            .filter(|s| s.context == SelectionContext::Playlist)?;
+        Some(Box::new(selection))
     }
 
     fn handle_tool_activated(&self, selection: &SelectionState, tool: &SelectionTool) {
@@ -252,7 +270,31 @@ impl SelectionToolsModel for PlaylistDetailsModel {
                     self.handle_select_all_tool(selection, &songs[..]);
                 }
             }
+            SelectionTool::Simple(SimpleSelectionTool::Remove) => {
+                self.handle_remove_from_playlist_tool(selection, &self.id);
+            }
             _ => self.default_handle_tool_activated(selection, tool),
         };
+    }
+}
+
+impl PlaylistDetailsModel {
+    fn handle_remove_from_playlist_tool(&self, selection: &SelectionState, playlist: &str) {
+        let api = self.spotify_client();
+        let id = playlist.to_string();
+        let uris: Vec<String> = selection
+            .peek_selection()
+            .iter()
+            .map(|s| &s.uri)
+            .cloned()
+            .collect();
+        self.dispatcher()
+            .call_spotify_and_dispatch_many(move || async move {
+                api.remove_from_playlist(&id, uris.clone()).await?;
+                Ok(vec![
+                    BrowserAction::RemoveTracksFromPlaylist(uris).into(),
+                    SelectionAction::Clear.into(),
+                ])
+            })
     }
 }

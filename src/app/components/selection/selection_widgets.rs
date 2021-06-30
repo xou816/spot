@@ -15,7 +15,7 @@ impl SimpleSelectionTool {
         match self {
             Self::MoveDown => "go-down-symbolic",
             Self::MoveUp => "go-up-symbolic",
-            Self::RemoveFromQueue => "list-remove-symbolic",
+            Self::Remove => "list-remove-symbolic",
             Self::SelectAll => "checkbox-checked-symbolic",
         }
     }

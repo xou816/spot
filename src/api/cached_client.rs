@@ -20,6 +20,14 @@ lazy_static! {
             .unwrap();
 }
 
+fn _playlist_cache(id: &str) -> Regex {
+    Regex::new(&format!(
+        r"^playlist(_{}|item_{}_\w+_\w+)\.json\.expiry$",
+        id, id
+    ))
+    .unwrap()
+}
+
 pub type SpotifyResult<T> = Result<T, SpotifyApiError>;
 
 pub trait SpotifyApiClient {
@@ -53,6 +61,8 @@ pub trait SpotifyApiClient {
     ) -> BoxFuture<SpotifyResult<Vec<PlaylistDescription>>>;
 
     fn add_to_playlist(&self, id: &str, uris: Vec<String>) -> BoxFuture<SpotifyResult<()>>;
+
+    fn remove_from_playlist(&self, id: &str, uris: Vec<String>) -> BoxFuture<SpotifyResult<()>>;
 
     fn search(
         &self,
@@ -153,7 +163,7 @@ impl CachedSpotifyClient {
                     max_age,
                     etag,
                 } = r?;
-                let expiry = CacheExpiry::expire_in_seconds(u64::max(max_age, 60), etag);
+                let expiry = CacheExpiry::expire_in_seconds(u64::max(max_age, 10), etag);
                 SpotifyResult::Ok(match kind {
                     SpotifyResponseKind::Ok(content, _) => {
                         FetchResult::Modified(content.into_bytes(), expiry)
@@ -261,8 +271,30 @@ impl SpotifyApiClient for CachedSpotifyClient {
         let id = id.to_owned();
 
         Box::pin(async move {
+            self.cache
+                .set_expired_pattern("spot/net", &_playlist_cache(&id))
+                .await
+                .unwrap_or(());
+
             self.client
                 .add_to_playlist(&id, uris)
+                .send_no_response()
+                .await?;
+            Ok(())
+        })
+    }
+
+    fn remove_from_playlist(&self, id: &str, uris: Vec<String>) -> BoxFuture<SpotifyResult<()>> {
+        let id = id.to_owned();
+
+        Box::pin(async move {
+            self.cache
+                .set_expired_pattern("spot/net", &_playlist_cache(&id))
+                .await
+                .unwrap_or(());
+
+            self.client
+                .remove_from_playlist(&id, uris)
                 .send_no_response()
                 .await?;
             Ok(())

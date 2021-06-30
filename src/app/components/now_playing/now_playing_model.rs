@@ -54,11 +54,12 @@ impl NowPlayingModel {
 
         if let Some(PlaylistSource::Playlist(id)) = queue.source.as_ref() {
             let id = id.clone();
-            self.dispatcher.dispatch_spotify_call(move || async move {
-                api.get_playlist_tracks(&id, next_offset, batch_size)
-                    .await
-                    .map(move |song_batch| PlaybackAction::QueuePaged(song_batch).into())
-            });
+            self.dispatcher
+                .call_spotify_and_dispatch(move || async move {
+                    api.get_playlist_tracks(&id, next_offset, batch_size)
+                        .await
+                        .map(move |song_batch| PlaybackAction::QueuePaged(song_batch).into())
+                });
         }
 
         Some(())
@@ -179,7 +180,7 @@ impl SelectionToolsModel for NowPlayingModel {
             SelectionTool::Simple(SimpleSelectionTool::SelectAll),
             SelectionTool::Simple(SimpleSelectionTool::MoveDown),
             SelectionTool::Simple(SimpleSelectionTool::MoveUp),
-            SelectionTool::Simple(SimpleSelectionTool::RemoveFromQueue),
+            SelectionTool::Simple(SimpleSelectionTool::Remove),
         ]
     }
 
@@ -189,6 +190,15 @@ impl SelectionToolsModel for NowPlayingModel {
                 let queue = self.queue();
                 let songs = queue.songs().collect::<Vec<&SongDescription>>();
                 self.handle_select_all_tool_borrowed(selection, &songs);
+            }
+            SelectionTool::Simple(SimpleSelectionTool::Remove) => {
+                self.dispatcher().dispatch(AppAction::DequeueSelection);
+            }
+            SelectionTool::Simple(SimpleSelectionTool::MoveDown) => {
+                self.dispatcher().dispatch(AppAction::MoveDownSelection);
+            }
+            SelectionTool::Simple(SimpleSelectionTool::MoveUp) => {
+                self.dispatcher().dispatch(AppAction::MoveUpSelection);
             }
             _ => self.default_handle_tool_activated(selection, tool),
         };

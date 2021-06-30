@@ -10,7 +10,7 @@ use crate::{api::SpotifyApiClient, app::AppAction};
 pub enum SimpleSelectionTool {
     MoveUp,
     MoveDown,
-    RemoveFromQueue,
+    Remove,
     SelectAll,
 }
 
@@ -49,15 +49,6 @@ pub trait SelectionToolsModel {
             }
             SelectionTool::Add(AddSelectionTool::AddToQueue) => {
                 self.dispatcher().dispatch(AppAction::QueueSelection);
-            }
-            SelectionTool::Simple(SimpleSelectionTool::RemoveFromQueue) => {
-                self.dispatcher().dispatch(AppAction::DequeueSelection);
-            }
-            SelectionTool::Simple(SimpleSelectionTool::MoveDown) => {
-                self.dispatcher().dispatch(AppAction::MoveDownSelection);
-            }
-            SelectionTool::Simple(SimpleSelectionTool::MoveUp) => {
-                self.dispatcher().dispatch(AppAction::MoveUpSelection);
             }
             _ => {}
         }
@@ -98,9 +89,10 @@ pub trait SelectionToolsModel {
             .map(|s| &s.uri)
             .cloned()
             .collect();
-        self.dispatcher().dispatch_spotify_call(move || async move {
-            api.add_to_playlist(&id, uris).await?;
-            Ok(SelectionAction::Clear.into())
-        })
+        self.dispatcher()
+            .call_spotify_and_dispatch(move || async move {
+                api.add_to_playlist(&id, uris).await?;
+                Ok(SelectionAction::Clear.into())
+            })
     }
 }

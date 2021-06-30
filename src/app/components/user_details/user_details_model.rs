@@ -31,11 +31,12 @@ impl UserDetailsModel {
 
     pub fn load_user_details(&self, id: String) {
         let api = self.app_model.get_spotify();
-        self.dispatcher.dispatch_spotify_call(move || async move {
-            api.get_user(&id)
-                .await
-                .map(|user| BrowserAction::SetUserDetails(user).into())
-        });
+        self.dispatcher
+            .call_spotify_and_dispatch(move || async move {
+                api.get_user(&id)
+                    .await
+                    .map(|user| BrowserAction::SetUserDetails(user).into())
+            });
     }
 
     pub fn open_playlist(&self, id: &str) {
@@ -51,11 +52,12 @@ impl UserDetailsModel {
         let id = next_page.data.clone();
         let batch_size = next_page.batch_size;
         let offset = next_page.next_offset?;
-        self.dispatcher.dispatch_spotify_call(move || async move {
-            api.get_user_playlists(&id, offset, batch_size)
-                .await
-                .map(|playlists| BrowserAction::AppendUserPlaylists(playlists).into())
-        });
+        self.dispatcher
+            .call_spotify_and_dispatch(move || async move {
+                api.get_user_playlists(&id, offset, batch_size)
+                    .await
+                    .map(|playlists| BrowserAction::AppendUserPlaylists(playlists).into())
+            });
 
         Some(())
     }
