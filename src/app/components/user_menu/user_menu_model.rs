@@ -42,7 +42,7 @@ impl UserMenuModel {
                     api.get_saved_playlists(0, 30).await.map(|playlists| {
                         let summaries = playlists
                             .into_iter()
-                            .filter(|p| p.owner.display_name == current_user)
+                            .filter(|p| p.owner.id == current_user)
                             .map(|PlaylistDescription { id, title, .. }| PlaylistSummary {
                                 id,
                                 title,
