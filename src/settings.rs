@@ -1,5 +1,5 @@
 use crate::player::{AudioBackend, SpotifyPlayerSettings};
-use gio::SettingsExt;
+use gio::prelude::SettingsExt;
 use librespot::playback::config::Bitrate;
 
 const SETTINGS: &str = "dev.alextren.Spot";
@@ -15,9 +15,9 @@ impl WindowGeometry {
     pub fn new_from_gsettings() -> Self {
         let settings = gio::Settings::new(SETTINGS);
         Self {
-            width: settings.get_int("window-width"),
-            height: settings.get_int("window-height"),
-            is_maximized: settings.get_boolean("window-is-maximized"),
+            width: settings.int("window-width"),
+            height: settings.int("window-height"),
+            is_maximized: settings.boolean("window-is-maximized"),
         }
     }
 
@@ -47,16 +47,16 @@ impl Default for WindowGeometry {
 impl SpotifyPlayerSettings {
     pub fn new_from_gsettings() -> Option<Self> {
         let settings = gio::Settings::new(SETTINGS);
-        let bitrate = match settings.get_enum("player-bitrate") {
+        let bitrate = match settings.enum_("player-bitrate") {
             0 => Some(Bitrate::Bitrate96),
             1 => Some(Bitrate::Bitrate160),
             2 => Some(Bitrate::Bitrate320),
             _ => None,
         }?;
-        let backend = match settings.get_enum("audio-backend") {
+        let backend = match settings.enum_("audio-backend") {
             0 => Some(AudioBackend::PulseAudio),
             1 => Some(AudioBackend::Alsa(
-                settings.get_string("alsa-device")?.as_str().to_string(),
+                settings.string("alsa-device").as_str().to_string(),
             )),
             _ => None,
         }?;
@@ -73,7 +73,7 @@ pub struct SpotSettings {
 impl SpotSettings {
     pub fn new_from_gsettings() -> Option<Self> {
         let settings = gio::Settings::new(SETTINGS);
-        let prefers_dark_theme = settings.get_boolean("prefers-dark-theme");
+        let prefers_dark_theme = settings.boolean("prefers-dark-theme");
         Some(Self {
             prefers_dark_theme,
             player_settings: SpotifyPlayerSettings::new_from_gsettings()?,

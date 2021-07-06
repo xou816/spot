@@ -183,7 +183,7 @@ test('Unit tests',
     get_option('buildtype'),
     get_option('offline') ? 'true' : 'false'
   ],
-  timeout: 60
+  timeout: 180
 )
 
 cargo_clippy = find_program(meson.source_root() / 'build-aux/clippy.sh')
@@ -194,5 +194,5 @@ test('Clippy',
     meson.build_root(),
     get_option('offline') ? 'true' : 'false'
   ],
-  timeout: 120
+  timeout: 180
 )

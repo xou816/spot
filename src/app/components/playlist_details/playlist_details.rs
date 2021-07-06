@@ -1,6 +1,5 @@
 use gladis::Gladis;
 use gtk::prelude::*;
-use gtk::ScrolledWindowExt;
 use std::rc::Rc;
 
 use super::PlaylistDetailsModel;
@@ -27,7 +26,7 @@ impl PlaylistDetailsWidget {
     }
 
     fn set_loaded(&self) {
-        let context = self.root.get_style_context();
+        let context = self.root.style_context();
         context.add_class("playlist_details--loaded");
     }
 }

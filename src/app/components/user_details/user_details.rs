@@ -1,6 +1,5 @@
 use gladis::Gladis;
 use gtk::prelude::*;
-use gtk::ScrolledWindowExt;
 use std::rc::Rc;
 
 use crate::app::components::{
@@ -67,7 +66,7 @@ impl UserDetails {
 
     fn update_details(&self) {
         if let Some(name) = self.model.get_user_name() {
-            let context = self.widget.root.get_style_context();
+            let context = self.widget.root.style_context();
             context.add_class("user__loaded");
             self.widget.user_name.set_text(&name);
         }

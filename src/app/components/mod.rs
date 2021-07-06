@@ -125,7 +125,7 @@ pub fn screen_add_css_provider(resource: &'static str) {
         provider.load_from_resource(resource);
 
         gtk::StyleContext::add_provider_for_screen(
-            &gdk::Screen::get_default().unwrap(),
+            &gdk::Screen::default().unwrap(),
             &provider,
             gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
         );

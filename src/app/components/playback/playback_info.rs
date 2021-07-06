@@ -1,6 +1,5 @@
 use gettextrs::*;
 use gtk::prelude::*;
-use gtk::{ImageExt, LabelExt};
 use std::ops::Deref;
 use std::rc::Rc;
 

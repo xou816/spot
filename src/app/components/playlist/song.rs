@@ -3,7 +3,6 @@ use crate::app::models::SongModel;
 use gio::MenuModel;
 use gladis::Gladis;
 use gtk::prelude::*;
-use gtk::{MenuButtonExt, ToggleButtonExt, WidgetExt};
 
 #[derive(Gladis, Clone)]
 struct SongWidget {
@@ -25,7 +24,7 @@ impl SongWidget {
 
     fn set_playing(widget: &gtk::Widget, is_playing: bool) {
         let song_class = "song--playing";
-        let context = widget.get_style_context();
+        let context = widget.style_context();
         if is_playing {
             context.add_class(song_class);
         } else {
@@ -86,9 +85,7 @@ impl Song {
         if menu.is_some() {
             let menu_btn = &self.widget.menu_btn;
             menu_btn.set_menu_model(menu);
-            menu_btn
-                .get_style_context()
-                .add_class("song__menu--enabled");
+            menu_btn.style_context().add_class("song__menu--enabled");
         }
     }
 }

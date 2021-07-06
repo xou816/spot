@@ -1,6 +1,5 @@
 use gio::prelude::*;
 use gtk::prelude::*;
-use gtk::ListBoxExt;
 use std::ops::Deref;
 use std::rc::Rc;
 
@@ -67,7 +66,7 @@ where
         let list_model = ListStore::new();
 
         Self::set_selection_active(&listbox, model.is_selection_enabled());
-        listbox.get_style_context().add_class("playlist");
+        listbox.style_context().add_class("playlist");
         listbox.set_activate_on_single_click(true);
 
         let press_gesture = gtk::GestureLongPress::new(&listbox);
@@ -80,7 +79,7 @@ where
 
         let list_model_clone = list_model.clone();
         listbox.connect_row_activated(clone!(@weak model => move |_, row| {
-            let index = row.get_index() as u32;
+            let index = row.index() as u32;
             let song: SongModel = list_model_clone.get(index);
             let selection_enabled = model.is_selection_enabled();
             if selection_enabled {
@@ -136,7 +135,7 @@ where
     fn connect_events(item: &SongModel, row: &gtk::ListBoxRow, model: Rc<Model>) {
         row.connect_button_release_event(
             clone!(@weak model, @strong item => @default-return Inhibit(false), move |_, event| {
-                if event.get_button() == 3 && model.enable_selection() {
+                if event.button() == 3 && model.enable_selection() {
                     Self::select_song(&*model, &item);
                     Inhibit(true)
                 } else {
@@ -187,7 +186,7 @@ where
         self.list_model
             .iter()
             .enumerate()
-            .filter_map(move |(i, song)| listbox.get_row_at_index(i as i32).map(|r| (r, song)))
+            .filter_map(move |(i, song)| listbox.row_at_index(i as i32).map(|r| (r, song)))
     }
 
     fn update_list(&self, scroll: bool) {
@@ -205,7 +204,7 @@ where
     }
 
     fn set_selection_active(listbox: &gtk::ListBox, active: bool) {
-        let context = listbox.get_style_context();
+        let context = listbox.style_context();
         if active {
             context.add_class("playlist--selectable");
             listbox.set_selection_mode(gtk::SelectionMode::Multiple);

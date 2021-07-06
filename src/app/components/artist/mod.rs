@@ -1,7 +1,5 @@
 use gladis::Gladis;
 use gtk::prelude::*;
-use gtk::ButtonExt;
-use libhandy::AvatarExt;
 
 use crate::app::components::Component;
 use crate::app::loader::ImageLoader;

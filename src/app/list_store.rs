@@ -1,5 +1,4 @@
 use gio::prelude::*;
-use gio::ListModelExt;
 use glib::clone::{Downgrade, Upgrade};
 use std::iter::Iterator;
 use std::marker::PhantomData;
@@ -47,14 +46,12 @@ where
 
     pub fn extend(&mut self, elements: impl Iterator<Item = GType>) {
         let upcast_vec: Vec<glib::Object> = elements.map(|e| e.upcast::<glib::Object>()).collect();
-        self.store
-            .splice(self.store.get_n_items(), 0, &upcast_vec[..]);
+        self.store.splice(self.store.n_items(), 0, &upcast_vec[..]);
     }
 
     pub fn replace_all(&mut self, elements: impl Iterator<Item = GType>) {
         let upcast_vec: Vec<glib::Object> = elements.map(|e| e.upcast::<glib::Object>()).collect();
-        self.store
-            .splice(0, self.store.get_n_items(), &upcast_vec[..]);
+        self.store.splice(0, self.store.n_items(), &upcast_vec[..]);
     }
 
     pub fn insert(&mut self, position: u32, element: GType) {
@@ -66,21 +63,17 @@ where
     }
 
     pub fn get(&self, index: u32) -> GType {
-        self.store
-            .get_object(index)
-            .unwrap()
-            .downcast::<GType>()
-            .unwrap()
+        self.store.item(index).unwrap().downcast::<GType>().unwrap()
     }
 
     pub fn iter(&self) -> impl Iterator<Item = GType> + '_ {
         let store = &self.store;
-        let count = store.get_n_items();
+        let count = store.n_items();
         (0..count).into_iter().map(move |i| self.get(i))
     }
 
     pub fn len(&self) -> usize {
-        self.store.get_n_items() as usize
+        self.store.n_items() as usize
     }
 
     pub fn eq<F, O>(&self, other: &[O], comparison: F) -> bool

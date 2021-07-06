@@ -1,6 +1,5 @@
 use glib::signal;
 use gtk::prelude::*;
-use gtk::{BinExt, ImageExt, LabelExt, RangeExt};
 use std::ops::Deref;
 use std::rc::Rc;
 
@@ -142,13 +141,10 @@ impl PlaybackControl {
 
         self.widget
             .play_button
-            .get_child()
+            .child()
             .and_then(|child| child.downcast::<gtk::Image>().ok())
             .map(|image| {
-                image.set_from_icon_name(
-                    Some(playback_image),
-                    image.get_property_icon_size().into(),
-                );
+                image.set_from_icon_name(Some(playback_image), image.icon_size());
             })
             .expect("error updating icon");
     }
@@ -162,7 +158,7 @@ impl PlaybackControl {
             let track_position = &self.widget.track_position;
             self.clock
                 .start(clone!(@weak seek_bar, @weak track_position => move || {
-                    let value = seek_bar.get_value() + 1000.0;
+                    let value = seek_bar.value() + 1000.0;
                     seek_bar.set_value(value);
                     track_position.set_text(&format_duration(value));
                 }));
@@ -173,7 +169,7 @@ impl PlaybackControl {
 
     fn update_current_info(&self) {
         let class = "seek-bar--active";
-        let style_context = self.widget.seek_bar.get_style_context();
+        let style_context = self.widget.seek_bar.style_context();
         if let Some(duration) = self.model.current_song_duration() {
             style_context.add_class(class);
             self.widget.seek_bar.set_range(0.0, duration);

@@ -1,6 +1,6 @@
 use gettextrs::*;
-use gio::{ActionMapExt, SimpleAction, SimpleActionGroup};
-use gtk::{DialogExt, MenuButtonExt, WidgetExt};
+use gio::{prelude::ActionMapExt, SimpleAction, SimpleActionGroup};
+use gtk::prelude::*;
 use std::rc::Rc;
 
 use super::UserMenuModel;

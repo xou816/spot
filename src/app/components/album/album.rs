@@ -4,7 +4,6 @@ use crate::app::loader::ImageLoader;
 use crate::app::models::AlbumModel;
 use gladis::Gladis;
 use gtk::prelude::*;
-use gtk::RevealerExt;
 
 #[derive(Gladis, Clone)]
 struct AlbumWidget {
