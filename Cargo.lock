@@ -1056,9 +1056,9 @@ dependencies = [
 
 [[package]]
 name = "glib"
-version = "0.14.0"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f0028bbfd270d0778540294abca11141d59cb474da4c1f61ca1e11f579c49247"
+checksum = "dbecad7a3a898ee749d491ce2ae0decb0bce9e736f9747bc49159b1cea5d37f4"
 dependencies = [
  "bitflags",
  "futures-channel",
