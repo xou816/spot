@@ -126,7 +126,7 @@ impl MainWindow {
     }
 
     fn raise(&self) {
-        self.window.show();
+        self.window.present();
     }
 }
 
