@@ -20,16 +20,12 @@ impl UserMenu {
     ) -> Self {
         let model = Rc::new(model);
 
-        about.connect_delete_event(
-            clone!(@weak about => @default-return gtk::Inhibit(false), move |_, _| {
+        about.connect_close_request(
+            clone!(@weak about => @default-return gtk::Inhibit(false), move |_| {
                 about.hide();
                 gtk::Inhibit(true)
             }),
         );
-
-        about.connect_response(clone!(@weak about => move |_, _| {
-            about.hide();
-        }));
 
         let action_group = SimpleActionGroup::new();
 
@@ -44,7 +40,7 @@ impl UserMenu {
         action_group.add_action(&{
             let about_action = SimpleAction::new("about", None);
             about_action.connect_activate(clone!(@weak about => move |_, _| {
-                about.show_all();
+                about.present();
             }));
             about_action
         });

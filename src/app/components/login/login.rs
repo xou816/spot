@@ -1,4 +1,3 @@
-use gdk::{keys::constants::Return, EventKey};
 use gladis::Gladis;
 use gtk::prelude::*;
 use std::rc::Rc;
@@ -12,7 +11,7 @@ use super::LoginModel;
 
 #[derive(Clone, Gladis)]
 struct LoginWidget {
-    pub window: libhandy::Window,
+    pub window: libadwaita::Window,
     username: gtk::Entry,
     password: gtk::Entry,
     close_button: gtk::Button,
@@ -28,7 +27,7 @@ impl LoginWidget {
 
 pub struct Login {
     parent: gtk::Window,
-    window: libhandy::Window,
+    window: libadwaita::Window,
     error_container: gtk::Revealer,
     model: Rc<LoginModel>,
 }
@@ -51,17 +50,14 @@ impl Login {
             }),
         );
 
-        username.connect_key_press_event(
-            clone!(@weak username, @weak password, @weak error_container, @weak model => @default-return Inhibit(false), move |_, event | {
-                Self::handle_keypress(username, password, error_container, model, event)
+        let controller = gtk::EventControllerKey::new();
+        controller.set_propagation_phase(gtk::PropagationPhase::Capture);
+        controller.connect_key_pressed(
+            clone!(@weak username, @weak password, @weak error_container, @weak model => @default-return gtk::Inhibit(false), move |_, key, _, _| {
+                Self::handle_keypress(username, password, error_container, model, &key)
             }),
         );
-
-        password.connect_key_press_event(
-            clone!(@weak username, @weak password, @weak error_container, @weak model => @default-return Inhibit(false), move |_, event | {
-                Self::handle_keypress(username, password, error_container, model, event)
-            }),
-        );
+        window.add_controller(&controller);
 
         close_button.connect_clicked(clone!(@weak parent => move |_| {
             if let Some(app) = parent.application().as_ref() {
@@ -88,7 +84,7 @@ impl Login {
     fn show_self(&self) {
         self.window.set_transient_for(Some(&self.parent));
         self.window.set_modal(true);
-        self.window.show_all();
+        self.window.show();
     }
 
     fn hide_and_save_creds(&self, credentials: Credentials) {
@@ -101,13 +97,13 @@ impl Login {
         password: gtk::Entry,
         error_container: gtk::Revealer,
         model: Rc<LoginModel>,
-        event: &EventKey,
-    ) -> Inhibit {
-        if event.keyval() == Return {
+        key: &gdk::keys::Key,
+    ) -> gtk::Inhibit {
+        if key == &gdk::keys::constants::Return {
             Login::submit_login_form(username, password, error_container, model);
-            Inhibit(true)
+            gtk::Inhibit(true)
         } else {
-            Inhibit(false)
+            gtk::Inhibit(false)
         }
     }
 

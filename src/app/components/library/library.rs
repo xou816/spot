@@ -59,7 +59,6 @@ impl Library {
         self.widget.flowbox.bind_model(Some(store), move |item| {
             let item = item.downcast_ref::<AlbumModel>().unwrap();
             let child = create_album_for(item, worker_clone.clone(), weak_model.clone());
-            child.show_all();
             child.upcast::<gtk::Widget>()
         });
     }
@@ -94,7 +93,7 @@ fn create_album_for(
     let child = gtk::FlowBoxChild::new();
 
     let album = Album::new(album_model, worker);
-    child.add(album.get_root_widget());
+    child.set_child(Some(album.get_root_widget()));
 
     album.connect_album_pressed(move |a| {
         if let (Some(model), Some(id)) = (model.upgrade(), a.uri()) {

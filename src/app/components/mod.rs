@@ -6,7 +6,6 @@ macro_rules! resource {
 }
 
 use gettextrs::*;
-use gtk::prelude::*;
 use std::cell::RefCell;
 use std::collections::HashSet;
 use std::future::Future;
@@ -124,8 +123,8 @@ pub fn screen_add_css_provider(resource: &'static str) {
         let provider = gtk::CssProvider::new();
         provider.load_from_resource(resource);
 
-        gtk::StyleContext::add_provider_for_screen(
-            &gdk::Screen::default().unwrap(),
+        gtk::StyleContext::add_provider_for_display(
+            &gdk::Display::default().unwrap(),
             &provider,
             gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
         );

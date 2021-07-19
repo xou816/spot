@@ -1,6 +1,5 @@
 use gtk::prelude::*;
-use libhandy::traits::LeafletExt;
-use libhandy::NavigationDirection;
+use libadwaita::NavigationDirection;
 use std::rc::Rc;
 
 use crate::app::components::{EventListener, ListenerComponent};
@@ -11,7 +10,7 @@ use super::{factory::ScreenFactory, home::HomePane, NavigationModel};
 
 pub struct Navigation {
     model: Rc<NavigationModel>,
-    leaflet: libhandy::Leaflet,
+    leaflet: libadwaita::Leaflet,
     navigation_stack: gtk::Stack,
     home_stack_sidebar: gtk::StackSidebar,
     back_button: gtk::Button,
@@ -22,7 +21,7 @@ pub struct Navigation {
 impl Navigation {
     pub fn new(
         model: NavigationModel,
-        leaflet: libhandy::Leaflet,
+        leaflet: libadwaita::Leaflet,
         back_button: gtk::Button,
         navigation_stack: gtk::Stack,
         home_stack_sidebar: gtk::StackSidebar,
@@ -55,7 +54,7 @@ impl Navigation {
 
     fn update_back_button(
         back_button: &gtk::Button,
-        leaflet: &libhandy::Leaflet,
+        leaflet: &libadwaita::Leaflet,
         model: &Rc<NavigationModel>,
     ) {
         let is_main = leaflet
@@ -67,7 +66,7 @@ impl Navigation {
 
     fn connect_back_button(
         back_button: &gtk::Button,
-        leaflet: &libhandy::Leaflet,
+        leaflet: &libadwaita::Leaflet,
         model: &Rc<NavigationModel>,
     ) {
         back_button.connect_clicked(clone!(@weak leaflet, @weak model => move |_| {
@@ -118,10 +117,9 @@ impl Navigation {
         };
 
         let widget = component.get_root_widget();
-        widget.show_all();
 
         self.navigation_stack
-            .add_named(widget, name.identifier().as_ref());
+            .add_named(widget, Some(name.identifier().as_ref()));
         self.children.push(component);
         self.navigation_stack
             .set_visible_child_name(name.identifier().as_ref());

@@ -11,7 +11,7 @@ struct ArtistWidget {
     root: gtk::Widget,
     artist: gtk::Label,
     avatar_btn: gtk::Button,
-    avatar: libhandy::Avatar,
+    avatar: libadwaita::Avatar,
 }
 
 impl ArtistWidget {
@@ -35,7 +35,8 @@ impl Artist {
                 if let Some(avatar) = avatar.upgrade() {
                     let loader = ImageLoader::new();
                     let pixbuf = loader.load_remote(&url, "jpg", 200, 200).await;
-                    avatar.set_image_load_func(Some(Box::new(move |_| pixbuf.clone())));
+                    let texture = pixbuf.as_ref().map(|p| gdk::Texture::for_pixbuf(p));
+                    avatar.set_custom_image(texture.as_ref());
                 }
             });
         }

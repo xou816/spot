@@ -89,9 +89,9 @@ impl PlaybackInfo {
                 // translators: Short text displayed instead of a song title when nothing plays
                 .set_label(&gettext("No song playing"));
             self.current_song_image
-                .set_from_icon_name(Some("emblem-music-symbolic"), gtk::IconSize::Button);
+                .set_from_icon_name(Some("emblem-music-symbolic"));
             self.current_song_image_small
-                .set_from_icon_name(Some("emblem-music-symbolic"), gtk::IconSize::Button);
+                .set_from_icon_name(Some("emblem-music-symbolic"));
         }
     }
 }

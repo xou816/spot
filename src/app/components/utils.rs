@@ -120,8 +120,7 @@ pub fn wrap_flowbox_item<
     let item = item.downcast_ref::<Model>().unwrap();
     let widget = f(item);
     let child = gtk::FlowBoxChild::new();
-    child.add(&widget);
-    child.show_all();
+    child.set_child(Some(&widget));
     child.upcast::<gtk::Widget>()
 }
 
@@ -142,17 +141,15 @@ fn parent_scrolled_window(widget: &gtk::Widget) -> Option<gtk::ScrolledWindow> {
 
 pub fn in_viewport(widget: &gtk::Widget) -> Option<bool> {
     let window = parent_scrolled_window(widget)?;
-    let adjustment = window.vadjustment();
-    let (_, y) = widget.translate_coordinates(&window, 0, 0)?;
-    let y = y as f64;
+    let adjustment = window.vadjustment()?;
+    let (_, y) = widget.translate_coordinates(&window, 0.0, 0.0)?;
     Some(y > 0.0 && y < 0.9 * adjustment.page_size())
 }
 
 pub fn vscroll_to(widget: &gtk::Widget, progress: f64) -> Option<f64> {
     let window = parent_scrolled_window(widget)?;
-    let adjustment = window.vadjustment();
-    let (_, y) = widget.translate_coordinates(&window, 0, 0)?;
-    let y = y as f64;
+    let adjustment = window.vadjustment()?;
+    let (_, y) = widget.translate_coordinates(&window, 0.0, 0.0)?;
     let target = adjustment.value() + y * progress;
     adjustment.set_value(target);
     Some(target)

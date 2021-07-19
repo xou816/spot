@@ -1,6 +1,6 @@
 gnome = import('gnome')
 
-dependency('libhandy-1')
+dependency('libadwaita-1')
 dependency('gtk+-3.0')
 dependency('glib-2.0')
 dependency('openssl')

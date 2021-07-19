@@ -57,8 +57,7 @@ impl ArtistDetails {
                             m.open_album(id);
                         }
                     });
-                    child.add(album.get_root_widget());
-                    child.show_all();
+                    child.set_child(Some(album.get_root_widget()));
                     child.upcast::<gtk::Widget>()
                 });
         }

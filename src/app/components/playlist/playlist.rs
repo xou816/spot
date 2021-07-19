@@ -69,8 +69,8 @@ where
         listbox.style_context().add_class("playlist");
         listbox.set_activate_on_single_click(true);
 
-        let press_gesture = gtk::GestureLongPress::new(&listbox);
-        listbox.add_events(gdk::EventMask::TOUCH_MASK);
+        let press_gesture = gtk::GestureLongPress::new();
+        listbox.add_controller(&press_gesture);
         press_gesture.set_touch_only(false);
         press_gesture.set_propagation_phase(gtk::PropagationPhase::Capture);
         press_gesture.connect_pressed(clone!(@weak model => move |_, _, _| {
@@ -96,19 +96,14 @@ where
                 let id = &item.get_id();
 
                 let row = gtk::ListBoxRow::new();
-                let event_box = gtk::EventBox::new();
-                row.add(&event_box);
-
                 let song = Song::new(item.clone());
-                event_box.add(song.get_root_widget());
+                row.set_child(Some(song.get_root_widget()));
 
                 song.set_menu(model.menu_for(id).as_ref());
                 song.set_actions(model.actions_for(id).as_ref());
 
                 Self::set_row_state(&listbox, item, &row, Self::get_row_state(item, &*model, None));
-                Self::connect_events(item, &row, model);
 
-                row.show_all();
                 row.upcast::<gtk::Widget>()
             }),
         );
@@ -130,19 +125,6 @@ where
                 model.select_song(&song.get_id());
             }
         }
-    }
-
-    fn connect_events(item: &SongModel, row: &gtk::ListBoxRow, model: Rc<Model>) {
-        row.connect_button_release_event(
-            clone!(@weak model, @strong item => @default-return Inhibit(false), move |_, event| {
-                if event.button() == 3 && model.enable_selection() {
-                    Self::select_song(&*model, &item);
-                    Inhibit(true)
-                } else {
-                    Inhibit(false)
-                }
-            }),
-        );
     }
 
     fn get_row_state(

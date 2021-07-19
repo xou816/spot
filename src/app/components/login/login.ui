@@ -1,20 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 -->
 <interface>
-  <requires lib="gtk+" version="3.24"/>
-  <requires lib="libhandy" version="1.0"/>
-  <object class="HdyWindow" id="window">
-    <property name="can-focus">False</property>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwWindow" id="window">
     <property name="default-width">360</property>
     <property name="default-height">100</property>
     <child>
-      <object class="HdyWindowHandle">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
+      <object class="GtkWindowHandle">
         <child>
           <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="margin-start">4</property>
             <property name="margin-end">4</property>
             <property name="margin-top">4</property>
@@ -22,188 +16,112 @@
             <property name="orientation">vertical</property>
             <child>
               <object class="GtkButton" id="close_button">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
+                <property name="valign">center</property>
+                <property name="receives-default">1</property>
                 <property name="halign">end</property>
-                <property name="relief">none</property>
-                <child>
-                  <object class="GtkImage">
-                    <property name="width-request">22</property>
-                    <property name="height-request">22</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="icon-name">window-close-symbolic</property>
-                  </object>
-                </child>
+                <property name="has-frame">0</property>
+                <property name="width-request">22</property>
+                <property name="height-request">22</property>
+                <property name="icon-name">window-close-symbolic</property>
                 <style>
                   <class name="circular"/>
                 </style>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
-              <object class="HdyClamp">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
+              <object class="AdwClamp">
                 <property name="maximum-size">280</property>
                 <property name="tightening-threshold">280</property>
                 <child>
                   <object class="GtkBox">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="valign">center</property>
-                    <property name="vexpand">True</property>
+                    <property name="vexpand">1</property>
                     <property name="orientation">vertical</property>
                     <property name="spacing">20</property>
                     <child>
                       <object class="GtkLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <property name="halign">start</property>
                         <property name="valign">start</property>
-                        <property name="label" translatable="yes" comments="Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).">Login to Spotify Premium</property>
-                        <property name="wrap">True</property>
+                        <property name="label" translatable="yes" comments="Login window title -- shouldn&apos;t be too long, but must mention Premium (a premium account is required).">Login to Spotify Premium</property>
+                        <property name="wrap">1</property>
                         <property name="xalign">0</property>
                         <property name="yalign">0</property>
                         <attributes>
-                          <attribute name="weight" value="medium"/>
+                          <attribute name="weight" value="medium"></attribute>
                         </attributes>
                         <style>
                           <class name="title-3"/>
                         </style>
                       </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
                     </child>
                     <child>
                       <object class="GtkBox">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <property name="orientation">vertical</property>
                         <property name="spacing">4</property>
                         <child>
                           <object class="GtkEntry" id="username">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
                             <property name="primary-icon-name">avatar-default-symbolic</property>
                             <property name="placeholder-text" translatable="yes" comments="Placeholder for the username field">Username</property>
                           </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
                         </child>
                         <child>
                           <object class="GtkEntry" id="password">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="visibility">False</property>
+                            <property name="visibility">0</property>
                             <property name="invisible-char">●</property>
                             <property name="primary-icon-name">dialog-password-symbolic</property>
                             <property name="placeholder-text" translatable="yes" comments="Placeholder for the password field">Password</property>
                           </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
                         </child>
                       </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
                     </child>
                     <child>
                       <object class="GtkRevealer" id="error_container">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
+                        <property name="vexpand">1</property>
                         <property name="transition-type">slide-up</property>
-                        <child>
+                        <property name="child">
                           <object class="GtkBox">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
                             <property name="spacing">8</property>
                             <child>
                               <object class="GtkImage">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
+                                <property name="halign">center</property>
                                 <property name="valign">start</property>
                                 <property name="margin-top">2</property>
-                                <property name="vexpand">True</property>
+                                <property name="vexpand">1</property>
                                 <property name="icon-name">dialog-warning-symbolic</property>
                               </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">False</property>
-                                <property name="position">0</property>
-                              </packing>
                             </child>
                             <child>
                               <object class="GtkLabel">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
                                 <property name="label" translatable="yes" comments="This error is shown when authentication fails.">Authentication failed!</property>
-                                <property name="wrap">True</property>
+                                <property name="wrap">1</property>
                                 <property name="xalign">0</property>
                                 <property name="yalign">0</property>
                                 <attributes>
-                                  <attribute name="weight" value="bold"/>
+                                  <attribute name="weight" value="bold"></attribute>
                                 </attributes>
                               </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">1</property>
-                              </packing>
                             </child>
                           </object>
-                        </child>
+                        </property>
                       </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">2</property>
-                      </packing>
                     </child>
                     <child>
                       <object class="GtkButton" id="login_button">
                         <property name="label" translatable="yes" comments="Log in button label">Log in</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
+                        <property name="receives-default">1</property>
                         <style>
                           <class name="suggested-action"/>
                         </style>
                       </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">3</property>
-                      </packing>
                     </child>
                   </object>
                 </child>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
             </child>
           </object>
         </child>
       </object>
+
     </child>
   </object>
 </interface>

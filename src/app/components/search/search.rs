@@ -1,7 +1,6 @@
 use gettextrs::*;
 use gio::prelude::*;
 use gladis::Gladis;
-use gtk::prelude::*;
 use std::rc::Rc;
 
 use crate::app::components::utils::{wrap_flowbox_item, Debouncer};

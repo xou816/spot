@@ -1,7 +1,6 @@
 use crate::api::CachedSpotifyClient;
 use crate::settings::SpotSettings;
 use futures::channel::mpsc::UnboundedSender;
-use gtk::prelude::*;
 use std::rc::Rc;
 use std::sync::Arc;
 
@@ -113,8 +112,8 @@ impl App {
         app_model: Rc<AppModel>,
         worker: Worker,
     ) -> Box<impl EventListener> {
-        let window: libhandy::ApplicationWindow = builder.object("window").unwrap();
-        let search_bar: libhandy::SearchBar = builder.object("search_bar").unwrap();
+        let window: libadwaita::ApplicationWindow = builder.object("window").unwrap();
+        let search_bar: gtk::SearchBar = builder.object("search_bar").unwrap();
         Box::new(MainWindow::new(
             settings.window.clone(),
             app_model,
@@ -129,7 +128,7 @@ impl App {
         app_model: Rc<AppModel>,
         dispatcher: Box<dyn ActionDispatcher>,
     ) -> Box<impl EventListener> {
-        let headerbar: libhandy::HeaderBar = builder.object("header_bar").unwrap();
+        let headerbar: libadwaita::HeaderBar = builder.object("header_bar").unwrap();
         let selection_toggle: gtk::ToggleButton = builder.object("selection_toggle").unwrap();
         let selection_label: gtk::Label = builder.object("selection_label").unwrap();
         let model = SelectionHeadingModel::new(app_model, dispatcher);
@@ -148,7 +147,7 @@ impl App {
         worker: Worker,
     ) -> Box<Navigation> {
         let back_btn: gtk::Button = builder.object("nav_back").unwrap();
-        let leaflet: libhandy::Leaflet = builder.object("leaflet").unwrap();
+        let leaflet: libadwaita::Leaflet = builder.object("leaflet").unwrap();
         let navigation_stack: gtk::Stack = builder.object("navigation_stack").unwrap();
         let home_stack_sidebar: gtk::StackSidebar = builder.object("home_stack_sidebar").unwrap();
 
@@ -226,7 +225,7 @@ impl App {
     ) -> Box<SearchBar> {
         let search_button: gtk::ToggleButton = builder.object("search_button").unwrap();
         let search_entry: gtk::SearchEntry = builder.object("search_entry").unwrap();
-        let search_bar: libhandy::SearchBar = builder.object("search_bar").unwrap();
+        let search_bar: gtk::SearchBar = builder.object("search_bar").unwrap();
         let model = SearchBarModel(dispatcher);
         Box::new(SearchBar::new(
             model,

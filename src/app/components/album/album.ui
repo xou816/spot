@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 -->
 <interface>
-  <requires lib="gtk+" version="3.24"/>
-  <!-- interface-css-provider-path album.css -->
+  <requires lib="gtk" version="4.0"/>
   <object class="GtkBox" id="root">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="halign">center</property>
     <property name="valign">start</property>
     <property name="margin-start">8</property>
@@ -16,29 +12,22 @@
     <property name="spacing">8</property>
     <child>
       <object class="GtkBox">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
+        <property name="vexpand">1</property>
         <property name="halign">center</property>
         <property name="valign">center</property>
         <child>
           <object class="GtkRevealer" id="revealer">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="transition-type">crossfade</property>
-            <child>
+            <property name="child">
               <object class="GtkButton" id="cover_btn">
                 <property name="width-request">200</property>
                 <property name="height-request">200</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <property name="relief">none</property>
+                <property name="receives-default">1</property>
+                <property name="has-frame">0</property>
                 <child>
                   <object class="GtkImage" id="cover_image">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="hexpand">True</property>
-                    <property name="vexpand">True</property>
+                    <property name="hexpand">1</property>
+                    <property name="vexpand">1</property>
                     <property name="icon-name">media-playback-start-symbolic</property>
                   </object>
                 </child>
@@ -46,28 +35,16 @@
                   <class name="album__cover"/>
                 </style>
               </object>
-            </child>
+            </property>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
         </child>
       </object>
-      <packing>
-        <property name="expand">True</property>
-        <property name="fill">True</property>
-        <property name="position">0</property>
-      </packing>
     </child>
     <child>
       <object class="GtkLabel" id="album_label">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="label">Album</property>
         <property name="justify">center</property>
-        <property name="wrap">True</property>
+        <property name="wrap">1</property>
         <property name="wrap-mode">word-char</property>
         <property name="ellipsize">end</property>
         <property name="max-width-chars">22</property>
@@ -76,30 +53,18 @@
           <class name="album__title"/>
         </style>
       </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">1</property>
-      </packing>
     </child>
     <child>
       <object class="GtkLabel" id="artist_label">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="label">Artist</property>
         <property name="justify">center</property>
-        <property name="wrap">True</property>
+        <property name="wrap">1</property>
         <property name="wrap-mode">word-char</property>
         <property name="max-width-chars">25</property>
         <style>
           <class name="album__artist"/>
         </style>
       </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">2</property>
-      </packing>
     </child>
     <style>
       <class name="album"/>
