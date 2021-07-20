@@ -12,7 +12,8 @@ pub use player::*;
 
 #[derive(Debug, Clone)]
 pub enum Command {
-    Login(String, String),
+    Login { username: String, password: String },
+    Autologin { username: String, token: String },
     Logout,
     PlayerLoad(SpotifyId),
     PlayerResume,
@@ -45,6 +46,13 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
         self.sender
             .borrow_mut()
             .unbounded_send(LoginAction::SetLoginSuccess(credentials).into())
+            .unwrap();
+    }
+
+    fn autologin_successful(&self, username: String) {
+        self.sender
+            .borrow_mut()
+            .unbounded_send(LoginAction::SetAutologinSuccess { username }.into())
             .unwrap();
     }
 

@@ -6,8 +6,10 @@ use crate::app::state::{AppAction, AppEvent, UpdatableState};
 
 #[derive(Clone, Debug)]
 pub enum LoginAction {
-    TryLogin(String, String),
+    TryLogin { username: String, password: String },
+    TryAutologin { username: String, token: String },
     SetLoginSuccess(credentials::Credentials),
+    SetAutologinSuccess { username: String },
     SetUserPlaylists(Vec<PlaylistSummary>),
     SetLoginFailure,
     RefreshToken,
@@ -23,8 +25,10 @@ impl From<LoginAction> for AppAction {
 
 #[derive(Clone, Debug)]
 pub enum LoginEvent {
-    LoginStarted(String, String),
+    LoginStarted { username: String, password: String },
+    AutologinStarted { username: String, token: String },
     LoginCompleted(credentials::Credentials),
+    AutologinCompleted,
     UserPlaylistsLoaded,
     LoginFailed,
     FreshTokenRequested,
@@ -57,10 +61,19 @@ impl UpdatableState for LoginState {
 
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
-            LoginAction::TryLogin(u, p) => vec![LoginEvent::LoginStarted(u, p).into()],
+            LoginAction::TryLogin { username, password } => {
+                vec![LoginEvent::LoginStarted { username, password }.into()]
+            }
+            LoginAction::TryAutologin { username, token } => {
+                vec![LoginEvent::AutologinStarted { username, token }.into()]
+            }
             LoginAction::SetLoginSuccess(credentials) => {
                 self.user = Some(credentials.username.clone());
                 vec![LoginEvent::LoginCompleted(credentials).into()]
+            }
+            LoginAction::SetAutologinSuccess { username } => {
+                self.user = Some(username);
+                vec![LoginEvent::AutologinCompleted.into()]
             }
             LoginAction::SetLoginFailure => vec![LoginEvent::LoginFailed.into()],
             LoginAction::RefreshToken => vec![LoginEvent::FreshTokenRequested.into()],

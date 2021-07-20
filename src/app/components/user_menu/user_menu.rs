@@ -75,7 +75,9 @@ impl UserMenu {
 impl EventListener for UserMenu {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::LoginEvent(LoginEvent::LoginCompleted(_)) | AppEvent::Started => {
+            AppEvent::LoginEvent(LoginEvent::LoginCompleted(_))
+            | AppEvent::LoginEvent(LoginEvent::AutologinCompleted)
+            | AppEvent::Started => {
                 self.update_menu();
                 self.model.fetch_user_playlists();
             }

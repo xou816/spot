@@ -72,7 +72,8 @@ impl EventListener for Library {
                 let _ = self.model.refresh_saved_albums();
                 self.bind_flowbox(self.model.get_list_store().unwrap().unsafe_store())
             }
-            AppEvent::LoginEvent(LoginEvent::LoginCompleted(_)) => {
+            AppEvent::LoginEvent(LoginEvent::LoginCompleted(_))
+            | AppEvent::LoginEvent(LoginEvent::AutologinCompleted) => {
                 let _ = self.model.refresh_saved_albums();
             }
             _ => {}

@@ -35,8 +35,17 @@ impl EventListener for PlayerNotifier {
             AppEvent::PlaybackEvent(PlaybackEvent::TrackSeeked(position)) => {
                 Some(Command::PlayerSeek(*position))
             }
-            AppEvent::LoginEvent(LoginEvent::LoginStarted(username, password)) => {
-                Some(Command::Login(username.to_owned(), password.to_owned()))
+            AppEvent::LoginEvent(LoginEvent::LoginStarted { username, password }) => {
+                Some(Command::Login {
+                    username: username.to_owned(),
+                    password: password.to_owned(),
+                })
+            }
+            AppEvent::LoginEvent(LoginEvent::AutologinStarted { username, token }) => {
+                Some(Command::Autologin {
+                    username: username.to_owned(),
+                    token: token.to_owned(),
+                })
             }
             AppEvent::LoginEvent(LoginEvent::FreshTokenRequested) => Some(Command::RefreshToken),
             AppEvent::LoginEvent(LoginEvent::LogoutCompleted) => Some(Command::Logout),

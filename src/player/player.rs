@@ -1,13 +1,15 @@
 use futures::channel::mpsc::UnboundedReceiver;
 use futures::stream::StreamExt;
 
+use librespot::core::authentication::Credentials;
 use librespot::core::config::SessionConfig;
 use librespot::core::keymaster;
 use librespot::core::session::Session;
-use librespot::{core::authentication::Credentials, playback::config::AudioFormat};
+
+use librespot::protocol::authentication::AuthenticationType;
 
 use librespot::playback::audio_backend;
-use librespot::playback::config::{Bitrate, PlayerConfig};
+use librespot::playback::config::{AudioFormat, Bitrate, PlayerConfig};
 use librespot::playback::player::{Player, PlayerEvent, PlayerEventChannel};
 
 use std::cell::RefCell;
@@ -40,6 +42,7 @@ impl fmt::Display for SpotifyError {
 pub trait SpotifyPlayerDelegate {
     fn end_of_track_reached(&self);
     fn login_successful(&self, credentials: credentials::Credentials);
+    fn autologin_successful(&self, username: String);
     fn refresh_successful(&self, token: String);
     fn report_error(&self, error: SpotifyError);
     fn notify_playback_state(&self, position: u32);
@@ -126,8 +129,9 @@ impl SpotifyPlayer {
                 let _ = player.take();
                 Ok(())
             }
-            Command::Login(username, password) => {
-                let new_session = create_session(username.clone(), password.clone()).await?;
+            Command::Login { username, password } => {
+                let credentials = Credentials::with_password(username, password.clone());
+                let new_session = create_session(credentials).await?;
                 let token = get_access_token(&new_session).await?;
                 let credentials = credentials::Credentials {
                     username: new_session.username(),
@@ -136,6 +140,22 @@ impl SpotifyPlayer {
                     country: new_session.country(),
                 };
                 self.delegate.login_successful(credentials);
+
+                let (new_player, channel) = self.create_player(new_session.clone());
+                tokio::task::spawn_local(player_setup_delegate(channel, Rc::clone(&self.delegate)));
+                player.replace(new_player);
+                session.replace(new_session);
+
+                Ok(())
+            }
+            Command::Autologin { username, token } => {
+                let credentials = Credentials {
+                    username,
+                    auth_type: AuthenticationType::AUTHENTICATION_SPOTIFY_TOKEN,
+                    auth_data: token.into_bytes(),
+                };
+                let new_session = create_session(credentials).await?;
+                self.delegate.autologin_successful(new_session.username());
 
                 let (new_player, channel) = self.create_player(new_session.clone());
                 tokio::task::spawn_local(player_setup_delegate(channel, Rc::clone(&self.delegate)));
@@ -194,7 +214,8 @@ user-library-modify,\
 user-top-read,\
 user-read-recently-played,\
 playlist-modify-public,\
-playlist-modify-private";
+playlist-modify-private,\
+streaming";
 
 async fn get_access_token(session: &Session) -> Result<String, SpotifyError> {
     let token = keymaster::get_token(session, CLIENT_ID, SCOPES).await;
@@ -203,9 +224,8 @@ async fn get_access_token(session: &Session) -> Result<String, SpotifyError> {
         .map_err(|_| SpotifyError::TokenFailed)
 }
 
-async fn create_session(username: String, password: String) -> Result<Session, SpotifyError> {
+async fn create_session(credentials: Credentials) -> Result<Session, SpotifyError> {
     let session_config = SessionConfig::default();
-    let credentials = Credentials::with_password(username, password);
     let result = Session::connect(session_config, credentials, None).await;
     result.map_err(|_| SpotifyError::LoginFailed)
 }

@@ -14,8 +14,13 @@ impl LoginModel {
 
     pub fn try_autologin(&self) -> bool {
         if let Ok(creds) = credentials::try_retrieve_credentials() {
-            self.dispatcher
-                .dispatch(LoginAction::TryLogin(creds.username, creds.password).into());
+            self.dispatcher.dispatch(
+                LoginAction::TryAutologin {
+                    username: creds.username,
+                    token: creds.token,
+                }
+                .into(),
+            );
             true
         } else {
             false
@@ -32,7 +37,8 @@ impl LoginModel {
         }
     }
 
-    pub fn login(&self, u: String, p: String) {
-        self.dispatcher.dispatch(LoginAction::TryLogin(u, p).into());
+    pub fn login(&self, username: String, password: String) {
+        self.dispatcher
+            .dispatch(LoginAction::TryLogin { username, password }.into());
     }
 }
