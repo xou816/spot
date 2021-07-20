@@ -41,9 +41,9 @@ impl AppModel {
 
     pub fn update_state(&self, message: AppAction) -> Vec<AppEvent> {
         match message {
-            AppAction::LoginAction(LoginAction::SetLoginSuccess(ref creds)) => {
-                self.services.spotify_api.update_token(creds.token.clone())
-            }
+            AppAction::LoginAction(LoginAction::SetLoginSuccess(
+                SetLoginSuccessAction::Password(ref creds),
+            )) => self.services.spotify_api.update_token(creds.token.clone()),
             AppAction::LoginAction(LoginAction::SetRefreshedToken(ref token)) => {
                 self.services.spotify_api.update_token(token.clone())
             }

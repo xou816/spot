@@ -2,7 +2,7 @@ use futures::channel::mpsc::UnboundedSender;
 use librespot::core::spotify_id::SpotifyId;
 
 use crate::app::components::EventListener;
-use crate::app::state::{LoginAction, LoginEvent, PlaybackEvent};
+use crate::app::state::{LoginAction, LoginEvent, LoginStartedEvent, PlaybackEvent};
 use crate::app::{AppAction, AppEvent};
 use crate::player::Command;
 
@@ -35,18 +35,20 @@ impl EventListener for PlayerNotifier {
             AppEvent::PlaybackEvent(PlaybackEvent::TrackSeeked(position)) => {
                 Some(Command::PlayerSeek(*position))
             }
-            AppEvent::LoginEvent(LoginEvent::LoginStarted { username, password }) => {
-                Some(Command::Login {
-                    username: username.to_owned(),
-                    password: password.to_owned(),
-                })
-            }
-            AppEvent::LoginEvent(LoginEvent::AutologinStarted { username, token }) => {
-                Some(Command::Autologin {
-                    username: username.to_owned(),
-                    token: token.to_owned(),
-                })
-            }
+            AppEvent::LoginEvent(LoginEvent::LoginStarted(LoginStartedEvent::Password {
+                username,
+                password,
+            })) => Some(Command::PasswordLogin {
+                username: username.to_owned(),
+                password: password.to_owned(),
+            }),
+            AppEvent::LoginEvent(LoginEvent::LoginStarted(LoginStartedEvent::Token {
+                username,
+                token,
+            })) => Some(Command::TokenLogin {
+                username: username.to_owned(),
+                token: token.to_owned(),
+            }),
             AppEvent::LoginEvent(LoginEvent::FreshTokenRequested) => Some(Command::RefreshToken),
             AppEvent::LoginEvent(LoginEvent::LogoutCompleted) => Some(Command::Logout),
             _ => None,

@@ -5,11 +5,21 @@ use crate::app::models::PlaylistSummary;
 use crate::app::state::{AppAction, AppEvent, UpdatableState};
 
 #[derive(Clone, Debug)]
+pub enum TryLoginAction {
+    Password { username: String, password: String },
+    Token { username: String, token: String },
+}
+
+#[derive(Clone, Debug)]
+pub enum SetLoginSuccessAction {
+    Password(credentials::Credentials),
+    Token { username: String },
+}
+
+#[derive(Clone, Debug)]
 pub enum LoginAction {
-    TryLogin { username: String, password: String },
-    TryAutologin { username: String, token: String },
-    SetLoginSuccess(credentials::Credentials),
-    SetAutologinSuccess { username: String },
+    TryLogin(TryLoginAction),
+    SetLoginSuccess(SetLoginSuccessAction),
     SetUserPlaylists(Vec<PlaylistSummary>),
     SetLoginFailure,
     RefreshToken,
@@ -24,11 +34,21 @@ impl From<LoginAction> for AppAction {
 }
 
 #[derive(Clone, Debug)]
+pub enum LoginStartedEvent {
+    Password { username: String, password: String },
+    Token { username: String, token: String },
+}
+
+#[derive(Clone, Debug)]
+pub enum LoginCompletedEvent {
+    Password(credentials::Credentials),
+    Token,
+}
+
+#[derive(Clone, Debug)]
 pub enum LoginEvent {
-    LoginStarted { username: String, password: String },
-    AutologinStarted { username: String, token: String },
-    LoginCompleted(credentials::Credentials),
-    AutologinCompleted,
+    LoginStarted(LoginStartedEvent),
+    LoginCompleted(LoginCompletedEvent),
     UserPlaylistsLoaded,
     LoginFailed,
     FreshTokenRequested,
@@ -61,19 +81,22 @@ impl UpdatableState for LoginState {
 
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
-            LoginAction::TryLogin { username, password } => {
-                vec![LoginEvent::LoginStarted { username, password }.into()]
+            LoginAction::TryLogin(TryLoginAction::Password { username, password }) => {
+                vec![
+                    LoginEvent::LoginStarted(LoginStartedEvent::Password { username, password })
+                        .into(),
+                ]
             }
-            LoginAction::TryAutologin { username, token } => {
-                vec![LoginEvent::AutologinStarted { username, token }.into()]
+            LoginAction::TryLogin(TryLoginAction::Token { username, token }) => {
+                vec![LoginEvent::LoginStarted(LoginStartedEvent::Token { username, token }).into()]
             }
-            LoginAction::SetLoginSuccess(credentials) => {
-                self.user = Some(credentials.username.clone());
-                vec![LoginEvent::LoginCompleted(credentials).into()]
+            LoginAction::SetLoginSuccess(SetLoginSuccessAction::Password(creds)) => {
+                self.user = Some(creds.username.clone());
+                vec![LoginEvent::LoginCompleted(LoginCompletedEvent::Password(creds)).into()]
             }
-            LoginAction::SetAutologinSuccess { username } => {
+            LoginAction::SetLoginSuccess(SetLoginSuccessAction::Token { username }) => {
                 self.user = Some(username);
-                vec![LoginEvent::AutologinCompleted.into()]
+                vec![LoginEvent::LoginCompleted(LoginCompletedEvent::Token).into()]
             }
             LoginAction::SetLoginFailure => vec![LoginEvent::LoginFailed.into()],
             LoginAction::RefreshToken => vec![LoginEvent::FreshTokenRequested.into()],

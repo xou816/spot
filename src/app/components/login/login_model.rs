@@ -1,7 +1,8 @@
 use gettextrs::*;
 
 use crate::app::credentials;
-use crate::app::{state::LoginAction, ActionDispatcher, AppAction};
+use crate::app::state::{LoginAction, TryLoginAction};
+use crate::app::{ActionDispatcher, AppAction};
 
 pub struct LoginModel {
     dispatcher: Box<dyn ActionDispatcher>,
@@ -15,10 +16,10 @@ impl LoginModel {
     pub fn try_autologin(&self) -> bool {
         if let Ok(creds) = credentials::try_retrieve_credentials() {
             self.dispatcher.dispatch(
-                LoginAction::TryAutologin {
+                LoginAction::TryLogin(TryLoginAction::Token {
                     username: creds.username,
                     token: creds.token,
-                }
+                })
                 .into(),
             );
             true
@@ -38,7 +39,8 @@ impl LoginModel {
     }
 
     pub fn login(&self, username: String, password: String) {
-        self.dispatcher
-            .dispatch(LoginAction::TryLogin { username, password }.into());
+        self.dispatcher.dispatch(
+            LoginAction::TryLogin(TryLoginAction::Password { username, password }).into(),
+        );
     }
 }

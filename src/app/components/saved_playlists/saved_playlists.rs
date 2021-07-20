@@ -72,8 +72,7 @@ impl EventListener for SavedPlaylists {
                 let _ = self.model.refresh_saved_playlists();
                 self.bind_flowbox(self.model.get_list_store().unwrap().unsafe_store())
             }
-            AppEvent::LoginEvent(LoginEvent::LoginCompleted(_))
-            | AppEvent::LoginEvent(LoginEvent::AutologinCompleted) => {
+            AppEvent::LoginEvent(LoginEvent::LoginCompleted(_)) => {
                 let _ = self.model.refresh_saved_playlists();
             }
             _ => {}

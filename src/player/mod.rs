@@ -4,7 +4,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use tokio::task;
 
-use crate::app::state::{LoginAction, PlaybackAction};
+use crate::app::state::{LoginAction, PlaybackAction, SetLoginSuccessAction};
 use crate::app::{credentials, AppAction};
 
 mod player;
@@ -12,8 +12,8 @@ pub use player::*;
 
 #[derive(Debug, Clone)]
 pub enum Command {
-    Login { username: String, password: String },
-    Autologin { username: String, token: String },
+    PasswordLogin { username: String, password: String },
+    TokenLogin { username: String, token: String },
     Logout,
     PlayerLoad(SpotifyId),
     PlayerResume,
@@ -42,17 +42,21 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
             .unwrap();
     }
 
-    fn login_successful(&self, credentials: credentials::Credentials) {
+    fn password_login_successful(&self, credentials: credentials::Credentials) {
         self.sender
             .borrow_mut()
-            .unbounded_send(LoginAction::SetLoginSuccess(credentials).into())
+            .unbounded_send(
+                LoginAction::SetLoginSuccess(SetLoginSuccessAction::Password(credentials)).into(),
+            )
             .unwrap();
     }
 
-    fn autologin_successful(&self, username: String) {
+    fn token_login_successful(&self, username: String) {
         self.sender
             .borrow_mut()
-            .unbounded_send(LoginAction::SetAutologinSuccess { username }.into())
+            .unbounded_send(
+                LoginAction::SetLoginSuccess(SetLoginSuccessAction::Token { username }).into(),
+            )
             .unwrap();
     }
 
