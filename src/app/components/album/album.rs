@@ -19,7 +19,7 @@ struct AlbumWidget {
 impl AlbumWidget {
     pub fn new() -> Self {
         screen_add_css_provider(resource!("/components/album.css"));
-        Self::from_resource(resource!("/components/album.ui")).unwrap()
+        Self::from_resource(resource!("/components/album_compact.ui")).unwrap()
     }
 }
 
@@ -38,7 +38,7 @@ impl Album {
             worker.send_local_task(async move {
                 if let (Some(image), Some(revealer)) = (image.upgrade(), revealer.upgrade()) {
                     let loader = ImageLoader::new();
-                    let result = loader.load_remote(&url, "jpg", 200, 200).await;
+                    let result = loader.load_remote(&url, "jpg", 75, 75).await;
                     image.set_from_pixbuf(result.as_ref());
                     revealer.set_reveal_child(true);
                 }
