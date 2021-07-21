@@ -43,7 +43,7 @@ impl fmt::Display for SpotifyError {
 pub trait SpotifyPlayerDelegate {
     fn end_of_track_reached(&self);
     fn password_login_successful(&self, credentials: credentials::Credentials);
-    fn token_login_successful(&self, username: String);
+    fn token_login_successful(&self, username: String, token: String);
     fn refresh_successful(&self, token: String, token_expiry_time: SystemTime);
     fn report_error(&self, error: SpotifyError);
     fn notify_playback_state(&self, position: u32);
@@ -155,10 +155,11 @@ impl SpotifyPlayer {
                 let credentials = Credentials {
                     username,
                     auth_type: AuthenticationType::AUTHENTICATION_SPOTIFY_TOKEN,
-                    auth_data: token.into_bytes(),
+                    auth_data: token.clone().into_bytes(),
                 };
                 let new_session = create_session(credentials).await?;
-                self.delegate.token_login_successful(new_session.username());
+                self.delegate
+                    .token_login_successful(new_session.username(), token);
 
                 let (new_player, channel) = self.create_player(new_session.clone());
                 tokio::task::spawn_local(player_setup_delegate(channel, Rc::clone(&self.delegate)));

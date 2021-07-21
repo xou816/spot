@@ -52,6 +52,11 @@ impl AppModel {
                     saved_creds.token_expiry_time = creds.token_expiry_time;
                 });
             }
+            AppAction::LoginAction(LoginAction::SetLoginSuccess(
+                SetLoginSuccessAction::Token { token, .. },
+            )) => {
+                self.services.spotify_api.update_token(token.clone());
+            }
             AppAction::LoginAction(LoginAction::SetRefreshedToken {
                 token,
                 token_expiry_time,
