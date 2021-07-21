@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk" version="4.0"/>
-  <object class="GtkBox" id="root">
+  <template class="SongWidget" parent="GtkBox">
     <property name="height-request">30</property>
     <property name="margin-start">2</property>
     <property name="margin-end">2</property>
@@ -93,5 +93,5 @@
     <style>
       <class name="song"/>
     </style>
-  </object>
+  </template>
 </interface>

@@ -4,7 +4,7 @@ use std::ops::Deref;
 use std::rc::Rc;
 
 use crate::app::components::utils::{in_viewport, vscroll_to, AnimatorDefault};
-use crate::app::components::{Component, EventListener, Song};
+use crate::app::components::{Component, EventListener, SongWidget};
 use crate::app::models::SongModel;
 use crate::app::{
     state::{PlaybackEvent, SelectionEvent, SelectionState},
@@ -96,8 +96,8 @@ where
                 let id = &item.get_id();
 
                 let row = gtk::ListBoxRow::new();
-                let song = Song::new(item.clone());
-                row.set_child(Some(song.get_root_widget()));
+                let song = SongWidget::for_model(item.clone());
+                row.set_child(Some(&song));
 
                 song.set_menu(model.menu_for(id).as_ref());
                 song.set_actions(model.actions_for(id).as_ref());

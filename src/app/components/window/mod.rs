@@ -92,6 +92,7 @@ impl MainWindow {
         }));
         window.add_controller(&window_controller);
 
+        // TODO
         window.connect_default_height_notify(|window| {
             let (width, height) = window.default_size();
             let is_maximized = window.is_maximized();
