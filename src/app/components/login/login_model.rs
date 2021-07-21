@@ -1,6 +1,6 @@
 use gettextrs::*;
 
-use crate::app::credentials;
+use crate::app::credentials::Credentials;
 use crate::app::state::{LoginAction, TryLoginAction};
 use crate::app::{ActionDispatcher, AppAction};
 
@@ -14,22 +14,28 @@ impl LoginModel {
     }
 
     pub fn try_autologin(&self) -> bool {
-        if let Ok(creds) = credentials::try_retrieve_credentials() {
-            self.dispatcher.dispatch(
-                LoginAction::TryLogin(TryLoginAction::Token {
+        if let Ok(creds) = Credentials::retrieve() {
+            let try_login_action = if creds.token_expired() {
+                TryLoginAction::Password {
+                    username: creds.username,
+                    password: creds.password,
+                }
+            } else {
+                TryLoginAction::Token {
                     username: creds.username,
                     token: creds.token,
-                })
-                .into(),
-            );
+                }
+            };
+            self.dispatcher
+                .dispatch(LoginAction::TryLogin(try_login_action).into());
             true
         } else {
             false
         }
     }
 
-    pub fn save_for_autologin(&self, credentials: credentials::Credentials) {
-        if credentials::save_credentials(credentials).is_err() {
+    pub fn save_for_autologin(&self, credentials: Credentials) {
+        if credentials.save().is_err() {
             self.dispatcher
                 .dispatch(AppAction::ShowNotification(gettext(
                     // translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
@@ -39,8 +45,7 @@ impl LoginModel {
     }
 
     pub fn login(&self, username: String, password: String) {
-        self.dispatcher.dispatch(
-            LoginAction::TryLogin(TryLoginAction::Password { username, password }).into(),
-        );
+        self.dispatcher
+            .dispatch(LoginAction::TryLogin(TryLoginAction::Password { username, password }).into())
     }
 }

@@ -16,6 +16,7 @@ use std::cell::RefCell;
 use std::error::Error;
 use std::fmt;
 use std::rc::Rc;
+use std::time::{Duration, SystemTime};
 
 use super::Command;
 use crate::app::credentials;
@@ -43,7 +44,7 @@ pub trait SpotifyPlayerDelegate {
     fn end_of_track_reached(&self);
     fn password_login_successful(&self, credentials: credentials::Credentials);
     fn token_login_successful(&self, username: String);
-    fn refresh_successful(&self, token: String);
+    fn refresh_successful(&self, token: String, token_expiry_time: SystemTime);
     fn report_error(&self, error: SpotifyError);
     fn notify_playback_state(&self, position: u32);
 }
@@ -117,8 +118,8 @@ impl SpotifyPlayer {
             }
             Command::RefreshToken => {
                 let session = session.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
-                let token = get_access_token(&session).await?;
-                self.delegate.refresh_successful(token);
+                let (token, token_expiry_time) = get_access_token_and_expiry_time(&session).await?;
+                self.delegate.refresh_successful(token, token_expiry_time);
                 Ok(())
             }
             Command::Logout => {
@@ -132,11 +133,13 @@ impl SpotifyPlayer {
             Command::PasswordLogin { username, password } => {
                 let credentials = Credentials::with_password(username, password.clone());
                 let new_session = create_session(credentials).await?;
-                let token = get_access_token(&new_session).await?;
+                let (token, token_expiry_time) =
+                    get_access_token_and_expiry_time(&new_session).await?;
                 let credentials = credentials::Credentials {
                     username: new_session.username(),
                     password,
                     token,
+                    token_expiry_time: Some(token_expiry_time),
                     country: new_session.country(),
                 };
                 self.delegate.password_login_successful(credentials);
@@ -217,11 +220,14 @@ playlist-modify-public,\
 playlist-modify-private,\
 streaming";
 
-async fn get_access_token(session: &Session) -> Result<String, SpotifyError> {
-    let token = keymaster::get_token(session, CLIENT_ID, SCOPES).await;
-    token
-        .map(|t| t.access_token)
-        .map_err(|_| SpotifyError::TokenFailed)
+async fn get_access_token_and_expiry_time(
+    session: &Session,
+) -> Result<(String, SystemTime), SpotifyError> {
+    let token = keymaster::get_token(session, CLIENT_ID, SCOPES)
+        .await
+        .map_err(|_| SpotifyError::TokenFailed)?;
+    let expiry_time = SystemTime::now() + Duration::from_secs(token.expires_in.into());
+    Ok((token.access_token, expiry_time))
 }
 
 async fn create_session(credentials: Credentials) -> Result<Session, SpotifyError> {

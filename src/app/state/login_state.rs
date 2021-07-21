@@ -1,6 +1,7 @@
 use gettextrs::*;
+use std::time::SystemTime;
 
-use crate::app::credentials;
+use crate::app::credentials::Credentials;
 use crate::app::models::PlaylistSummary;
 use crate::app::state::{AppAction, AppEvent, UpdatableState};
 
@@ -12,7 +13,7 @@ pub enum TryLoginAction {
 
 #[derive(Clone, Debug)]
 pub enum SetLoginSuccessAction {
-    Password(credentials::Credentials),
+    Password(Credentials),
     Token { username: String },
 }
 
@@ -23,7 +24,10 @@ pub enum LoginAction {
     SetUserPlaylists(Vec<PlaylistSummary>),
     SetLoginFailure,
     RefreshToken,
-    SetRefreshedToken(String),
+    SetRefreshedToken {
+        token: String,
+        token_expiry_time: SystemTime,
+    },
     Logout,
 }
 
@@ -41,7 +45,7 @@ pub enum LoginStartedEvent {
 
 #[derive(Clone, Debug)]
 pub enum LoginCompletedEvent {
-    Password(credentials::Credentials),
+    Password(Credentials),
     Token,
 }
 
@@ -100,7 +104,7 @@ impl UpdatableState for LoginState {
             }
             LoginAction::SetLoginFailure => vec![LoginEvent::LoginFailed.into()],
             LoginAction::RefreshToken => vec![LoginEvent::FreshTokenRequested.into()],
-            LoginAction::SetRefreshedToken(_) => {
+            LoginAction::SetRefreshedToken { .. } => {
                 // translators: This notification is shown when, after some inactivity, the session is successfully restored. The user might have to repeat its last action.
                 vec![AppEvent::NotificationShown(gettext("Connection restored"))]
             }

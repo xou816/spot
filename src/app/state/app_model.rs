@@ -1,4 +1,5 @@
 use crate::api::SpotifyApiClient;
+use crate::app::credentials::Credentials;
 use crate::app::state::*;
 use ref_filter_map::*;
 use std::cell::{Ref, RefCell};
@@ -40,12 +41,27 @@ impl AppModel {
     }
 
     pub fn update_state(&self, message: AppAction) -> Vec<AppEvent> {
-        match message {
+        match &message {
             AppAction::LoginAction(LoginAction::SetLoginSuccess(
-                SetLoginSuccessAction::Password(ref creds),
-            )) => self.services.spotify_api.update_token(creds.token.clone()),
-            AppAction::LoginAction(LoginAction::SetRefreshedToken(ref token)) => {
-                self.services.spotify_api.update_token(token.clone())
+                SetLoginSuccessAction::Password(creds),
+            )) => {
+                self.services.spotify_api.update_token(creds.token.clone());
+                // TODO: Handle error
+                let _ = Credentials::modify(|saved_creds| {
+                    saved_creds.token = creds.token.clone();
+                    saved_creds.token_expiry_time = creds.token_expiry_time.clone();
+                });
+            }
+            AppAction::LoginAction(LoginAction::SetRefreshedToken {
+                token,
+                token_expiry_time,
+            }) => {
+                self.services.spotify_api.update_token(token.clone());
+                // TODO: Handle error
+                let _ = Credentials::modify(|creds| {
+                    creds.token = token.clone();
+                    creds.token_expiry_time = Some(token_expiry_time.clone());
+                });
             }
             _ => {}
         }

@@ -2,10 +2,12 @@ use futures::channel::mpsc::{unbounded, UnboundedReceiver, UnboundedSender};
 use librespot::core::spotify_id::SpotifyId;
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::time::SystemTime;
 use tokio::task;
 
+use crate::app::credentials::Credentials;
 use crate::app::state::{LoginAction, PlaybackAction, SetLoginSuccessAction};
-use crate::app::{credentials, AppAction};
+use crate::app::AppAction;
 
 mod player;
 pub use player::*;
@@ -42,7 +44,7 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
             .unwrap();
     }
 
-    fn password_login_successful(&self, credentials: credentials::Credentials) {
+    fn password_login_successful(&self, credentials: Credentials) {
         self.sender
             .borrow_mut()
             .unbounded_send(
@@ -60,10 +62,16 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
             .unwrap();
     }
 
-    fn refresh_successful(&self, token: String) {
+    fn refresh_successful(&self, token: String, token_expiry_time: SystemTime) {
         self.sender
             .borrow_mut()
-            .unbounded_send(LoginAction::SetRefreshedToken(token).into())
+            .unbounded_send(
+                LoginAction::SetRefreshedToken {
+                    token,
+                    token_expiry_time,
+                }
+                .into(),
+            )
             .unwrap();
     }
 
