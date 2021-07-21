@@ -56,6 +56,10 @@ pub enum LoginEvent {
     UserPlaylistsLoaded,
     LoginFailed,
     FreshTokenRequested,
+    RefreshTokenCompleted {
+        token: String,
+        token_expiry_time: SystemTime,
+    },
     LogoutCompleted,
 }
 
@@ -104,9 +108,19 @@ impl UpdatableState for LoginState {
             }
             LoginAction::SetLoginFailure => vec![LoginEvent::LoginFailed.into()],
             LoginAction::RefreshToken => vec![LoginEvent::FreshTokenRequested.into()],
-            LoginAction::SetRefreshedToken { .. } => {
+            LoginAction::SetRefreshedToken {
+                token,
+                token_expiry_time,
+            } => {
                 // translators: This notification is shown when, after some inactivity, the session is successfully restored. The user might have to repeat its last action.
-                vec![AppEvent::NotificationShown(gettext("Connection restored"))]
+                vec![
+                    AppEvent::NotificationShown(gettext("Connection restored")),
+                    LoginEvent::RefreshTokenCompleted {
+                        token,
+                        token_expiry_time,
+                    }
+                    .into(),
+                ]
             }
             LoginAction::Logout => {
                 self.user = None;

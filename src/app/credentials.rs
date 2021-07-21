@@ -81,15 +81,6 @@ impl Credentials {
         )?;
         Ok(())
     }
-
-    pub fn modify<F>(f: F) -> Result<(), Error>
-    where
-        F: Fn(&mut Self),
-    {
-        let mut creds = Self::retrieve()?;
-        f(&mut creds);
-        creds.save()
-    }
 }
 
 pub fn logout() -> Result<(), Error> {

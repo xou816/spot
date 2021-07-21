@@ -1,3 +1,5 @@
+use std::time::SystemTime;
+
 use gettextrs::*;
 
 use crate::app::credentials::Credentials;
@@ -32,6 +34,16 @@ impl LoginModel {
         } else {
             false
         }
+    }
+
+    pub fn save_token(&self, token: String, token_expiry_time: SystemTime) {
+        let mut credentials = match Credentials::retrieve() {
+            Ok(v) => v,
+            Err(_) => return,
+        };
+        credentials.token = token;
+        credentials.token_expiry_time = Some(token_expiry_time);
+        self.save_for_autologin(credentials);
     }
 
     pub fn save_for_autologin(&self, credentials: Credentials) {

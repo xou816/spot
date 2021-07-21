@@ -151,6 +151,12 @@ impl EventListener for Login {
             AppEvent::LoginEvent(LoginEvent::LogoutCompleted) => {
                 self.show_self();
             }
+            AppEvent::LoginEvent(LoginEvent::RefreshTokenCompleted {
+                token,
+                token_expiry_time,
+            }) => {
+                self.model.save_token(token.clone(), *token_expiry_time);
+            }
             _ => {}
         }
     }
