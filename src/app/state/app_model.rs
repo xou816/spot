@@ -49,7 +49,7 @@ impl AppModel {
                 // TODO: Handle error
                 let _ = Credentials::modify(|saved_creds| {
                     saved_creds.token = creds.token.clone();
-                    saved_creds.token_expiry_time = creds.token_expiry_time.clone();
+                    saved_creds.token_expiry_time = creds.token_expiry_time;
                 });
             }
             AppAction::LoginAction(LoginAction::SetRefreshedToken {
@@ -60,7 +60,7 @@ impl AppModel {
                 // TODO: Handle error
                 let _ = Credentials::modify(|creds| {
                     creds.token = token.clone();
-                    creds.token_expiry_time = Some(token_expiry_time.clone());
+                    creds.token_expiry_time = Some(*token_expiry_time);
                 });
             }
             _ => {}
