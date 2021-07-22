@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk" version="4.0"/>
-  <object class="GtkBox" id="root">
+  <template class="AlbumWidget" parent="GtkBox">
     <property name="halign">center</property>
     <property name="valign">start</property>
     <property name="margin-start">8</property>
@@ -69,5 +69,5 @@
     <style>
       <class name="album"/>
     </style>
-  </object>
+  </template>
 </interface>

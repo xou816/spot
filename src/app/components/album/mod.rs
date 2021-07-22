@@ -1,2 +1,2 @@
 mod album;
-pub use album::Album;
+pub use album::AlbumWidget;

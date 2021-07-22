@@ -2,7 +2,7 @@
 <interface>
   <requires lib="gtk" version="4.0"/>
   <requires lib="libadwaita" version="1.0"/>
-  <object class="GtkBox" id="root">
+  <template class="ArtistWidget" parent="GtkBox">
     <property name="orientation">vertical</property>
     <child>
       <object class="GtkButton" id="avatar_btn">
@@ -31,5 +31,5 @@
         <property name="label">Artist Name</property>
       </object>
     </child>
-  </object>
+  </template>
 </interface>

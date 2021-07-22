@@ -2,7 +2,9 @@ use gladis::Gladis;
 use gtk::prelude::*;
 use std::rc::Rc;
 
-use crate::app::components::{screen_add_css_provider, Album, Component, EventListener, Playlist};
+use crate::app::components::{
+    screen_add_css_provider, AlbumWidget, Component, EventListener, Playlist,
+};
 use crate::app::models::*;
 use crate::app::{AppEvent, BrowserEvent, Worker};
 
@@ -50,14 +52,15 @@ impl ArtistDetails {
                 .bind_model(Some(store.unsafe_store()), move |item| {
                     let item = item.downcast_ref::<AlbumModel>().unwrap();
                     let child = gtk::FlowBoxChild::new();
-                    let album = Album::new(item, worker.clone());
-                    let weak = Rc::downgrade(&model_clone);
-                    album.connect_album_pressed(move |a| {
-                        if let (Some(id), Some(m)) = (a.uri().as_ref(), weak.upgrade()) {
-                            m.open_album(id);
-                        }
-                    });
-                    child.set_child(Some(album.get_root_widget()));
+                    let album = AlbumWidget::for_model(item, worker.clone());
+                    album.connect_album_pressed(
+                        clone!(@weak model_clone as model, @weak item => move |_| {
+                            if let Some(id) = item.uri().as_ref() {
+                                model.open_album(id);
+                            }
+                        }),
+                    );
+                    child.set_child(Some(&album));
                     child.upcast::<gtk::Widget>()
                 });
         }

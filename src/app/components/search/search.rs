@@ -4,7 +4,7 @@ use gladis::Gladis;
 use std::rc::Rc;
 
 use crate::app::components::utils::{wrap_flowbox_item, Debouncer};
-use crate::app::components::{Album, Artist, Component, EventListener};
+use crate::app::components::{AlbumWidget, ArtistWidget, Component, EventListener};
 use crate::app::dispatch::Worker;
 use crate::app::models::{AlbumModel, ArtistModel};
 use crate::app::state::{AppEvent, BrowserEvent};
@@ -41,36 +41,36 @@ impl SearchResults {
         let album_results_model = gio::ListStore::new(AlbumModel::static_type());
         let artist_results_model = gio::ListStore::new(ArtistModel::static_type());
 
-        let model_clone = Rc::downgrade(&model);
-        let worker_clone = worker.clone();
+        let _model = Rc::clone(&model);
+        let _worker = worker.clone();
+
         widget
             .albums_results
             .bind_model(Some(&album_results_model), move |item| {
                 wrap_flowbox_item(item, |item: &AlbumModel| {
-                    let album = Album::new(item, worker_clone.clone());
-                    let weak = model_clone.clone();
-                    album.connect_album_pressed(move |a| {
-                        if let (Some(id), Some(m)) = (a.uri().as_ref(), weak.upgrade()) {
-                            m.open_album(id);
+                    let album = AlbumWidget::for_model(item, _worker.clone());
+                    album.connect_album_pressed(clone!(@weak _model, @weak item => move |_| {
+                        if let Some(id) = item.uri().as_ref() {
+                            _model.open_album(id);
                         }
-                    });
-                    album.get_root_widget().clone()
+                    }));
+                    album
                 })
             });
 
-        let model_clone = Rc::downgrade(&model);
+        let _model = Rc::clone(&model);
+        let _worker = worker.clone();
         widget
             .artist_results
             .bind_model(Some(&artist_results_model), move |item| {
                 wrap_flowbox_item(item, |item: &ArtistModel| {
-                    let artist = Artist::new(item, worker.clone());
-                    let weak = model_clone.clone();
-                    artist.connect_artist_pressed(move |a| {
-                        if let (Some(id), Some(m)) = (a.id().as_ref(), weak.upgrade()) {
-                            m.open_artist(id);
+                    let artist = ArtistWidget::for_model(item, _worker.clone());
+                    artist.connect_artist_pressed(clone!(@weak _model, @weak item => move |_| {
+                        if let Some(id) = item.id().as_ref() {
+                            _model.open_artist(id);
                         }
-                    });
-                    artist.get_root_widget().clone()
+                    }));
+                    artist
                 })
             });
 

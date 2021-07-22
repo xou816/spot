@@ -4,7 +4,7 @@ use gtk::prelude::*;
 use std::rc::{Rc, Weak};
 
 use super::LibraryModel;
-use crate::app::components::{Album, Component, EventListener};
+use crate::app::components::{AlbumWidget, Component, EventListener};
 use crate::app::dispatch::Worker;
 use crate::app::models::AlbumModel;
 use crate::app::state::LoginEvent;
@@ -92,14 +92,14 @@ fn create_album_for(
 ) -> gtk::FlowBoxChild {
     let child = gtk::FlowBoxChild::new();
 
-    let album = Album::new(album_model, worker);
-    child.set_child(Some(album.get_root_widget()));
+    let album = AlbumWidget::for_model(album_model, worker);
+    child.set_child(Some(&album));
 
-    album.connect_album_pressed(move |a| {
-        if let (Some(model), Some(id)) = (model.upgrade(), a.uri()) {
+    album.connect_album_pressed(clone!(@weak album_model => move |_| {
+        if let (Some(model), Some(id)) = (model.upgrade(), album_model.uri()) {
             model.open_album(id);
         }
-    });
+    }));
 
     child
 }

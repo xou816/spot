@@ -66,7 +66,7 @@ glib::wrapper! {
 impl SongWidget {
     pub fn new() -> Self {
         screen_add_css_provider(resource!("/components/song.css"));
-        glib::Object::new(&[]).expect("Failed to create an instance of MyWidget")
+        glib::Object::new(&[]).expect("Failed to create an instance of SongWidget")
     }
 
     pub fn for_model(model: SongModel) -> Self {

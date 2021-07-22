@@ -3,7 +3,7 @@ use gtk::prelude::*;
 use std::rc::Rc;
 
 use crate::app::components::{
-    screen_add_css_provider, utils::wrap_flowbox_item, Album, Component, EventListener,
+    screen_add_css_provider, utils::wrap_flowbox_item, AlbumWidget, Component, EventListener,
 };
 use crate::app::models::*;
 use crate::app::{AppEvent, BrowserEvent, Worker};
@@ -49,13 +49,13 @@ impl UserDetails {
                 Some(store.unsafe_store()),
                 clone!(@weak model => @default-panic, move |item| {
                     wrap_flowbox_item(item, |item: &AlbumModel| {
-                        let album = Album::new(item, worker.clone());
-                        album.connect_album_pressed(clone!(@weak model => move |a| {
-                            if let Some(id) = a.uri().as_ref() {
+                        let album = AlbumWidget::for_model(item, worker.clone());
+                        album.connect_album_pressed(clone!(@weak model, @weak item => move |_| {
+                            if let Some(id) = item.uri().as_ref() {
                                 model.open_playlist(id);
                             }
                         }));
-                        album.get_root_widget().clone()
+                        album
                     })
                 }),
             );
