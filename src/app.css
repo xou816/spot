@@ -28,3 +28,9 @@
   border-left: none;
   border-right: none;
 }
+
+.playback-button {
+  -gtk-icon-size: 28px;
+  min-width: 40px;
+  min-height: 40px;
+}

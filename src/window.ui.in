@@ -250,6 +250,7 @@
                     <property name="icon-name">media-playback-start-symbolic</property>
                     <style>
                       <class name="circular"/>
+                      <class name="playback-button"/>
                     </style>
                   </object>
                 </child>

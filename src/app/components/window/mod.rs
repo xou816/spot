@@ -78,6 +78,7 @@ impl MainWindow {
         );
 
         let window_controller = gtk::EventControllerKey::new();
+        window.add_controller(&window_controller);
         window_controller.set_propagation_phase(gtk::PropagationPhase::Bubble);
         window_controller.connect_key_pressed(clone!(@weak search_bar, @weak window => @default-return gtk::Inhibit(false), move |controller, _, _, _| {
             let search_triggered = controller.forward(&search_bar) || search_bar.is_search_mode();
@@ -90,26 +91,13 @@ impl MainWindow {
                 gtk::Inhibit(false)
             }
         }));
-        window.add_controller(&window_controller);
 
-        // TODO
-        window.connect_default_height_notify(|window| {
-            let (width, height) = window.default_size();
-            let is_maximized = window.is_maximized();
-            WINDOW_GEOMETRY.with(|g| {
-                let mut g = g.borrow_mut();
-                g.is_maximized = is_maximized;
-                if !is_maximized {
-                    g.width = width;
-                    g.height = height;
-                }
-            });
-        });
+        window.connect_default_height_notify(Self::save_window_geometry);
+        window.connect_default_width_notify(Self::save_window_geometry);
+        window.connect_maximized_notify(Self::save_window_geometry);
 
-        window.connect_destroy(|_| {
-            WINDOW_GEOMETRY.with(|g| {
-                g.borrow().save();
-            });
+        window.connect_unrealize(|_| {
+            WINDOW_GEOMETRY.with(|g| g.borrow().save());
         });
 
         Self {
@@ -133,6 +121,19 @@ impl MainWindow {
 
     fn raise(&self) {
         self.window.present();
+    }
+
+    fn save_window_geometry<W: GtkWindowExt>(window: &W) {
+        let (width, height) = window.default_size();
+        let is_maximized = window.is_maximized();
+        WINDOW_GEOMETRY.with(|g| {
+            let mut g = g.borrow_mut();
+            g.is_maximized = is_maximized;
+            if !is_maximized {
+                g.width = width;
+                g.height = height;
+            }
+        });
     }
 }
 
