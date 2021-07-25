@@ -112,14 +112,13 @@ impl UpdatableState for PlaylistDetailsState {
                 self.playlist = Some(playlist);
                 vec![BrowserEvent::PlaylistDetailsLoaded(id)]
             }
-            BrowserAction::AppendPlaylistTracks(id, SongBatch { songs, batch })
-                if id == self.id =>
-            {
+            BrowserAction::AppendPlaylistTracks(id, song_batch) if id == self.id => {
+                let offset = song_batch.batch.offset;
                 if let Some(playlist) = self.playlist.as_mut() {
-                    playlist.songs.extend(songs);
-                    playlist.last_batch = batch;
+                    playlist.songs.extend(song_batch.songs);
+                    playlist.last_batch = song_batch.batch;
                 }
-                vec![BrowserEvent::PlaylistTracksAppended(id, batch.offset)]
+                vec![BrowserEvent::PlaylistTracksAppended(id, offset)]
             }
             BrowserAction::RemoveTracksFromPlaylist(uris) => {
                 if let Some(playlist) = self.playlist.as_mut() {
@@ -409,6 +408,7 @@ mod tests {
             artists: vec![],
             art: Some("".to_owned()),
             songs: vec![],
+            last_batch: Batch::first_of_size(100),
             is_liked: false,
         };
         let mut artist_state = ArtistState::new("id".to_owned());

@@ -1,26 +1,9 @@
 use rand::{rngs::SmallRng, seq::SliceRandom, RngCore, SeedableRng};
 use std::collections::HashMap;
 
-use crate::app::models::{Batch, SongBatch, SongDescription};
+use crate::app::models::{SongBatch, SongDescription};
 use crate::app::state::{AppAction, AppEvent, UpdatableState};
-
-#[derive(Clone, Debug)]
-pub enum PlaylistSource {
-    Playlist(String),
-    Album(String),
-}
-
-impl PartialEq for PlaylistSource {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (&Self::Playlist(ref a), &Self::Playlist(ref b)) => a == b,
-            (&Self::Album(ref a), &Self::Album(ref b)) => a == b,
-            _ => false,
-        }
-    }
-}
-
-impl Eq for PlaylistSource {}
+use crate::app::{BatchQuery, SongsSource};
 
 const RANGE_SIZE: usize = 25;
 pub const QUEUE_DEFAULT_SIZE: usize = 100;
@@ -31,8 +14,7 @@ pub struct PlaybackState {
     running_order: Vec<String>,
     running_order_shuffled: Option<Vec<String>>,
     position: Option<usize>,
-    pub source: Option<PlaylistSource>,
-    current_batch: Option<Batch>,
+    last_query: Option<BatchQuery>,
     repeat: RepeatMode,
     is_playing: bool,
 }
@@ -50,8 +32,8 @@ impl PlaybackState {
         self.repeat
     }
 
-    pub fn next_batch(&self) -> Option<Batch> {
-        self.current_batch?.next()
+    pub fn next_query(&self) -> Option<BatchQuery> {
+        self.last_query.as_ref()?.next()
     }
 
     pub fn song(&self, id: &str) -> Option<&SongDescription> {
@@ -127,17 +109,12 @@ impl PlaybackState {
         self.running_order_shuffled = Some(final_list);
     }
 
-    fn set_playlist(
-        &mut self,
-        source: Option<PlaylistSource>,
-        current_batch: Option<Batch>,
-        tracks: Vec<SongDescription>,
-    ) {
+    fn set_playlist(&mut self, source: SongsSource, batch: SongBatch) {
+        let SongBatch { songs, batch } = batch;
         self.position = None;
-        self.current_batch = current_batch;
-        self.source = source;
-        self.running_order = tracks.iter().map(|t| t.id.clone()).collect();
-        self.indexed_songs = Self::index_tracks(tracks.into_iter());
+        self.last_query = Some(BatchQuery { source, batch });
+        self.running_order = songs.iter().map(|t| t.id.clone()).collect();
+        self.indexed_songs = Self::index_tracks(songs.into_iter());
         if self.is_shuffled() {
             self.shuffle();
         }
@@ -307,8 +284,7 @@ impl Default for PlaybackState {
             running_order: Vec::with_capacity(QUEUE_DEFAULT_SIZE),
             running_order_shuffled: None,
             position: None,
-            source: None,
-            current_batch: None,
+            last_query: None,
             repeat: RepeatMode::None,
             is_playing: false,
         }
@@ -327,8 +303,8 @@ pub enum PlaybackAction {
     Seek(u32),
     SyncSeek(u32),
     Load(String),
-    LoadSongs(Option<PlaylistSource>, Vec<SongDescription>),
-    LoadPagedSongs(Option<PlaylistSource>, SongBatch),
+    LoadSongs(Option<()>, Vec<SongDescription>),
+    LoadPagedSongs(SongsSource, SongBatch),
     Next,
     Previous,
     Queue(Vec<SongDescription>),
@@ -466,17 +442,17 @@ impl UpdatableState for PlaybackState {
                     vec![]
                 }
             }
-            PlaybackAction::LoadSongs(source, tracks) => {
-                self.set_playlist(source, None, tracks);
+            PlaybackAction::LoadSongs(_, _) => {
+                //FIXME
                 vec![PlaybackEvent::PlaylistChanged(PlaylistChange::Reset)]
             }
-            PlaybackAction::LoadPagedSongs(source, SongBatch { songs, batch }) => {
-                self.set_playlist(source, Some(batch), songs);
+            PlaybackAction::LoadPagedSongs(source, batch) => {
+                self.set_playlist(source, batch);
                 vec![PlaybackEvent::PlaylistChanged(PlaylistChange::Reset)]
             }
             PlaybackAction::Queue(tracks) => {
                 let append_at = self.running_order().len();
-                self.current_batch = None;
+                self.last_query = None;
                 for track in tracks {
                     self.queue(track);
                 }
@@ -486,7 +462,9 @@ impl UpdatableState for PlaybackState {
             }
             PlaybackAction::QueuePaged(SongBatch { batch, songs }) => {
                 let append_at = self.running_order().len();
-                self.current_batch = Some(batch);
+                if let Some(query) = self.last_query.as_mut() {
+                    query.batch = batch;
+                }
                 for song in songs {
                     self.queue(song);
                 }

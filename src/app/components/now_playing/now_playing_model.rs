@@ -1,5 +1,6 @@
 use gio::prelude::*;
 use gio::SimpleActionGroup;
+use std::borrow::Borrow;
 use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
@@ -10,10 +11,11 @@ use crate::app::models::SongDescription;
 use crate::app::models::SongModel;
 use crate::app::state::PlaylistChange;
 use crate::app::state::{
-    PlaybackAction, PlaybackEvent, PlaybackState, PlaylistSource, SelectionAction,
-    SelectionContext, SelectionState,
+    PlaybackAction, PlaybackEvent, PlaybackState, SelectionAction, SelectionContext, SelectionState,
 };
-use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState, ListDiff};
+use crate::app::{
+    ActionDispatcher, AppAction, AppEvent, AppModel, AppState, ListDiff, SongsSource,
+};
 use crate::{api::SpotifyApiClient, app::components::SimpleSelectionTool};
 
 pub struct NowPlayingModel {
@@ -48,20 +50,15 @@ impl NowPlayingModel {
 
     pub fn load_more(&self) -> Option<()> {
         let queue = self.queue();
-        let api = self.app_model.get_spotify();
-        let batch = queue.next_batch()?;
-        let batch_size = batch.batch_size;
-        let next_offset = batch.offset;
+        let loader = self.app_model.get_batch_loader();
+        let query = queue.next_query()?;
 
-        if let Some(PlaylistSource::Playlist(id)) = queue.source.as_ref() {
-            let id = id.clone();
-            self.dispatcher
-                .call_spotify_and_dispatch(move || async move {
-                    api.get_playlist_tracks(&id, next_offset, batch_size)
-                        .await
-                        .map(move |song_batch| PlaybackAction::QueuePaged(song_batch).into())
-                });
-        }
+        self.dispatcher.dispatch_async(Box::pin(async move {
+            loader
+                .query(query)
+                .await
+                .map(|song_batch| PlaybackAction::QueuePaged(song_batch).into())
+        }));
 
         Some(())
     }

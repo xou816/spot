@@ -10,10 +10,12 @@ use crate::app::components::{labels, PlaylistModel, SelectionTool, SelectionTool
 use crate::app::components::{AddSelectionTool, SimpleSelectionTool};
 use crate::app::models::*;
 use crate::app::state::{
-    BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource, SelectionAction, SelectionContext,
-    SelectionState,
+    BrowserAction, BrowserEvent, PlaybackAction, SelectionAction, SelectionContext, SelectionState,
 };
-use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState, ListDiff};
+use crate::app::BatchQuery;
+use crate::app::{
+    ActionDispatcher, AppAction, AppEvent, AppModel, AppState, ListDiff, SongsSource,
+};
 
 pub struct PlaylistDetailsModel {
     pub id: String,
@@ -68,26 +70,24 @@ impl PlaylistDetailsModel {
     }
 
     pub fn load_more_tracks(&self) -> Option<()> {
-        let api = self.app_model.get_spotify();
         let id = self.id.clone();
-
         let state = self.app_model.get_state();
-        let next_batch = &state
+        let query: BatchQuery = state
             .browser
             .playlist_details_state(&id)?
             .playlist
             .as_ref()?
-            .last_batch
-            .next()?;
-        let next_offset = next_batch.offset;
-        let batch_size = next_batch.batch_size;
+            .into();
+        let next_query = query.next()?;
 
-        self.dispatcher
-            .call_spotify_and_dispatch(move || async move {
-                api.get_playlist_tracks(&id, next_offset, batch_size)
-                    .await
-                    .map(|tracks| BrowserAction::AppendPlaylistTracks(id, tracks).into())
-            });
+        let loader = self.app_model.get_batch_loader();
+
+        self.dispatcher.dispatch_async(Box::pin(async move {
+            loader
+                .query(next_query)
+                .await
+                .map(|song_batch| BrowserAction::AppendPlaylistTracks(id, song_batch).into())
+        }));
 
         Some(())
     }
@@ -113,19 +113,12 @@ impl PlaylistModel for PlaylistDetailsModel {
     }
 
     fn play_song(&self, id: &str) {
-        let source = Some(PlaylistSource::Playlist(self.id.clone()));
-        if self.app_model.get_state().playback.source != source {
+        if true {
+            //FIXME
             if let Some(playlist) = self.get_playlist_info() {
-                self.dispatcher.dispatch(
-                    PlaybackAction::LoadPagedSongs(
-                        source,
-                        SongBatch {
-                            batch: playlist.last_batch,
-                            songs: playlist.songs.clone(),
-                        },
-                    )
-                    .into(),
-                );
+                let source = SongsSource::Playlist(self.id.clone());
+                self.dispatcher
+                    .dispatch(PlaybackAction::LoadPagedSongs(source, (&*playlist).into()).into());
             }
         }
         self.dispatcher

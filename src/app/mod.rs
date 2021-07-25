@@ -19,6 +19,9 @@ pub use list_store::*;
 pub mod state;
 pub use state::{AppAction, AppEvent, AppModel, AppState, BrowserAction, BrowserEvent};
 
+mod batch_loader;
+pub use batch_loader::*;
+
 pub mod credentials;
 pub mod loader;
 

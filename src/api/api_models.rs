@@ -375,6 +375,8 @@ impl From<Album> for AlbumDescription {
             })
             .collect::<Vec<ArtistRef>>();
         let songs: Vec<SongDescription> = album.clone().into();
+        let total = album.tracks.as_ref().map(|t| t.total).unwrap_or(100);
+        let last_batch = Batch::first_of_size(100);
         let art = album.best_image_for_width(200).map(|i| i.url.clone());
 
         Self {
@@ -383,6 +385,7 @@ impl From<Album> for AlbumDescription {
             artists,
             art,
             songs,
+            last_batch,
             is_liked: false,
         }
     }

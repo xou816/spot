@@ -1,7 +1,29 @@
-use std::convert::From;
+use std::{collections::HashMap, convert::From};
 
 pub use super::gtypes::*;
+use super::{BatchQuery, SongsSource};
 use crate::app::components::utils::format_duration;
+
+struct SongListBatch {
+    batch: Batch,
+    ids: Vec<String>,
+}
+
+struct SongList {
+    batches: HashMap<usize, SongListBatch>,
+    indexed_songs: HashMap<String, SongDescription>,
+}
+
+impl SongList {
+    fn iter(&self) -> impl Iterator<Item = &'_ SongDescription> {
+        let indexed_songs = &self.indexed_songs;
+        self.batches.iter().flat_map(move |(batch_id, song)| {
+            song.ids.iter().filter_map(move |id| indexed_songs.get(id))
+        })
+    }
+
+    fn get(&self, i: usize) {}
+}
 
 impl From<&AlbumDescription> for AlbumModel {
     fn from(album: &AlbumDescription) -> Self {
@@ -75,6 +97,7 @@ pub struct AlbumDescription {
     pub artists: Vec<ArtistRef>,
     pub art: Option<String>,
     pub songs: Vec<SongDescription>,
+    pub last_batch: Batch,
     pub is_liked: bool,
 }
 
@@ -91,14 +114,6 @@ impl AlbumDescription {
         format_duration(duration.into())
     }
 }
-
-impl PartialEq for AlbumDescription {
-    fn eq(&self, other: &AlbumDescription) -> bool {
-        self.id == other.id
-    }
-}
-
-impl Eq for AlbumDescription {}
 
 #[derive(Clone, Debug)]
 pub struct AlbumFullDescription {
@@ -174,6 +189,14 @@ pub struct Batch {
 }
 
 impl Batch {
+    pub fn first_of_size(batch_size: usize) -> Self {
+        Self {
+            offset: 0,
+            batch_size,
+            total: usize::MAX,
+        }
+    }
+
     pub fn next(self) -> Option<Self> {
         let Self {
             offset,
@@ -196,6 +219,15 @@ pub struct SongBatch {
     pub batch: Batch,
 }
 
+impl SongBatch {
+    pub fn empty() -> Self {
+        Self {
+            songs: vec![],
+            batch: Batch::first_of_size(0),
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct ArtistDescription {
     pub id: String,
@@ -216,4 +248,40 @@ pub struct UserDescription {
     pub id: String,
     pub name: String,
     pub playlists: Vec<PlaylistDescription>,
+}
+
+impl From<&AlbumDescription> for BatchQuery {
+    fn from(album: &AlbumDescription) -> Self {
+        BatchQuery {
+            source: SongsSource::Album(album.id.clone()),
+            batch: album.last_batch,
+        }
+    }
+}
+
+impl From<&PlaylistDescription> for BatchQuery {
+    fn from(playlist: &PlaylistDescription) -> Self {
+        BatchQuery {
+            source: SongsSource::Playlist(playlist.id.clone()),
+            batch: playlist.last_batch,
+        }
+    }
+}
+
+impl From<&AlbumDescription> for SongBatch {
+    fn from(album: &AlbumDescription) -> Self {
+        SongBatch {
+            songs: album.songs.clone(),
+            batch: album.last_batch,
+        }
+    }
+}
+
+impl From<&PlaylistDescription> for SongBatch {
+    fn from(playlist: &PlaylistDescription) -> Self {
+        SongBatch {
+            songs: playlist.songs.clone(),
+            batch: playlist.last_batch,
+        }
+    }
 }

@@ -13,9 +13,9 @@ use crate::app::components::{
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
 use crate::app::state::{
-    BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource, SelectionAction, SelectionState,
+    BrowserAction, BrowserEvent, PlaybackAction, SelectionAction, SelectionState,
 };
-use crate::app::{AppAction, AppEvent, AppModel, AppState, ListDiff};
+use crate::app::{AppAction, AppEvent, AppModel, AppState, ListDiff, SongsSource};
 
 pub struct DetailsModel {
     pub id: String,
@@ -141,12 +141,12 @@ impl PlaylistModel for DetailsModel {
     }
 
     fn play_song(&self, id: &str) {
-        let source = Some(PlaylistSource::Album(self.id.clone()));
-        if self.app_model.get_state().playback.source != source {
+        if true {
+            //FIXME
             let songs = self.songs_ref();
             if let Some(songs) = songs {
                 self.dispatcher
-                    .dispatch(PlaybackAction::LoadSongs(source, songs.clone()).into());
+                    .dispatch(PlaybackAction::LoadSongs(None, songs.clone()).into());
             }
         }
         self.dispatcher
