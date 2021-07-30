@@ -73,7 +73,7 @@ msgstr "Ver álbum"
 #. translators: This is part of a contextual menu attached to a single track; the full text is "More from <artist>".
 #: src/app/components/labels.rs:8
 msgid "More from"
-msgstr "Masi de"
+msgstr "Mais de"
 
 #. translators: This is part of a contextual menu attached to a single track; the intent is to copy the link (public URL) to a specific track.
 #: src/app/components/labels.rs:11
