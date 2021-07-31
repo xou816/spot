@@ -134,7 +134,7 @@ fn register_mpris(
     mpris: SpotMpris,
     player: SpotMprisPlayer,
 ) -> Result<zbus::ObjectServer, zbus::Error> {
-    let mut object_server = zbus::ObjectServer::new(&connection);
+    let mut object_server = zbus::ObjectServer::new(connection);
     object_server.at("/org/mpris/MediaPlayer2", mpris)?;
     object_server.at("/org/mpris/MediaPlayer2", player)?;
     Ok(object_server)
