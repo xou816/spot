@@ -373,7 +373,7 @@
                       <object class="GtkImage">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="icon-name">media-playlist-repeat</property>
+                        <property name="icon-name">media-playlist-consecutive-symbolic.symbolic</property>
                       </object>
                     </child>
                   </object>

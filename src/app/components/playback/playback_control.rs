@@ -174,9 +174,9 @@ impl PlaybackControl {
 
     fn update_repeat(&self, mode: &RepeatMode) {
         let playback_image = match mode {
-            RepeatMode::Song => "media-playlist-repeat-song-symbolic",
+            RepeatMode::Song => "media-playlist-repeat-song-symbolic.symbolic",
             RepeatMode::Playlist => "media-playlist-repeat-symbolic",
-            RepeatMode::None => "media-playlist-repeat",
+            RepeatMode::None => "media-playlist-consecutive-symbolic.symbolic",
         };
 
         self.widget
