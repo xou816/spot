@@ -295,7 +295,12 @@ impl PlaybackState {
             return false;
         }
         let max = self.running_order().len();
-        if let Some(index) = self.running_order().iter().position(|s| s == id) {
+        if let Some(mut index) = self.running_order().iter().position(|s| s == id) {
+            if self.is_shuffled() && self.position.is_none() {
+                // Hacky fix for now if we reach this state
+                self.running_order_mut().swap(index, 0);
+                index = 0;
+            }
             self.position = Some(self.position.unwrap_or_default().update_into(index, max));
             self.is_playing = true;
             true
