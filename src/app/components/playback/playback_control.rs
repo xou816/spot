@@ -52,7 +52,9 @@ impl PlaybackControlModel {
     }
 
     pub fn toggle_shuffle(&self) {
-        self.dispatcher.dispatch(PlaybackAction::ToggleShuffle.into());
+        if self.is_playing() {
+            self.dispatcher.dispatch(PlaybackAction::ToggleShuffle.into());
+        }
     }
 
     pub fn toggle_repeat(&self) {
@@ -174,7 +176,7 @@ impl PlaybackControl {
 
     fn update_shuffle(&self) {
         let is_shuffled = self.model.state().playback.is_shuffled();
-        let playback_image = if is_shuffled {
+        let playback_image = if is_shuffled && self.model.is_playing() {
             "media-playlist-shuffle-symbolic"
         } else {
             "shuffle"
@@ -271,6 +273,7 @@ impl EventListener for PlaybackControl {
             }
             AppEvent::PlaybackEvent(PlaybackEvent::PlaybackStopped) => {
                 self.update_playing();
+                self.update_shuffle();
                 self.update_current_info();
             }
             AppEvent::PlaybackEvent(PlaybackEvent::SeekSynced(pos))
