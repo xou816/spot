@@ -83,6 +83,7 @@ pub struct PlaybackState {
     position: Option<Position>,
     pub source: Option<PlaylistSource>,
     current_batch: Option<Batch>,
+    replay: bool,
     is_playing: bool,
 }
 
@@ -335,6 +336,13 @@ impl PlaybackState {
         }
     }
 
+    fn replay_event(&self) -> Vec<PlaybackEvent> {
+        match self.current_song_id() {
+            Some(id) => vec![PlaybackEvent::TrackChanged(id.to_owned())],
+            None => vec![],
+        }
+    }
+
     fn toggle_play(&mut self) -> Option<bool> {
         if self.position.is_some() {
             self.is_playing = !self.is_playing;
@@ -373,6 +381,7 @@ impl Default for PlaybackState {
             position: None,
             source: None,
             current_batch: None,
+            replay: true, // TODO make false
             is_playing: false,
         }
     }
@@ -460,6 +469,7 @@ impl UpdatableState for PlaybackState {
                 vec![PlaybackEvent::PlaylistChanged]
             }
             PlaybackAction::Next => {
+                if self.replay { return self.replay_event() }
                 let old_position = self.position;
                 if let Some(id) = self.play_next() {
                     make_events(vec![
@@ -478,6 +488,7 @@ impl UpdatableState for PlaybackState {
                 vec![PlaybackEvent::PlaybackStopped]
             }
             PlaybackAction::Previous => {
+                if self.replay { return self.replay_event() }
                 let old_position = self.position;
                 if let Some(id) = self.play_prev() {
                     make_events(vec![
