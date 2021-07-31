@@ -311,13 +311,19 @@ impl PlaybackState {
 
     fn play_next(&mut self) -> Option<String> {
         let len = self.running_order().len();
-        let next = self
-            .position
-            .filter(|&p| p.index + 1 < len || !matches!(self.repeat, RepeatMode::None))
-            .map(|p| match self.repeat {
-                RepeatMode::Song => p.index,
-                _ => if p.index + 1 < len { p.index + 1 } else { 0 } 
-            });
+        let next = self.position.and_then(|p|{
+            match self.repeat {
+                RepeatMode::Song => Some(p.index),
+                RepeatMode::Playlist | RepeatMode::None => {
+                    let index = p.index + 1;
+                    if index % len == 0 {
+                        if let RepeatMode::Playlist = self.repeat {
+                            Some(0) 
+                        } else { None }
+                    } else { Some(index) }
+                }
+            }
+        });
         if let Some(next) = next {
             self.is_playing = true;
             self.position = Some(self.position.unwrap_or_default().update_into(next, len));
@@ -329,13 +335,18 @@ impl PlaybackState {
 
     fn play_prev(&mut self) -> Option<String> {
         let len = self.running_order().len();
-        let prev = self
-            .position
-            .filter(|&p| (len > 0 && p.index > 0) || !matches!(self.repeat, RepeatMode::None))
-            .map(|p| match self.repeat {
-                RepeatMode::Song => p.index,
-                _ => (if p.index != 0 { p.index } else { len }) - 1,
-            });
+        let prev = self.position.and_then(|p|{
+            match self.repeat {
+                RepeatMode::Song => Some(p.index),
+                RepeatMode::Playlist | RepeatMode::None => {
+                    if p.index == 0 {
+                        if let RepeatMode::Playlist = self.repeat {
+                            Some(len - 1) 
+                        } else { None }
+                    } else { Some(p.index - 1) }
+                }
+            }
+        });
         if let Some(prev) = prev {
             self.is_playing = true;
             self.position = Some(self.position.unwrap_or_default().update_into(prev, len));
