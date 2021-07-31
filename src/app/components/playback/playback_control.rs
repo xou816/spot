@@ -8,7 +8,7 @@ use crate::app::components::{
     utils::{Clock, Debouncer},
     EventListener,
 };
-use crate::app::state::{PlaybackAction, PlaybackEvent};
+use crate::app::state::{PlaybackAction, PlaybackEvent, RepeatMode};
 use crate::app::{ActionDispatcher, AppEvent, AppModel, AppState};
 
 pub struct PlaybackControlModel {
@@ -51,6 +51,10 @@ impl PlaybackControlModel {
         self.dispatcher.dispatch(PlaybackAction::TogglePlay.into());
     }
 
+    pub fn toggle_repeat(&self) {
+        self.dispatcher.dispatch(PlaybackAction::ToggleRepeat.into());
+    }
+
     pub fn seek_to(&self, position: u32) {
         self.dispatcher
             .dispatch(PlaybackAction::Seek(position).into());
@@ -64,6 +68,7 @@ pub struct PlaybackControlWidget {
     track_duration: gtk::Label,
     next: gtk::Button,
     prev: gtk::Button,
+    repeat_button: gtk::Button,
 }
 
 impl PlaybackControlWidget {
@@ -74,6 +79,7 @@ impl PlaybackControlWidget {
         track_duration: gtk::Label,
         next: gtk::Button,
         prev: gtk::Button,
+        repeat_button: gtk::Button,
     ) -> Self {
         Self {
             play_button,
@@ -82,6 +88,7 @@ impl PlaybackControlWidget {
             track_duration,
             next,
             prev,
+            repeat_button,
         }
     }
 }
@@ -121,8 +128,13 @@ impl PlaybackControl {
         }));
 
         widget.prev.connect_clicked(clone!(@weak model => move |_| {
-            model.play_prev_song()
+            model.play_prev_song();
         }));
+
+        widget.repeat_button.connect_clicked(clone!(@weak model => move |_| {
+            model.toggle_repeat();
+        }));
+
 
         Self {
             model,
@@ -133,7 +145,6 @@ impl PlaybackControl {
     }
 
     fn set_playing(&self, is_playing: bool) {
-        // TODO Look at how this is done and implement for replay
         let playback_image = if is_playing {
             "media-playback-pause-symbolic"
         } else {
@@ -142,6 +153,23 @@ impl PlaybackControl {
 
         self.widget
             .play_button
+            .child()
+            .and_then(|child| child.downcast::<gtk::Image>().ok())
+            .map(|image| {
+                image.set_from_icon_name(Some(playback_image), image.icon_size());
+            })
+            .expect("error updating icon");
+    }
+
+    fn update_repeat(&self, mode: &RepeatMode) {
+        let playback_image = match mode {
+            RepeatMode::Song => "media-playlist-repeat-song-symbolic.symbolic",
+            RepeatMode::Playlist => "media-playlist-repeat-symbolic",
+            RepeatMode::None => "media-playlist-repeat",
+        };
+
+        self.widget
+            .repeat_button
             .child()
             .and_then(|child| child.downcast::<gtk::Image>().ok())
             .map(|image| {
@@ -205,6 +233,9 @@ impl EventListener for PlaybackControl {
             }
             AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
                 self.update_current_info();
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::Repeat(mode)) => {
+                self.update_repeat(mode);
             }
             AppEvent::PlaybackEvent(PlaybackEvent::PlaybackStopped) => {
                 self.update_playing();

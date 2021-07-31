@@ -83,7 +83,7 @@ pub struct PlaybackState {
     position: Option<Position>,
     pub source: Option<PlaylistSource>,
     current_batch: Option<Batch>,
-    replay: bool,
+    repeat: RepeatMode,
     is_playing: bool,
 }
 
@@ -310,6 +310,7 @@ impl PlaybackState {
     }
 
     fn play_next(&mut self) -> Option<String> {
+        // TODO implement repeat
         let len = self.running_order().len();
         let next = self
             .position
@@ -336,7 +337,7 @@ impl PlaybackState {
         }
     }
 
-    fn replay_event(&self) -> Vec<PlaybackEvent> {
+    fn repeat_event(&self) -> Vec<PlaybackEvent> {
         match self.current_song_id() {
             Some(id) => vec![PlaybackEvent::TrackChanged(id.to_owned())],
             None => vec![],
@@ -381,7 +382,7 @@ impl Default for PlaybackState {
             position: None,
             source: None,
             current_batch: None,
-            replay: true, // TODO make false
+            repeat: RepeatMode::None,
             is_playing: false,
         }
     }
@@ -393,6 +394,7 @@ pub enum PlaybackAction {
     Play,
     Pause,
     Stop,
+    ToggleRepeat,
     ToggleShuffle,
     Seek(u32),
     SyncSeek(u32),
@@ -416,11 +418,19 @@ impl From<PlaybackAction> for AppAction {
 pub enum PlaybackEvent {
     PlaybackPaused,
     PlaybackResumed,
+    Repeat(RepeatMode),
     TrackSeeked(u32),
     SeekSynced(u32),
     TrackChanged(String),
     PlaylistChanged,
     PlaybackStopped,
+}
+
+#[derive(Clone, Debug)]
+pub enum RepeatMode {
+    Song,
+    Playlist,
+    None,
 }
 
 impl From<PlaybackEvent> for AppEvent {
@@ -464,12 +474,20 @@ impl UpdatableState for PlaybackState {
                     vec![]
                 }
             }
+            PlaybackAction::ToggleRepeat => {
+                self.repeat = match self.repeat {
+                    RepeatMode::Song => RepeatMode::None,
+                    RepeatMode::Playlist => RepeatMode::Song,
+                    RepeatMode::None => RepeatMode::Playlist,
+                };
+                vec![PlaybackEvent::Repeat(self.repeat.clone())]
+            }
             PlaybackAction::ToggleShuffle => {
                 self.toggle_shuffle();
                 vec![PlaybackEvent::PlaylistChanged]
             }
             PlaybackAction::Next => {
-                if self.replay { return self.replay_event() }
+                if let RepeatMode::Song = self.repeat { return self.repeat_event() }
                 let old_position = self.position;
                 if let Some(id) = self.play_next() {
                     make_events(vec![
@@ -488,7 +506,7 @@ impl UpdatableState for PlaybackState {
                 vec![PlaybackEvent::PlaybackStopped]
             }
             PlaybackAction::Previous => {
-                if self.replay { return self.replay_event() }
+                if let RepeatMode::Song = self.repeat { return self.repeat_event() }
                 let old_position = self.position;
                 if let Some(id) = self.play_prev() {
                     make_events(vec![
