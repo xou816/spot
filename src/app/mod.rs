@@ -203,6 +203,7 @@ impl App {
         let play_button: gtk::Button = builder.object("play_pause").unwrap();
         let next: gtk::Button = builder.object("next").unwrap();
         let prev: gtk::Button = builder.object("prev").unwrap();
+        let repeat_button: gtk::Button = builder.object("repeat").unwrap();
         let seek_bar: gtk::Scale = builder.object("seek_bar").unwrap();
         let track_position: gtk::Label = builder.object("track_position").unwrap();
         let track_duration: gtk::Label = builder.object("track_duration").unwrap();
@@ -214,6 +215,7 @@ impl App {
             track_duration,
             next,
             prev,
+            repeat_button,
         );
 
         let model = PlaybackControlModel::new(app_model, dispatcher);
