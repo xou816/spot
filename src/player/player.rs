@@ -118,7 +118,7 @@ impl SpotifyPlayer {
             }
             Command::RefreshToken => {
                 let session = session.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
-                let (token, token_expiry_time) = get_access_token_and_expiry_time(&session).await?;
+                let (token, token_expiry_time) = get_access_token_and_expiry_time(session).await?;
                 self.delegate.refresh_successful(token, token_expiry_time);
                 Ok(())
             }

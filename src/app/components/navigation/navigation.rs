@@ -33,12 +33,12 @@ impl Navigation {
         Self::connect_back_button(&back_button, &leaflet, &model);
 
         leaflet.connect_folded_notify(clone!(@weak back_button, @weak model => move |leaflet| {
-            Self::update_back_button(&back_button, &leaflet, &model);
+            Self::update_back_button(&back_button, leaflet, &model);
         }));
 
         leaflet.connect_visible_child_name_notify(
             clone!(@weak back_button, @weak model => move |leaflet| {
-                Self::update_back_button(&back_button, &leaflet, &model);
+                Self::update_back_button(&back_button, leaflet, &model);
             }),
         );
 
