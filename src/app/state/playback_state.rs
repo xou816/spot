@@ -430,7 +430,7 @@ impl From<PlaybackAction> for AppAction {
 pub enum PlaybackEvent {
     PlaybackPaused,
     PlaybackResumed,
-    Repeat(RepeatMode),
+    RepeatModeChanged(RepeatMode),
     TrackSeeked(u32),
     SeekSynced(u32),
     TrackChanged(String),
@@ -492,7 +492,7 @@ impl UpdatableState for PlaybackState {
                     RepeatMode::Playlist => RepeatMode::Song,
                     RepeatMode::None => RepeatMode::Playlist,
                 };
-                vec![PlaybackEvent::Repeat(self.repeat.clone())]
+                vec![PlaybackEvent::RepeatModeChanged(self.repeat.clone())]
             }
             PlaybackAction::ToggleShuffle => {
                 self.toggle_shuffle();
