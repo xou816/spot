@@ -165,14 +165,14 @@ impl PlaybackState {
     }
 
     fn shuffle(&mut self) {
+        let current_song = self.current_song_id();
         let mut to_shuffle: Vec<String> = self
             .running_order
             .iter()
-            .filter(|&id| Some(id) != self.current_song_id())
+            .filter(|&id| Some(id) != current_song)
             .cloned()
             .collect();
-        let mut final_list: VecDeque<String> =
-            self.current_song_id().cloned().into_iter().collect();
+        let mut final_list: VecDeque<String> = current_song.cloned().into_iter().collect();
         to_shuffle.shuffle(&mut self.rng);
         final_list.append(&mut to_shuffle.into());
         if let Some(p) = self.position.as_mut() {
