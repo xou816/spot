@@ -51,6 +51,10 @@ impl PlaybackControlModel {
         self.dispatcher.dispatch(PlaybackAction::TogglePlay.into());
     }
 
+    pub fn toggle_shuffle(&self) {
+        self.dispatcher.dispatch(PlaybackAction::ToggleShuffle.into());
+    }
+
     pub fn toggle_repeat(&self) {
         self.dispatcher.dispatch(PlaybackAction::ToggleRepeat.into());
     }
@@ -68,6 +72,7 @@ pub struct PlaybackControlWidget {
     track_duration: gtk::Label,
     next: gtk::Button,
     prev: gtk::Button,
+    shuffle_button: gtk::Button,
     repeat_button: gtk::Button,
 }
 
@@ -79,6 +84,7 @@ impl PlaybackControlWidget {
         track_duration: gtk::Label,
         next: gtk::Button,
         prev: gtk::Button,
+        shuffle_button: gtk::Button,
         repeat_button: gtk::Button,
     ) -> Self {
         Self {
@@ -88,6 +94,7 @@ impl PlaybackControlWidget {
             track_duration,
             next,
             prev,
+            shuffle_button,
             repeat_button,
         }
     }
@@ -131,6 +138,10 @@ impl PlaybackControl {
             model.play_prev_song();
         }));
 
+        widget.shuffle_button.connect_clicked(clone!(@weak model => move |_| {
+            model.toggle_shuffle();
+        }));
+
         widget.repeat_button.connect_clicked(clone!(@weak model => move |_| {
             model.toggle_repeat();
         }));
@@ -160,6 +171,24 @@ impl PlaybackControl {
             })
             .expect("error updating icon");
     }
+
+    fn update_shuffle(&self) {
+        let is_shuffled = self.model.state().playback.is_shuffled();
+        let playback_image = if is_shuffled {
+            "media-playlist-shuffle-symbolic"
+        } else {
+            "shuffle"
+        };
+        self.widget
+            .shuffle_button
+            .child()
+            .and_then(|child| child.downcast::<gtk::Image>().ok())
+            .map(|image| {
+                image.set_from_icon_name(Some(playback_image), image.icon_size());
+            })
+            .expect("error updating icon");
+    }
+
 
     fn update_repeat(&self, mode: &RepeatMode) {
         let playback_image = match mode {
@@ -233,6 +262,9 @@ impl EventListener for PlaybackControl {
             }
             AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
                 self.update_current_info();
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaylistChanged) => {
+                self.update_shuffle();
             }
             AppEvent::PlaybackEvent(PlaybackEvent::Repeat(mode)) => {
                 self.update_repeat(mode);

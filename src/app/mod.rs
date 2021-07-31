@@ -203,6 +203,7 @@ impl App {
         let play_button: gtk::Button = builder.object("play_pause").unwrap();
         let next: gtk::Button = builder.object("next").unwrap();
         let prev: gtk::Button = builder.object("prev").unwrap();
+        let shuffle_button: gtk::Button = builder.object("shuffle").unwrap();
         let repeat_button: gtk::Button = builder.object("repeat").unwrap();
         let seek_bar: gtk::Scale = builder.object("seek_bar").unwrap();
         let track_position: gtk::Label = builder.object("track_position").unwrap();
@@ -215,6 +216,7 @@ impl App {
             track_duration,
             next,
             prev,
+            shuffle_button,
             repeat_button,
         );
 
