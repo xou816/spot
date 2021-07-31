@@ -1,7 +1,7 @@
 gnome = import('gnome')
 
 dependency('libadwaita-1')
-dependency('gtk+-3.0')
+dependency('gtk4')
 dependency('glib-2.0')
 dependency('openssl')
 dependency('alsa')

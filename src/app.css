@@ -34,3 +34,7 @@
   min-width: 40px;
   min-height: 40px;
 }
+
+headerbar.selection-mode {
+  background-color: @theme_selected_bg_color;
+}

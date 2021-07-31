@@ -2,108 +2,114 @@
 <interface>
   <requires lib="gtk" version="4.0"/>
   <requires lib="libadwaita" version="1.0"/>
-  <object class="GtkScrolledWindow" id="root">
-    <property name="hscrollbar-policy">never</property>
-    <property name="propagate-natural-width">1</property>
-    <property name="child">
-      <object class="GtkViewport">
+  <template class="AlbumDetailsWidget" parent="GtkBox">
+    <child>
+      <object class="GtkScrolledWindow" id="root">
+        <property name="hscrollbar-policy">never</property>
+        <property name="propagate-natural-width">1</property>
+        <property name="hexpand">1</property>
+        <property name="vexpand">1</property>
         <child>
-          <object class="AdwClamp">
-            <property name="maximum-size">900</property>
+          <object class="GtkViewport">
             <child>
-              <object class="GtkBox">
-                <property name="valign">start</property>
-                <property name="margin-start">16</property>
-                <property name="margin-end">16</property>
-                <property name="margin-top">16</property>
-                <property name="margin-bottom">16</property>
-                <property name="orientation">vertical</property>
-                <property name="spacing">8</property>
+              <object class="AdwClamp">
+                <property name="maximum-size">900</property>
                 <child>
                   <object class="GtkBox">
                     <property name="valign">start</property>
-                    <property name="margin-start">8</property>
-                    <property name="margin-end">8</property>
-                    <property name="margin-top">8</property>
-                    <property name="margin-bottom">8</property>
-                    <property name="spacing">16</property>
-                    <child>
-                      <object class="GtkImage" id="album_art">
-                        <property name="width-request">100</property>
-                        <property name="height-request">100</property>
-                        <property name="icon-name">emblem-music-symbolic</property>
-                        <style>
-                          <class name="details__album-art"/>
-                        </style>
-                      </object>
-                    </child>
+                    <property name="margin-start">16</property>
+                    <property name="margin-end">16</property>
+                    <property name="margin-top">16</property>
+                    <property name="margin-bottom">16</property>
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">8</property>
                     <child>
                       <object class="GtkBox">
-                        <property name="hexpand">1</property>
-                        <property name="valign">center</property>
-                        <property name="orientation">vertical</property>
+                        <property name="valign">start</property>
+                        <property name="margin-start">8</property>
+                        <property name="margin-end">8</property>
+                        <property name="margin-top">8</property>
+                        <property name="margin-bottom">8</property>
+                        <property name="spacing">16</property>
                         <child>
-                          <object class="GtkLabel" id="album_label">
-                            <property name="halign">start</property>
-                            <property name="label">Album</property>
-                            <property name="wrap">1</property>
-                            <property name="ellipsize">end</property>
-                            <property name="max-width-chars">50</property>
-                            <property name="lines">4</property>
-                            <property name="xalign">0</property>
+                          <object class="GtkImage" id="album_art">
+                            <property name="width-request">100</property>
+                            <property name="height-request">100</property>
+                            <property name="icon-name">emblem-music-symbolic</property>
                             <style>
-                              <class name="details__album-label"/>
+                              <class name="details__album-art"/>
                             </style>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkLinkButton" id="artist_button">
-                            <property name="receives-default">1</property>
-                            <property name="halign">start</property>
+                          <object class="GtkBox">
+                            <property name="hexpand">1</property>
                             <property name="valign">center</property>
-                            <property name="has-frame">0</property>
+                            <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkLabel" id="artist_button_label">
-                                <property name="hexpand">1</property>
-                                <property name="vexpand">1</property>
-                                <property name="label">Artist</property>
-                                <property name="ellipsize">middle</property>
+                              <object class="GtkLabel" id="album_label">
+                                <property name="halign">start</property>
+                                <property name="label">Album</property>
+                                <property name="wrap">1</property>
+                                <property name="ellipsize">end</property>
+                                <property name="max-width-chars">50</property>
+                                <property name="lines">4</property>
                                 <property name="xalign">0</property>
+                                <style>
+                                  <class name="details__album-label"/>
+                                </style>
                               </object>
                             </child>
+                            <child>
+                              <object class="GtkLinkButton" id="artist_button">
+                                <property name="receives-default">1</property>
+                                <property name="halign">start</property>
+                                <property name="valign">center</property>
+                                <property name="has-frame">0</property>
+                                <child>
+                                  <object class="GtkLabel" id="artist_button_label">
+                                    <property name="hexpand">1</property>
+                                    <property name="vexpand">1</property>
+                                    <property name="label">Artist</property>
+                                    <property name="ellipsize">middle</property>
+                                    <property name="xalign">0</property>
+                                  </object>
+                                </child>
+                                <style>
+                                  <class name="details__more"/>
+                                </style>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="like_button">
+                            <property name="label">♥</property>
+                            <property name="width-request">35</property>
+                            <property name="height-request">35</property>
+                            <property name="receives-default">1</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <style>
-                              <class name="details__more"/>
+                              <class name="circular"/>
+                              <class name="details__like"/>
                             </style>
                           </object>
                         </child>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkButton" id="like_button">
-                        <property name="label">♥</property>
-                        <property name="width-request">35</property>
-                        <property name="height-request">35</property>
-                        <property name="receives-default">1</property>
-                        <property name="halign">center</property>
-                        <property name="valign">center</property>
+                      <object class="GtkListBox" id="album_tracks">
+                        <property name="valign">start</property>
+                        <property name="margin-start">8</property>
+                        <property name="margin-end">8</property>
+                        <property name="selection-mode">none</property>
+                        <property name="activate-on-single-click">0</property>
                         <style>
-                          <class name="circular"/>
-                          <class name="details__like"/>
+                          <class name="details__songs"/>
                         </style>
                       </object>
                     </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBox" id="album_tracks">
-                    <property name="valign">start</property>
-                    <property name="margin-start">8</property>
-                    <property name="margin-end">8</property>
-                    <property name="selection-mode">none</property>
-                    <property name="activate-on-single-click">0</property>
-                    <style>
-                      <class name="details__songs"/>
-                    </style>
                   </object>
                 </child>
               </object>
@@ -111,9 +117,9 @@
           </object>
         </child>
       </object>
-    </property>
+    </child>
     <style>
       <class name="details"/>
     </style>
-  </object>
+  </template>
 </interface>
