@@ -274,7 +274,7 @@
                       <object class="GtkImage">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="icon-name">shuffle</property>
+                        <property name="icon-name">media-playlist-shuffle</property>
                       </object>
                     </child>
                   </object>
