@@ -52,9 +52,7 @@ impl PlaybackControlModel {
     }
 
     pub fn toggle_shuffle(&self) {
-        if self.is_playing() {
-            self.dispatcher.dispatch(PlaybackAction::ToggleShuffle.into());
-        }
+        self.dispatcher.dispatch(PlaybackAction::ToggleShuffle.into());
     }
 
     pub fn toggle_repeat(&self) {
@@ -176,7 +174,7 @@ impl PlaybackControl {
 
     fn update_shuffle(&self) {
         let is_shuffled = self.model.state().playback.is_shuffled();
-        let playback_image = if is_shuffled && self.model.is_playing() {
+        let playback_image = if is_shuffled {
             "media-playlist-shuffle-symbolic" // Darker version (selected)
         } else {
             "media-playlist-shuffle" // Lighter version (not selected)
