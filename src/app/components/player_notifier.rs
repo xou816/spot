@@ -30,7 +30,7 @@ impl EventListener for PlayerNotifier {
             AppEvent::PlaybackEvent(PlaybackEvent::PlaybackResumed) => Some(Command::PlayerResume),
             AppEvent::PlaybackEvent(PlaybackEvent::PlaybackStopped) => Some(Command::PlayerStop),
             AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(id)) => {
-                SpotifyId::from_base62(&id).ok().map(Command::PlayerLoad)
+                SpotifyId::from_base62(id).ok().map(Command::PlayerLoad)
             }
             AppEvent::PlaybackEvent(PlaybackEvent::TrackSeeked(position)) => {
                 Some(Command::PlayerSeek(*position))

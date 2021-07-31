@@ -66,7 +66,7 @@ impl Notification {
 impl EventListener for Notification {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::NotificationShown(content) => self.show(&content),
+            AppEvent::NotificationShown(content) => self.show(content),
             AppEvent::NotificationHidden => self.hide(),
             // _ if cfg!(debug_assertions) => self.show(&format!("{:?}", event)),
             _ => {}

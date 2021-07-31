@@ -20,4 +20,5 @@ jobs:
       with:
         bundle: "spot.flatpak"
         manifest-path: "dev.alextren.Spot.snapshots.json"
+        cache-key: flatpak-builder-${{ github.sha }}
         run-tests: true
