@@ -310,12 +310,14 @@ impl PlaybackState {
     }
 
     fn play_next(&mut self) -> Option<String> {
-        // TODO implement repeat
         let len = self.running_order().len();
         let next = self
             .position
-            .filter(|&p| p.index + 1 < len)
-            .map(|p| p.index + 1);
+            .filter(|&p| p.index + 1 < len || !matches!(self.repeat, RepeatMode::None))
+            .map(|p| match self.repeat {
+                RepeatMode::Song => p.index,
+                _ => if p.index + 1 < len { p.index + 1 } else { 0 } 
+            });
         if let Some(next) = next {
             self.is_playing = true;
             self.position = Some(self.position.unwrap_or_default().update_into(next, len));
@@ -327,20 +329,19 @@ impl PlaybackState {
 
     fn play_prev(&mut self) -> Option<String> {
         let len = self.running_order().len();
-        let prev = self.position.filter(|&p| p.index > 0).map(|p| p.index - 1);
+        let prev = self
+            .position
+            .filter(|&p| (len > 0 && p.index > 0) || !matches!(self.repeat, RepeatMode::None))
+            .map(|p| match self.repeat {
+                RepeatMode::Song => p.index,
+                _ => (if p.index != 0 { p.index } else { len }) - 1,
+            });
         if let Some(prev) = prev {
             self.is_playing = true;
             self.position = Some(self.position.unwrap_or_default().update_into(prev, len));
             Some(self.running_order()[prev].clone())
         } else {
             None
-        }
-    }
-
-    fn repeat_event(&self) -> Vec<PlaybackEvent> {
-        match self.current_song_id() {
-            Some(id) => vec![PlaybackEvent::TrackChanged(id.to_owned())],
-            None => vec![],
         }
     }
 
@@ -487,7 +488,6 @@ impl UpdatableState for PlaybackState {
                 vec![PlaybackEvent::PlaylistChanged]
             }
             PlaybackAction::Next => {
-                if let RepeatMode::Song = self.repeat { return self.repeat_event() }
                 let old_position = self.position;
                 if let Some(id) = self.play_next() {
                     make_events(vec![
@@ -506,7 +506,6 @@ impl UpdatableState for PlaybackState {
                 vec![PlaybackEvent::PlaybackStopped]
             }
             PlaybackAction::Previous => {
-                if let RepeatMode::Song = self.repeat { return self.repeat_event() }
                 let old_position = self.position;
                 if let Some(id) = self.play_prev() {
                     make_events(vec![
