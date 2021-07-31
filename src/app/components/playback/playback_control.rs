@@ -177,9 +177,9 @@ impl PlaybackControl {
     fn update_shuffle(&self) {
         let is_shuffled = self.model.state().playback.is_shuffled();
         let playback_image = if is_shuffled && self.model.is_playing() {
-            "media-playlist-shuffle-symbolic"
+            "media-playlist-shuffle-symbolic" // Darker version (selected)
         } else {
-            "shuffle"
+            "media-playlist-shuffle" // Lighter version (not selected)
         };
         self.widget
             .shuffle_button
@@ -190,7 +190,6 @@ impl PlaybackControl {
             })
             .expect("error updating icon");
     }
-
 
     fn update_repeat(&self, mode: &RepeatMode) {
         let playback_image = match mode {
