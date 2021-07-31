@@ -193,7 +193,7 @@ impl PlaybackControl {
 
     fn update_repeat(&self, mode: &RepeatMode) {
         let playback_image = match mode {
-            RepeatMode::Song => "media-playlist-repeat-song-symbolic.symbolic",
+            RepeatMode::Song => "media-playlist-repeat-song-symbolic",
             RepeatMode::Playlist => "media-playlist-repeat-symbolic",
             RepeatMode::None => "media-playlist-repeat",
         };
@@ -267,7 +267,7 @@ impl EventListener for PlaybackControl {
             AppEvent::PlaybackEvent(PlaybackEvent::PlaylistChanged) => {
                 self.update_shuffle();
             }
-            AppEvent::PlaybackEvent(PlaybackEvent::Repeat(mode)) => {
+            AppEvent::PlaybackEvent(PlaybackEvent::RepeatModeChanged(mode)) => {
                 self.update_repeat(mode);
             }
             AppEvent::PlaybackEvent(PlaybackEvent::PlaybackStopped) => {
