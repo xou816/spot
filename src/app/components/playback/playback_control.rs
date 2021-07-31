@@ -172,23 +172,6 @@ impl PlaybackControl {
             .expect("error updating icon");
     }
 
-    fn update_shuffle(&self) {
-        let is_shuffled = self.model.state().playback.is_shuffled();
-        let playback_image = if is_shuffled {
-            "media-playlist-shuffle-symbolic" // Darker version (selected)
-        } else {
-            "media-playlist-shuffle" // Lighter version (not selected)
-        };
-        self.widget
-            .shuffle_button
-            .child()
-            .and_then(|child| child.downcast::<gtk::Image>().ok())
-            .map(|image| {
-                image.set_from_icon_name(Some(playback_image), image.icon_size());
-            })
-            .expect("error updating icon");
-    }
-
     fn update_repeat(&self, mode: &RepeatMode) {
         let playback_image = match mode {
             RepeatMode::Song => "media-playlist-repeat-song-symbolic",
@@ -262,15 +245,11 @@ impl EventListener for PlaybackControl {
             AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
                 self.update_current_info();
             }
-            AppEvent::PlaybackEvent(PlaybackEvent::PlaylistChanged) => {
-                self.update_shuffle();
-            }
             AppEvent::PlaybackEvent(PlaybackEvent::RepeatModeChanged(mode)) => {
                 self.update_repeat(mode);
             }
             AppEvent::PlaybackEvent(PlaybackEvent::PlaybackStopped) => {
                 self.update_playing();
-                self.update_shuffle();
                 self.update_current_info();
             }
             AppEvent::PlaybackEvent(PlaybackEvent::SeekSynced(pos))
