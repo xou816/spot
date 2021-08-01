@@ -77,6 +77,7 @@ pub struct PlaybackControlWidget {
 }
 
 impl PlaybackControlWidget {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         play_button: gtk::Button,
         seek_bar: gtk::Scale,
