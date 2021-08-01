@@ -98,8 +98,8 @@ impl PlaybackControl {
         let model = Rc::new(model);
         let debouncer = Debouncer::new();
         let debouncer_clone = debouncer.clone();
-
         let track_position = &widget.track_position;
+
         widget.seek_bar.connect_change_value(
             clone!(@weak model, @weak track_position => @default-return signal::Inhibit(false), move |_, scroll, mut requested| {
                 match scroll {
@@ -125,7 +125,9 @@ impl PlaybackControl {
 
         widget.seek_bar.connect_button_press_event(
             clone!(@weak model => @default-return signal::Inhibit(false), move|scale, event| {
-                let x = event.position().0;
+                let mut x = event.position().0;
+                let offset = scale.layout_offsets().0 as f64;
+                if offset <= x { x-= offset; } // Just in case future has some offset
                 let width = scale.range_rect().width as f64;
                 // TODO figure out why sometimes clicking doesnt change song seconds
                 // Clicking slightly under seek changes the value but doesnt actually seek
