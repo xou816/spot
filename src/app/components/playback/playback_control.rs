@@ -101,11 +101,19 @@ impl PlaybackControl {
 
         let track_position = &widget.track_position;
         widget.seek_bar.connect_change_value(
-            clone!(@weak model, @weak track_position => @default-return signal::Inhibit(false), move |_, _, requested| {
+            clone!(@weak model, @weak track_position => @default-return signal::Inhibit(false), move |a, scroll, requested| {
+                PlaybackControl::seek_bar_control(a, scroll, requested); // TODO use this to implement scolling of seek_bar
                 track_position.set_text(&format_duration(requested));
                 debouncer_clone.debounce(200, move || {
                     model.seek_to(requested as u32);
                 });
+                signal::Inhibit(false)
+            }),
+        );
+        widget.seek_bar.connect_button_press_event(
+            clone!(@weak model, @weak track_position => @default-return signal::Inhibit(false), move |a, event| {
+                // TODO use this to specify the exact position to set seek (find ratio and use that based of x value)
+                println!("{:#?}", event.position());
                 signal::Inhibit(false)
             }),
         );
@@ -121,7 +129,7 @@ impl PlaybackControl {
         }));
 
         widget.prev.connect_clicked(clone!(@weak model => move |_| {
-            model.play_prev_song()
+            model.play_prev_song();
         }));
 
         Self {
@@ -130,6 +138,10 @@ impl PlaybackControl {
             _debouncer: debouncer,
             clock: Clock::new(),
         }
+    }
+
+    pub fn seek_bar_control(scale: &gtk::Scale, scroll: gtk::ScrollType, value: f64) {
+        // TODO use this for something
     }
 
     fn set_playing(&self, is_playing: bool) {
