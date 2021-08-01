@@ -432,7 +432,7 @@ pub enum PlaybackEvent {
     PlaybackStopped,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum RepeatMode {
     Song,
     Playlist,
@@ -486,7 +486,7 @@ impl UpdatableState for PlaybackState {
                     RepeatMode::Playlist => RepeatMode::Song,
                     RepeatMode::None => RepeatMode::Playlist,
                 };
-                vec![PlaybackEvent::RepeatModeChanged(self.repeat.clone())]
+                vec![PlaybackEvent::RepeatModeChanged(self.repeat)]
             }
             PlaybackAction::ToggleShuffle => {
                 self.toggle_shuffle();
