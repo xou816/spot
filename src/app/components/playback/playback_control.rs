@@ -101,8 +101,20 @@ impl PlaybackControl {
 
         let track_position = &widget.track_position;
         widget.seek_bar.connect_change_value(
-            clone!(@weak model, @weak track_position => @default-return signal::Inhibit(false), move |_, _scroll, requested| {
-                // TODO use scroll scrolling work
+            clone!(@weak model, @weak track_position => @default-return signal::Inhibit(false), move |_, scroll, mut requested| {
+                match scroll {
+                    gtk::ScrollType::StepForward => 
+                    if requested + 5000.0 <= model.current_song_duration().unwrap_or(0.0) {
+                        requested += 5000.0;
+                    },
+                    gtk::ScrollType::StepBackward => 
+                    if requested >= 5000.0 {
+                        requested -= 5000.0;
+                    } else {
+                        requested = 0.0;
+                    },
+                    _ => (),
+                }
                 track_position.set_text(&format_duration(requested));
                 debouncer_clone.debounce(200, move || {
                     model.seek_to(requested as u32);
@@ -110,15 +122,14 @@ impl PlaybackControl {
                 signal::Inhibit(false)
             }),
         );
-        
+
         widget.seek_bar.connect_button_press_event(
             clone!(@weak model => @default-return signal::Inhibit(false), move|scale, event| {
-                let mut x = event.position().0;
-                if x <= 0.0 { x = 0.0; }
+                let x = event.position().0;
                 let width = scale.range_rect().width as f64;
                 // TODO figure out why sometimes clicking doesnt change song seconds
                 // Clicking slightly under seek changes the value but doesnt actually seek
-                if width > 0.0 {
+                if x >= 0.0 && width > 0.0 {
                     scale.set_value(model.current_song_duration().unwrap_or(0.0) * (x / width));
                 }
                 signal::Inhibit(false)
