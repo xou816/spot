@@ -270,6 +270,7 @@
                     <property name="receives-default">True</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
+                    <property name="relief">none</property>
                     <child>
                       <object class="GtkImage">
                         <property name="visible">True</property>
@@ -369,6 +370,7 @@
                     <property name="receives-default">True</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
+                    <property name="relief">none</property>
                     <child>
                       <object class="GtkImage">
                         <property name="visible">True</property>
