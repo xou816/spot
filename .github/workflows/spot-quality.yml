@@ -1,7 +1,8 @@
 name: spot-quality
 
 on:
-  push:
+  push:  
+  pull_request:
 
 jobs:
   ci-check:

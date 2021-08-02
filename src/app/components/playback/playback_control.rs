@@ -52,11 +52,13 @@ impl PlaybackControlModel {
     }
 
     pub fn toggle_shuffle(&self) {
-        self.dispatcher.dispatch(PlaybackAction::ToggleShuffle.into());
+        self.dispatcher
+            .dispatch(PlaybackAction::ToggleShuffle.into());
     }
 
     pub fn toggle_repeat(&self) {
-        self.dispatcher.dispatch(PlaybackAction::ToggleRepeat.into());
+        self.dispatcher
+            .dispatch(PlaybackAction::ToggleRepeat.into());
     }
 
     pub fn seek_to(&self, position: u32) {
@@ -139,14 +141,17 @@ impl PlaybackControl {
             model.play_prev_song();
         }));
 
-        widget.shuffle_button.connect_clicked(clone!(@weak model => move |_| {
-            model.toggle_shuffle();
-        }));
+        widget
+            .shuffle_button
+            .connect_clicked(clone!(@weak model => move |_| {
+                model.toggle_shuffle();
+            }));
 
-        widget.repeat_button.connect_clicked(clone!(@weak model => move |_| {
-            model.toggle_repeat();
-        }));
-
+        widget
+            .repeat_button
+            .connect_clicked(clone!(@weak model => move |_| {
+                model.toggle_repeat();
+            }));
 
         Self {
             model,
