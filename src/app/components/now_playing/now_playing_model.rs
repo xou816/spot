@@ -36,11 +36,6 @@ impl NowPlayingModel {
         Ref::map(self.state(), |s| &s.playback)
     }
 
-    pub fn toggle_shuffle(&self) {
-        self.dispatcher
-            .dispatch(PlaybackAction::ToggleShuffle.into());
-    }
-
     pub fn load_more_if_needed(&self) -> Option<()> {
         let queue = self.queue();
         if !queue.exhausted() {

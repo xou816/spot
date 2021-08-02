@@ -83,6 +83,7 @@ pub struct PlaybackState {
     position: Option<Position>,
     pub source: Option<PlaylistSource>,
     current_batch: Option<Batch>,
+    repeat: RepeatMode,
     is_playing: bool,
 }
 
@@ -164,14 +165,14 @@ impl PlaybackState {
     }
 
     fn shuffle(&mut self) {
+        let current_song = self.current_song_id();
         let mut to_shuffle: Vec<String> = self
             .running_order
             .iter()
-            .filter(|&id| Some(id) != self.current_song_id())
+            .filter(|&id| Some(id) != current_song)
             .cloned()
             .collect();
-        let mut final_list: VecDeque<String> =
-            self.current_song_id().cloned().into_iter().collect();
+        let mut final_list: VecDeque<String> = current_song.cloned().into_iter().collect();
         to_shuffle.shuffle(&mut self.rng);
         final_list.append(&mut to_shuffle.into());
         if let Some(p) = self.position.as_mut() {
@@ -294,7 +295,12 @@ impl PlaybackState {
             return false;
         }
         let max = self.running_order().len();
-        if let Some(index) = self.running_order().iter().position(|s| s == id) {
+        if let Some(mut index) = self.running_order().iter().position(|s| s == id) {
+            if self.is_shuffled() && self.position.is_none() {
+                // Hacky fix for now if we reach this state
+                self.running_order_mut().swap(index, 0);
+                index = 0;
+            }
             self.position = Some(self.position.unwrap_or_default().update_into(index, max));
             self.is_playing = true;
             true
@@ -310,10 +316,11 @@ impl PlaybackState {
 
     fn play_next(&mut self) -> Option<String> {
         let len = self.running_order().len();
-        let next = self
-            .position
-            .filter(|&p| p.index + 1 < len)
-            .map(|p| p.index + 1);
+        let next = self.position.and_then(|p| match self.repeat {
+            RepeatMode::Song => Some(p.index),
+            RepeatMode::Playlist => Some((p.index + 1) % len),
+            RepeatMode::None => Some(p.index + 1).filter(|&i| i < len),
+        });
         if let Some(next) = next {
             self.is_playing = true;
             self.position = Some(self.position.unwrap_or_default().update_into(next, len));
@@ -325,7 +332,11 @@ impl PlaybackState {
 
     fn play_prev(&mut self) -> Option<String> {
         let len = self.running_order().len();
-        let prev = self.position.filter(|&p| p.index > 0).map(|p| p.index - 1);
+        let prev = self.position.and_then(|p| match self.repeat {
+            RepeatMode::Song => Some(p.index),
+            RepeatMode::Playlist => Some((if p.index == 0 { len } else { p.index }) - 1),
+            RepeatMode::None => Some(p.index).filter(|&i| i > 0).map(|i| i - 1),
+        });
         if let Some(prev) = prev {
             self.is_playing = true;
             self.position = Some(self.position.unwrap_or_default().update_into(prev, len));
@@ -373,6 +384,7 @@ impl Default for PlaybackState {
             position: None,
             source: None,
             current_batch: None,
+            repeat: RepeatMode::None,
             is_playing: false,
         }
     }
@@ -384,6 +396,7 @@ pub enum PlaybackAction {
     Play,
     Pause,
     Stop,
+    ToggleRepeat,
     ToggleShuffle,
     Seek(u32),
     SyncSeek(u32),
@@ -407,11 +420,19 @@ impl From<PlaybackAction> for AppAction {
 pub enum PlaybackEvent {
     PlaybackPaused,
     PlaybackResumed,
+    RepeatModeChanged(RepeatMode),
     TrackSeeked(u32),
     SeekSynced(u32),
     TrackChanged(String),
     PlaylistChanged,
     PlaybackStopped,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum RepeatMode {
+    Song,
+    Playlist,
+    None,
 }
 
 impl From<PlaybackEvent> for AppEvent {
@@ -454,6 +475,14 @@ impl UpdatableState for PlaybackState {
                 } else {
                     vec![]
                 }
+            }
+            PlaybackAction::ToggleRepeat => {
+                self.repeat = match self.repeat {
+                    RepeatMode::Song => RepeatMode::None,
+                    RepeatMode::Playlist => RepeatMode::Song,
+                    RepeatMode::None => RepeatMode::Playlist,
+                };
+                vec![PlaybackEvent::RepeatModeChanged(self.repeat)]
             }
             PlaybackAction::ToggleShuffle => {
                 self.toggle_shuffle();
