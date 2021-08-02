@@ -260,7 +260,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="halign">center</property>
-                <property name="spacing">8</property>
+                <property name="spacing">0</property>
                 <property name="homogeneous">True</property>
                 <child>
                   <object class="GtkToggleButton" id="shuffle">
@@ -393,36 +393,49 @@
               </packing>
             </child>
             <child>
-              <object class="GtkBox">
+              <object class="HdySqueezer">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-start">4</property>
-                <property name="margin-end">4</property>
-                <property name="margin-top">4</property>
-                <property name="margin-bottom">4</property>
+                <property name="homogeneous">True</property>
                 <child>
-                  <object class="GtkLabel" id="track_position">
-                    <property name="sensitive">False</property>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label">0:00</property>
+                    <property name="margin-start">4</property>
+                    <property name="margin-end">4</property>
+                    <property name="margin-top">4</property>
+                    <property name="margin-bottom">4</property>
+                    <child>
+                      <object class="GtkLabel" id="track_position">
+                        <property name="sensitive">False</property>
+                        <property name="can-focus">False</property>
+                        <property name="label">0:00</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="track_duration">
+                        <property name="sensitive">False</property>
+                        <property name="can-focus">False</property>
+                        <property name="label"> / 0:00</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
                   </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="track_duration">
-                    <property name="sensitive">False</property>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label"> / 0:00</property>
                   </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
                 </child>
               </object>
               <packing>
