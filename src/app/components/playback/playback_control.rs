@@ -160,15 +160,13 @@ impl PlaybackControl {
             }),
         );
 
-        widget.seek_bar.connect_scroll_event(
-            move|_, _| {
-                /*
-                Scrolling doesnt work well. Only shows direction if the slider is clicked
-                So ignore this event
-                */
-                signal::Inhibit(true)
-            }
-        );
+        widget.seek_bar.connect_scroll_event(move |_, _| {
+            /*
+            Scrolling doesnt work well. Only shows direction if the slider is clicked
+            So ignore this event
+            */
+            signal::Inhibit(true)
+        });
 
         widget
             .play_button
