@@ -125,10 +125,7 @@ impl PlaybackControl {
 
         widget.seek_bar.connect_button_press_event(
             clone!(@weak model => @default-return signal::Inhibit(false), move|scale, event| {
-                let (mut x, y) = event.position();
-                let offset = scale.layout_offsets().0 as f64;
-                println!("y: {}", event.position().1);
-                if offset <= x { x-= offset; } // Just in case future has some offset
+                let (x, y) = event.position();
                 let width = scale.range_rect().width as f64;
                 if y >= 0.0 && y <= 20.0 && x >= 0.0 && width > 0.0 {
                     scale.set_value(model.current_song_duration().unwrap_or(0.0) * (x / width));
