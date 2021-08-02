@@ -144,22 +144,6 @@ impl PlaybackControl {
             }),
         );
 
-        widget.seek_bar.connect_button_press_event(
-            clone!(@weak model => @default-return signal::Inhibit(false), move|seek_bar, event| {
-                let (x, y) = event.position();
-                let width = seek_bar.range_rect().width as f64;
-                if (3.0..=20.0).contains(&y) && width >= 16.0 && (9.0..=width - 9.0).contains(&x) {
-                    let x = if x > 16.0 { x - 16.0 } else { 0.0 };
-                    let amount = model.current_song_duration().unwrap_or(0.0) * (x / (width - 16.0));
-                    let amount = if amount < 3000.0 { amount } else { amount + 3000.0 };
-                    seek_bar.set_value(amount);
-                    signal::Inhibit(false)
-                } else {
-                    signal::Inhibit(true) // Ignore
-                }
-            }),
-        );
-
         widget.seek_bar.connect_scroll_event(move |_, _| {
             /*
             Scrolling doesnt work well. Only shows direction if the slider is clicked
