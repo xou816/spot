@@ -102,21 +102,25 @@ impl PlaybackControl {
 
         widget.seek_bar.connect_change_value(
             clone!(@weak model, @weak track_position => @default-return signal::Inhibit(false), move |_, scroll, mut requested| {
+                let mut debounce = 200;
                 match scroll {
-                    gtk::ScrollType::StepForward => 
-                    if requested + 5000.0 <= model.current_song_duration().unwrap_or(0.0) {
-                        requested += 5000.0;
+                    gtk::ScrollType::StepForward => {
+                        let duration = model.current_song_duration().unwrap_or(0.0);
+                        requested = if requested + 5000.0 <= duration {
+                            requested + 5000.0
+                        } else { duration };
+                        debounce = 100;
                     },
-                    gtk::ScrollType::StepBackward => 
-                    if requested >= 5000.0 {
-                        requested -= 5000.0;
-                    } else {
-                        requested = 0.0;
+                    gtk::ScrollType::StepBackward => {
+                        requested = if requested >= 5000.0 {
+                            requested - 5000.0
+                        } else { 0.0 };
+                        debounce = 100;
                     },
                     _ => (),
                 }
                 track_position.set_text(&format_duration(requested));
-                debouncer_clone.debounce(200, move || {
+                debouncer_clone.debounce(debounce, move || {
                     model.seek_to(requested as u32);
                 });
                 signal::Inhibit(false)
@@ -124,13 +128,18 @@ impl PlaybackControl {
         );
 
         widget.seek_bar.connect_button_press_event(
-            clone!(@weak model => @default-return signal::Inhibit(false), move|scale, event| {
+            clone!(@weak model, @weak track_position => @default-return signal::Inhibit(false), move|scale, event| {
                 let (x, y) = event.position();
                 let width = scale.range_rect().width as f64;
-                if y >= 0.0 && y <= 20.0 && x >= 0.0 && width > 0.0 {
-                    scale.set_value(model.current_song_duration().unwrap_or(0.0) * (x / width));
+                if y >= 3.0 && y <= 20.0 && x >= 9.0 && width >= 16.0 && x <= width - 9.0 {
+                    let x = if x > 16.0 { x - 16.0 } else { 0.0 };
+                    let amount = model.current_song_duration().unwrap_or(0.0) * (x / (width - 16.0));
+                    let amount = if amount < 3000.0 { amount } else { amount + 3000.0 };
+                    scale.set_value(amount);
+                    signal::Inhibit(false)
+                } else {
+                    signal::Inhibit(true) // Ignore
                 }
-                signal::Inhibit(false)
             }),
         );
 
