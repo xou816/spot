@@ -128,19 +128,29 @@ impl PlaybackControl {
         );
 
         widget.seek_bar.connect_button_press_event(
-            clone!(@weak model, @weak track_position => @default-return signal::Inhibit(false), move|scale, event| {
+            clone!(@weak model => @default-return signal::Inhibit(false), move|seek_bar, event| {
                 let (x, y) = event.position();
-                let width = scale.range_rect().width as f64;
+                let width = seek_bar.range_rect().width as f64;
                 if y >= 3.0 && y <= 20.0 && x >= 9.0 && width >= 16.0 && x <= width - 9.0 {
                     let x = if x > 16.0 { x - 16.0 } else { 0.0 };
                     let amount = model.current_song_duration().unwrap_or(0.0) * (x / (width - 16.0));
                     let amount = if amount < 3000.0 { amount } else { amount + 3000.0 };
-                    scale.set_value(amount);
+                    seek_bar.set_value(amount);
                     signal::Inhibit(false)
                 } else {
                     signal::Inhibit(true) // Ignore
                 }
             }),
+        );
+
+        widget.seek_bar.connect_scroll_event(
+            move|_, _| {
+                /*
+                Scrolling doesnt work well. Only shows direction if the slider is clicked
+                So ignore this event
+                */
+                signal::Inhibit(true)
+            }
         );
 
         widget
