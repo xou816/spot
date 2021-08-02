@@ -11,7 +11,6 @@ use super::NowPlayingModel;
 struct NowPlayingWidget {
     root: gtk::Widget,
     listbox: gtk::ListBox,
-    shuffle: gtk::Button,
 }
 
 impl NowPlayingWidget {
@@ -30,13 +29,6 @@ pub struct NowPlaying {
 impl NowPlaying {
     pub fn new(model: Rc<NowPlayingModel>) -> Self {
         let widget = NowPlayingWidget::new();
-
-        widget
-            .shuffle
-            .connect_clicked(clone!(@weak model => move |_| {
-                model.toggle_shuffle();
-            }));
-
         let playlist = Playlist::new(widget.listbox.clone(), model.clone());
 
         Self {
