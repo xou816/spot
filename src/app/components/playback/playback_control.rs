@@ -148,7 +148,7 @@ impl PlaybackControl {
             clone!(@weak model => @default-return signal::Inhibit(false), move|seek_bar, event| {
                 let (x, y) = event.position();
                 let width = seek_bar.range_rect().width as f64;
-                if y >= 3.0 && y <= 20.0 && x >= 9.0 && width >= 16.0 && x <= width - 9.0 {
+                if (3.0..=20.0).contains(&y) && width >= 16.0 && (9.0..=width - 9.0).contains(&x) {
                     let x = if x > 16.0 { x - 16.0 } else { 0.0 };
                     let amount = model.current_song_duration().unwrap_or(0.0) * (x / (width - 16.0));
                     let amount = if amount < 3000.0 { amount } else { amount + 3000.0 };
