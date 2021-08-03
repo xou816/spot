@@ -1,5 +1,6 @@
 use glib::signal;
 use gtk::prelude::*;
+use std::cmp::{max_by, min_by};
 use std::ops::Deref;
 use std::rc::Rc;
 
@@ -110,34 +111,25 @@ pub struct PlaybackControl {
     clock: Clock,
 }
 
+const STEP: f64 = 5000.0;
 impl PlaybackControl {
     pub fn new(model: PlaybackControlModel, widget: PlaybackControlWidget) -> Self {
         let model = Rc::new(model);
         let debouncer = Debouncer::new();
         let debouncer_clone = debouncer.clone();
         let track_position = &widget.track_position;
-
         widget.seek_bar.connect_change_value(
             clone!(@weak model, @weak track_position => @default-return signal::Inhibit(false), move |_, scroll, mut requested| {
-                let mut debounce = 200;
                 match scroll {
                     gtk::ScrollType::StepForward => {
                         let duration = model.current_song_duration().unwrap_or(0.0);
-                        requested = if requested + 5000.0 <= duration {
-                            requested + 5000.0
-                        } else { duration };
-                        debounce = 100;
+                        requested = min_by(requested + STEP, duration, |a, b| a.partial_cmp(b).unwrap())
                     },
-                    gtk::ScrollType::StepBackward => {
-                        requested = if requested >= 5000.0 {
-                            requested - 5000.0
-                        } else { 0.0 };
-                        debounce = 100;
-                    },
+                    gtk::ScrollType::StepBackward => requested = max_by(requested - STEP, 0.0, |a, b| a.partial_cmp(b).unwrap()),
                     _ => (),
                 }
                 track_position.set_text(&format_duration(requested));
-                debouncer_clone.debounce(debounce, move || {
+                debouncer_clone.debounce(100, move || {
                     model.seek_to(requested as u32);
                 });
                 signal::Inhibit(false)
