@@ -1,6 +1,5 @@
 use glib::signal;
 use gtk::prelude::*;
-use std::cmp::{max_by, min_by};
 use std::ops::Deref;
 use std::rc::Rc;
 
@@ -118,33 +117,16 @@ impl PlaybackControl {
         let debouncer = Debouncer::new();
         let debouncer_clone = debouncer.clone();
         let track_position = &widget.track_position;
+        widget.seek_bar.set_increments(STEP, STEP);
         widget.seek_bar.connect_change_value(
-            clone!(@weak model, @weak track_position => @default-return signal::Inhibit(false), move |_, scroll, mut requested| {
-                match scroll {
-                    gtk::ScrollType::StepForward | gtk::ScrollType::PageForward => {
-                        let duration = model.current_song_duration().unwrap_or(0.0);
-                        requested = min_by(requested + STEP, duration, |a, b| a.partial_cmp(b).unwrap())
-                    },
-                    gtk::ScrollType::StepBackward | gtk::ScrollType::PageBackward => {
-                        requested = max_by(requested - STEP, 0.0, |a, b| a.partial_cmp(b).unwrap())
-                    },
-                    _ => (),
-                }
+            clone!(@weak model, @weak track_position => @default-return signal::Inhibit(false), move |_, _, requested| {
                 track_position.set_text(&format_duration(requested));
-                debouncer_clone.debounce(100, move || {
+                debouncer_clone.debounce(200, move || {
                     model.seek_to(requested as u32);
                 });
                 signal::Inhibit(false)
             }),
         );
-
-        widget.seek_bar.connect_scroll_event(move |_, _| {
-            /*
-            Scrolling doesnt work well. Only shows direction if the slider is clicked
-            So ignore this event
-            */
-            signal::Inhibit(true)
-        });
 
         widget
             .play_button
