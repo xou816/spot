@@ -121,11 +121,13 @@ impl PlaybackControl {
         widget.seek_bar.connect_change_value(
             clone!(@weak model, @weak track_position => @default-return signal::Inhibit(false), move |_, scroll, mut requested| {
                 match scroll {
-                    gtk::ScrollType::StepForward => {
+                    gtk::ScrollType::StepForward | gtk::ScrollType::PageForward => {
                         let duration = model.current_song_duration().unwrap_or(0.0);
                         requested = min_by(requested + STEP, duration, |a, b| a.partial_cmp(b).unwrap())
                     },
-                    gtk::ScrollType::StepBackward => requested = max_by(requested - STEP, 0.0, |a, b| a.partial_cmp(b).unwrap()),
+                    gtk::ScrollType::StepBackward | gtk::ScrollType::PageBackward => {
+                        requested = max_by(requested - STEP, 0.0, |a, b| a.partial_cmp(b).unwrap())
+                    },
                     _ => (),
                 }
                 track_position.set_text(&format_duration(requested));
