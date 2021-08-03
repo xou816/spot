@@ -80,11 +80,6 @@ fn startup(settings: &settings::SpotSettings) {
         .unwrap()
         .set_gtk_application_prefer_dark_theme(settings.prefers_dark_theme);
 
-    //Make the slider move on click
-    gtk::Settings::default()
-        .unwrap()
-        .set_gtk_primary_button_warps_slider(true);
-
     let provider = gtk::CssProvider::new();
     provider.load_from_resource("/dev/alextren/Spot/app.css");
 
