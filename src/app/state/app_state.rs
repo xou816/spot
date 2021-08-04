@@ -77,7 +77,7 @@ impl AppState {
         }
     }
 
-    pub fn recommanded_context(&self) -> SelectionContext {
+    pub fn recommended_context(&self) -> SelectionContext {
         match self.browser.current_screen() {
             ScreenName::PlaylistDetails(_) => SelectionContext::Playlist,
             // TODO: this does not necessarily mean we're actually viewing the playqueue :(
@@ -129,7 +129,7 @@ impl AppState {
             }
             AppAction::ChangeSelectionMode(active) => {
                 let context = if active {
-                    Some(self.recommanded_context())
+                    Some(self.recommended_context())
                 } else {
                     None
                 };

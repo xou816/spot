@@ -110,13 +110,14 @@ pub struct PlaybackControl {
     clock: Clock,
 }
 
+const STEP: f64 = 5000.0;
 impl PlaybackControl {
     pub fn new(model: PlaybackControlModel, widget: PlaybackControlWidget) -> Self {
         let model = Rc::new(model);
         let debouncer = Debouncer::new();
         let debouncer_clone = debouncer.clone();
-
         let track_position = &widget.track_position;
+        widget.seek_bar.set_increments(STEP, STEP);
         widget.seek_bar.connect_change_value(
             clone!(@weak model, @weak track_position => @default-return signal::Inhibit(false), move |_, _, requested| {
                 track_position.set_text(&format_duration(requested));
