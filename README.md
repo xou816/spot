@@ -34,7 +34,7 @@ See [this comment](https://github.com/xou816/spot/issues/92#issuecomment-8018525
 Spot can also be configured via `gsettings` if you want to change the audio backend, the song bitrate, etc. [A GUI is planned but not available yet.](https://github.com/xou816/spot/issues/142)
 
 ### Seek bar warping
-It is possible to click on the seek bar to navigate to that position in a song. If you are having issues with this not working you may have [gtk-primary-button-warps-slide](https://docs.gtk.org/gtk3/property.Settings.gtk-primary-button-warps-slider.html) set to false.
+It is possible to click on the seek bar to navigate to that position in a song. If you are having issues with this not working you may have [gtk-primary-button-warps-slider](https://docs.gtk.org/gtk3/property.Settings.gtk-primary-button-warps-slider.html) set to false.
 In order to fix this issue set the value to true in your gtk configuration.
 
 ### Scrobbling
