@@ -7,7 +7,7 @@ use std::convert::Into;
 use std::future::Future;
 
 use super::cache::{CacheExpiry, CacheManager, CachePolicy, FetchResult};
-use super::client::{SpotifyApiError, SpotifyClient, SpotifyResponse, SpotifyResponseKind};
+use super::client::{AlbumInfo, SpotifyApiError, SpotifyClient, SpotifyResponse, SpotifyResponseKind};
 use crate::app::models::*;
 
 lazy_static! {
@@ -34,6 +34,8 @@ pub trait SpotifyApiClient {
     fn get_artist(&self, id: &str) -> BoxFuture<SpotifyResult<ArtistDescription>>;
 
     fn get_album(&self, id: &str) -> BoxFuture<SpotifyResult<AlbumDescription>>;
+
+    fn get_album_info(&self, id: &str) -> BoxFuture<SpotifyResult<AlbumInfo>>;
 
     fn get_playlist(&self, id: &str) -> BoxFuture<SpotifyResult<PlaylistDescription>>;
 
@@ -325,6 +327,19 @@ impl SpotifyApiClient for CachedSpotifyClient {
             album.is_liked = liked?[0];
 
             Ok(album)
+        })
+    }
+
+    fn get_album_info(&self, id: &str) -> BoxFuture<SpotifyResult<AlbumInfo>> {
+        let id = id.to_owned();
+
+        Box::pin(async move {
+            let album_info = self.cache_get_or_write(SpotCacheKey::Album(&id), None, |etag| {
+                self.client.get_album_info(&id).etag(etag).send()
+            });
+            
+            let album_info: AlbumInfo = album_info.await?.into();
+            Ok(album_info)
         })
     }
 
