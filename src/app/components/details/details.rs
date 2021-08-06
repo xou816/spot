@@ -64,11 +64,7 @@ impl Details {
         widget
             .album_info
             .connect_clicked(clone!(@weak model => move |_| {
-                let album = model.get_album_info();
-                    if let Some(album) = album {
-                        println!("{:#?}", &*album);
-                        println!("{:#?}", info_mut.lock().unwrap());
-                    }
+                model.info();
             }));
 
         Self {

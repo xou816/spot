@@ -12,6 +12,7 @@ use crate::app::components::{
 };
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
+use crate::app::state::ScreenName;
 use crate::app::state::{
     BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource, SelectionAction, SelectionState,
 };
@@ -51,6 +52,11 @@ impl DetailsModel {
                     .await
                     .map(|album| BrowserAction::SetAlbumInfo(album).into())
             });
+    }
+
+    pub fn info(&self) {
+        self.dispatcher
+            .dispatch(BrowserAction::NavigationPush(ScreenName::AlbumInfo).into());
     }
 
     pub fn load_album_info(&self) {
