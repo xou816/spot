@@ -2,6 +2,7 @@ use super::{
     ArtistState, DetailsState, HomeState, PlaylistDetailsState, ScreenName, SearchState,
     UpdatableState, UserState,
 };
+use crate::api::client::AlbumInfo;
 use crate::app::models::*;
 use crate::app::state::AppAction;
 use std::iter::Iterator;
@@ -14,6 +15,7 @@ pub enum BrowserAction {
     AppendPlaylistsContent(Vec<PlaylistDescription>),
     RemoveTracksFromPlaylist(Vec<String>),
     SetAlbumDetails(AlbumDescription),
+    SetAlbumInfo(AlbumInfo),
     SetPlaylistDetails(PlaylistDescription),
     AppendPlaylistTracks(String, SongBatch),
     Search(String),
@@ -51,6 +53,7 @@ impl BrowserAction {
 pub enum BrowserEvent {
     LibraryUpdated,
     SavedPlaylistsUpdated,
+    AlbumInfo(AlbumInfo),
     AlbumDetailsLoaded(String),
     PlaylistDetailsLoaded(String),
     PlaylistTracksAppended(String, usize),

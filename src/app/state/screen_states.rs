@@ -63,6 +63,9 @@ impl UpdatableState for DetailsState {
                 self.content = Some(album);
                 vec![BrowserEvent::AlbumDetailsLoaded(id)]
             }
+            BrowserAction::SetAlbumInfo(album) if album.id == self.id => {
+                vec![BrowserEvent::AlbumInfo(album)]
+            }
             BrowserAction::SaveAlbum(album) if album.id == self.id => {
                 let id = album.id;
                 if let Some(mut album) = self.content.as_mut() {
