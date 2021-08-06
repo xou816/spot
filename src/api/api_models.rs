@@ -157,8 +157,18 @@ pub struct AlbumInfo {
     pub name: String,
     pub release_date: String,
     pub total_tracks: usize,
-    //pub available_markets: Markets, // TODO Can find a way to deserialize this
-    //pub copyrights: Vec<String>,
+    pub available_markets: Vec<Market>,
+    pub copyrights: Vec<Copyright>,
+}
+
+#[derive(Deserialize, Debug, Clone, PartialEq, Eq)]
+pub struct Market(pub String);
+
+#[derive(Deserialize, Debug, Clone, PartialEq, Eq)]
+pub struct Copyright {
+    pub text: String,
+    #[serde(alias = "type")] 
+    pub type_ : char,
 }
 
 impl WithImages for Album {
