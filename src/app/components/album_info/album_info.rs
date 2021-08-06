@@ -2,7 +2,6 @@ use gladis::Gladis;
 use gtk::prelude::*;
 use std::rc::Rc;
 
-use crate::api::client::AlbumInfo;
 use crate::app::BrowserEvent;
 use crate::app::components::{screen_add_css_provider, Component, EventListener};
 use crate::app::AppEvent;
@@ -47,7 +46,7 @@ impl Component for Info {
 
 impl EventListener for Info {
     fn on_event(&mut self, event: &AppEvent) {
-        if let AppEvent::BrowserEvent(BrowserEvent::AlbumInfoUpdated(info)) = event {}
+        if let AppEvent::BrowserEvent(BrowserEvent::AlbumInfoUpdated) = event {/*  todo update info components*/}
         self.broadcast_event(event);
     }
 }
