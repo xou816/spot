@@ -1,9 +1,11 @@
 use gladis::Gladis;
 use gtk::prelude::*;
 use std::rc::Rc;
+use std::sync::{Arc, Mutex};
 
 use super::DetailsModel;
 
+use crate::api::client::AlbumInfo;
 use crate::app::components::{screen_add_css_provider, Component, EventListener, Playlist};
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
@@ -18,6 +20,7 @@ struct DetailsWidget {
     pub like_button: gtk::Button,
     pub artist_button: gtk::LinkButton,
     pub artist_button_label: gtk::Label,
+    pub album_info: gtk::Button,
 }
 
 impl DetailsWidget {
@@ -34,6 +37,7 @@ impl DetailsWidget {
 
 pub struct Details {
     model: Rc<DetailsModel>,
+    pub info: Arc<Mutex<Option<AlbumInfo>>>,
     worker: Worker,
     widget: DetailsWidget,
     children: Vec<Box<dyn EventListener>>,
@@ -45,6 +49,7 @@ impl Details {
             model.load_album_info();
         }
 
+        model.get_album_info_detail();
         let widget = DetailsWidget::new();
         let playlist = Box::new(Playlist::new(widget.album_tracks.clone(), model.clone()));
 
@@ -54,11 +59,18 @@ impl Details {
                 model.toggle_save_album();
             }));
 
+        let info = Arc::new(Mutex::new(None));
+        let info_mut = info.clone();
+        widget
+            .album_info
+            .connect_clicked(move |_| println!("{:#?}", info_mut.lock().unwrap()));
+
         Self {
             model,
             worker,
             widget,
             children: vec![playlist],
+            info,
         }
     }
 
@@ -121,6 +133,7 @@ impl EventListener for Details {
                 self.update_details();
                 self.update_liked();
             }
+            AppEvent::BrowserEvent(BrowserEvent::AlbumInfo(info)) => *self.info.lock().unwrap() = Some(info.clone()),
             AppEvent::BrowserEvent(BrowserEvent::AlbumSaved(id))
             | AppEvent::BrowserEvent(BrowserEvent::AlbumUnsaved(id))
                 if id == &self.model.id =>
