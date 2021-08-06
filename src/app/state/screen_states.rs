@@ -10,7 +10,7 @@ use crate::app::ListStore;
 pub enum ScreenName {
     Home,
     AlbumDetails(String),
-    AlbumInfo,
+    AlbumInfo(String),
     Search,
     Artist(String),
     PlaylistDetails(String),
@@ -22,7 +22,7 @@ impl ScreenName {
         match self {
             Self::Home => Cow::Borrowed("home"),
             Self::AlbumDetails(s) => Cow::Owned(format!("album_{}", s)),
-            Self::AlbumInfo => Cow::Borrowed("album_info"),
+            Self::AlbumInfo(s) => Cow::Owned(format!("album_info_{}", s)),
             Self::Search => Cow::Borrowed("search"),
             Self::Artist(s) => Cow::Owned(format!("artist_{}", s)),
             Self::PlaylistDetails(s) => Cow::Owned(format!("playlist_{}", s)),
@@ -90,15 +90,13 @@ impl UpdatableState for DetailsState {
 
 pub struct AlbumInfoState {
     pub name: ScreenName,
-    pub query: String,
     pub info: Option<AlbumInfo>,
 }
 
-impl Default for AlbumInfoState {
-    fn default() -> Self {
+impl AlbumInfoState {
+    pub fn new(id: String) -> Self {
         Self {
-            name: ScreenName::AlbumInfo,
-            query: "".to_owned(),
+            name: ScreenName::AlbumInfo(id),
             info: None,
         }
     }

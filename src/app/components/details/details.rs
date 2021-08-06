@@ -1,11 +1,9 @@
 use gladis::Gladis;
 use gtk::prelude::*;
 use std::rc::Rc;
-use std::sync::{Arc, Mutex};
 
 use super::DetailsModel;
 
-use crate::api::client::AlbumInfo;
 use crate::app::components::{screen_add_css_provider, Component, EventListener, Playlist};
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
@@ -37,7 +35,6 @@ impl DetailsWidget {
 
 pub struct Details {
     model: Rc<DetailsModel>,
-    pub info: Arc<Mutex<Option<AlbumInfo>>>,
     worker: Worker,
     widget: DetailsWidget,
     children: Vec<Box<dyn EventListener>>,
@@ -48,8 +45,6 @@ impl Details {
         if model.get_album_info().is_none() {
             model.load_album_info();
         }
-
-        model.get_album_info_detail();
         let widget = DetailsWidget::new();
         let playlist = Box::new(Playlist::new(widget.album_tracks.clone(), model.clone()));
 
@@ -59,12 +54,10 @@ impl Details {
                 model.toggle_save_album();
             }));
 
-        let info = Arc::new(Mutex::new(None));
-        let info_mut = info.clone();
         widget
             .album_info
             .connect_clicked(clone!(@weak model => move |_| {
-                model.info();
+                model.info(model.id.clone());
             }));
 
         Self {
@@ -72,7 +65,6 @@ impl Details {
             worker,
             widget,
             children: vec![playlist],
-            info,
         }
     }
 

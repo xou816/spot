@@ -86,7 +86,9 @@ impl BrowserScreen {
             ScreenName::AlbumDetails(id) => {
                 BrowserScreen::AlbumDetails(DetailsState::new(id.to_string()))
             }
-            ScreenName::AlbumInfo => BrowserScreen::AlbumInfo(Default::default()),
+            ScreenName::AlbumInfo(id) => {
+                BrowserScreen::AlbumInfo(AlbumInfoState::new(id.to_string()))
+            }
             ScreenName::Search => BrowserScreen::Search(Default::default()),
             ScreenName::Artist(id) => BrowserScreen::Artist(ArtistState::new(id.to_string())),
             ScreenName::PlaylistDetails(id) => {
@@ -243,6 +245,13 @@ impl BrowserState {
     pub fn details_state(&self, id: &str) -> Option<&DetailsState> {
         self.navigation.iter_rev().find_map(|screen| match screen {
             BrowserScreen::AlbumDetails(state) if state.id == id => Some(state),
+            _ => None,
+        })
+    }
+
+    pub fn album_info_state(&self) -> Option<&AlbumInfoState> {
+        self.navigation.iter_rev().find_map(|screen| match screen {
+            BrowserScreen::AlbumInfo(state) => Some(state),
             _ => None,
         })
     }

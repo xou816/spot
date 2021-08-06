@@ -43,20 +43,9 @@ impl DetailsModel {
             .map_state_opt(|s| s.browser.details_state(&self.id)?.content.as_ref())
     }
 
-    pub fn get_album_info_detail(&self) {
-        let id = self.id.clone();
-        let api = self.app_model.get_spotify();
+    pub fn info(&self, id: String) {
         self.dispatcher
-            .call_spotify_and_dispatch(move || async move {
-                api.get_album_info(&id)
-                    .await
-                    .map(|album| BrowserAction::SetAlbumInfo(album).into())
-            });
-    }
-
-    pub fn info(&self) {
-        self.dispatcher
-            .dispatch(BrowserAction::NavigationPush(ScreenName::AlbumInfo).into());
+            .dispatch(BrowserAction::NavigationPush(ScreenName::AlbumInfo(id)).into());
     }
 
     pub fn load_album_info(&self) {
