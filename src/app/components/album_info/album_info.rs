@@ -29,8 +29,14 @@ pub struct Info {
 impl Info {
     pub fn new(model: Rc<AlbumInfoModel>) -> Self {
         let widget = AlbumInfoWidget::new();
-
+        model.load_album_info_detail();
         Self { widget, model }
+    }
+
+    fn update_info(&mut self) {
+        if let Some(info) = self.model.get_album_info() {
+            println!("{:#?}", &*info);
+        }
     }
 }
 
@@ -46,7 +52,9 @@ impl Component for Info {
 
 impl EventListener for Info {
     fn on_event(&mut self, event: &AppEvent) {
-        if let AppEvent::BrowserEvent(BrowserEvent::AlbumInfoUpdated) = event {/*  todo update info components*/}
+        if let AppEvent::BrowserEvent(BrowserEvent::AlbumInfoUpdated) = event {
+            self.update_info();
+        }
         self.broadcast_event(event);
     }
 }

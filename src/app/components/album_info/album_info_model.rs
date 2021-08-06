@@ -1,29 +1,44 @@
-use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 use std::sync::Arc;
 
+use crate::api::client::AlbumInfo;
 use crate::app::components::{SelectionTool, SelectionToolsModel};
 use crate::app::state::{SelectionContext, SelectionState};
-use crate::app::{ActionDispatcher, AppAction, AppModel, AppState};
+use crate::app::{ActionDispatcher, AppAction, AppModel, BrowserAction};
 use crate::{api::SpotifyApiClient, app::components::SimpleSelectionTool};
 
 pub struct AlbumInfoModel {
+    id: String,
     app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>,
 }
 
 impl AlbumInfoModel {
-    pub fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
+    pub fn new(id: String, app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
         Self {
+            id,
             app_model,
             dispatcher,
         }
     }
 
-    fn state(&self) -> Ref<'_, AppState> {
-        self.app_model.get_state()
+    pub fn get_album_info(&self) -> Option<impl Deref<Target = AlbumInfo> + '_> {
+        self.app_model
+            .map_state_opt(|s| s.browser.album_info_state()?.info.as_ref())
     }
+
+    pub fn load_album_info_detail(&self) {
+        let id = self.id.clone();
+        let api = self.app_model.get_spotify();
+        self.dispatcher
+            .call_spotify_and_dispatch(move || async move {
+                api.get_album_info(&id)
+                    .await
+                    .map(|album| BrowserAction::SetAlbumInfo(album).into())
+            });
+    }
+
 }
 
 impl SelectionToolsModel for AlbumInfoModel {
