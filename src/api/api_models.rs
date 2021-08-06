@@ -157,6 +157,8 @@ pub struct AlbumInfo {
     pub name: String,
     pub release_date: String,
     pub total_tracks: usize,
+    //pub available_markets: Markets, // TODO Can find a way to deserialize this
+    //pub copyrights: Vec<String>,
 }
 
 impl WithImages for Album {
