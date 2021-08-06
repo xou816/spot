@@ -10,6 +10,9 @@
     <!-- album -->
     <file alias="components/album.ui">app/components/album/album.ui</file>
     <file alias="components/album.css">app/components/album/album.css</file>
+    <!-- album info-->
+    <file alias="components/album_info.ui">app/components/album_info/album_info.ui</file>
+    <file alias="components/album_info.css">app/components/album_info/album_info.css</file>
     <!-- artist -->
     <file alias="components/artist.ui">app/components/artist/artist.ui</file>
     <!-- details -->
