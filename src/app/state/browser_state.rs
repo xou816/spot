@@ -53,7 +53,7 @@ impl BrowserAction {
 pub enum BrowserEvent {
     LibraryUpdated,
     SavedPlaylistsUpdated,
-    AlbumInfo(AlbumInfo),
+    AlbumInfoUpdated(AlbumInfo),
     AlbumDetailsLoaded(String),
     PlaylistDetailsLoaded(String),
     PlaylistTracksAppended(String, usize),

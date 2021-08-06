@@ -63,7 +63,13 @@ impl Details {
         let info_mut = info.clone();
         widget
             .album_info
-            .connect_clicked(move |_| println!("{:#?}", info_mut.lock().unwrap()));
+            .connect_clicked(clone!(@weak model => move |_| {
+                let album = model.get_album_info();
+                    if let Some(album) = album {
+                        println!("{:#?}", &*album);
+                        println!("{:#?}", info_mut.lock().unwrap());
+                    }
+            }));
 
         Self {
             model,
@@ -133,7 +139,9 @@ impl EventListener for Details {
                 self.update_details();
                 self.update_liked();
             }
-            AppEvent::BrowserEvent(BrowserEvent::AlbumInfo(info)) => *self.info.lock().unwrap() = Some(info.clone()),
+            AppEvent::BrowserEvent(BrowserEvent::AlbumInfoUpdated(info)) => {
+                *self.info.lock().unwrap() = Some(info.clone());
+            }
             AppEvent::BrowserEvent(BrowserEvent::AlbumSaved(id))
             | AppEvent::BrowserEvent(BrowserEvent::AlbumUnsaved(id))
                 if id == &self.model.id =>
