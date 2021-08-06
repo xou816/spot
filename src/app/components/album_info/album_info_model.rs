@@ -1,5 +1,3 @@
-use gio::prelude::*;
-use gio::SimpleActionGroup;
 use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;

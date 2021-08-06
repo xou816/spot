@@ -135,9 +135,6 @@ impl EventListener for Details {
                 self.update_details();
                 self.update_liked();
             }
-            AppEvent::BrowserEvent(BrowserEvent::AlbumInfoUpdated(info)) => {
-                *self.info.lock().unwrap() = Some(info.clone());
-            }
             AppEvent::BrowserEvent(BrowserEvent::AlbumSaved(id))
             | AppEvent::BrowserEvent(BrowserEvent::AlbumUnsaved(id))
                 if id == &self.model.id =>
