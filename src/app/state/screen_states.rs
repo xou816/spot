@@ -2,6 +2,7 @@ use std::borrow::Cow;
 use std::cmp::PartialEq;
 
 use super::{pagination::Pagination, BrowserAction, BrowserEvent, UpdatableState};
+use crate::api::client::AlbumInfo;
 use crate::app::models::*;
 use crate::app::ListStore;
 
@@ -9,6 +10,7 @@ use crate::app::ListStore;
 pub enum ScreenName {
     Home,
     AlbumDetails(String),
+    AlbumInfo,
     Search,
     Artist(String),
     PlaylistDetails(String),
@@ -20,6 +22,7 @@ impl ScreenName {
         match self {
             Self::Home => Cow::Borrowed("home"),
             Self::AlbumDetails(s) => Cow::Owned(format!("album_{}", s)),
+            Self::AlbumInfo => Cow::Borrowed("album_info"),
             Self::Search => Cow::Borrowed("search"),
             Self::Artist(s) => Cow::Owned(format!("artist_{}", s)),
             Self::PlaylistDetails(s) => Cow::Owned(format!("playlist_{}", s)),
@@ -82,6 +85,37 @@ impl UpdatableState for DetailsState {
                 } else {
                     vec![]
                 }
+            }
+            _ => vec![],
+        }
+    }
+}
+
+pub struct AlbumInfoState {
+    pub name: ScreenName,
+    pub query: String,
+    pub info: Option<AlbumInfo>,
+}
+
+impl Default for AlbumInfoState {
+    fn default() -> Self {
+        Self {
+            name: ScreenName::AlbumInfo,
+            query: "".to_owned(),
+            info: None,
+        }
+    }
+}
+
+impl UpdatableState for AlbumInfoState {
+    type Action = BrowserAction;
+    type Event = BrowserEvent;
+
+    fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
+        match action {
+            BrowserAction::SetAlbumInfo(info) => {
+                self.info = Some(info);
+                vec![]
             }
             _ => vec![],
         }

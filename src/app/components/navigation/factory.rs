@@ -50,6 +50,14 @@ impl ScreenFactory {
         SelectionTools::new(Details::new(Rc::clone(&model), self.worker.clone()), model)
     }
 
+    pub fn make_album_info(&self) -> impl ListenerComponent {
+        let model = Rc::new(AlbumInfoModel::new(
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        ));
+        SelectionTools::new(Info::new(Rc::clone(&model)), model)
+    }
+
     pub fn make_search_results(&self) -> SearchResults {
         let model =
             SearchResultsModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());

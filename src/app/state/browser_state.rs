@@ -1,6 +1,6 @@
 use super::{
-    ArtistState, DetailsState, HomeState, PlaylistDetailsState, ScreenName, SearchState,
-    UpdatableState, UserState,
+    AlbumInfoState, ArtistState, DetailsState, HomeState, PlaylistDetailsState, ScreenName,
+    SearchState, UpdatableState, UserState,
 };
 use crate::api::client::AlbumInfo;
 use crate::app::models::*;
@@ -72,6 +72,7 @@ pub enum BrowserEvent {
 pub enum BrowserScreen {
     Home(HomeState),
     AlbumDetails(DetailsState),
+    AlbumInfo(AlbumInfoState),
     Search(SearchState),
     Artist(ArtistState),
     PlaylistDetails(PlaylistDetailsState),
@@ -85,6 +86,7 @@ impl BrowserScreen {
             ScreenName::AlbumDetails(id) => {
                 BrowserScreen::AlbumDetails(DetailsState::new(id.to_string()))
             }
+            ScreenName::AlbumInfo => BrowserScreen::AlbumInfo(Default::default()),
             ScreenName::Search => BrowserScreen::Search(Default::default()),
             ScreenName::Artist(id) => BrowserScreen::Artist(ArtistState::new(id.to_string())),
             ScreenName::PlaylistDetails(id) => {
@@ -98,6 +100,7 @@ impl BrowserScreen {
         match self {
             Self::Home(state) => state,
             Self::AlbumDetails(state) => state,
+            Self::AlbumInfo(state) => state,
             Self::Search(state) => state,
             Self::Artist(state) => state,
             Self::PlaylistDetails(state) => state,
@@ -113,6 +116,7 @@ impl NamedScreen for BrowserScreen {
         match self {
             Self::Home(state) => &state.name,
             Self::AlbumDetails(state) => &state.name,
+            Self::AlbumInfo(state) => &state.name,
             Self::Search(state) => &state.name,
             Self::Artist(state) => &state.name,
             Self::PlaylistDetails(state) => &state.name,
