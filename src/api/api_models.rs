@@ -150,6 +150,15 @@ pub struct Album {
     pub images: Vec<Image>,
 }
 
+#[derive(Deserialize, Debug, Clone, PartialEq, Eq)]
+pub struct AlbumInfo {
+    pub id: String,
+    pub label: String,
+    pub name: String,
+    pub release_date: String,
+    pub total_tracks: usize,
+}
+
 impl WithImages for Album {
     fn images(&self) -> &[Image] {
         &self.images[..]
