@@ -1,7 +1,7 @@
 use std::convert::From;
 
 pub use super::gtypes::*;
-use crate::app::components::utils::format_duration;
+use crate::{api::client::AlbumInfo, app::components::utils::format_duration};
 
 impl From<&AlbumDescription> for AlbumModel {
     fn from(album: &AlbumDescription) -> Self {
@@ -95,6 +95,44 @@ impl PartialEq for AlbumDescription {
 }
 
 impl Eq for AlbumDescription {}
+
+#[derive(Clone, Debug)]
+pub struct AlbumDetailedInfo {
+    pub info: AlbumInfo,
+    pub artists: String,
+    pub art: Option<String>,
+    pub total_time: u32,
+    pub is_liked: bool,
+}
+
+impl AlbumDetailedInfo {
+    pub fn new(info: AlbumInfo, detail: AlbumDescription) -> Self {
+        let artists = detail.artists_name();
+        let total_time = detail.songs.iter().map(|a| a.duration).sum();
+        Self {
+            info,
+            artists,
+            art: detail.art.to_owned(),
+            total_time,
+            is_liked: detail.is_liked,
+        }
+    }
+    pub fn formatted_time(&self) -> String {
+        let duration = std::time::Duration::from_millis(self.total_time.into());
+        let seconds = duration.as_secs() % 60;
+        let minutes = (duration.as_secs() / 60) % 60;
+        let hours = (duration.as_secs() / 60) / 60;
+        format!("{}:{}:{}", hours, minutes, seconds)
+    }
+
+    pub fn markets(&self) -> String {
+        self.info.available_markets
+            .iter()
+            .map(|m| m.0.to_owned())
+            .collect::<Vec<String>>()
+            .join(", ")
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct PlaylistDescription {

@@ -2,7 +2,6 @@ use std::borrow::Cow;
 use std::cmp::PartialEq;
 
 use super::{pagination::Pagination, BrowserAction, BrowserEvent, UpdatableState};
-use crate::api::client::AlbumInfo;
 use crate::app::models::*;
 use crate::app::ListStore;
 
@@ -90,7 +89,7 @@ impl UpdatableState for DetailsState {
 
 pub struct AlbumInfoState {
     pub name: ScreenName,
-    pub info: Option<AlbumInfo>,
+    pub info: Option<AlbumDetailedInfo>,
 }
 
 impl AlbumInfoState {

@@ -2,7 +2,6 @@ use super::{
     AlbumInfoState, ArtistState, DetailsState, HomeState, PlaylistDetailsState, ScreenName,
     SearchState, UpdatableState, UserState,
 };
-use crate::api::client::AlbumInfo;
 use crate::app::models::*;
 use crate::app::state::AppAction;
 use std::iter::Iterator;
@@ -15,7 +14,7 @@ pub enum BrowserAction {
     AppendPlaylistsContent(Vec<PlaylistDescription>),
     RemoveTracksFromPlaylist(Vec<String>),
     SetAlbumDetails(AlbumDescription),
-    SetAlbumInfo(AlbumInfo),
+    SetAlbumInfo(AlbumDetailedInfo),
     SetPlaylistDetails(PlaylistDescription),
     AppendPlaylistTracks(String, SongBatch),
     Search(String),

@@ -35,7 +35,7 @@ pub trait SpotifyApiClient {
 
     fn get_album(&self, id: &str) -> BoxFuture<SpotifyResult<AlbumDescription>>;
 
-    fn get_album_info(&self, id: &str) -> BoxFuture<SpotifyResult<AlbumInfo>>;
+    fn get_album_info(&self, id: &str) -> BoxFuture<SpotifyResult<AlbumDetailedInfo>>;
 
     fn get_playlist(&self, id: &str) -> BoxFuture<SpotifyResult<PlaylistDescription>>;
 
@@ -330,16 +330,22 @@ impl SpotifyApiClient for CachedSpotifyClient {
         })
     }
 
-    fn get_album_info(&self, id: &str) -> BoxFuture<SpotifyResult<AlbumInfo>> {
+    fn get_album_info(&self, id: &str) -> BoxFuture<SpotifyResult<AlbumDetailedInfo>> {
         let id = id.to_owned();
 
         Box::pin(async move {
             let album_info = self.cache_get_or_write(SpotCacheKey::Album(&id), None, |etag| {
                 self.client.get_album_info(&id).etag(etag).send()
             });
-            
-            let album_info: AlbumInfo = album_info.await?.into();
-            Ok(album_info)
+
+            let album = self.get_album(&id);
+
+            let (album_info, album) = join!(album_info, album);
+
+            let album_info: AlbumInfo = album_info?.into();
+            let album: AlbumDescription = album?.into();
+            let album_detail = AlbumDetailedInfo::new(album_info, album);
+            Ok(album_detail)
         })
     }
 

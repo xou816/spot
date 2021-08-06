@@ -2,8 +2,8 @@ use std::ops::Deref;
 use std::rc::Rc;
 use std::sync::Arc;
 
-use crate::api::client::AlbumInfo;
 use crate::app::components::{SelectionTool, SelectionToolsModel};
+use crate::app::models::AlbumDetailedInfo;
 use crate::app::state::{SelectionContext, SelectionState};
 use crate::app::{ActionDispatcher, AppAction, AppModel, BrowserAction};
 use crate::{api::SpotifyApiClient, app::components::SimpleSelectionTool};
@@ -23,7 +23,7 @@ impl AlbumInfoModel {
         }
     }
 
-    pub fn get_album_info(&self) -> Option<impl Deref<Target = AlbumInfo> + '_> {
+    pub fn get_album_info(&self) -> Option<impl Deref<Target = AlbumDetailedInfo> + '_> {
         self.app_model
             .map_state_opt(|s| s.browser.album_info_state()?.info.as_ref())
     }
@@ -35,7 +35,7 @@ impl AlbumInfoModel {
             .call_spotify_and_dispatch(move || async move {
                 api.get_album_info(&id)
                     .await
-                    .map(|album| BrowserAction::SetAlbumInfo(album).into())
+                    .map(|info| BrowserAction::SetAlbumInfo(info).into())
             });
     }
 
