@@ -60,8 +60,10 @@ impl Info {
             self.widget.release_date.set_label(&format!("Release Date: {}" , info.info.release_date));
             self.widget.total_time.set_label(&format!("Total Duration: {}" , info.formatted_time()));
             self.widget.liked.set_label(&format!("Is Liked: {}" ,info.is_liked));
-            // TODO do copyrights and markets (markets needs some wrapping)
-            //self.widget.markets.set_label(&info.markets());
+            self.widget.markets.set_wrap(true);
+            self.widget.copyrights.set_wrap(true);
+            self.widget.markets.set_label(&format!("Available Markets: {}", info.markets()));
+            self.widget.copyrights.set_label(&format!("Copyrights: {}", info.copyrights()));
             let widget = self.widget.clone();
             if let Some(art) = info.art.clone() {
                 self.worker.send_local_task(async move {
