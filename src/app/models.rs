@@ -1,7 +1,8 @@
 use std::convert::From;
 
 pub use super::gtypes::*;
-use crate::{api::client::AlbumInfo, app::components::utils::format_duration};
+use crate::app::components::utils::format_duration;
+use serde::Deserialize;
 
 impl From<&AlbumDescription> for AlbumModel {
     fn from(album: &AlbumDescription) -> Self {
@@ -95,6 +96,27 @@ impl PartialEq for AlbumDescription {
 }
 
 impl Eq for AlbumDescription {}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct AlbumInfo {
+    pub id: String,
+    pub label: String,
+    pub name: String,
+    pub release_date: String,
+    pub total_tracks: usize,
+    pub available_markets: Vec<Market>,
+    pub copyrights: Vec<Copyright>,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct Market(pub String);
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct Copyright {
+    pub text: String,
+    #[serde(alias = "type")]
+    pub type_: char,
+}
 
 #[derive(Clone, Debug)]
 pub struct AlbumDetailedInfo {

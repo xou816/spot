@@ -10,6 +10,8 @@ use std::str::FromStr;
 use std::sync::Mutex;
 use thiserror::Error;
 
+use crate::app::models::AlbumInfo;
+
 pub use super::api_models::*;
 use super::cache::CacheError;
 

@@ -150,27 +150,6 @@ pub struct Album {
     pub images: Vec<Image>,
 }
 
-#[derive(Deserialize, Debug, Clone, PartialEq, Eq)]
-pub struct AlbumInfo {
-    pub id: String,
-    pub label: String,
-    pub name: String,
-    pub release_date: String,
-    pub total_tracks: usize,
-    pub available_markets: Vec<Market>,
-    pub copyrights: Vec<Copyright>,
-}
-
-#[derive(Deserialize, Debug, Clone, PartialEq, Eq)]
-pub struct Market(pub String);
-
-#[derive(Deserialize, Debug, Clone, PartialEq, Eq)]
-pub struct Copyright {
-    pub text: String,
-    #[serde(alias = "type")]
-    pub type_: char,
-}
-
 impl WithImages for Album {
     fn images(&self) -> &[Image] {
         &self.images[..]

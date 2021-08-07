@@ -1,6 +1,6 @@
 mod api_models;
 mod cached_client;
-pub(crate) mod client;
+mod client;
 
 pub mod cache;
 
