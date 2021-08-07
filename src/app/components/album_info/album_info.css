@@ -1,3 +1,7 @@
-.now_playing {
+.album_info {
     background: @theme_base_color;
+}
+
+.details .details__album-art {
+  border-radius: 8px;
 }
