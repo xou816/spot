@@ -71,6 +71,7 @@
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="orientation">vertical</property>
+                    <property name="spacing">10</property>
                     <child>
                       <object class="GtkLabel" id="artists">
                         <property name="visible">True</property>
@@ -109,20 +110,6 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="id">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="halign">center</property>
-                        <property name="valign">center</property>
-                        <property name="label" translatable="yes">Id</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkLabel" id="label">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
@@ -133,7 +120,35 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">True</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="release_date">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="label" translatable="yes">Release Date</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
                         <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="total_time">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="label" translatable="yes">Total Time</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">4</property>
                       </packing>
                     </child>
                     <child>
@@ -151,12 +166,12 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="release_date">
+                      <object class="GtkLabel" id="liked">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
-                        <property name="label" translatable="yes">Release Date</property>
+                        <property name="label" translatable="yes">Liked?</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -165,26 +180,12 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="total_time">
+                      <object class="GtkLabel" id="id">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
-                        <property name="label" translatable="yes">Total Time</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">7</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="liked">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="halign">center</property>
-                        <property name="valign">center</property>
-                        <property name="label" translatable="yes">Liked?</property>
+                        <property name="label" translatable="yes">Id</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
