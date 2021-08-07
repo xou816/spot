@@ -56,7 +56,7 @@ impl ScreenFactory {
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        SelectionTools::new(Info::new(Rc::clone(&model)), model)
+        SelectionTools::new(Info::new(Rc::clone(&model), self.worker.clone()), model)
     }
 
     pub fn make_search_results(&self) -> SearchResults {
