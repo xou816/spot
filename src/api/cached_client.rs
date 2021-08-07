@@ -7,7 +7,9 @@ use std::convert::Into;
 use std::future::Future;
 
 use super::cache::{CacheExpiry, CacheManager, CachePolicy, FetchResult};
-use super::client::{AlbumInfo, SpotifyApiError, SpotifyClient, SpotifyResponse, SpotifyResponseKind};
+use super::client::{
+    AlbumInfo, SpotifyApiError, SpotifyClient, SpotifyResponse, SpotifyResponseKind,
+};
 use crate::app::models::*;
 
 lazy_static! {

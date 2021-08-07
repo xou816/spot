@@ -167,8 +167,8 @@ pub struct Market(pub String);
 #[derive(Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct Copyright {
     pub text: String,
-    #[serde(alias = "type")] 
-    pub type_ : char,
+    #[serde(alias = "type")]
+    pub type_: char,
 }
 
 impl WithImages for Album {
