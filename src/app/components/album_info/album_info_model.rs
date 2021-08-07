@@ -38,7 +38,6 @@ impl AlbumInfoModel {
                     .map(|info| BrowserAction::SetAlbumInfo(info).into())
             });
     }
-
 }
 
 impl SelectionToolsModel for AlbumInfoModel {
