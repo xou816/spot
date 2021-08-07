@@ -126,9 +126,19 @@ impl AlbumDetailedInfo {
     }
 
     pub fn markets(&self) -> String {
-        self.info.available_markets
+        self.info
+            .available_markets
             .iter()
             .map(|m| m.0.to_owned())
+            .collect::<Vec<String>>()
+            .join(", ")
+    }
+
+    pub fn copyrights(&self) -> String {
+        self.info
+            .copyrights
+            .iter()
+            .map(|c| format!("[{}] {}", c.type_, c.text))
             .collect::<Vec<String>>()
             .join(", ")
     }
