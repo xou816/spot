@@ -1,23 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk" version="4.0"/>
-  <object class="GtkScrolledWindow" id="scrolled_window">
-    <property name="vscrollbar-policy">always</property>
-    <property name="min-content-width">250</property>
-    <property name="child">
-      <object class="GtkViewport">
+  <template class="LibraryWidget" parent="GtkBox">
+    <child>
+      <object class="GtkScrolledWindow" id="scrolled_window">
+        <property name="hexpand">1</property>
+        <property name="vexpand">1</property>
+        <property name="vscrollbar-policy">always</property>
+        <property name="min-content-width">250</property>
         <property name="child">
-          <object class="GtkFlowBox" id="flowbox">
-            <property name="margin-start">8</property>
-            <property name="margin-end">8</property>
-            <property name="margin-top">8</property>
-            <property name="margin-bottom">8</property>
-            <property name="min-children-per-line">1</property>
-            <property name="selection-mode">none</property>
-            <property name="activate-on-single-click">0</property>
+          <object class="GtkViewport">
+            <property name="child">
+              <object class="GtkFlowBox" id="flowbox">
+                <property name="margin-start">8</property>
+                <property name="margin-end">8</property>
+                <property name="margin-top">8</property>
+                <property name="margin-bottom">8</property>
+                <property name="min-children-per-line">1</property>
+                <property name="selection-mode">none</property>
+                <property name="activate-on-single-click">0</property>
+              </object>
+            </property>
           </object>
         </property>
       </object>
-    </property>
-  </object>
+    </child>
+  </template>
 </interface>

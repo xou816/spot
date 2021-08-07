@@ -1,5 +1,6 @@
-use gladis::Gladis;
 use gtk::prelude::*;
+use gtk::subclass::prelude::*;
+use gtk::CompositeTemplate;
 use std::rc::Rc;
 
 use crate::app::components::EventListener;
@@ -8,125 +9,179 @@ use crate::app::state::LoginEvent;
 use crate::app::AppEvent;
 
 use super::LoginModel;
+mod imp {
 
-#[derive(Clone, Gladis)]
-struct LoginWidget {
-    pub window: libadwaita::Window,
-    username: gtk::Entry,
-    password: gtk::Entry,
-    close_button: gtk::Button,
-    login_button: gtk::Button,
-    error_container: gtk::Revealer,
+    use libadwaita::subclass::prelude::AdwWindowImpl;
+
+    use super::*;
+
+    #[derive(Debug, Default, CompositeTemplate)]
+    #[template(resource = "/dev/alextren/Spot/components/login.ui")]
+    pub struct LoginWindow {
+        #[template_child]
+        pub username: TemplateChild<gtk::Entry>,
+
+        #[template_child]
+        pub password: TemplateChild<gtk::Entry>,
+
+        #[template_child]
+        pub close_button: TemplateChild<gtk::Button>,
+
+        #[template_child]
+        pub login_button: TemplateChild<gtk::Button>,
+
+        #[template_child]
+        pub error_container: TemplateChild<gtk::Revealer>,
+    }
+
+    #[glib::object_subclass]
+    impl ObjectSubclass for LoginWindow {
+        const NAME: &'static str = "LoginWindow";
+        type Type = super::LoginWindow;
+        type ParentType = libadwaita::Window;
+
+        fn class_init(klass: &mut Self::Class) {
+            Self::bind_template(klass);
+        }
+
+        fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
+            obj.init_template();
+        }
+    }
+
+    impl ObjectImpl for LoginWindow {}
+    impl WidgetImpl for LoginWindow {}
+    impl AdwWindowImpl for LoginWindow {}
+    impl WindowImpl for LoginWindow {}
 }
 
-impl LoginWidget {
-    fn new() -> Self {
-        Self::from_resource(resource!("/components/login.ui")).unwrap()
+glib::wrapper! {
+    pub struct LoginWindow(ObjectSubclass<imp::LoginWindow>) @extends gtk::Widget, libadwaita::Window;
+}
+
+impl LoginWindow {
+    pub fn new() -> Self {
+        glib::Object::new(&[]).expect("Failed to create an instance of LoginWindow")
+    }
+
+    fn connect_close<F>(&self, on_close: F)
+    where
+        F: Fn() + 'static,
+    {
+        let widget = imp::LoginWindow::from_instance(self);
+        widget.close_button.connect_clicked(move |_| {
+            on_close();
+        });
+    }
+
+    fn connect_submit<SubmitFn>(&self, on_submit: SubmitFn)
+    where
+        SubmitFn: Fn(&str, &str) + Clone + 'static,
+    {
+        let widget = imp::LoginWindow::from_instance(self);
+
+        let on_submit_clone = on_submit.clone();
+        let controller = gtk::EventControllerKey::new();
+        controller.set_propagation_phase(gtk::PropagationPhase::Capture);
+        controller.connect_key_pressed(
+            clone!(@weak self as _self => @default-return gtk::Inhibit(false), move |_, key, _, _| {
+                if key == gdk::keys::constants::Return {
+                    _self.submit(&on_submit_clone);
+                    gtk::Inhibit(true)
+                } else {
+                    gtk::Inhibit(false)
+                }
+            }),
+        );
+        self.add_controller(&controller);
+
+        widget
+            .login_button
+            .connect_clicked(clone!(@weak self as _self => move |_| {
+                _self.submit(&on_submit);
+            }));
+    }
+
+    fn show_error(&self, shown: bool) {
+        let widget = imp::LoginWindow::from_instance(self);
+        widget.error_container.set_reveal_child(shown);
+    }
+
+    fn submit<SubmitFn>(&self, on_submit: &SubmitFn)
+    where
+        SubmitFn: Fn(&str, &str),
+    {
+        let widget = imp::LoginWindow::from_instance(self);
+
+        self.show_error(false);
+
+        let username_text = widget.username.text();
+        let password_text = widget.password.text();
+
+        if username_text.is_empty() {
+            widget.username.grab_focus();
+        } else if password_text.is_empty() {
+            widget.password.grab_focus();
+        } else {
+            on_submit(username_text.as_str(), password_text.as_str());
+        }
     }
 }
 
 pub struct Login {
     parent: gtk::Window,
-    window: libadwaita::Window,
-    error_container: gtk::Revealer,
+    login_window: LoginWindow,
     model: Rc<LoginModel>,
 }
 
 impl Login {
     pub fn new(parent: gtk::Window, model: LoginModel) -> Self {
         let model = Rc::new(model);
-        let LoginWidget {
-            window,
-            username,
-            password,
-            close_button,
-            login_button,
-            error_container,
-        } = LoginWidget::new();
 
-        login_button.connect_clicked(
-            clone!(@weak username, @weak password, @weak error_container,  @weak model => move |_| {
-                Self::submit_login_form(username, password, error_container, model);
-            }),
-        );
+        let login_window = LoginWindow::new();
 
-        let controller = gtk::EventControllerKey::new();
-        controller.set_propagation_phase(gtk::PropagationPhase::Capture);
-        controller.connect_key_pressed(
-            clone!(@weak username, @weak password, @weak error_container, @weak model => @default-return gtk::Inhibit(false), move |_, key, _, _| {
-                Self::handle_keypress(username, password, error_container, model, &key)
-            }),
-        );
-        window.add_controller(&controller);
-
-        close_button.connect_clicked(clone!(@weak parent => move |_| {
+        login_window.connect_close(clone!(@weak parent => move || {
             if let Some(app) = parent.application().as_ref() {
                 app.quit();
             }
         }));
 
+        login_window.connect_submit(clone!(@weak model => move |username, password| {
+            model.login(username.to_string(), password.to_string());
+        }));
+
         Self {
             parent,
-            window,
-            error_container,
+            login_window,
             model,
         }
     }
 
+    fn window(&self) -> &libadwaita::Window {
+        self.login_window.upcast_ref::<libadwaita::Window>()
+    }
+
     fn show_self_if_needed(&self) {
         if self.model.try_autologin() {
-            self.window.close();
+            self.window().close();
         } else {
             self.show_self();
         }
     }
 
     fn show_self(&self) {
-        self.window.set_transient_for(Some(&self.parent));
-        self.window.set_modal(true);
-        self.window.show();
+        self.window().set_transient_for(Some(&self.parent));
+        self.window().set_modal(true);
+        self.window().show();
     }
 
     fn hide_and_save_creds(&self, credentials: Credentials) {
-        self.window.hide();
+        self.window().hide();
         self.model.save_for_autologin(credentials);
     }
 
-    fn handle_keypress(
-        username: gtk::Entry,
-        password: gtk::Entry,
-        error_container: gtk::Revealer,
-        model: Rc<LoginModel>,
-        key: &gdk::keys::Key,
-    ) -> gtk::Inhibit {
-        if key == &gdk::keys::constants::Return {
-            Login::submit_login_form(username, password, error_container, model);
-            gtk::Inhibit(true)
-        } else {
-            gtk::Inhibit(false)
-        }
-    }
-
-    fn submit_login_form(
-        username: gtk::Entry,
-        password: gtk::Entry,
-        error_container: gtk::Revealer,
-        model: Rc<LoginModel>,
-    ) {
-        error_container.set_reveal_child(false);
-        let username_text = username.text().as_str().to_string();
-        let password_text = password.text().as_str().to_string();
-        if username_text.is_empty() {
-            username.grab_focus();
-        } else if password_text.is_empty() {
-            password.grab_focus();
-        } else {
-            model.login(username_text, password_text);
-        }
-    }
-
     fn reveal_error(&self) {
-        self.error_container.set_reveal_child(true);
+        self.login_window.show_error(true);
     }
 }
 

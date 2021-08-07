@@ -69,14 +69,23 @@ impl ArtistDetailsWidget {
         self.widget().top_tracks.as_ref()
     }
 
-    fn scrolled_window_widget(&self) -> &gtk::ScrolledWindow {
-        self.widget().scrolled_window.as_ref()
-    }
-
     fn set_artist_name(&self, name: &str) {
         let context = self.style_context();
         context.add_class("artist__loaded");
         self.widget().artist_name.set_text(name);
+    }
+
+    fn connect_bottom_edge<F>(&self, f: F)
+    where
+        F: Fn() + 'static,
+    {
+        self.widget()
+            .scrolled_window
+            .connect_edge_reached(move |_, pos| {
+                if let gtk::PositionType::Bottom = pos {
+                    f()
+                }
+            });
     }
 
     fn bind_artist_releases<F>(
@@ -117,14 +126,9 @@ impl ArtistDetails {
 
         let widget = ArtistDetailsWidget::new();
 
-        let weak_model = Rc::downgrade(&model);
-        widget
-            .scrolled_window_widget()
-            .connect_edge_reached(move |_, pos| {
-                if let (gtk::PositionType::Bottom, Some(model)) = (pos, weak_model.upgrade()) {
-                    let _ = model.load_more();
-                }
-            });
+        widget.connect_bottom_edge(clone!(@weak model => move || {
+            model.load_more();
+        }));
 
         if let Some(store) = model.get_list_store() {
             widget.bind_artist_releases(
