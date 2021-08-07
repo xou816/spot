@@ -119,10 +119,15 @@ impl AlbumDetailedInfo {
     }
     pub fn formatted_time(&self) -> String {
         let duration = std::time::Duration::from_millis(self.total_time.into());
+        let millis = duration.as_millis() % 1000;
         let seconds = duration.as_secs() % 60;
         let minutes = (duration.as_secs() / 60) % 60;
         let hours = (duration.as_secs() / 60) / 60;
-        format!("{}:{}:{}", hours, minutes, seconds)
+        if hours > 0 {
+            format!("{}:{:02}:{:02} + {}ms", hours, minutes, seconds, millis)
+        } else {
+            format!("{}:{:02} + {}ms", minutes, seconds, millis)
+        }
     }
 
     pub fn markets(&self) -> String {
