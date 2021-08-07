@@ -7,9 +7,7 @@ use std::convert::Into;
 use std::future::Future;
 
 use super::cache::{CacheExpiry, CacheManager, CachePolicy, FetchResult};
-use super::client::{
-    AlbumInfo, SpotifyApiError, SpotifyClient, SpotifyResponse, SpotifyResponseKind,
-};
+use super::client::{SpotifyApiError, SpotifyClient, SpotifyResponse, SpotifyResponseKind};
 use crate::app::models::*;
 
 lazy_static! {
@@ -344,9 +342,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
 
             let (album_info, album) = join!(album_info, album);
 
-            let album_info: AlbumInfo = album_info?.into();
-            let album: AlbumDescription = album?.into();
-            let album_detail = AlbumDetailedInfo::new(album_info, album);
+            let album_detail = AlbumDetailedInfo::new(album_info?, album?);
             Ok(album_detail)
         })
     }
