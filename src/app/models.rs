@@ -126,10 +126,11 @@ impl AlbumDetailedInfo {
     pub fn new(info: AlbumInfo, detail: AlbumDescription) -> Self {
         let artists = detail.artists_name();
         let total_time = detail.songs.iter().map(|a| a.duration).sum();
+        let art = detail.art;
         Self {
             info,
             artists,
-            art: detail.art.to_owned(),
+            art,
             total_time,
         }
     }
