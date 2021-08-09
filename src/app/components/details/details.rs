@@ -1,3 +1,4 @@
+use gettextrs::{gettext, ngettext};
 use gladis::Gladis;
 use gtk::prelude::*;
 use std::rc::Rc;
@@ -19,6 +20,15 @@ struct DetailsWidget {
     pub artist_button: gtk::LinkButton,
     pub artist_button_label: gtk::Label,
     pub album_info: gtk::Button,
+    dialog: gtk::Dialog,
+    dialog_close: gtk::Button,
+    info_art: gtk::Image,
+    info_album_artist: gtk::Label,
+    info_label: gtk::Label,
+    info_release: gtk::Label,
+    info_tracks: gtk::Label,
+    info_duration: gtk::Label,
+    info_copyright: gtk::Label,
 }
 
 impl DetailsWidget {
@@ -54,11 +64,27 @@ impl Details {
                 model.toggle_save_album();
             }));
 
+        let dialog = widget.dialog.clone();
         widget
             .album_info
             .connect_clicked(clone!(@weak model => move |_| {
-                model.info(model.id.clone());
+               if let Some(album) = model.get_album_detailed_info() {
+                    if album.info.id != model.id {
+                        model.load_album_detailed_info();
+                    }
+                } else {
+                    model.load_album_detailed_info();
+                }
+                dialog.show_all();
             }));
+
+        let dialog = widget.dialog.clone();
+        widget.dialog_close.connect_clicked(move |_| dialog.hide());
+
+        widget.dialog.connect_delete_event(|dialog, _| {
+            dialog.hide();
+            glib::signal::Inhibit(true)
+        });
 
         Self {
             model,
@@ -106,6 +132,63 @@ impl Details {
             }
         }
     }
+
+    fn update_dialog(&mut self) {
+        if let Some(album) = self.model.get_album_detailed_info() {
+            let widget = self.widget.clone();
+            if let Some(art) = album.art.clone() {
+                self.worker.send_local_task(async move {
+                    let pixbuf = ImageLoader::new()
+                        .load_remote(&art[..], "jpg", 200, 200)
+                        .await;
+                    widget.info_art.set_from_pixbuf(pixbuf.as_ref());
+                    widget.set_loaded();
+                });
+            } else {
+                widget.set_loaded();
+            }
+            self.widget.info_album_artist.set_text(&format!(
+                "{} {} {}",
+                album.info.name,
+                gettext("by"),
+                album.artists
+            ));
+
+            self.widget
+                .info_label
+                .set_text(&format!("{}: {}", gettext("Label"), album.info.label));
+
+            self.widget.info_release.set_text(&format!(
+                "{}: {}",
+                gettext("Released"),
+                album.info.release_date
+            ));
+
+            let tracks = if album.info.total_tracks == 1 {
+                gettext("Single")
+            } else {
+                format!("{}: {}", gettext("Tracks"), album.info.total_tracks)
+            };
+
+            self.widget.info_tracks.set_text(&tracks);
+
+            self.widget.info_duration.set_text(&format!(
+                "{}: {}",
+                gettext("Duration"),
+                album.formatted_time()
+            ));
+
+            self.widget.info_copyright.set_text(&format!(
+                "{}: {}",
+                ngettext(
+                    "Copyright",
+                    "Copyrights",
+                    album.info.copyrights.len() as u32
+                ),
+                album.copyrights()
+            ));
+        }
+    }
 }
 
 impl Component for Details {
@@ -126,6 +209,9 @@ impl EventListener for Details {
             {
                 self.update_details();
                 self.update_liked();
+            }
+            AppEvent::BrowserEvent(BrowserEvent::AlbumInfoIsLoaded(id)) if id == &self.model.id => {
+                self.update_dialog();
             }
             AppEvent::BrowserEvent(BrowserEvent::AlbumSaved(id))
             | AppEvent::BrowserEvent(BrowserEvent::AlbumUnsaved(id))
