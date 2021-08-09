@@ -104,12 +104,8 @@ pub struct AlbumInfo {
     pub name: String,
     pub release_date: String,
     pub total_tracks: usize,
-    pub available_markets: Vec<Market>,
     pub copyrights: Vec<Copyright>,
 }
-
-#[derive(Deserialize, Debug, Clone)]
-pub struct Market(pub String);
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Copyright {
@@ -124,7 +120,6 @@ pub struct AlbumDetailedInfo {
     pub artists: String,
     pub art: Option<String>,
     pub total_time: u32,
-    pub is_liked: bool,
 }
 
 impl AlbumDetailedInfo {
@@ -136,7 +131,6 @@ impl AlbumDetailedInfo {
             artists,
             art: detail.art.to_owned(),
             total_time,
-            is_liked: detail.is_liked,
         }
     }
     pub fn formatted_time(&self) -> String {
@@ -152,22 +146,13 @@ impl AlbumDetailedInfo {
         }
     }
 
-    pub fn markets(&self) -> String {
-        self.info
-            .available_markets
-            .iter()
-            .map(|m| m.0.to_owned())
-            .collect::<Vec<String>>()
-            .join(", ")
-    }
-
     pub fn copyrights(&self) -> String {
         self.info
             .copyrights
             .iter()
             .map(|c| format!("[{}] {}", c.type_, c.text))
             .collect::<Vec<String>>()
-            .join(", ")
+            .join(",\n ")
     }
 }
 
