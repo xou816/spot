@@ -1,6 +1,6 @@
 use super::{
-    AlbumInfoState, ArtistState, DetailsState, HomeState, PlaylistDetailsState, ScreenName,
-    SearchState, UpdatableState, UserState,
+    ArtistState, DetailsState, HomeState, PlaylistDetailsState, ScreenName, SearchState,
+    UpdatableState, UserState,
 };
 use crate::app::models::*;
 use crate::app::state::AppAction;
@@ -52,8 +52,8 @@ impl BrowserAction {
 pub enum BrowserEvent {
     LibraryUpdated,
     SavedPlaylistsUpdated,
-    AlbumInfoUpdated,
     AlbumDetailsLoaded(String),
+    AlbumInfoIsLoaded(String),
     PlaylistDetailsLoaded(String),
     PlaylistTracksAppended(String, usize),
     PlaylistTracksRemoved(String, Vec<String>),
@@ -71,7 +71,6 @@ pub enum BrowserEvent {
 pub enum BrowserScreen {
     Home(HomeState),
     AlbumDetails(DetailsState),
-    AlbumInfo(AlbumInfoState),
     Search(SearchState),
     Artist(ArtistState),
     PlaylistDetails(PlaylistDetailsState),
@@ -84,9 +83,6 @@ impl BrowserScreen {
             ScreenName::Home => BrowserScreen::Home(Default::default()),
             ScreenName::AlbumDetails(id) => {
                 BrowserScreen::AlbumDetails(DetailsState::new(id.to_string()))
-            }
-            ScreenName::AlbumInfo(id) => {
-                BrowserScreen::AlbumInfo(AlbumInfoState::new(id.to_string()))
             }
             ScreenName::Search => BrowserScreen::Search(Default::default()),
             ScreenName::Artist(id) => BrowserScreen::Artist(ArtistState::new(id.to_string())),
@@ -101,7 +97,6 @@ impl BrowserScreen {
         match self {
             Self::Home(state) => state,
             Self::AlbumDetails(state) => state,
-            Self::AlbumInfo(state) => state,
             Self::Search(state) => state,
             Self::Artist(state) => state,
             Self::PlaylistDetails(state) => state,
@@ -117,7 +112,6 @@ impl NamedScreen for BrowserScreen {
         match self {
             Self::Home(state) => &state.name,
             Self::AlbumDetails(state) => &state.name,
-            Self::AlbumInfo(state) => &state.name,
             Self::Search(state) => &state.name,
             Self::Artist(state) => &state.name,
             Self::PlaylistDetails(state) => &state.name,
@@ -244,13 +238,6 @@ impl BrowserState {
     pub fn details_state(&self, id: &str) -> Option<&DetailsState> {
         self.navigation.iter_rev().find_map(|screen| match screen {
             BrowserScreen::AlbumDetails(state) if state.id == id => Some(state),
-            _ => None,
-        })
-    }
-
-    pub fn album_info_state(&self) -> Option<&AlbumInfoState> {
-        self.navigation.iter_rev().find_map(|screen| match screen {
-            BrowserScreen::AlbumInfo(state) => Some(state),
             _ => None,
         })
     }

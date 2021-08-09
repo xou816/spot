@@ -9,7 +9,6 @@ use crate::app::ListStore;
 pub enum ScreenName {
     Home,
     AlbumDetails(String),
-    AlbumInfo(String),
     Search,
     Artist(String),
     PlaylistDetails(String),
@@ -21,7 +20,6 @@ impl ScreenName {
         match self {
             Self::Home => Cow::Borrowed("home"),
             Self::AlbumDetails(s) => Cow::Owned(format!("album_{}", s)),
-            Self::AlbumInfo(s) => Cow::Owned(format!("album_info_{}", s)),
             Self::Search => Cow::Borrowed("search"),
             Self::Artist(s) => Cow::Owned(format!("artist_{}", s)),
             Self::PlaylistDetails(s) => Cow::Owned(format!("playlist_{}", s)),
@@ -42,6 +40,7 @@ pub struct DetailsState {
     pub id: String,
     pub name: ScreenName,
     pub content: Option<AlbumDescription>,
+    pub info: Option<AlbumDetailedInfo>,
 }
 
 impl DetailsState {
@@ -50,6 +49,7 @@ impl DetailsState {
             id: id.clone(),
             name: ScreenName::AlbumDetails(id),
             content: None,
+            info: None,
         }
     }
 }
@@ -64,6 +64,11 @@ impl UpdatableState for DetailsState {
                 let id = album.id.clone();
                 self.content = Some(album);
                 vec![BrowserEvent::AlbumDetailsLoaded(id)]
+            }
+            BrowserAction::SetAlbumInfo(album) if album.info.id == self.id => {
+                let id = album.info.id.clone();
+                self.info = Some(album);
+                vec![BrowserEvent::AlbumInfoIsLoaded(id)]
             }
             BrowserAction::SaveAlbum(album) if album.id == self.id => {
                 let id = album.id;
@@ -81,35 +86,6 @@ impl UpdatableState for DetailsState {
                 } else {
                     vec![]
                 }
-            }
-            _ => vec![],
-        }
-    }
-}
-
-pub struct AlbumInfoState {
-    pub name: ScreenName,
-    pub info: Option<AlbumDetailedInfo>,
-}
-
-impl AlbumInfoState {
-    pub fn new(id: String) -> Self {
-        Self {
-            name: ScreenName::AlbumInfo(id),
-            info: None,
-        }
-    }
-}
-
-impl UpdatableState for AlbumInfoState {
-    type Action = BrowserAction;
-    type Event = BrowserEvent;
-
-    fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
-        match action {
-            BrowserAction::SetAlbumInfo(info) => {
-                self.info = Some(info);
-                vec![BrowserEvent::AlbumInfoUpdated]
             }
             _ => vec![],
         }

@@ -41,9 +41,6 @@ pub use search::*;
 mod album;
 use album::*;
 
-mod album_info;
-pub use album_info::*;
-
 mod artist;
 use artist::*;
 
