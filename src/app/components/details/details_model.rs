@@ -42,7 +42,7 @@ impl DetailsModel {
             .map_state_opt(|s| s.browser.details_state(&self.id)?.content.as_ref())
     }
 
-    pub fn get_album_detailed_info(&self) -> Option<impl Deref<Target = AlbumDetailedInfo> + '_> {
+    pub fn get_album_detailed_info(&self) -> Option<impl Deref<Target = AlbumInfo> + '_> {
         self.app_model
             .map_state_opt(|s| s.browser.details_state(&self.id)?.info.as_ref())
     }

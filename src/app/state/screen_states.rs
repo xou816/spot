@@ -40,7 +40,7 @@ pub struct DetailsState {
     pub id: String,
     pub name: ScreenName,
     pub content: Option<AlbumDescription>,
-    pub info: Option<AlbumDetailedInfo>,
+    pub info: Option<AlbumInfo>,
 }
 
 impl DetailsState {
@@ -65,9 +65,9 @@ impl UpdatableState for DetailsState {
                 self.content = Some(album);
                 vec![BrowserEvent::AlbumDetailsLoaded(id)]
             }
-            BrowserAction::SetAlbumInfo(album) if album.info.id == self.id => {
-                let id = album.info.id.clone();
-                self.info = Some(album);
+            BrowserAction::SetAlbumInfo(info) if info.id == self.id => {
+                let id = info.id.clone();
+                self.info = Some(info);
                 vec![BrowserEvent::AlbumInfoIsLoaded(id)]
             }
             BrowserAction::SaveAlbum(album) if album.id == self.id => {
