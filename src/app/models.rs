@@ -87,6 +87,19 @@ impl AlbumDescription {
             .collect::<Vec<String>>()
             .join(", ")
     }
+    pub fn formatted_time(&self) -> String {
+        let duration: u32 = self.songs.iter().map(|song| song.duration).sum();
+        let duration = std::time::Duration::from_millis(duration as u64);
+        let millis = duration.as_millis() % 1000;
+        let seconds = duration.as_secs() % 60;
+        let minutes = (duration.as_secs() / 60) % 60;
+        let hours = (duration.as_secs() / 60) / 60;
+        if hours > 0 {
+            format!("{}:{:02}:{:02} + {}ms", hours, minutes, seconds, millis)
+        } else {
+            format!("{}:{:02} + {}ms", minutes, seconds, millis)
+        }
+    }
 }
 
 impl PartialEq for AlbumDescription {
@@ -101,9 +114,7 @@ impl Eq for AlbumDescription {}
 pub struct AlbumInfo {
     pub id: String,
     pub label: String,
-    pub name: String,
     pub release_date: String,
-    pub total_tracks: usize,
     pub copyrights: Vec<Copyright>,
 }
 
@@ -114,42 +125,9 @@ pub struct Copyright {
     pub type_: char,
 }
 
-#[derive(Clone, Debug)]
-pub struct AlbumDetailedInfo {
-    pub info: AlbumInfo,
-    pub artists: String,
-    pub art: Option<String>,
-    pub total_time: u32,
-}
-
-impl AlbumDetailedInfo {
-    pub fn new(info: AlbumInfo, detail: AlbumDescription) -> Self {
-        let artists = detail.artists_name();
-        let total_time = detail.songs.iter().map(|a| a.duration).sum();
-        let art = detail.art;
-        Self {
-            info,
-            artists,
-            art,
-            total_time,
-        }
-    }
-    pub fn formatted_time(&self) -> String {
-        let duration = std::time::Duration::from_millis(self.total_time.into());
-        let millis = duration.as_millis() % 1000;
-        let seconds = duration.as_secs() % 60;
-        let minutes = (duration.as_secs() / 60) % 60;
-        let hours = (duration.as_secs() / 60) / 60;
-        if hours > 0 {
-            format!("{}:{:02}:{:02} + {}ms", hours, minutes, seconds, millis)
-        } else {
-            format!("{}:{:02} + {}ms", minutes, seconds, millis)
-        }
-    }
-
+impl AlbumInfo {
     pub fn copyrights(&self) -> String {
-        self.info
-            .copyrights
+        self.copyrights
             .iter()
             .map(|c| format!("[{}] {}", c.type_, c.text))
             .collect::<Vec<String>>()
