@@ -139,17 +139,14 @@ impl PlaybackState {
     }
 
     pub fn prev_song(&self) -> Option<&SongDescription> {
-        self.position
-            .filter(|pos| pos.index > 0)
-            .map(|pos| &self.running_order()[pos.index - 1])
+        self.prev_index()
+            .map(|i| &self.running_order()[i])
             .and_then(|id| self.song(id))
     }
 
     pub fn next_song(&self) -> Option<&SongDescription> {
-        let len = self.running_order().len();
-        self.position
-            .filter(|pos| pos.index + 1 < len)
-            .map(|pos| &self.running_order()[pos.index + 1])
+        self.next_index()
+            .map(|i| &self.running_order()[i])
             .and_then(|id| self.song(id))
     }
 
@@ -314,36 +311,39 @@ impl PlaybackState {
         self.is_playing = false;
     }
 
+    fn play_index(&mut self, index: Option<usize>) -> Option<String> {
+        index.map(|i| {
+            let len = self.running_order().len();
+            self.is_playing = true;
+            self.position = Some(self.position.unwrap_or_default().update_into(i, len));
+            self.running_order()[i].clone()
+        })
+    }
+
     fn play_next(&mut self) -> Option<String> {
+        self.play_index(self.next_index())
+    }
+
+    fn next_index(&self) -> Option<usize> {
         let len = self.running_order().len();
-        let next = self.position.and_then(|p| match self.repeat {
+        self.position.and_then(|p| match self.repeat {
             RepeatMode::Song => Some(p.index),
             RepeatMode::Playlist => Some((p.index + 1) % len),
             RepeatMode::None => Some(p.index + 1).filter(|&i| i < len),
-        });
-        if let Some(next) = next {
-            self.is_playing = true;
-            self.position = Some(self.position.unwrap_or_default().update_into(next, len));
-            Some(self.running_order()[next].clone())
-        } else {
-            None
-        }
+        })
     }
 
     fn play_prev(&mut self) -> Option<String> {
+        self.play_index(self.prev_index())
+    }
+
+    fn prev_index(&self) -> Option<usize> {
         let len = self.running_order().len();
-        let prev = self.position.and_then(|p| match self.repeat {
+        self.position.and_then(|p| match self.repeat {
             RepeatMode::Song => Some(p.index),
             RepeatMode::Playlist => Some((if p.index == 0 { len } else { p.index }) - 1),
             RepeatMode::None => Some(p.index).filter(|&i| i > 0).map(|i| i - 1),
-        });
-        if let Some(prev) = prev {
-            self.is_playing = true;
-            self.position = Some(self.position.unwrap_or_default().update_into(prev, len));
-            Some(self.running_order()[prev].clone())
-        } else {
-            None
-        }
+        })
     }
 
     fn toggle_play(&mut self) -> Option<bool> {
