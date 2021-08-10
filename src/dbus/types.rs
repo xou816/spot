@@ -4,8 +4,6 @@ use std::time::Instant;
 use zvariant::Type;
 use zvariant::{Dict, Signature, Str, Value};
 
-use crate::app::state::RepeatMode;
-
 fn boxed_value<'a, V: Into<Value<'a>>>(v: V) -> Value<'a> {
     Value::new(v.into())
 }
@@ -115,7 +113,6 @@ struct MprisState {
     metadata: Option<TrackMetadata>,
     has_prev: bool,
     has_next: bool,
-    is_repeating: bool,
 }
 
 #[derive(Clone)]
@@ -129,7 +126,6 @@ impl SharedMprisState {
             metadata: None,
             has_prev: false,
             has_next: false,
-            is_repeating: false,
         })))
     }
 
@@ -145,19 +141,11 @@ impl SharedMprisState {
     }
 
     pub fn has_prev(&self) -> bool {
-        self.0
-            .lock()
-            .ok()
-            .map(|s| s.has_prev || s.is_repeating)
-            .unwrap_or(false)
+        self.0.lock().ok().map(|s| s.has_prev).unwrap_or(false)
     }
 
     pub fn has_next(&self) -> bool {
-        self.0
-            .lock()
-            .ok()
-            .map(|s| s.has_next || s.is_repeating)
-            .unwrap_or(false)
+        self.0.lock().ok().map(|s| s.has_next).unwrap_or(false)
     }
 
     pub fn set_has_prev(&self, has_prev: bool) {
@@ -209,12 +197,6 @@ impl SharedMprisState {
                     (*state).position.set(0, false);
                 }
             }
-        }
-    }
-
-    pub fn set_repeating(&self, mode: RepeatMode) {
-        if let Ok(mut state) = self.0.lock() {
-            (*state).is_repeating = !matches!(mode, RepeatMode::None);
         }
     }
 }
