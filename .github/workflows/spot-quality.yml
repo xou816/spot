@@ -17,6 +17,10 @@ jobs:
           default: true
           components: rustfmt
 
+      - name: Add empty config.rs
+        run: |
+          echo >> src/config.rs
+
       - name: Format
         uses: actions-rs/cargo@v1
         with:
