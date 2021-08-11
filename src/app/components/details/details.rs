@@ -20,7 +20,7 @@ struct DetailsWidget {
     pub artist_button: gtk::LinkButton,
     pub artist_button_label: gtk::Label,
     pub album_info: gtk::Button,
-    info_window: libhandy::ApplicationWindow,
+    info_window: libhandy::Window,
     info_close: gtk::Button,
     info_art: gtk::Image,
     info_album_artist: gtk::Label,
@@ -69,7 +69,15 @@ impl Details {
             info.hide();
             glib::signal::Inhibit(true)
         });
-        widget.album_info.connect_clicked(move |_| info_window.show());
+        info_window.connect_key_press_event(|info, event| {
+            if let gdk::keys::constants::Escape = event.keyval() {
+                info.hide()
+            }
+            glib::signal::Inhibit(false)
+        });
+        widget
+            .album_info
+            .connect_clicked(move |_| info_window.show());
 
         let info = widget.info_window.clone();
         widget.info_close.connect_clicked(move |_| info.hide());
