@@ -8,4 +8,4 @@ if [[ $OFFLINE = "true" ]]; then
     export CARGO_HOME="$SRC"/cargo
 fi
 
-cargo clippy --manifest-path "$SRC"/Cargo.toml -- -D warnings -A clippy::module_inception
+cargo clippy --manifest-path "$SRC"/Cargo.toml -- -D warnings -A clippy::module_inception -A clippy::new_without_default

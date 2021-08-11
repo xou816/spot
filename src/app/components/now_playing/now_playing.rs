@@ -76,7 +76,7 @@ impl NowPlaying {
 
 impl Component for NowPlaying {
     fn get_root_widget(&self) -> &gtk::Widget {
-        &self.widget.upcast_ref()
+        self.widget.upcast_ref()
     }
 
     fn get_children(&mut self) -> Option<&mut Vec<Box<dyn EventListener>>> {

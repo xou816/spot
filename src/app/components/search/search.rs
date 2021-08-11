@@ -185,7 +185,7 @@ impl SearchResults {
 
 impl Component for SearchResults {
     fn get_root_widget(&self) -> &gtk::Widget {
-        &self.widget.as_ref()
+        self.widget.as_ref()
     }
 }
 
