@@ -20,8 +20,8 @@ struct DetailsWidget {
     pub artist_button: gtk::LinkButton,
     pub artist_button_label: gtk::Label,
     pub album_info: gtk::Button,
-    dialog: gtk::Dialog,
-    dialog_close: gtk::Button,
+    info_window: libhandy::ApplicationWindow,
+    info_close: gtk::Button,
     info_art: gtk::Image,
     info_album_artist: gtk::Label,
     info_label: gtk::Label,
@@ -64,7 +64,11 @@ impl Details {
                 model.toggle_save_album();
             }));
 
-        let dialog = widget.dialog.clone();
+        let info_window = widget.info_window.clone();
+        info_window.connect_delete_event(|info, _| {
+            info.hide();
+            glib::signal::Inhibit(true)
+        });
         widget
             .album_info
             .connect_clicked(clone!(@weak model => move |_| {
@@ -75,16 +79,11 @@ impl Details {
                 } else {
                     model.load_album_detailed_info();
                 }
-                dialog.show_all();
+                info_window.show();
             }));
 
-        let dialog = widget.dialog.clone();
-        widget.dialog_close.connect_clicked(move |_| dialog.hide());
-
-        widget.dialog.connect_delete_event(|dialog, _| {
-            dialog.hide();
-            glib::signal::Inhibit(true)
-        });
+        let info = widget.info_window.clone();
+        widget.info_close.connect_clicked(move |_| info.hide());
 
         Self {
             model,
