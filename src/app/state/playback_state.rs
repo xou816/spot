@@ -311,17 +311,16 @@ impl PlaybackState {
         self.is_playing = false;
     }
 
-    fn play_index(&mut self, index: Option<usize>) -> Option<String> {
-        index.map(|i| {
-            let len = self.running_order().len();
-            self.is_playing = true;
-            self.position = Some(self.position.unwrap_or_default().update_into(i, len));
-            self.running_order()[i].clone()
-        })
+    fn play_index(&mut self, index: usize) -> String {
+        // Assumes index is in running order
+        let len = self.running_order().len();
+        self.is_playing = true;
+        self.position = Some(self.position.unwrap_or_default().update_into(index, len));
+        self.running_order()[index].clone()
     }
 
     fn play_next(&mut self) -> Option<String> {
-        self.play_index(self.next_index())
+        self.next_index().map(|i| self.play_index(i))
     }
 
     fn next_index(&self) -> Option<usize> {
@@ -334,7 +333,7 @@ impl PlaybackState {
     }
 
     fn play_prev(&mut self) -> Option<String> {
-        self.play_index(self.prev_index())
+        self.prev_index().map(|i| self.play_index(i))
     }
 
     fn prev_index(&self) -> Option<usize> {
