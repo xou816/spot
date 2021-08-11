@@ -31,7 +31,7 @@ impl SelectionHeadingModel {
     fn should_change_context(&self) -> bool {
         let state = self.app_model.get_state();
         state.selection.context != SelectionContext::Global
-            && state.recommanded_context() != state.selection.context
+            && state.recommended_context() != state.selection.context
     }
 }
 

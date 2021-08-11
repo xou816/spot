@@ -8,7 +8,7 @@ use crate::app::components::{
     utils::{Clock, Debouncer},
     EventListener,
 };
-use crate::app::state::{PlaybackAction, PlaybackEvent};
+use crate::app::state::{PlaybackAction, PlaybackEvent, RepeatMode};
 use crate::app::{ActionDispatcher, AppEvent, AppModel, AppState};
 
 pub struct PlaybackControlModel {
@@ -51,6 +51,16 @@ impl PlaybackControlModel {
         self.dispatcher.dispatch(PlaybackAction::TogglePlay.into());
     }
 
+    pub fn toggle_shuffle(&self) {
+        self.dispatcher
+            .dispatch(PlaybackAction::ToggleShuffle.into());
+    }
+
+    pub fn toggle_repeat(&self) {
+        self.dispatcher
+            .dispatch(PlaybackAction::ToggleRepeat.into());
+    }
+
     pub fn seek_to(&self, position: u32) {
         self.dispatcher
             .dispatch(PlaybackAction::Seek(position).into());
@@ -64,9 +74,12 @@ pub struct PlaybackControlWidget {
     track_duration: gtk::Label,
     next: gtk::Button,
     prev: gtk::Button,
+    shuffle_button: gtk::Button,
+    repeat_button: gtk::Button,
 }
 
 impl PlaybackControlWidget {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         play_button: gtk::Button,
         seek_bar: gtk::Scale,
@@ -74,6 +87,8 @@ impl PlaybackControlWidget {
         track_duration: gtk::Label,
         next: gtk::Button,
         prev: gtk::Button,
+        shuffle_button: gtk::Button,
+        repeat_button: gtk::Button,
     ) -> Self {
         Self {
             play_button,
@@ -82,6 +97,8 @@ impl PlaybackControlWidget {
             track_duration,
             next,
             prev,
+            shuffle_button,
+            repeat_button,
         }
     }
 }
@@ -93,13 +110,14 @@ pub struct PlaybackControl {
     clock: Clock,
 }
 
+const STEP: f64 = 5000.0;
 impl PlaybackControl {
     pub fn new(model: PlaybackControlModel, widget: PlaybackControlWidget) -> Self {
         let model = Rc::new(model);
         let debouncer = Debouncer::new();
         let debouncer_clone = debouncer.clone();
-
         let track_position = &widget.track_position;
+        widget.seek_bar.set_increments(STEP, STEP);
         widget.seek_bar.connect_change_value(
             clone!(@weak model, @weak track_position => @default-return signal::Inhibit(false), move |_, _, requested| {
                 track_position.set_text(&format_duration(requested));
@@ -121,8 +139,20 @@ impl PlaybackControl {
         }));
 
         widget.prev.connect_clicked(clone!(@weak model => move |_| {
-            model.play_prev_song()
+            model.play_prev_song();
         }));
+
+        widget
+            .shuffle_button
+            .connect_clicked(clone!(@weak model => move |_| {
+                model.toggle_shuffle();
+            }));
+
+        widget
+            .repeat_button
+            .connect_clicked(clone!(@weak model => move |_| {
+                model.toggle_repeat();
+            }));
 
         Self {
             model,
@@ -145,6 +175,23 @@ impl PlaybackControl {
             .and_then(|child| child.downcast::<gtk::Image>().ok())
             .map(|image| {
                 image.set_from_icon_name(Some(playback_image));
+            })
+            .expect("error updating icon");
+    }
+
+    fn update_repeat(&self, mode: &RepeatMode) {
+        let playback_image = match mode {
+            RepeatMode::Song => "media-playlist-repeat-song-symbolic.symbolic",
+            RepeatMode::Playlist => "media-playlist-repeat-symbolic",
+            RepeatMode::None => "media-playlist-consecutive-symbolic.symbolic",
+        };
+
+        self.widget
+            .repeat_button
+            .child()
+            .and_then(|child| child.downcast::<gtk::Image>().ok())
+            .map(|image| {
+                image.set_from_icon_name(Some(playback_image), image.icon_size());
             })
             .expect("error updating icon");
     }
@@ -204,6 +251,9 @@ impl EventListener for PlaybackControl {
             }
             AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
                 self.update_current_info();
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::RepeatModeChanged(mode)) => {
+                self.update_repeat(mode);
             }
             AppEvent::PlaybackEvent(PlaybackEvent::PlaybackStopped) => {
                 self.update_playing();

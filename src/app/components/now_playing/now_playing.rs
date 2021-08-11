@@ -17,9 +17,6 @@ mod imp {
     pub struct NowPlayingWidget {
         #[template_child]
         pub listbox: TemplateChild<gtk::ListBox>,
-
-        #[template_child]
-        pub shuffle: TemplateChild<gtk::Button>,
     }
 
     #[glib::object_subclass]
@@ -55,15 +52,6 @@ impl NowPlayingWidget {
     fn songlist_widget(&self) -> &gtk::ListBox {
         imp::NowPlayingWidget::from_instance(self).listbox.as_ref()
     }
-
-    fn connect_shuffle<F>(&self, f: F)
-    where
-        F: Fn() + 'static,
-    {
-        imp::NowPlayingWidget::from_instance(self)
-            .shuffle
-            .connect_clicked(move |_| f());
-    }
 }
 
 pub struct NowPlaying {
@@ -75,10 +63,6 @@ pub struct NowPlaying {
 impl NowPlaying {
     pub fn new(model: Rc<NowPlayingModel>) -> Self {
         let widget = NowPlayingWidget::new();
-
-        widget.connect_shuffle(clone!(@weak model => move || {
-            model.toggle_shuffle();
-        }));
 
         let playlist = Playlist::new(widget.songlist_widget().clone(), model.clone());
 

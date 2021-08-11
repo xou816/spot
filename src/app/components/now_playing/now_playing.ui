@@ -20,22 +20,6 @@
             </style>
           </object>
         </child>
-        <child>
-          <object class="GtkBox">
-            <property name="halign">end</property>
-            <property name="margin-start">8</property>
-            <property name="margin-end">8</property>
-            <child>
-              <object class="GtkToggleButton" id="shuffle">
-                <property name="receives-default">1</property>
-                <property name="icon-name">media-playlist-shuffle-symbolic</property>
-              </object>
-            </child>
-            <style>
-              <class name="linked"/>
-            </style>
-          </object>
-        </child>
       </object>
     </child>
     <child>

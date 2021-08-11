@@ -2,17 +2,20 @@ use futures::channel::mpsc::{unbounded, UnboundedReceiver, UnboundedSender};
 use librespot::core::spotify_id::SpotifyId;
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::time::SystemTime;
 use tokio::task;
 
-use crate::app::state::{LoginAction, PlaybackAction};
-use crate::app::{credentials, AppAction};
+use crate::app::credentials::Credentials;
+use crate::app::state::{LoginAction, PlaybackAction, SetLoginSuccessAction};
+use crate::app::AppAction;
 
 mod player;
 pub use player::*;
 
 #[derive(Debug, Clone)]
 pub enum Command {
-    Login(String, String),
+    PasswordLogin { username: String, password: String },
+    TokenLogin { username: String, token: String },
     Logout,
     PlayerLoad(SpotifyId),
     PlayerResume,
@@ -41,17 +44,35 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
             .unwrap();
     }
 
-    fn login_successful(&self, credentials: credentials::Credentials) {
+    fn password_login_successful(&self, credentials: Credentials) {
         self.sender
             .borrow_mut()
-            .unbounded_send(LoginAction::SetLoginSuccess(credentials).into())
+            .unbounded_send(
+                LoginAction::SetLoginSuccess(SetLoginSuccessAction::Password(credentials)).into(),
+            )
             .unwrap();
     }
 
-    fn refresh_successful(&self, token: String) {
+    fn token_login_successful(&self, username: String, token: String) {
         self.sender
             .borrow_mut()
-            .unbounded_send(LoginAction::SetRefreshedToken(token).into())
+            .unbounded_send(
+                LoginAction::SetLoginSuccess(SetLoginSuccessAction::Token { username, token })
+                    .into(),
+            )
+            .unwrap();
+    }
+
+    fn refresh_successful(&self, token: String, token_expiry_time: SystemTime) {
+        self.sender
+            .borrow_mut()
+            .unbounded_send(
+                LoginAction::SetRefreshedToken {
+                    token,
+                    token_expiry_time,
+                }
+                .into(),
+            )
             .unwrap();
     }
 

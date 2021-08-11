@@ -1,17 +1,33 @@
 use gettextrs::*;
+use std::time::SystemTime;
 
-use crate::app::credentials;
+use crate::app::credentials::Credentials;
 use crate::app::models::PlaylistSummary;
 use crate::app::state::{AppAction, AppEvent, UpdatableState};
 
 #[derive(Clone, Debug)]
+pub enum TryLoginAction {
+    Password { username: String, password: String },
+    Token { username: String, token: String },
+}
+
+#[derive(Clone, Debug)]
+pub enum SetLoginSuccessAction {
+    Password(Credentials),
+    Token { username: String, token: String },
+}
+
+#[derive(Clone, Debug)]
 pub enum LoginAction {
-    TryLogin(String, String),
-    SetLoginSuccess(credentials::Credentials),
+    TryLogin(TryLoginAction),
+    SetLoginSuccess(SetLoginSuccessAction),
     SetUserPlaylists(Vec<PlaylistSummary>),
     SetLoginFailure,
     RefreshToken,
-    SetRefreshedToken(String),
+    SetRefreshedToken {
+        token: String,
+        token_expiry_time: SystemTime,
+    },
     Logout,
 }
 
@@ -22,12 +38,28 @@ impl From<LoginAction> for AppAction {
 }
 
 #[derive(Clone, Debug)]
+pub enum LoginStartedEvent {
+    Password { username: String, password: String },
+    Token { username: String, token: String },
+}
+
+#[derive(Clone, Debug)]
+pub enum LoginCompletedEvent {
+    Password(Credentials),
+    Token,
+}
+
+#[derive(Clone, Debug)]
 pub enum LoginEvent {
-    LoginStarted(String, String),
-    LoginCompleted(credentials::Credentials),
+    LoginStarted(LoginStartedEvent),
+    LoginCompleted(LoginCompletedEvent),
     UserPlaylistsLoaded,
     LoginFailed,
     FreshTokenRequested,
+    RefreshTokenCompleted {
+        token: String,
+        token_expiry_time: SystemTime,
+    },
     LogoutCompleted,
 }
 
@@ -57,16 +89,38 @@ impl UpdatableState for LoginState {
 
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
-            LoginAction::TryLogin(u, p) => vec![LoginEvent::LoginStarted(u, p).into()],
-            LoginAction::SetLoginSuccess(credentials) => {
-                self.user = Some(credentials.username.clone());
-                vec![LoginEvent::LoginCompleted(credentials).into()]
+            LoginAction::TryLogin(TryLoginAction::Password { username, password }) => {
+                vec![
+                    LoginEvent::LoginStarted(LoginStartedEvent::Password { username, password })
+                        .into(),
+                ]
+            }
+            LoginAction::TryLogin(TryLoginAction::Token { username, token }) => {
+                vec![LoginEvent::LoginStarted(LoginStartedEvent::Token { username, token }).into()]
+            }
+            LoginAction::SetLoginSuccess(SetLoginSuccessAction::Password(creds)) => {
+                self.user = Some(creds.username.clone());
+                vec![LoginEvent::LoginCompleted(LoginCompletedEvent::Password(creds)).into()]
+            }
+            LoginAction::SetLoginSuccess(SetLoginSuccessAction::Token { username, .. }) => {
+                self.user = Some(username);
+                vec![LoginEvent::LoginCompleted(LoginCompletedEvent::Token).into()]
             }
             LoginAction::SetLoginFailure => vec![LoginEvent::LoginFailed.into()],
             LoginAction::RefreshToken => vec![LoginEvent::FreshTokenRequested.into()],
-            LoginAction::SetRefreshedToken(_) => {
+            LoginAction::SetRefreshedToken {
+                token,
+                token_expiry_time,
+            } => {
                 // translators: This notification is shown when, after some inactivity, the session is successfully restored. The user might have to repeat its last action.
-                vec![AppEvent::NotificationShown(gettext("Connection restored"))]
+                vec![
+                    AppEvent::NotificationShown(gettext("Connection restored")),
+                    LoginEvent::RefreshTokenCompleted {
+                        token,
+                        token_expiry_time,
+                    }
+                    .into(),
+                ]
             }
             LoginAction::Logout => {
                 self.user = None;
