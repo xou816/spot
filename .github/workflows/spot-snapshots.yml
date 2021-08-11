@@ -2,7 +2,7 @@ name: spot-snapshots
 
 on:
   push:
-    branches: [master]
+    branches: [master, gtk4_port]
   pull_request:
     branches: [master]
   workflow_dispatch:
