@@ -163,37 +163,23 @@ impl PlaybackControl {
     }
 
     fn set_playing(&self, is_playing: bool) {
-        let playback_image = if is_playing {
+        let playback_icon = if is_playing {
             "media-playback-pause-symbolic"
         } else {
             "media-playback-start-symbolic"
         };
 
-        self.widget
-            .play_button
-            .child()
-            .and_then(|child| child.downcast::<gtk::Image>().ok())
-            .map(|image| {
-                image.set_from_icon_name(Some(playback_image));
-            })
-            .expect("error updating icon");
+        self.widget.play_button.set_icon_name(playback_icon);
     }
 
     fn update_repeat(&self, mode: &RepeatMode) {
-        let playback_image = match mode {
-            RepeatMode::Song => "media-playlist-repeat-song-symbolic.symbolic",
+        let repeat_mode_icon = match mode {
+            RepeatMode::Song => "media-playlist-repeat-song-symbolic",
             RepeatMode::Playlist => "media-playlist-repeat-symbolic",
-            RepeatMode::None => "media-playlist-consecutive-symbolic.symbolic",
+            RepeatMode::None => "media-playlist-consecutive-symbolic",
         };
 
-        self.widget
-            .repeat_button
-            .child()
-            .and_then(|child| child.downcast::<gtk::Image>().ok())
-            .map(|image| {
-                image.set_from_icon_name(Some(playback_image), image.icon_size());
-            })
-            .expect("error updating icon");
+        self.widget.repeat_button.set_icon_name(repeat_mode_icon);
     }
 
     fn update_playing(&self) {
