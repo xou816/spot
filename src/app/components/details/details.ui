@@ -10,7 +10,7 @@
     <property name="can-focus">False</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
-    <property name="window-position">center</property>
+    <property name="window-position">center-always</property>
     <property name="gravity">center</property>
     <child>
       <object class="HdyWindowHandle">
