@@ -2,91 +2,97 @@
 <interface>
   <requires lib="gtk" version="4.0"/>
   <requires lib="libadwaita" version="1.0"/>
-  <object class="GtkScrolledWindow" id="root">
-    <property name="hscrollbar-policy">never</property>
-    <property name="propagate-natural-width">1</property>
-    <property name="child">
-      <object class="GtkViewport">
+  <template class="PlaylistDetailsWidget" parent="GtkBox">
+    <child>
+      <object class="GtkScrolledWindow" id="root">
+        <property name="hscrollbar-policy">never</property>
+        <property name="propagate-natural-width">1</property>
+        <property name="hexpand">1</property>
+        <property name="vexpand">1</property>
         <child>
-          <object class="AdwClamp">
-            <property name="maximum-size">900</property>
+          <object class="GtkViewport">
             <child>
-              <object class="GtkBox">
-                <property name="valign">start</property>
-                <property name="margin-start">16</property>
-                <property name="margin-end">16</property>
-                <property name="margin-top">16</property>
-                <property name="margin-bottom">16</property>
-                <property name="orientation">vertical</property>
-                <property name="spacing">8</property>
-                <property name="baseline-position">top</property>
+              <object class="AdwClamp">
+                <property name="maximum-size">900</property>
                 <child>
                   <object class="GtkBox">
                     <property name="valign">start</property>
-                    <property name="margin-start">8</property>
-                    <property name="margin-end">8</property>
-                    <property name="margin-top">8</property>
-                    <property name="margin-bottom">8</property>
-                    <property name="spacing">16</property>
+                    <property name="margin-start">16</property>
+                    <property name="margin-end">16</property>
+                    <property name="margin-top">16</property>
+                    <property name="margin-bottom">16</property>
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">8</property>
+                    <property name="baseline-position">top</property>
                     <child>
-                      <object class="GtkImage" id="art">
-                        <property name="width-request">100</property>
-                        <property name="height-request">100</property>
-                        <property name="icon-name">emblem-music-symbolic</property>
+                      <object class="GtkBox">
+                        <property name="valign">start</property>
+                        <property name="margin-start">8</property>
+                        <property name="margin-end">8</property>
+                        <property name="margin-top">8</property>
+                        <property name="margin-bottom">8</property>
+                        <property name="spacing">16</property>
+                        <child>
+                          <object class="GtkImage" id="art">
+                            <property name="width-request">100</property>
+                            <property name="height-request">100</property>
+                            <property name="icon-name">emblem-music-symbolic</property>
+                            <style>
+                              <class name="playlist_details__art"/>
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="valign">center</property>
+                            <property name="orientation">vertical</property>
+                            <child>
+                              <object class="GtkLabel" id="name_label">
+                                <property name="halign">start</property>
+                                <property name="label">Playlist</property>
+                                <property name="wrap">1</property>
+                                <property name="xalign">0</property>
+                                <style>
+                                  <class name="playlist_details__name"/>
+                                </style>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLinkButton" id="owner_button">
+                                <property name="receives-default">1</property>
+                                <property name="halign">start</property>
+                                <property name="valign">center</property>
+                                <property name="has-frame">0</property>
+                                <child>
+                                  <object class="GtkLabel" id="owner_button_label">
+                                    <property name="hexpand">1</property>
+                                    <property name="vexpand">1</property>
+                                    <property name="label">Owner</property>
+                                    <property name="ellipsize">middle</property>
+                                    <property name="xalign">0</property>
+                                  </object>
+                                </child>
+                                <style>
+                                  <class name="playlist_details__owner"/>
+                                </style>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkListBox" id="tracks">
+                        <property name="valign">start</property>
+                        <property name="margin-start">8</property>
+                        <property name="margin-end">8</property>
+                        <property name="selection-mode">none</property>
+                        <property name="activate-on-single-click">0</property>
                         <style>
-                          <class name="playlist_details__art"/>
+                          <class name="playlist_details__songs"/>
                         </style>
                       </object>
                     </child>
-                    <child>
-                      <object class="GtkBox">
-                        <property name="valign">center</property>
-                        <property name="orientation">vertical</property>
-                        <child>
-                          <object class="GtkLabel" id="name_label">
-                            <property name="halign">start</property>
-                            <property name="label">Playlist</property>
-                            <property name="wrap">1</property>
-                            <property name="xalign">0</property>
-                            <style>
-                              <class name="playlist_details__name"/>
-                            </style>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkLinkButton" id="owner_button">
-                            <property name="receives-default">1</property>
-                            <property name="halign">start</property>
-                            <property name="valign">center</property>
-                            <property name="has-frame">0</property>
-                            <child>
-                              <object class="GtkLabel" id="owner_button_label">
-                                <property name="hexpand">1</property>
-                                <property name="vexpand">1</property>
-                                <property name="label">Owner</property>
-                                <property name="ellipsize">middle</property>
-                                <property name="xalign">0</property>
-                              </object>
-                            </child>
-                            <style>
-                              <class name="playlist_details__owner"/>
-                            </style>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkListBox" id="tracks">
-                    <property name="valign">start</property>
-                    <property name="margin-start">8</property>
-                    <property name="margin-end">8</property>
-                    <property name="selection-mode">none</property>
-                    <property name="activate-on-single-click">0</property>
-                    <style>
-                      <class name="playlist_details__songs"/>
-                    </style>
                   </object>
                 </child>
               </object>
@@ -94,9 +100,9 @@
           </object>
         </child>
       </object>
-    </property>
+    </child>
     <style>
       <class name="playlist_details"/>
     </style>
-  </object>
+  </template>
 </interface>

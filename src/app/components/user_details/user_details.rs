@@ -1,26 +1,103 @@
-use gladis::Gladis;
 use gtk::prelude::*;
+use gtk::subclass::prelude::*;
+use gtk::CompositeTemplate;
 use std::rc::Rc;
 
-use crate::app::components::{
-    screen_add_css_provider, utils::wrap_flowbox_item, AlbumWidget, Component, EventListener,
-};
-use crate::app::models::*;
+use crate::app::components::utils::wrap_flowbox_item;
+use crate::app::components::{screen_add_css_provider, AlbumWidget, Component, EventListener};
+use crate::app::{models::*, ListStore};
 use crate::app::{AppEvent, BrowserEvent, Worker};
 
 use super::UserDetailsModel;
 
-#[derive(Clone, Gladis)]
-struct UserDetailsWidget {
-    pub root: gtk::ScrolledWindow,
-    pub user_name: gtk::Label,
-    pub user_playlists: gtk::FlowBox,
+mod imp {
+
+    use super::*;
+
+    #[derive(Debug, Default, CompositeTemplate)]
+    #[template(resource = "/dev/alextren/Spot/components/user_details.ui")]
+    pub struct UserDetailsWidget {
+        #[template_child]
+        pub scrolled_window: TemplateChild<gtk::ScrolledWindow>,
+
+        #[template_child]
+        pub user_name: TemplateChild<gtk::Label>,
+
+        #[template_child]
+        pub user_playlists: TemplateChild<gtk::FlowBox>,
+    }
+
+    #[glib::object_subclass]
+    impl ObjectSubclass for UserDetailsWidget {
+        const NAME: &'static str = "UserDetailsWidget";
+        type Type = super::UserDetailsWidget;
+        type ParentType = gtk::Box;
+
+        fn class_init(klass: &mut Self::Class) {
+            Self::bind_template(klass);
+        }
+
+        fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
+            obj.init_template();
+        }
+    }
+
+    impl ObjectImpl for UserDetailsWidget {}
+    impl WidgetImpl for UserDetailsWidget {}
+    impl BoxImpl for UserDetailsWidget {}
+}
+
+glib::wrapper! {
+    pub struct UserDetailsWidget(ObjectSubclass<imp::UserDetailsWidget>) @extends gtk::Widget, gtk::Box;
 }
 
 impl UserDetailsWidget {
     fn new() -> Self {
         screen_add_css_provider(resource!("/components/user_details.css"));
-        Self::from_resource(resource!("/components/user_details.ui")).unwrap()
+        glib::Object::new(&[]).expect("Failed to create an instance of UserDetailsWidget")
+    }
+
+    fn widget(&self) -> &imp::UserDetailsWidget {
+        imp::UserDetailsWidget::from_instance(self)
+    }
+
+    fn set_user_name(&self, name: &str) {
+        let context = self.style_context();
+        context.add_class("user__loaded");
+        self.widget().user_name.set_text(name);
+    }
+
+    fn connect_bottom_edge<F>(&self, f: F)
+    where
+        F: Fn() + 'static,
+    {
+        self.widget()
+            .scrolled_window
+            .connect_edge_reached(move |_, pos| {
+                if let gtk::PositionType::Bottom = pos {
+                    f()
+                }
+            });
+    }
+
+    fn bind_user_playlists<F>(&self, worker: Worker, store: &ListStore<AlbumModel>, on_pressed: F)
+    where
+        F: Fn(&String) + Clone + 'static,
+    {
+        self.widget()
+            .user_playlists
+            .bind_model(Some(store.unsafe_store()), move |item| {
+                wrap_flowbox_item(item, |item: &AlbumModel| {
+                    let f = on_pressed.clone();
+                    let album = AlbumWidget::for_model(item, worker.clone());
+                    album.connect_album_pressed(clone!(@weak item => move |_| {
+                        if let Some(id) = item.uri().as_ref() {
+                            f(id);
+                        }
+                    }));
+                    album
+                })
+            });
     }
 }
 
@@ -36,27 +113,16 @@ impl UserDetails {
         let widget = UserDetailsWidget::new();
         let model = Rc::new(model);
 
-        widget
-            .root
-            .connect_edge_reached(clone!(@weak model => move |_, pos| {
-                if pos == gtk::PositionType::Bottom {
-                    let _ = model.load_more();
-                }
-            }));
+        widget.connect_bottom_edge(clone!(@weak model => move || {
+            model.load_more();
+        }));
 
         if let Some(store) = model.get_list_store() {
-            widget.user_playlists.bind_model(
-                Some(store.unsafe_store()),
-                clone!(@weak model => @default-panic, move |item| {
-                    wrap_flowbox_item(item, |item: &AlbumModel| {
-                        let album = AlbumWidget::for_model(item, worker.clone());
-                        album.connect_album_pressed(clone!(@weak model, @weak item => move |_| {
-                            if let Some(id) = item.uri().as_ref() {
-                                model.open_playlist(id);
-                            }
-                        }));
-                        album
-                    })
+            widget.bind_user_playlists(
+                worker,
+                &*store,
+                clone!(@weak model => move |uri| {
+                    model.open_playlist(uri);
                 }),
             );
         }
@@ -66,16 +132,14 @@ impl UserDetails {
 
     fn update_details(&self) {
         if let Some(name) = self.model.get_user_name() {
-            let context = self.widget.root.style_context();
-            context.add_class("user__loaded");
-            self.widget.user_name.set_text(&name);
+            self.widget.set_user_name(&name);
         }
     }
 }
 
 impl Component for UserDetails {
     fn get_root_widget(&self) -> &gtk::Widget {
-        self.widget.root.upcast_ref()
+        self.widget.as_ref()
     }
 }
 

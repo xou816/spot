@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk" version="4.0"/>
-  <object class="GtkBox" id="root">
+  <template class="NowPlayingWidget" parent="GtkBox">
     <property name="orientation">vertical</property>
     <child>
       <object class="GtkBox">
@@ -56,5 +56,5 @@
     <style>
       <class name="now_playing"/>
     </style>
-  </object>
+  </template>
 </interface>

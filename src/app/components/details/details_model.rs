@@ -173,7 +173,11 @@ impl PlaylistModel for DetailsModel {
         let menu = gio::Menu::new();
         for artist in song.artists.iter() {
             menu.append(
-                Some(&format!("{} {}", *labels::MORE_FROM, artist.name)),
+                Some(&format!(
+                    "{} {}",
+                    *labels::MORE_FROM,
+                    glib::markup_escape_text(&artist.name)
+                )),
                 Some(&format!("song.view_artist_{}", artist.id)),
             );
         }

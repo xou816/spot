@@ -1,5 +1,6 @@
-use gladis::Gladis;
 use gtk::prelude::*;
+use gtk::subclass::prelude::*;
+use gtk::CompositeTemplate;
 use std::rc::Rc;
 
 use crate::app::components::{screen_add_css_provider, Component, EventListener, Playlist};
@@ -7,17 +8,61 @@ use crate::app::{state::PlaybackEvent, AppEvent};
 
 use super::NowPlayingModel;
 
-#[derive(Clone, Gladis)]
-struct NowPlayingWidget {
-    root: gtk::Widget,
-    listbox: gtk::ListBox,
-    shuffle: gtk::Button,
+mod imp {
+
+    use super::*;
+
+    #[derive(Debug, Default, CompositeTemplate)]
+    #[template(resource = "/dev/alextren/Spot/components/now_playing.ui")]
+    pub struct NowPlayingWidget {
+        #[template_child]
+        pub listbox: TemplateChild<gtk::ListBox>,
+
+        #[template_child]
+        pub shuffle: TemplateChild<gtk::Button>,
+    }
+
+    #[glib::object_subclass]
+    impl ObjectSubclass for NowPlayingWidget {
+        const NAME: &'static str = "NowPlayingWidget";
+        type Type = super::NowPlayingWidget;
+        type ParentType = gtk::Box;
+
+        fn class_init(klass: &mut Self::Class) {
+            Self::bind_template(klass);
+        }
+
+        fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
+            obj.init_template();
+        }
+    }
+
+    impl ObjectImpl for NowPlayingWidget {}
+    impl WidgetImpl for NowPlayingWidget {}
+    impl BoxImpl for NowPlayingWidget {}
+}
+
+glib::wrapper! {
+    pub struct NowPlayingWidget(ObjectSubclass<imp::NowPlayingWidget>) @extends gtk::Widget, gtk::Box;
 }
 
 impl NowPlayingWidget {
     fn new() -> Self {
         screen_add_css_provider(resource!("/components/now_playing.css"));
-        Self::from_resource(resource!("/components/now_playing.ui")).unwrap()
+        glib::Object::new(&[]).expect("Failed to create an instance of NowPlayingWidget")
+    }
+
+    fn songlist_widget(&self) -> &gtk::ListBox {
+        imp::NowPlayingWidget::from_instance(self).listbox.as_ref()
+    }
+
+    fn connect_shuffle<F>(&self, f: F)
+    where
+        F: Fn() + 'static,
+    {
+        imp::NowPlayingWidget::from_instance(self)
+            .shuffle
+            .connect_clicked(move |_| f());
     }
 }
 
@@ -31,13 +76,11 @@ impl NowPlaying {
     pub fn new(model: Rc<NowPlayingModel>) -> Self {
         let widget = NowPlayingWidget::new();
 
-        widget
-            .shuffle
-            .connect_clicked(clone!(@weak model => move |_| {
-                model.toggle_shuffle();
-            }));
+        widget.connect_shuffle(clone!(@weak model => move || {
+            model.toggle_shuffle();
+        }));
 
-        let playlist = Playlist::new(widget.listbox.clone(), model.clone());
+        let playlist = Playlist::new(widget.songlist_widget().clone(), model.clone());
 
         Self {
             widget,
@@ -49,7 +92,7 @@ impl NowPlaying {
 
 impl Component for NowPlaying {
     fn get_root_widget(&self) -> &gtk::Widget {
-        &self.widget.root
+        &self.widget.upcast_ref()
     }
 
     fn get_children(&mut self) -> Option<&mut Vec<Box<dyn EventListener>>> {

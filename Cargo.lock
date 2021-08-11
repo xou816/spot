@@ -1011,22 +1011,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gladis"
-version = "0.4.1"
-dependencies = [
- "gladis_proc_macro",
- "gtk4",
-]
-
-[[package]]
-name = "gladis_proc_macro"
-version = "0.4.1"
-dependencies = [
- "quote",
- "syn",
-]
-
-[[package]]
 name = "glib"
 version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2999,7 +2983,6 @@ dependencies = [
  "gdk4",
  "gettext-rs",
  "gio",
- "gladis",
  "glib",
  "gtk4",
  "isahc",

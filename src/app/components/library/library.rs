@@ -1,10 +1,10 @@
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
-
 use std::rc::Rc;
 
 use super::LibraryModel;
+use crate::app::components::utils::wrap_flowbox_item;
 use crate::app::components::{AlbumWidget, Component, EventListener};
 use crate::app::dispatch::Worker;
 use crate::app::models::AlbumModel;
@@ -74,19 +74,16 @@ impl LibraryWidget {
         imp::LibraryWidget::from_instance(self).flowbox.bind_model(
             Some(store.unsafe_store()),
             move |item| {
-                let album_model = item.downcast_ref::<AlbumModel>().unwrap();
-                let child = gtk::FlowBoxChild::new();
-                let album = AlbumWidget::for_model(album_model, worker.clone());
-
-                let f = on_album_pressed.clone();
-                album.connect_album_pressed(clone!(@weak album_model => move |_| {
-                    if let Some(id) = album_model.uri().as_ref() {
-                        f(id);
-                    }
-                }));
-
-                child.set_child(Some(&album));
-                child.upcast::<gtk::Widget>()
+                wrap_flowbox_item(item, |album_model| {
+                    let f = on_album_pressed.clone();
+                    let album = AlbumWidget::for_model(album_model, worker.clone());
+                    album.connect_album_pressed(clone!(@weak album_model => move |_| {
+                        if let Some(id) = album_model.uri().as_ref() {
+                            f(id);
+                        }
+                    }));
+                    album
+                })
             },
         );
     }
