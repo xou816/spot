@@ -69,18 +69,7 @@ impl Details {
             info.hide();
             glib::signal::Inhibit(true)
         });
-        widget
-            .album_info
-            .connect_clicked(clone!(@weak model => move |_| {
-               if let Some(info) = model.get_album_detailed_info() {
-                    if info.id != model.id {
-                        model.load_album_detailed_info();
-                    }
-                } else {
-                    model.load_album_detailed_info();
-                }
-                info_window.show();
-            }));
+        widget.album_info.connect_clicked(move |_| info_window.show());
 
         let info = widget.info_window.clone();
         widget.info_close.connect_clicked(move |_| info.hide());
@@ -134,54 +123,52 @@ impl Details {
 
     fn update_dialog(&mut self) {
         if let Some(album) = self.model.get_album_info() {
-            if let Some(info) = self.model.get_album_detailed_info() {
-                let widget = self.widget.clone();
-                if let Some(art) = album.art.clone() {
-                    self.worker.send_local_task(async move {
-                        let pixbuf = ImageLoader::new()
-                            .load_remote(&art[..], "jpg", 200, 200)
-                            .await;
-                        widget.info_art.set_from_pixbuf(pixbuf.as_ref());
-                        widget.set_loaded();
-                    });
-                } else {
+            let widget = self.widget.clone();
+            if let Some(art) = album.art.clone() {
+                self.worker.send_local_task(async move {
+                    let pixbuf = ImageLoader::new()
+                        .load_remote(&art[..], "jpg", 200, 200)
+                        .await;
+                    widget.info_art.set_from_pixbuf(pixbuf.as_ref());
                     widget.set_loaded();
-                }
-                self.widget.info_album_artist.set_text(&format!(
-                    "{} {} {}",
-                    album.title,
-                    gettext("by"),
-                    album.artists_name()
-                ));
-
-                self.widget
-                    .info_label
-                    .set_text(&format!("{}: {}", gettext("Label"), info.label));
-
-                self.widget.info_release.set_text(&format!(
-                    "{}: {}",
-                    gettext("Released"),
-                    info.release_date
-                ));
-
-                self.widget.info_tracks.set_text(&format!(
-                    "{}: {}",
-                    gettext("Tracks"),
-                    album.songs.len()
-                ));
-
-                self.widget.info_duration.set_text(&format!(
-                    "{}: {}",
-                    gettext("Duration"),
-                    album.formatted_time()
-                ));
-
-                self.widget.info_copyright.set_text(&format!(
-                    "{}: {}",
-                    ngettext("Copyright", "Copyrights", info.copyrights.len() as u32),
-                    info.copyrights()
-                ));
+                });
+            } else {
+                widget.set_loaded();
             }
+            self.widget.info_album_artist.set_text(&format!(
+                "{} {} {}",
+                album.title,
+                gettext("by"),
+                album.artists_name()
+            ));
+
+            self.widget
+                .info_label
+                .set_text(&format!("{}: {}", gettext("Label"), album.label));
+
+            self.widget.info_release.set_text(&format!(
+                "{}: {}",
+                gettext("Released"),
+                album.release_date
+            ));
+
+            self.widget.info_tracks.set_text(&format!(
+                "{}: {}",
+                gettext("Tracks"),
+                album.songs.len()
+            ));
+
+            self.widget.info_duration.set_text(&format!(
+                "{}: {}",
+                gettext("Duration"),
+                album.formatted_time()
+            ));
+
+            self.widget.info_copyright.set_text(&format!(
+                "{}: {}",
+                ngettext("Copyright", "Copyrights", album.copyrights.len() as u32),
+                album.copyrights()
+            ));
         }
     }
 }
@@ -204,8 +191,6 @@ impl EventListener for Details {
             {
                 self.update_details();
                 self.update_liked();
-            }
-            AppEvent::BrowserEvent(BrowserEvent::AlbumInfoIsLoaded(id)) if id == &self.model.id => {
                 self.update_dialog();
             }
             AppEvent::BrowserEvent(BrowserEvent::AlbumSaved(id))

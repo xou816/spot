@@ -10,8 +10,6 @@ use std::str::FromStr;
 use std::sync::Mutex;
 use thiserror::Error;
 
-use crate::app::models::AlbumInfo;
-
 pub use super::api_models::*;
 use super::cache::CacheError;
 
@@ -320,12 +318,6 @@ impl SpotifyClient {
     }
 
     pub(crate) fn get_album(&self, id: &str) -> SpotifyRequest<'_, (), Album> {
-        self.request()
-            .method(Method::GET)
-            .uri(format!("/v1/albums/{}", id), None)
-    }
-
-    pub(crate) fn get_album_info(&self, id: &str) -> SpotifyRequest<'_, (), AlbumInfo> {
         self.request()
             .method(Method::GET)
             .uri(format!("/v1/albums/{}", id), None)

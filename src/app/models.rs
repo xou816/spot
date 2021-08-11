@@ -2,7 +2,6 @@ use std::convert::From;
 
 pub use super::gtypes::*;
 use crate::app::components::utils::format_duration;
-use serde::Deserialize;
 
 impl From<&AlbumDescription> for AlbumModel {
     fn from(album: &AlbumDescription) -> Self {
@@ -76,6 +75,9 @@ pub struct AlbumDescription {
     pub artists: Vec<ArtistRef>,
     pub art: Option<String>,
     pub songs: Vec<SongDescription>,
+    pub label: String,
+    pub release_date: String,
+    pub copyrights: Vec<CopyrightRef>,
     pub is_liked: bool,
 }
 
@@ -90,15 +92,21 @@ impl AlbumDescription {
     pub fn formatted_time(&self) -> String {
         let duration: u32 = self.songs.iter().map(|song| song.duration).sum();
         let duration = std::time::Duration::from_millis(duration as u64);
-        let millis = duration.as_millis() % 1000;
         let seconds = duration.as_secs() % 60;
         let minutes = (duration.as_secs() / 60) % 60;
         let hours = (duration.as_secs() / 60) / 60;
         if hours > 0 {
-            format!("{}:{:02}:{:02} + {}ms", hours, minutes, seconds, millis)
+            format!("{}:{:02}:{:02}", hours, minutes, seconds)
         } else {
-            format!("{}:{:02} + {}ms", minutes, seconds, millis)
+            format!("{}:{:02}", minutes, seconds)
         }
+    }
+    pub fn copyrights(&self) -> String {
+        self.copyrights
+            .iter()
+            .map(|c| format!("[{}] {}", c.type_, c.text))
+            .collect::<Vec<String>>()
+            .join(",\n ")
     }
 }
 
@@ -110,29 +118,10 @@ impl PartialEq for AlbumDescription {
 
 impl Eq for AlbumDescription {}
 
-#[derive(Deserialize, Debug, Clone)]
-pub struct AlbumInfo {
-    pub id: String,
-    pub label: String,
-    pub release_date: String,
-    pub copyrights: Vec<Copyright>,
-}
-
-#[derive(Deserialize, Debug, Clone)]
-pub struct Copyright {
+#[derive(Clone, Debug)]
+pub struct CopyrightRef {
     pub text: String,
-    #[serde(alias = "type")]
     pub type_: char,
-}
-
-impl AlbumInfo {
-    pub fn copyrights(&self) -> String {
-        self.copyrights
-            .iter()
-            .map(|c| format!("[{}] {}", c.type_, c.text))
-            .collect::<Vec<String>>()
-            .join(",\n ")
-    }
 }
 
 #[derive(Clone, Debug)]

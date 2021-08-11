@@ -40,7 +40,6 @@ pub struct DetailsState {
     pub id: String,
     pub name: ScreenName,
     pub content: Option<AlbumDescription>,
-    pub info: Option<AlbumInfo>,
 }
 
 impl DetailsState {
@@ -49,7 +48,6 @@ impl DetailsState {
             id: id.clone(),
             name: ScreenName::AlbumDetails(id),
             content: None,
-            info: None,
         }
     }
 }
@@ -64,11 +62,6 @@ impl UpdatableState for DetailsState {
                 let id = album.id.clone();
                 self.content = Some(album);
                 vec![BrowserEvent::AlbumDetailsLoaded(id)]
-            }
-            BrowserAction::SetAlbumInfo(info) if info.id == self.id => {
-                let id = info.id.clone();
-                self.info = Some(info);
-                vec![BrowserEvent::AlbumInfoIsLoaded(id)]
             }
             BrowserAction::SaveAlbum(album) if album.id == self.id => {
                 let id = album.id;
@@ -405,33 +398,6 @@ mod tests {
         }));
 
         let next = artist_state.next_page;
-        assert_eq!(None, next.next_offset);
-    }
-
-    #[test]
-    fn test_next_page_more() {
-        let fake_album = AlbumDescription {
-            id: "".to_owned(),
-            title: "".to_owned(),
-            artists: vec![],
-            art: Some("".to_owned()),
-            songs: vec![],
-            is_liked: false,
-        };
-        let mut artist_state = ArtistState::new("id".to_owned());
-        artist_state.update_with(BrowserAction::SetArtistDetails(ArtistDescription {
-            id: "".to_owned(),
-            name: "Foo".to_owned(),
-            albums: (0..20).map(|_| fake_album.clone()).collect(),
-            top_tracks: vec![],
-        }));
-
-        let next = &artist_state.next_page;
-        assert_eq!(Some(20), next.next_offset);
-
-        artist_state.update_with(BrowserAction::AppendArtistReleases(vec![]));
-
-        let next = &artist_state.next_page;
         assert_eq!(None, next.next_offset);
     }
 }
