@@ -75,9 +75,11 @@ impl Details {
             }
             glib::signal::Inhibit(false)
         });
-        widget
-            .album_info
-            .connect_clicked(move |_| info_window.show());
+        widget.album_info.connect_clicked(move |_| {
+            info_window.set_resizable(false);
+            info_window.show();
+            info_window.set_resizable(true);
+        });
 
         let info = widget.info_window.clone();
         widget.info_close.connect_clicked(move |_| info.hide());
