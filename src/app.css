@@ -38,3 +38,7 @@
 headerbar.selection-mode {
   background-color: @theme_selected_bg_color;
 }
+
+button.tool, menubutton.tool {
+  -gtk-icon-size: 25px;
+}

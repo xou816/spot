@@ -33,7 +33,9 @@ impl AddSelectionButton {
             .visible(true)
             .icon_name("list-add-symbolic")
             .build();
-        button.style_context().add_class("osd");
+        let ctx = button.style_context();
+        ctx.add_class("osd");
+        ctx.add_class("tool");
 
         let action_group = SimpleActionGroup::new();
         button.insert_action_group("add_to", Some(&action_group));
@@ -78,6 +80,7 @@ impl AddSelectionButton {
 
         let popover = gtk::PopoverMenu::from_model(Some(&menu));
         popover.style_context().add_class("osd");
+        popover.set_position(gtk::PositionType::Top);
         button.set_popover(Some(&popover));
         gtk::MenuButton::set_direction(&button, gtk::ArrowType::Up);
 
@@ -102,7 +105,9 @@ impl SelectionButton {
             .visible(true)
             .icon_name(tool.icon_name())
             .build();
-        button.style_context().add_class("osd");
+        let ctx = button.style_context();
+        ctx.add_class("osd");
+        ctx.add_class("tool");
         button.connect_clicked(clone!(@weak model => move |_| {
             let selection = model.enabled_selection();
             if let Some(selection) = selection {
