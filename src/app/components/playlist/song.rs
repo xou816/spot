@@ -100,7 +100,20 @@ impl SongWidget {
         }
     }
 
-    fn bind(&self, model: &SongModel) {
+    fn set_selected(&self, is_selected: bool) {
+        imp::SongWidget::from_instance(self)
+            .song_checkbox
+            .set_active(is_selected);
+        let song_class = "song-selected";
+        let context = self.style_context();
+        if is_selected {
+            context.add_class(song_class);
+        } else {
+            context.remove_class(song_class);
+        }
+    }
+
+    pub fn bind(&self, model: &SongModel) {
         let widget = imp::SongWidget::from_instance(self);
         model
             .bind_property("index", &*widget.song_index, "label")
@@ -126,9 +139,8 @@ impl SongWidget {
             _self.set_playing(song.get_playing());
         }));
 
-        let checkbox = &*widget.song_checkbox;
-        model.connect_selected_local(clone!(@weak checkbox => move |song| {
-            checkbox.set_active(song.get_selected());
+        model.connect_selected_local(clone!(@weak self as _self => move |song| {
+            _self.set_selected(song.get_selected());
         }));
     }
 }

@@ -24,7 +24,7 @@ mod imp {
         pub album_label: TemplateChild<gtk::Label>,
 
         #[template_child]
-        pub album_tracks: TemplateChild<gtk::ListBox>,
+        pub album_tracks: TemplateChild<gtk::ListView>,
 
         #[template_child]
         pub album_art: TemplateChild<gtk::Image>,
@@ -90,7 +90,7 @@ impl AlbumDetailsWidget {
         });
     }
 
-    fn album_tracks_widget(&self) -> &gtk::ListBox {
+    fn album_tracks_widget(&self) -> &gtk::ListView {
         self.widget().album_tracks.as_ref()
     }
 

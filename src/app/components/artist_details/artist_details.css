@@ -1,10 +1,10 @@
-list.artist__top-tracks {
+listview.artist__top-tracks {
   padding: 8px;
   border-radius: 8px;
   margin: 8px;
 }
 
-list.artist__top-tracks row {
+listview.artist__top-tracks row {
   border-radius: 4px;
 }
 

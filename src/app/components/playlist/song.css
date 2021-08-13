@@ -59,3 +59,17 @@ row {
 row:hover .song__menu--enabled, .song__menu--enabled:checked {
   opacity: 1;
 }
+
+.song check {
+  filter: opacity(1);
+}
+
+/* copied from adwaita */
+
+.playlist row:hover {
+  background-color: alpha(currentColor, 0.07);
+}
+
+.playlist row:active {
+  background-color: alpha(currentColor, 0.16);
+}

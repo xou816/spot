@@ -25,7 +25,7 @@ mod imp {
         pub artist_name: TemplateChild<gtk::Label>,
 
         #[template_child]
-        pub top_tracks: TemplateChild<gtk::ListBox>,
+        pub top_tracks: TemplateChild<gtk::ListView>,
 
         #[template_child]
         pub artist_releases: TemplateChild<gtk::FlowBox>,
@@ -65,7 +65,7 @@ impl ArtistDetailsWidget {
         imp::ArtistDetailsWidget::from_instance(self)
     }
 
-    fn top_tracks_widget(&self) -> &gtk::ListBox {
+    fn top_tracks_widget(&self) -> &gtk::ListView {
         self.widget().top_tracks.as_ref()
     }
 

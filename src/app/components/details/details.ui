@@ -99,12 +99,10 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkListBox" id="album_tracks">
+                      <object class="GtkListView" id="album_tracks">
                         <property name="valign">start</property>
                         <property name="margin-start">8</property>
                         <property name="margin-end">8</property>
-                        <property name="selection-mode">none</property>
-                        <property name="activate-on-single-click">0</property>
                         <style>
                           <class name="details__songs"/>
                         </style>

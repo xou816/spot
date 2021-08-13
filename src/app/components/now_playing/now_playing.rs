@@ -16,7 +16,7 @@ mod imp {
     #[template(resource = "/dev/alextren/Spot/components/now_playing.ui")]
     pub struct NowPlayingWidget {
         #[template_child]
-        pub listbox: TemplateChild<gtk::ListBox>,
+        pub song_list: TemplateChild<gtk::ListView>,
     }
 
     #[glib::object_subclass]
@@ -49,8 +49,10 @@ impl NowPlayingWidget {
         glib::Object::new(&[]).expect("Failed to create an instance of NowPlayingWidget")
     }
 
-    fn songlist_widget(&self) -> &gtk::ListBox {
-        imp::NowPlayingWidget::from_instance(self).listbox.as_ref()
+    fn song_list_widget(&self) -> &gtk::ListView {
+        imp::NowPlayingWidget::from_instance(self)
+            .song_list
+            .as_ref()
     }
 }
 
@@ -64,7 +66,7 @@ impl NowPlaying {
     pub fn new(model: Rc<NowPlayingModel>) -> Self {
         let widget = NowPlayingWidget::new();
 
-        let playlist = Playlist::new(widget.songlist_widget().clone(), model.clone());
+        let playlist = Playlist::new(widget.song_list_widget().clone(), model.clone());
 
         Self {
             widget,

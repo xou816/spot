@@ -28,13 +28,9 @@
     <child>
       <object class="GtkScrolledWindow">
         <property name="vexpand">1</property>
-        <property name="child">
-          <object class="GtkViewport">
-            <property name="child">
-              <object class="GtkListBox" id="listbox"/>
-            </property>
-          </object>
-        </property>
+        <child>
+          <object class="GtkListView" id="song_list"/>
+        </child>
       </object>
     </child>
     <style>

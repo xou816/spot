@@ -46,8 +46,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkListBox" id="top_tracks">
-                        <property name="selection-mode">none</property>
+                      <object class="GtkListView" id="top_tracks">
                         <style>
                           <class name="artist__top-tracks"/>
                         </style>

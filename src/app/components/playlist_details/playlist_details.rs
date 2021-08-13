@@ -30,7 +30,7 @@ mod imp {
         pub owner_button_label: TemplateChild<gtk::Label>,
 
         #[template_child]
-        pub tracks: TemplateChild<gtk::ListBox>,
+        pub tracks: TemplateChild<gtk::ListView>,
 
         #[template_child]
         pub art: TemplateChild<gtk::Image>,
@@ -70,7 +70,7 @@ impl PlaylistDetailsWidget {
         imp::PlaylistDetailsWidget::from_instance(self)
     }
 
-    fn playlist_tracks_widget(&self) -> &gtk::ListBox {
+    fn playlist_tracks_widget(&self) -> &gtk::ListView {
         self.widget().tracks.as_ref()
     }
 

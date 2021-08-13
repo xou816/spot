@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use gtk::prelude::*;
 use std::cell::Cell;
 use std::rc::Rc;
