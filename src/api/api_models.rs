@@ -354,7 +354,7 @@ impl From<Album> for AlbumDescription {
         let songs: Vec<SongDescription> = album.clone().into();
         let art = album.best_image_for_width(200).map(|i| i.url.clone());
         let mut copyrights = vec![];
-        album.copyrights.map(|c| {
+        if let Some(c) = album.copyrights {
             copyrights = c
                 .iter()
                 .map(|c| CopyrightRef {
@@ -362,17 +362,20 @@ impl From<Album> for AlbumDescription {
                     type_: c.type_,
                 })
                 .collect::<Vec<CopyrightRef>>();
-        });
+        };
+
         Self {
             id: album.id,
             title: album.name,
             artists,
             art,
             songs,
-            label: album.label.unwrap_or("No label provided".to_owned()),
+            label: album
+                .label
+                .unwrap_or_else(|| "No label provided".to_owned()),
             release_date: album
                 .release_date
-                .unwrap_or("No release date provided".to_owned()),
+                .unwrap_or_else(|| "No release date provided".to_owned()),
             copyrights,
             is_liked: false,
         }
