@@ -127,9 +127,14 @@ pub fn wrap_flowbox_item<
 
 pub fn format_duration(duration: f64) -> String {
     let seconds = (duration / 1000.0) as i32;
-    let minutes = seconds.div_euclid(60);
+    let hours = seconds.div_euclid(3600);
+    let minutes = seconds.div_euclid(60).rem_euclid(60);
     let seconds = seconds.rem_euclid(60);
-    format!("{}:{:02}", minutes, seconds)
+    if hours > 0 {
+        format!("{}:{:02}:{:02}", hours, minutes, seconds)
+    } else {
+        format!("{}:{:02}", minutes, seconds)
+    }
 }
 
 fn parent_scrolled_window(widget: &gtk::Widget) -> Option<gtk::ScrolledWindow> {

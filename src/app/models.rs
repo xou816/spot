@@ -91,15 +91,7 @@ impl AlbumDescription {
     }
     pub fn formatted_time(&self) -> String {
         let duration: u32 = self.songs.iter().map(|song| song.duration).sum();
-        let duration = std::time::Duration::from_millis(duration as u64);
-        let seconds = duration.as_secs() % 60;
-        let minutes = (duration.as_secs() / 60) % 60;
-        let hours = (duration.as_secs() / 60) / 60;
-        if hours > 0 {
-            format!("{}:{:02}:{:02}", hours, minutes, seconds)
-        } else {
-            format!("{}:{:02}", minutes, seconds)
-        }
+        format_duration(duration.into())
     }
     pub fn copyrights(&self) -> String {
         self.copyrights
