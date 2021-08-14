@@ -19,6 +19,7 @@ struct DetailsWidget {
     pub like_button: gtk::Button,
     pub artist_button: gtk::LinkButton,
     pub artist_button_label: gtk::Label,
+    pub overlay: gtk::Overlay,
     pub album_info: gtk::Button,
     info_window: libhandy::Window,
     info_close: gtk::Button,
@@ -64,6 +65,9 @@ impl Details {
                 model.toggle_save_album();
             }));
 
+        // Place the icon button above the album_art
+        widget.overlay.add_overlay(&widget.album_info);
+
         let info_window = widget.info_window.clone();
         info_window.connect_delete_event(|info, _| {
             info.hide();
@@ -76,9 +80,12 @@ impl Details {
             glib::signal::Inhibit(false)
         });
 
-        widget
-            .album_info
-            .connect_clicked(move |_| info_window.show());
+        widget.album_info.connect_clicked(move |_| {
+            // Stop from resizing when showing
+            info_window.set_resizable(false);
+            info_window.show();
+            info_window.set_resizable(true);
+        });
 
         let info = widget.info_window.clone();
         widget.info_close.connect_clicked(move |_| info.hide());
