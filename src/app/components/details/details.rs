@@ -19,7 +19,6 @@ struct DetailsWidget {
     pub like_button: gtk::Button,
     pub artist_button: gtk::LinkButton,
     pub artist_button_label: gtk::Label,
-    pub overlay: gtk::Overlay,
     pub album_info: gtk::Button,
     info_window: libhandy::Window,
     info_close: gtk::Button,
@@ -65,30 +64,30 @@ impl Details {
                 model.toggle_save_album();
             }));
 
-        // Place the icon button above the album_art
-        widget.overlay.add_overlay(&widget.album_info);
-
         let info_window = widget.info_window.clone();
-        info_window.connect_delete_event(|info, _| {
-            info.hide();
+        info_window.connect_delete_event(|info_window, _| {
+            info_window.hide();
             glib::signal::Inhibit(true)
         });
-        info_window.connect_key_press_event(|info, event| {
+        info_window.connect_key_press_event(|info_window, event| {
             if let gdk::keys::constants::Escape = event.keyval() {
-                info.hide()
+                info_window.hide()
             }
             glib::signal::Inhibit(false)
         });
 
-        widget.album_info.connect_clicked(move |_| {
-            // Stop from resizing when showing
-            info_window.set_resizable(false);
-            info_window.show();
-            info_window.set_resizable(true);
-        });
+        widget
+            .album_info
+            .connect_clicked(clone!(@weak info_window => move |_| {
+                // Stop from resizing when showing
+                info_window.set_resizable(false);
+                info_window.show();
+                info_window.set_resizable(true);
+            }));
 
-        let info = widget.info_window.clone();
-        widget.info_close.connect_clicked(move |_| info.hide());
+        widget
+            .info_close
+            .connect_clicked(clone!(@weak info_window => move |_| info_window.hide()));
 
         Self {
             model,
@@ -146,11 +145,9 @@ impl Details {
                         .load_remote(&art[..], "jpg", 200, 200)
                         .await;
                     widget.info_art.set_from_pixbuf(pixbuf.as_ref());
-                    widget.set_loaded();
                 });
-            } else {
-                widget.set_loaded();
             }
+
             self.widget.info_album_artist.set_text(&format!(
                 "{} {} {}",
                 album.title,
@@ -160,29 +157,29 @@ impl Details {
 
             self.widget
                 .info_label
-                .set_text(&format!("{}: {}", gettext("Label"), album.label));
+                .set_text(&format!("{} {}", gettext("Label:"), album.label));
 
             self.widget.info_release.set_text(&format!(
-                "{}: {}",
-                gettext("Released"),
+                "{} {}",
+                gettext("Released:"),
                 album.release_date
             ));
 
             self.widget.info_tracks.set_text(&format!(
-                "{}: {}",
-                gettext("Tracks"),
+                "{} {}",
+                gettext("Tracks:"),
                 album.songs.len()
             ));
 
             self.widget.info_duration.set_text(&format!(
-                "{}: {}",
-                gettext("Duration"),
+                "{} {}",
+                gettext("Duration:"),
                 album.formatted_time()
             ));
 
             self.widget.info_copyright.set_text(&format!(
-                "{}: {}",
-                ngettext("Copyright", "Copyrights", album.copyrights.len() as u32),
+                "{} {}",
+                ngettext("Copyright:", "Copyrights:", album.copyrights.len() as u32),
                 album.copyrights()
             ));
         }

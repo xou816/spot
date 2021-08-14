@@ -4,33 +4,10 @@
   <requires lib="gtk+" version="3.24"/>
   <requires lib="libhandy" version="1.0"/>
   <!-- interface-css-provider-path details.css -->
-  <object class="GtkButton" id="album_info">
-    <property name="width-request">35</property>
-    <property name="height-request">35</property>
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="focus-on-click">False</property>
-    <property name="receives-default">True</property>
-    <property name="halign">start</property>
-    <property name="valign">start</property>
-    <property name="relief">none</property>
-    <child>
-      <object class="GtkImage">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="icon-name">preferences-system-details-symbolic</property>
-      </object>
-    </child>
-    <style>
-      <class name="circular"/>
-    </style>
-  </object>
   <object class="HdyWindow" id="info_window">
     <property name="can-focus">False</property>
     <property name="modal">True</property>
-    <property name="window-position">center-always</property>
     <property name="default-width">250</property>
-    <property name="gravity">center</property>
     <child>
       <object class="HdyWindowHandle">
         <property name="visible">True</property>
@@ -47,8 +24,7 @@
                 <property name="focus-on-click">False</property>
                 <property name="receives-default">True</property>
                 <property name="halign">end</property>
-                <property name="margin-end">5</property>
-                <property name="margin-top">5</property>
+                <property name="margin">5</property>
                 <property name="relief">none</property>
                 <child>
                   <object class="GtkImage">
@@ -126,7 +102,7 @@
                                     <property name="can-focus">False</property>
                                     <property name="halign">center</property>
                                     <property name="valign">center</property>
-                                    <property name="label" translatable="yes">Album by Artist</property>
+                                    <property name="label">Album by Artist</property>
                                     <property name="justify">center</property>
                                     <property name="wrap">True</property>
                                     <property name="wrap-mode">word-char</property>
@@ -145,7 +121,7 @@
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
                                     <property name="margin-top">5</property>
-                                    <property name="label" translatable="yes">Label</property>
+                                    <property name="label">Label</property>
                                     <property name="justify">center</property>
                                     <property name="wrap">True</property>
                                     <property name="wrap-mode">word-char</property>
@@ -160,7 +136,7 @@
                                   <object class="GtkLabel" id="info_release">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
-                                    <property name="label" translatable="yes">Release Date</property>
+                                    <property name="label">Release Date</property>
                                     <property name="justify">center</property>
                                     <property name="wrap">True</property>
                                     <property name="wrap-mode">word-char</property>
@@ -175,7 +151,7 @@
                                   <object class="GtkLabel" id="info_tracks">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
-                                    <property name="label" translatable="yes">Tracks</property>
+                                    <property name="label">Tracks</property>
                                     <property name="justify">center</property>
                                     <property name="wrap">True</property>
                                     <property name="wrap-mode">word-char</property>
@@ -190,7 +166,7 @@
                                   <object class="GtkLabel" id="info_duration">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
-                                    <property name="label" translatable="yes">Duration</property>
+                                    <property name="label">Duration</property>
                                     <property name="justify">center</property>
                                     <property name="wrap">True</property>
                                     <property name="wrap-mode">word-char</property>
@@ -205,7 +181,7 @@
                                   <object class="GtkLabel" id="info_copyright">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
-                                    <property name="label" translatable="yes">Copyright</property>
+                                    <property name="label">Copyright</property>
                                     <property name="justify">center</property>
                                     <property name="wrap">True</property>
                                     <property name="wrap-mode">word-char</property>
@@ -278,7 +254,7 @@
                     <property name="margin-bottom">8</property>
                     <property name="spacing">16</property>
                     <child>
-                      <object class="GtkOverlay" id="overlay">
+                      <object class="GtkOverlay">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="halign">start</property>
@@ -299,6 +275,33 @@
                           <packing>
                             <property name="index">-1</property>
                           </packing>
+                        </child>
+                        <child type="overlay">
+                          <object class="GtkButton" id="album_info">
+                            <property name="width-request">32</property>
+                            <property name="height-request">32</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="focus-on-click">False</property>
+                            <property name="receives-default">True</property>
+                            <property name="halign">end</property>
+                            <property name="valign">end</property>
+                            <property name="margin">5</property>
+                            <property name="relief">half</property>
+                            <child>
+                              <object class="GtkImage">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="pixel-size">15</property>
+                                <property name="icon-name">preferences-system-details-symbolic</property>
+                              </object>
+                            </child>
+                            <style>
+                              <class name="circular"/>
+                              <class name="osd"/>
+                              <class name="info_btn"/>
+                            </style>
+                          </object>
                         </child>
                       </object>
                       <packing>

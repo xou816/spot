@@ -38,3 +38,7 @@ list.details__songs {
 list.details__songs row {
   border-radius: 4px;
 }
+
+.info_btn {
+  padding: 0;
+}
