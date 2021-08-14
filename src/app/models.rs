@@ -94,6 +94,9 @@ impl AlbumDescription {
         format_duration(duration.into())
     }
     pub fn copyrights(&self) -> String {
+        if self.copyrights.is_empty() {
+            return "No copyrights provided".to_owned();
+        }
         self.copyrights
             .iter()
             .map(|c| format!("[{}] {}", c.type_, c.text))

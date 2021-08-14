@@ -147,9 +147,9 @@ pub struct Album {
     pub tracks: Option<Page<TrackItem>>,
     pub artists: Vec<Artist>,
     pub name: String,
-    pub label: String,
-    pub release_date: String,
-    pub copyrights: Vec<Copyright>,
+    pub label: Option<String>,
+    pub release_date: Option<String>,
+    pub copyrights: Option<Vec<Copyright>>,
     pub images: Vec<Image>,
 }
 
@@ -353,22 +353,26 @@ impl From<Album> for AlbumDescription {
             .collect::<Vec<ArtistRef>>();
         let songs: Vec<SongDescription> = album.clone().into();
         let art = album.best_image_for_width(200).map(|i| i.url.clone());
-        let copyrights = album
-            .copyrights
-            .iter()
-            .map(|c| CopyrightRef {
-                text: c.text.clone(),
-                type_: c.type_,
-            })
-            .collect::<Vec<CopyrightRef>>();
+        let mut copyrights = vec![];
+        album.copyrights.map(|c| {
+            copyrights = c
+                .iter()
+                .map(|c| CopyrightRef {
+                    text: c.text.clone(),
+                    type_: c.type_,
+                })
+                .collect::<Vec<CopyrightRef>>();
+        });
         Self {
             id: album.id,
             title: album.name,
             artists,
             art,
             songs,
-            label: album.label,
-            release_date: album.release_date,
+            label: album.label.unwrap_or("No label provided".to_owned()),
+            release_date: album
+                .release_date
+                .unwrap_or("No release date provided".to_owned()),
             copyrights,
             is_liked: false,
         }
