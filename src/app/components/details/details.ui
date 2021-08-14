@@ -29,6 +29,7 @@
     <property name="can-focus">False</property>
     <property name="modal">True</property>
     <property name="window-position">center-always</property>
+    <property name="default-width">250</property>
     <property name="gravity">center</property>
     <child>
       <object class="HdyWindowHandle">
@@ -74,7 +75,6 @@
                 <property name="can-focus">True</property>
                 <property name="min-content-width">150</property>
                 <property name="min-content-height">200</property>
-                <property name="propagate-natural-width">True</property>
                 <property name="propagate-natural-height">True</property>
                 <child>
                   <object class="GtkViewport">
@@ -132,7 +132,6 @@
                                     <property name="justify">center</property>
                                     <property name="wrap">True</property>
                                     <property name="wrap-mode">word-char</property>
-                                    <property name="max-width-chars">20</property>
                                     <style>
                                       <class name="details__album-label"/>
                                     </style>
@@ -152,7 +151,6 @@
                                     <property name="justify">center</property>
                                     <property name="wrap">True</property>
                                     <property name="wrap-mode">word-char</property>
-                                    <property name="max-width-chars">30</property>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
@@ -168,7 +166,6 @@
                                     <property name="justify">center</property>
                                     <property name="wrap">True</property>
                                     <property name="wrap-mode">word-char</property>
-                                    <property name="max-width-chars">30</property>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
@@ -184,7 +181,6 @@
                                     <property name="justify">center</property>
                                     <property name="wrap">True</property>
                                     <property name="wrap-mode">word-char</property>
-                                    <property name="max-width-chars">30</property>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
@@ -200,7 +196,6 @@
                                     <property name="justify">center</property>
                                     <property name="wrap">True</property>
                                     <property name="wrap-mode">word-char</property>
-                                    <property name="max-width-chars">30</property>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
@@ -216,7 +211,6 @@
                                     <property name="justify">center</property>
                                     <property name="wrap">True</property>
                                     <property name="wrap-mode">word-char</property>
-                                    <property name="max-width-chars">30</property>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
