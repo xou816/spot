@@ -73,8 +73,6 @@
               <object class="GtkScrolledWindow">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
-                <property name="min-content-width">150</property>
-                <property name="min-content-height">200</property>
                 <property name="propagate-natural-height">True</property>
                 <child>
                   <object class="GtkViewport">
