@@ -101,19 +101,19 @@ impl PartialEq for AlbumDescription {
 impl Eq for AlbumDescription {}
 
 #[derive(Clone, Debug)]
-pub struct AlbumDescriptionInfo {
+pub struct AlbumFullDescription {
     pub description: AlbumDescription,
-    pub info: AlbumInfoRef,
+    pub info: AlbumReleaseDetails,
 }
 
 #[derive(Clone, Debug)]
-pub struct AlbumInfoRef {
+pub struct AlbumReleaseDetails {
     pub label: String,
     pub release_date: String,
-    pub copyrights: Vec<CopyrightRef>,
+    pub copyrights: Vec<CopyrightDetails>,
 }
 
-impl AlbumInfoRef {
+impl AlbumReleaseDetails {
     pub fn copyrights(&self) -> String {
         self.copyrights
             .iter()
@@ -124,7 +124,7 @@ impl AlbumInfoRef {
 }
 
 #[derive(Clone, Debug)]
-pub struct CopyrightRef {
+pub struct CopyrightDetails {
     pub text: String,
     pub type_: char,
 }

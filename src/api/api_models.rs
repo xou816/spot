@@ -369,13 +369,13 @@ impl From<Album> for AlbumDescription {
     }
 }
 
-impl From<AlbumInfo> for AlbumInfoRef {
+impl From<AlbumInfo> for AlbumReleaseDetails {
     fn from(info: AlbumInfo) -> Self {
         let copyrights = info
             .copyrights
             .iter()
             .map(|c| c.clone().into())
-            .collect::<Vec<CopyrightRef>>();
+            .collect::<Vec<CopyrightDetails>>();
 
         Self {
             label: info.label,
@@ -385,7 +385,7 @@ impl From<AlbumInfo> for AlbumInfoRef {
     }
 }
 
-impl From<Copyright> for CopyrightRef {
+impl From<Copyright> for CopyrightDetails {
     fn from(copyright: Copyright) -> Self {
         Self {
             text: copyright.text,

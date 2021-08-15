@@ -39,7 +39,7 @@ impl Eq for ScreenName {}
 pub struct DetailsState {
     pub id: String,
     pub name: ScreenName,
-    pub content: Option<AlbumDescriptionInfo>,
+    pub content: Option<AlbumFullDescription>,
 }
 
 impl DetailsState {

@@ -13,7 +13,7 @@ pub enum BrowserAction {
     SetPlaylistsContent(Vec<PlaylistDescription>),
     AppendPlaylistsContent(Vec<PlaylistDescription>),
     RemoveTracksFromPlaylist(Vec<String>),
-    SetAlbumDetails(AlbumDescriptionInfo),
+    SetAlbumDetails(AlbumFullDescription),
     SetPlaylistDetails(PlaylistDescription),
     AppendPlaylistTracks(String, SongBatch),
     Search(String),
