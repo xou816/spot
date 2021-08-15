@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-14 16:49-0400\n"
+"POT-Creation-Date: 2021-08-15 03:30-0400\n"
 "PO-Revision-Date: 2021-03-19 14:31+0100\n"
 "Last-Translator: Jonasz Potoniec <jonasz.potoniec@gmail.com>\n"
 "Language-Team: \n"
@@ -19,29 +19,35 @@ msgstr ""
 "|| n%100>14) ? 1 : 2);\n"
 "X-Generator: Poedit 2.4.2\n"
 
-#: src/app/components/details/details.rs:154
+#. translators: This is a menu entry.
+#: src/app/components/details/details.rs:147
+#: src/app/components/user_menu/user_menu.rs:60
+msgid "About"
+msgstr "O programie"
+
+#: src/app/components/details/details.rs:152
 msgid "by"
 msgstr ""
 
-#: src/app/components/details/details.rs:160
+#: src/app/components/details/details.rs:158
 msgid "Label:"
 msgstr ""
 
-#: src/app/components/details/details.rs:164
+#: src/app/components/details/details.rs:162
 #, fuzzy
 msgid "Released:"
 msgstr "Premiery"
 
-#: src/app/components/details/details.rs:170
+#: src/app/components/details/details.rs:168
 #, fuzzy
 msgid "Tracks:"
 msgstr "Najlepsze piosenki"
 
-#: src/app/components/details/details.rs:176
+#: src/app/components/details/details.rs:174
 msgid "Duration:"
 msgstr ""
 
-#: src/app/components/details/details.rs:182
+#: src/app/components/details/details.rs:180
 msgid "Copyright:"
 msgid_plural "Copyrights:"
 msgstr[0] ""
@@ -60,11 +66,6 @@ msgid "Could not save password. Make sure the session keyring is unlocked."
 msgstr ""
 "Nie można zapisać hasła. Upewnij się że narzędzie zarządzające kluczami jest "
 "odblokowane."
-
-#. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:60
-msgid "About"
-msgstr "O programie"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:62
