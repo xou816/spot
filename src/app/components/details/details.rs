@@ -65,10 +65,7 @@ impl Details {
             }));
 
         let info_window = widget.info_window.clone();
-        info_window.connect_delete_event(|info_window, _| {
-            info_window.hide();
-            glib::signal::Inhibit(true)
-        });
+        info_window.connect_delete_event(|info_window, _| info_window.hide_on_delete());
         info_window.connect_key_press_event(|info_window, event| {
             if let gdk::keys::constants::Escape = event.keyval() {
                 info_window.hide()
@@ -147,6 +144,10 @@ impl Details {
                     widget.info_art.set_from_pixbuf(pixbuf.as_ref());
                 });
             }
+
+            self.widget
+                .info_window
+                .set_title(&format!("{} {}", gettext("About"), album.title));
 
             self.widget.info_album_artist.set_text(&format!(
                 "{} {} {}",
