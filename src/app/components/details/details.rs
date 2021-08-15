@@ -65,7 +65,9 @@ impl Details {
             }));
 
         let info_window = widget.info_window.clone();
+
         info_window.connect_delete_event(|info_window, _| info_window.hide_on_delete());
+
         info_window.connect_key_press_event(|info_window, event| {
             if let gdk::keys::constants::Escape = event.keyval() {
                 info_window.hide()
@@ -74,17 +76,12 @@ impl Details {
         });
 
         widget
-            .album_info
-            .connect_clicked(clone!(@weak info_window => move |_| {
-                // Stop from resizing when showing
-                info_window.set_resizable(false);
-                info_window.show();
-                info_window.set_resizable(true);
-            }));
-
-        widget
             .info_close
             .connect_clicked(clone!(@weak info_window => move |_| info_window.hide()));
+
+        widget
+            .album_info
+            .connect_clicked(clone!(@weak info_window => move |_| info_window.show()));
 
         Self {
             model,
