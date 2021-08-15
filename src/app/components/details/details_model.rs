@@ -45,7 +45,7 @@ impl DetailsModel {
         })
     }
 
-    pub fn get_album_info(&self) -> Option<impl Deref<Target = AlbumDescriptionInfo> + '_> {
+    pub fn get_album_info(&self) -> Option<impl Deref<Target = AlbumFullDescription> + '_> {
         self.app_model
             .map_state_opt(|s| s.browser.details_state(&self.id)?.content.as_ref())
     }
@@ -67,7 +67,7 @@ impl DetailsModel {
         let api = self.app_model.get_spotify();
         self.dispatcher
             .call_spotify_and_dispatch(move || async move {
-                api.get_album_info(&id)
+                api.get_album(&id)
                     .await
                     .map(|album| BrowserAction::SetAlbumDetails(album).into())
             });
