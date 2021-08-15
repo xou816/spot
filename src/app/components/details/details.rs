@@ -92,8 +92,8 @@ impl Details {
     }
 
     fn update_liked(&self) {
-        if let Some(info) = self.model.get_album_info() {
-            let is_liked = info.is_liked;
+        if let Some(album) = self.model.get_album_description() {
+            let is_liked = album.is_liked;
             self.widget
                 .like_button
                 .set_label(if is_liked { "♥" } else { "♡" });
@@ -101,7 +101,7 @@ impl Details {
     }
 
     fn update_details(&mut self) {
-        if let Some(info) = self.model.get_album_info() {
+        if let Some(info) = self.model.get_album_description() {
             let album = &info.title[..];
             let artist = &info.artists_name();
 
@@ -133,6 +133,8 @@ impl Details {
     fn update_dialog(&mut self) {
         if let Some(album) = self.model.get_album_info() {
             let widget = self.widget.clone();
+            let info = &album.info;
+            let album = &album.description;
             if let Some(art) = album.art.clone() {
                 self.worker.send_local_task(async move {
                     let pixbuf = ImageLoader::new()
@@ -155,12 +157,12 @@ impl Details {
 
             self.widget
                 .info_label
-                .set_text(&format!("{} {}", gettext("Label:"), album.label));
+                .set_text(&format!("{} {}", gettext("Label:"), info.label));
 
             self.widget.info_release.set_text(&format!(
                 "{} {}",
                 gettext("Released:"),
-                album.release_date
+                info.release_date
             ));
 
             self.widget.info_tracks.set_text(&format!(
@@ -177,8 +179,8 @@ impl Details {
 
             self.widget.info_copyright.set_text(&format!(
                 "{} {}",
-                ngettext("Copyright:", "Copyrights:", album.copyrights.len() as u32),
-                album.copyrights()
+                ngettext("Copyright:", "Copyrights:", info.copyrights.len() as u32),
+                info.copyrights()
             ));
         }
     }

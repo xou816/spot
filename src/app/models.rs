@@ -75,9 +75,6 @@ pub struct AlbumDescription {
     pub artists: Vec<ArtistRef>,
     pub art: Option<String>,
     pub songs: Vec<SongDescription>,
-    pub label: String,
-    pub release_date: String,
-    pub copyrights: Vec<CopyrightRef>,
     pub is_liked: bool,
 }
 
@@ -93,16 +90,6 @@ impl AlbumDescription {
         let duration: u32 = self.songs.iter().map(|song| song.duration).sum();
         format_duration(duration.into())
     }
-    pub fn copyrights(&self) -> String {
-        if self.copyrights.is_empty() {
-            return "No copyrights provided".to_owned();
-        }
-        self.copyrights
-            .iter()
-            .map(|c| format!("[{}] {}", c.type_, c.text))
-            .collect::<Vec<String>>()
-            .join(",\n ")
-    }
 }
 
 impl PartialEq for AlbumDescription {
@@ -112,6 +99,29 @@ impl PartialEq for AlbumDescription {
 }
 
 impl Eq for AlbumDescription {}
+
+#[derive(Clone, Debug)]
+pub struct AlbumDescriptionInfo {
+    pub description: AlbumDescription,
+    pub info: AlbumInfoRef,
+}
+
+#[derive(Clone, Debug)]
+pub struct AlbumInfoRef {
+    pub label: String,
+    pub release_date: String,
+    pub copyrights: Vec<CopyrightRef>,
+}
+
+impl AlbumInfoRef {
+    pub fn copyrights(&self) -> String {
+        self.copyrights
+            .iter()
+            .map(|c| format!("[{}] {}", c.type_, c.text))
+            .collect::<Vec<String>>()
+            .join(",\n ")
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct CopyrightRef {

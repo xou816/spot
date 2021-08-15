@@ -33,13 +33,33 @@ impl DetailsModel {
     }
 
     fn songs_ref(&self) -> Option<impl Deref<Target = Vec<SongDescription>> + '_> {
-        self.app_model
-            .map_state_opt(|s| Some(&s.browser.details_state(&self.id)?.content.as_ref()?.songs))
+        self.app_model.map_state_opt(|s| {
+            Some(
+                &s.browser
+                    .details_state(&self.id)?
+                    .content
+                    .as_ref()?
+                    .description
+                    .songs,
+            )
+        })
     }
 
-    pub fn get_album_info(&self) -> Option<impl Deref<Target = AlbumDescription> + '_> {
+    pub fn get_album_info(&self) -> Option<impl Deref<Target = AlbumDescriptionInfo> + '_> {
         self.app_model
             .map_state_opt(|s| s.browser.details_state(&self.id)?.content.as_ref())
+    }
+
+    pub fn get_album_description(&self) -> Option<impl Deref<Target = AlbumDescription> + '_> {
+        self.app_model.map_state_opt(|s| {
+            Some(
+                &s.browser
+                    .details_state(&self.id)?
+                    .content
+                    .as_ref()?
+                    .description,
+            )
+        })
     }
 
     pub fn load_album_info(&self) {
@@ -47,14 +67,14 @@ impl DetailsModel {
         let api = self.app_model.get_spotify();
         self.dispatcher
             .call_spotify_and_dispatch(move || async move {
-                api.get_album(&id)
+                api.get_album_info(&id)
                     .await
                     .map(|album| BrowserAction::SetAlbumDetails(album).into())
             });
     }
 
     pub fn view_artist(&self) {
-        if let Some(album) = self.get_album_info() {
+        if let Some(album) = self.get_album_description() {
             let artist = &album.artists.first().unwrap().id;
             self.dispatcher
                 .dispatch(AppAction::ViewArtist(artist.to_owned()));
@@ -62,7 +82,7 @@ impl DetailsModel {
     }
 
     pub fn toggle_save_album(&self) {
-        if let Some(album) = self.get_album_info() {
+        if let Some(album) = self.get_album_description() {
             let id = album.id.clone();
             let is_liked = album.is_liked;
 

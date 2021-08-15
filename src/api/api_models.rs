@@ -147,9 +147,6 @@ pub struct Album {
     pub tracks: Option<Page<TrackItem>>,
     pub artists: Vec<Artist>,
     pub name: String,
-    pub label: Option<String>,
-    pub release_date: Option<String>,
-    pub copyrights: Option<Vec<Copyright>>,
     pub images: Vec<Image>,
 }
 
@@ -181,6 +178,13 @@ impl WithImages for Artist {
             &[]
         }
     }
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct AlbumInfo {
+    pub label: String,
+    pub release_date: String,
+    pub copyrights: Vec<Copyright>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -353,16 +357,6 @@ impl From<Album> for AlbumDescription {
             .collect::<Vec<ArtistRef>>();
         let songs: Vec<SongDescription> = album.clone().into();
         let art = album.best_image_for_width(200).map(|i| i.url.clone());
-        let mut copyrights = vec![];
-        if let Some(c) = album.copyrights {
-            copyrights = c
-                .iter()
-                .map(|c| CopyrightRef {
-                    text: c.text.clone(),
-                    type_: c.type_,
-                })
-                .collect::<Vec<CopyrightRef>>();
-        };
 
         Self {
             id: album.id,
@@ -370,14 +364,32 @@ impl From<Album> for AlbumDescription {
             artists,
             art,
             songs,
-            label: album
-                .label
-                .unwrap_or_else(|| "No label provided".to_owned()),
-            release_date: album
-                .release_date
-                .unwrap_or_else(|| "No release date provided".to_owned()),
-            copyrights,
             is_liked: false,
+        }
+    }
+}
+
+impl From<AlbumInfo> for AlbumInfoRef {
+    fn from(info: AlbumInfo) -> Self {
+        let copyrights = info
+            .copyrights
+            .iter()
+            .map(|c| c.clone().into())
+            .collect::<Vec<CopyrightRef>>();
+
+        Self {
+            label: info.label,
+            release_date: info.release_date,
+            copyrights,
+        }
+    }
+}
+
+impl From<Copyright> for CopyrightRef {
+    fn from(copyright: Copyright) -> Self {
+        Self {
+            text: copyright.text,
+            type_: copyright.type_,
         }
     }
 }
