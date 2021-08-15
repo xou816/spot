@@ -347,7 +347,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
                 .await
                 .unwrap_or(());
             self.client.save_album(&id).send_no_response().await?;
-            self.get_album(&id[..]).await.map(|a|a.description)
+            self.get_album(&id[..]).await.map(|a| a.description)
         })
     }
 
