@@ -133,7 +133,7 @@ impl Details {
     fn update_dialog(&mut self) {
         if let Some(album) = self.model.get_album_info() {
             let widget = self.widget.clone();
-            let info = &album.info;
+            let info = &album.release_details;
             let album = &album.description;
             if let Some(art) = album.art.clone() {
                 self.worker.send_local_task(async move {

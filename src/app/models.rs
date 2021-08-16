@@ -103,7 +103,7 @@ impl Eq for AlbumDescription {}
 #[derive(Clone, Debug)]
 pub struct AlbumFullDescription {
     pub description: AlbumDescription,
-    pub info: AlbumReleaseDetails,
+    pub release_details: AlbumReleaseDetails,
 }
 
 #[derive(Clone, Debug)]
