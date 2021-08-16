@@ -321,20 +321,10 @@ impl SpotifyApiClient for CachedSpotifyClient {
 
             let (album, liked) = join!(album, liked);
 
-            let mut album: AlbumDescription = album?.into();
-            album.is_liked = liked?[0];
+            let mut album: AlbumFullDescription = album?.into();
+            album.description.is_liked = liked?[0];
 
-            let info = self
-                .cache_get_or_write(SpotCacheKey::Album(&id), None, |etag| {
-                    self.client.get_album_info(&id).etag(etag).send()
-                })
-                .await?
-                .into();
-
-            Ok(AlbumFullDescription {
-                description: album,
-                info,
-            })
+            Ok(album)
         })
     }
 
