@@ -381,7 +381,10 @@ impl From<FullAlbum> for AlbumFullDescription {
     fn from(full_album: FullAlbum) -> Self {
         let description = full_album.album.into();
         let release_details = full_album.album_info.into();
-        Self {description, release_details }
+        Self {
+            description,
+            release_details,
+        }
     }
 }
 
