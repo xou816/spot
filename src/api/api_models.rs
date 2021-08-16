@@ -150,6 +150,15 @@ pub struct FullAlbum {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+pub struct Album {
+    pub id: String,
+    pub tracks: Option<Page<TrackItem>>,
+    pub artists: Vec<Artist>,
+    pub name: String,
+    pub images: Vec<Image>,
+}
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct AlbumInfo {
     pub label: String,
     pub release_date: String,
@@ -161,15 +170,6 @@ pub struct Copyright {
     pub text: String,
     #[serde(alias = "type")]
     pub type_: char,
-}
-
-#[derive(Deserialize, Debug, Clone)]
-pub struct Album {
-    pub id: String,
-    pub tracks: Option<Page<TrackItem>>,
-    pub artists: Vec<Artist>,
-    pub name: String,
-    pub images: Vec<Image>,
 }
 
 impl WithImages for Album {
@@ -353,6 +353,17 @@ impl From<Album> for Vec<SongDescription> {
     }
 }
 
+impl From<FullAlbum> for AlbumFullDescription {
+    fn from(full_album: FullAlbum) -> Self {
+        let description = full_album.album.into();
+        let release_details = full_album.album_info.into();
+        Self {
+            description,
+            release_details,
+        }
+    }
+}
+
 impl From<Album> for AlbumDescription {
     fn from(album: Album) -> Self {
         let artists = album
@@ -373,17 +384,6 @@ impl From<Album> for AlbumDescription {
             art,
             songs,
             is_liked: false,
-        }
-    }
-}
-
-impl From<FullAlbum> for AlbumFullDescription {
-    fn from(full_album: FullAlbum) -> Self {
-        let description = full_album.album.into();
-        let release_details = full_album.album_info.into();
-        Self {
-            description,
-            release_details,
         }
     }
 }
