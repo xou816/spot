@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-10 11:24+0200\n"
+"POT-Creation-Date: 2021-08-15 03:30-0400\n"
 "PO-Revision-Date: 2021-03-17 17:03+0100\n"
 "Last-Translator: Ondřej Sluka <ondras12345@gmail.com>\n"
 "Language-Team: none\n"
@@ -17,22 +17,52 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 
+#. translators: This is a menu entry.
+#: src/app/components/details/details.rs:147
+#: src/app/components/user_menu/user_menu.rs:60
+msgid "About"
+msgstr "O aplikaci"
+
+#: src/app/components/details/details.rs:152
+msgid "by"
+msgstr ""
+
+#: src/app/components/details/details.rs:158
+msgid "Label:"
+msgstr ""
+
+#: src/app/components/details/details.rs:162
+#, fuzzy
+msgid "Released:"
+msgstr "Diskografie"
+
+#: src/app/components/details/details.rs:168
+#, fuzzy
+msgid "Tracks:"
+msgstr "Populární"
+
+#: src/app/components/details/details.rs:174
+msgid "Duration:"
+msgstr ""
+
+#: src/app/components/details/details.rs:180
+msgid "Copyright:"
+msgid_plural "Copyrights:"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
 #. translators: Short text displayed instead of a song title when nothing plays
 #. Short text displayed instead of a song title when nothing plays
-#: src/app/components/playback/playback_info.rs:91 src/window.ui.in:429
+#: src/app/components/playback/playback_info.rs:90 src/window.ui.in:488
 msgid "No song playing"
 msgstr "Nic nehraje"
 
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
-#: src/app/components/login/login_model.rs:30
+#: src/app/components/login/login_model.rs:52
 msgid "Could not save password. Make sure the session keyring is unlocked."
 msgstr ""
 "Heslo nelze uložit. Zkontrolujte, že je klíčenka (session keyring) odemčená."
-
-#. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:60
-msgid "About"
-msgstr "O aplikaci"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:62
@@ -45,17 +75,17 @@ msgid "Log out"
 msgstr "Odhlásit se"
 
 #. translators: This is a sidebar entry to browse to saved albums.
-#: src/app/components/navigation/home.rs:33
+#: src/app/components/navigation/home.rs:32
 msgid "Library"
 msgstr "Knihovna"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
-#: src/app/components/navigation/home.rs:38
+#: src/app/components/navigation/home.rs:37
 msgid "Playlists"
 msgstr "Playlisty"
 
 #. This is the visible name for the play queue. It appears in the sidebar as well.
-#: src/app/components/navigation/home.rs:43
+#: src/app/components/navigation/home.rs:42
 #: src/app/components/now_playing/now_playing.ui:21
 msgid "Now playing"
 msgstr "Právě hraje"
@@ -96,25 +126,24 @@ msgid "Add to {}"
 msgstr ""
 
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/components/mod.rs:100
+#: src/app/components/mod.rs:106
 msgid "An error occured. Check logs for details!"
 msgstr "Došlo k chybě. Podrobnosti najdete v protokolu."
 
 #. This text appears when entering selection mode. It should be as short as possible.
-#: src/app/components/selection/selection_heading.rs:74 src/window.ui.in:26
+#: src/app/components/selection/selection_heading.rs:73 src/window.ui.in:26
 msgid "No song selected"
 msgstr "Nebyla vybrána žádná skladba"
 
 #. translators: This is part of a larger text that says "<n> songs selected" when in selection mode. This text should be as short as possible.
-#: src/app/components/selection/selection_heading.rs:88
+#: src/app/components/selection/selection_heading.rs:87
 msgid "song selected"
 msgid_plural "songs selected"
 msgstr[0] "skladba vybrána"
 msgstr[1] "skladby vybrány"
 msgstr[2] "skladeb vybráno"
 
-#. translators: This notification is shown when, after some inactivity, the session is successfully restored. The user might have to repeat its last action.
-#: src/app/state/login_state.rs:69
+#: src/app/state/login_state.rs:117
 msgid "Connection restored"
 msgstr "Připojení obnoveno"
 

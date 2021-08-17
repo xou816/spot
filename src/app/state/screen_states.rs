@@ -39,7 +39,7 @@ impl Eq for ScreenName {}
 pub struct DetailsState {
     pub id: String,
     pub name: ScreenName,
-    pub content: Option<AlbumDescription>,
+    pub content: Option<AlbumFullDescription>,
 }
 
 impl DetailsState {
@@ -58,15 +58,15 @@ impl UpdatableState for DetailsState {
 
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
-            BrowserAction::SetAlbumDetails(album) if album.id == self.id => {
-                let id = album.id.clone();
+            BrowserAction::SetAlbumDetails(album) if album.description.id == self.id => {
+                let id = album.description.id.clone();
                 self.content = Some(album);
                 vec![BrowserEvent::AlbumDetailsLoaded(id)]
             }
             BrowserAction::SaveAlbum(album) if album.id == self.id => {
                 let id = album.id;
                 if let Some(mut album) = self.content.as_mut() {
-                    album.is_liked = true;
+                    album.description.is_liked = true;
                     vec![BrowserEvent::AlbumSaved(id)]
                 } else {
                     vec![]
@@ -74,7 +74,7 @@ impl UpdatableState for DetailsState {
             }
             BrowserAction::UnsaveAlbum(id) if id == self.id => {
                 if let Some(mut album) = self.content.as_mut() {
-                    album.is_liked = false;
+                    album.description.is_liked = false;
                     vec![BrowserEvent::AlbumUnsaved(id)]
                 } else {
                     vec![]

@@ -33,7 +33,7 @@ pub type SpotifyResult<T> = Result<T, SpotifyApiError>;
 pub trait SpotifyApiClient {
     fn get_artist(&self, id: &str) -> BoxFuture<SpotifyResult<ArtistDescription>>;
 
-    fn get_album(&self, id: &str) -> BoxFuture<SpotifyResult<AlbumDescription>>;
+    fn get_album(&self, id: &str) -> BoxFuture<SpotifyResult<AlbumFullDescription>>;
 
     fn get_playlist(&self, id: &str) -> BoxFuture<SpotifyResult<PlaylistDescription>>;
 
@@ -301,7 +301,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
         })
     }
 
-    fn get_album(&self, id: &str) -> BoxFuture<SpotifyResult<AlbumDescription>> {
+    fn get_album(&self, id: &str) -> BoxFuture<SpotifyResult<AlbumFullDescription>> {
         let id = id.to_owned();
 
         Box::pin(async move {
@@ -321,8 +321,8 @@ impl SpotifyApiClient for CachedSpotifyClient {
 
             let (album, liked) = join!(album, liked);
 
-            let mut album: AlbumDescription = album?.into();
-            album.is_liked = liked?[0];
+            let mut album: AlbumFullDescription = album?.into();
+            album.description.is_liked = liked?[0];
 
             Ok(album)
         })
@@ -337,7 +337,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
                 .await
                 .unwrap_or(());
             self.client.save_album(&id).send_no_response().await?;
-            self.get_album(&id[..]).await
+            self.get_album(&id[..]).await.map(|a| a.description)
         })
     }
 

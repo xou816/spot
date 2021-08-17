@@ -142,12 +142,34 @@ pub struct SavedAlbum {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+pub struct FullAlbum {
+    #[serde(flatten)]
+    pub album: Album,
+    #[serde(flatten)]
+    pub album_info: AlbumInfo,
+}
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct Album {
     pub id: String,
     pub tracks: Option<Page<TrackItem>>,
     pub artists: Vec<Artist>,
     pub name: String,
     pub images: Vec<Image>,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct AlbumInfo {
+    pub label: String,
+    pub release_date: String,
+    pub copyrights: Vec<Copyright>,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct Copyright {
+    pub text: String,
+    #[serde(alias = "type")]
+    pub type_: char,
 }
 
 impl WithImages for Album {
@@ -331,6 +353,17 @@ impl From<Album> for Vec<SongDescription> {
     }
 }
 
+impl From<FullAlbum> for AlbumFullDescription {
+    fn from(full_album: FullAlbum) -> Self {
+        let description = full_album.album.into();
+        let release_details = full_album.album_info.into();
+        Self {
+            description,
+            release_details,
+        }
+    }
+}
+
 impl From<Album> for AlbumDescription {
     fn from(album: Album) -> Self {
         let artists = album
@@ -351,6 +384,31 @@ impl From<Album> for AlbumDescription {
             art,
             songs,
             is_liked: false,
+        }
+    }
+}
+
+impl From<AlbumInfo> for AlbumReleaseDetails {
+    fn from(info: AlbumInfo) -> Self {
+        let copyrights = info
+            .copyrights
+            .iter()
+            .map(|c| c.clone().into())
+            .collect::<Vec<CopyrightDetails>>();
+
+        Self {
+            label: info.label,
+            release_date: info.release_date,
+            copyrights,
+        }
+    }
+}
+
+impl From<Copyright> for CopyrightDetails {
+    fn from(copyright: Copyright) -> Self {
+        Self {
+            text: copyright.text,
+            type_: copyright.type_,
         }
     }
 }

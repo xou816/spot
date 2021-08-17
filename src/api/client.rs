@@ -317,7 +317,7 @@ impl SpotifyClient {
             .uri("/v1/me/albums".to_string(), Some(&query))
     }
 
-    pub(crate) fn get_album(&self, id: &str) -> SpotifyRequest<'_, (), Album> {
+    pub(crate) fn get_album(&self, id: &str) -> SpotifyRequest<'_, (), FullAlbum> {
         self.request()
             .method(Method::GET)
             .uri(format!("/v1/albums/{}", id), None)
