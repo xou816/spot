@@ -17,6 +17,11 @@ Based on [librespot](https://github.com/librespot-org/librespot/).
 | <a href='https://aur.archlinux.org/packages/spot-client/'><img alt="AUR version" src="https://img.shields.io/aur/version/spot-client"></a> | dpeukert | https://gitlab.com/dpeukert/pkgbuilds/tree/main/spot-client |
 
 
+## GTK4
+
+**The GTK4 port is almost ready :) all future development and contributions should ideally target the [gtk4/main](https://github.com/xou816/spot/tree/gtk4/main) branch!**
+
+
 ## Usage notes
 
 ### Credentials
