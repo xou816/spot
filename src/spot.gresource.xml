@@ -34,5 +34,9 @@
     <!-- user details -->
     <file alias="components/user_details.css">app/components/user_details/user_details.css</file>
     <file alias="components/user_details.ui">app/components/user_details/user_details.ui</file>
+    <!-- playback -->
+    <file alias="components/playback_controls.ui">app/components/playback/playback_controls.ui</file>
+    <file alias="components/playback_info.ui">app/components/playback/playback_info.ui</file>
+    <file alias="components/playback_widget.ui">app/components/playback/playback_widget.ui</file>
   </gresource>
 </gresources>

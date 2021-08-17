@@ -17,6 +17,7 @@ mod player;
 mod settings;
 pub use config::VERSION;
 
+use crate::app::components::expose_widgets;
 use crate::app::dispatch::{spawn_task_handler, DispatchLoop};
 use crate::app::{state::PlaybackAction, App, AppAction, BrowserAction};
 
@@ -29,6 +30,7 @@ fn main() {
     let settings = settings::SpotSettings::new_from_gsettings().unwrap_or_default();
     startup(&settings);
     let gtk_app = gtk::Application::new(Some(config::APPID), Default::default());
+    expose_widgets();
     let builder = gtk::Builder::from_resource("/dev/alextren/Spot/window.ui");
     let window: libadwaita::ApplicationWindow = builder.object("window").unwrap();
     if cfg!(debug_assertions) {

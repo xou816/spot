@@ -18,10 +18,15 @@
   border-left: none;
   border-right: none;
   min-height: 1px;
+  transition: min-height 100ms ease;
 }
 
 .seek-bar--active trough, .seek-bar--active highlight {
   min-height: 5px;
+}
+
+.seek-bar--active:hover trough, .seek-bar--active:hover highlight {
+  min-height: 10px;
 }
 
 .seek-bar highlight {

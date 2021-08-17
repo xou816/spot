@@ -5,16 +5,31 @@ use std::cell::Cell;
 use std::rc::Rc;
 use std::time::Duration;
 
+#[derive(Clone)]
 pub struct Clock {
     interval_ms: u32,
-    source: Cell<Option<glib::source::SourceId>>,
+    source: Rc<Cell<Option<glib::source::SourceId>>>,
+}
+
+impl Default for Clock {
+    fn default() -> Self {
+        Self::new(1000)
+    }
+}
+
+impl std::fmt::Debug for Clock {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Clock")
+            .field("interval_ms", &self.interval_ms)
+            .finish()
+    }
 }
 
 impl Clock {
-    pub fn new() -> Self {
+    pub fn new(interval_ms: u32) -> Self {
         Self {
-            interval_ms: 1000,
-            source: Cell::new(None),
+            interval_ms,
+            source: Rc::new(Cell::new(None)),
         }
     }
 

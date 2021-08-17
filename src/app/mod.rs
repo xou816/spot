@@ -67,8 +67,7 @@ impl App {
         let mut components: Vec<Box<dyn EventListener>> = vec![
             App::make_window(&self.settings, builder, Rc::clone(model), worker.clone()),
             App::make_selection_editor(builder, Rc::clone(model), dispatcher.box_clone()),
-            App::make_playback_control(builder, Rc::clone(model), dispatcher.box_clone()),
-            App::make_playback_info(
+            App::make_playback(
                 builder,
                 Rc::clone(model),
                 dispatcher.box_clone(),
@@ -170,57 +169,18 @@ impl App {
         Box::new(Login::new(parent, model))
     }
 
-    fn make_playback_info(
+    fn make_playback(
         builder: &gtk::Builder,
         app_model: Rc<AppModel>,
         dispatcher: Box<dyn ActionDispatcher>,
         worker: Worker,
-    ) -> Box<PlaybackInfo> {
-        let now_playing: gtk::Button = builder.object("now_playing").unwrap();
-        let now_playing_small: gtk::Button = builder.object("now_playing_small").unwrap();
-        let image: gtk::Image = builder.object("playing_image").unwrap();
-        let image_small: gtk::Image = builder.object("playing_image_small").unwrap();
-        let current_song_info: gtk::Label = builder.object("current_song_info").unwrap();
-
-        let model = PlaybackInfoModel::new(app_model, dispatcher);
-        Box::new(PlaybackInfo::new(
+    ) -> Box<impl EventListener> {
+        let model = PlaybackModel::new(app_model, dispatcher);
+        Box::new(PlaybackControl::new(
             model,
+            builder.object("playback").unwrap(),
             worker,
-            now_playing,
-            now_playing_small,
-            image,
-            image_small,
-            current_song_info,
         ))
-    }
-
-    fn make_playback_control(
-        builder: &gtk::Builder,
-        app_model: Rc<AppModel>,
-        dispatcher: Box<dyn ActionDispatcher>,
-    ) -> Box<PlaybackControl> {
-        let play_button: gtk::Button = builder.object("play_pause").unwrap();
-        let next: gtk::Button = builder.object("next").unwrap();
-        let prev: gtk::Button = builder.object("prev").unwrap();
-        let shuffle_button: gtk::Button = builder.object("shuffle").unwrap();
-        let repeat_button: gtk::Button = builder.object("repeat").unwrap();
-        let seek_bar: gtk::Scale = builder.object("seek_bar").unwrap();
-        let track_position: gtk::Label = builder.object("track_position").unwrap();
-        let track_duration: gtk::Label = builder.object("track_duration").unwrap();
-
-        let widget = PlaybackControlWidget::new(
-            play_button,
-            seek_bar,
-            track_position,
-            track_duration,
-            next,
-            prev,
-            shuffle_button,
-            repeat_button,
-        );
-
-        let model = PlaybackControlModel::new(app_model, dispatcher);
-        Box::new(PlaybackControl::new(model, widget))
     }
 
     fn make_search_bar(
