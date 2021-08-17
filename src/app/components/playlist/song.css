@@ -23,8 +23,9 @@
   opacity: 0;
 }
 
-.playlist--selectable .song__checkbox {
+.playlist--selectable .song__checkbox, .playlist--selectable .song__checkbox check {
   opacity: 1;
+  filter: none;
 }
 
 .song__title {
