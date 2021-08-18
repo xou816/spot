@@ -86,6 +86,10 @@ impl AlbumDescription {
             .collect::<Vec<String>>()
             .join(", ")
     }
+    pub fn formatted_time(&self) -> String {
+        let duration: u32 = self.songs.iter().map(|song| song.duration).sum();
+        format_duration(duration.into())
+    }
 }
 
 impl PartialEq for AlbumDescription {
@@ -95,6 +99,35 @@ impl PartialEq for AlbumDescription {
 }
 
 impl Eq for AlbumDescription {}
+
+#[derive(Clone, Debug)]
+pub struct AlbumFullDescription {
+    pub description: AlbumDescription,
+    pub release_details: AlbumReleaseDetails,
+}
+
+#[derive(Clone, Debug)]
+pub struct AlbumReleaseDetails {
+    pub label: String,
+    pub release_date: String,
+    pub copyrights: Vec<CopyrightDetails>,
+}
+
+impl AlbumReleaseDetails {
+    pub fn copyrights(&self) -> String {
+        self.copyrights
+            .iter()
+            .map(|c| format!("[{}] {}", c.type_, c.text))
+            .collect::<Vec<String>>()
+            .join(",\n ")
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct CopyrightDetails {
+    pub text: String,
+    pub type_: char,
+}
 
 #[derive(Clone, Debug)]
 pub struct PlaylistDescription {

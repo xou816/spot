@@ -17,6 +17,11 @@ Based on [librespot](https://github.com/librespot-org/librespot/).
 | <a href='https://aur.archlinux.org/packages/spot-client/'><img alt="AUR version" src="https://img.shields.io/aur/version/spot-client"></a> | dpeukert | https://gitlab.com/dpeukert/pkgbuilds/tree/main/spot-client |
 
 
+## GTK4
+
+**The GTK4 port is almost ready :) all future development and contributions should ideally target the [gtk4/main](https://github.com/xou816/spot/tree/gtk4/main) branch!**
+
+
 ## Usage notes
 
 ### Credentials
@@ -57,13 +62,13 @@ See [this comment](https://github.com/xou816/spot/issues/209#issuecomment-860180
 
 **Only works with premium accounts!**
 
-- playback control (play/pause, prev/next, seeking)
-- play queue with shuffle option
+- playback control (play/pause, prev/next, seeking, shuffle, repeat (none, all, song))
 - selection mode: easily browse and select mutliple tracks to queue them
 - browse your saved albums and playlists
 - search albums and artists
 - view an artist's releases
 - view users' playlists
+- view album info
 - credentials management with Secret Service
 - MPRIS integration
 
@@ -90,7 +95,7 @@ Otherwise, here is a rough overview of how to contribute translations:
 - fork the repository;
 - copy the `po/spot.pot` file and rename it to match your language code, or edit the relevant `po` file if it already exists;
 - if needed, add your language code to `po/LINGUAS`;
-- make sur the `Language` and `Plural-Forms` keys are correct;
+- make sure the `Language` and `Plural-Forms` keys are correct;
 - edit the `msgstr` entries;
 - if you wish, add yourself to the `TRANSLATORS` file.
 

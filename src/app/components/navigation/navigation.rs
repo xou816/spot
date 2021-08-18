@@ -99,8 +99,6 @@ impl Navigation {
     }
 
     fn push_screen(&mut self, name: &ScreenName) {
-        println!("{}", name.identifier());
-
         let component: Box<dyn ListenerComponent> = match name {
             ScreenName::Home => self.make_home(),
             ScreenName::AlbumDetails(id) => {

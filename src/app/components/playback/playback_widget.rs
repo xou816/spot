@@ -58,7 +58,8 @@ mod imp {
     }
 
     impl ObjectImpl for PlaybackWidget {
-        fn constructed(&self, _obj: &Self::Type) {
+        fn constructed(&self, obj: &Self::Type) {
+            self.parent_constructed(obj);
             self.now_playing_mobile.set_info_visible(false);
             self.now_playing.set_info_visible(true);
             screen_add_css_provider(resource!("/components/playback.css"));

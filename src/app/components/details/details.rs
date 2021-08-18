@@ -3,6 +3,7 @@ use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use std::rc::Rc;
 
+use super::release_details::ReleaseDetailsWindow;
 use super::DetailsModel;
 
 use crate::app::components::{screen_add_css_provider, Component, EventListener, Playlist};
@@ -31,6 +32,9 @@ mod imp {
 
         #[template_child]
         pub like_button: TemplateChild<gtk::Button>,
+
+        #[template_child]
+        pub info_button: TemplateChild<gtk::Button>,
 
         #[template_child]
         pub artist_button: TemplateChild<gtk::LinkButton>,
@@ -80,6 +84,13 @@ impl AlbumDetailsWidget {
         self.widget().like_button.connect_clicked(move |_| f());
     }
 
+    fn connect_info<F>(&self, f: F)
+    where
+        F: Fn() + 'static,
+    {
+        self.widget().info_button.connect_clicked(move |_| f());
+    }
+
     fn connect_artist_clicked<F>(&self, f: F)
     where
         F: Fn() + 'static,
@@ -105,32 +116,14 @@ impl AlbumDetailsWidget {
         context.add_class("details--loaded");
     }
 
-    fn set_album_and_artist(
-        &self,
-        album: &str,
-        artist: &str,
-        art_url: Option<&String>,
-        worker: &Worker,
-    ) {
-        let widget = self.widget();
+    pub fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {
+        self.widget().album_art.set_from_pixbuf(Some(art));
+    }
 
+    fn set_album_and_artist(&self, album: &str, artist: &str) {
+        let widget = self.widget();
         widget.album_label.set_label(album);
         widget.artist_button_label.set_label(artist);
-
-        let weak_self = self.downgrade();
-        if let Some(art_url) = art_url.cloned() {
-            worker.send_local_task(async move {
-                if let Some(_self) = weak_self.upgrade() {
-                    let pixbuf = ImageLoader::new()
-                        .load_remote(&art_url[..], "jpg", 100, 100)
-                        .await;
-                    _self.widget().album_art.set_from_pixbuf(pixbuf.as_ref());
-                    _self.set_loaded();
-                }
-            });
-        } else {
-            self.set_loaded();
-        }
     }
 }
 
@@ -138,6 +131,7 @@ pub struct Details {
     model: Rc<DetailsModel>,
     worker: Worker,
     widget: AlbumDetailsWidget,
+    modal: ReleaseDetailsWindow,
     children: Vec<Box<dyn EventListener>>,
 }
 
@@ -153,37 +147,80 @@ impl Details {
             model.clone(),
         ));
 
-        widget.connect_liked(clone!(@weak model => move || {
-            model.toggle_save_album();
+        let modal = ReleaseDetailsWindow::new();
+
+        widget.connect_liked(clone!(@weak model => move || model.toggle_save_album()));
+
+        widget.connect_info(clone!(@weak modal, @weak widget => move || {
+            let modal = modal.upcast_ref::<libadwaita::Window>();
+            modal.set_modal(true);
+            modal.set_transient_for(
+                widget
+                    .root()
+                    .and_then(|r| r.downcast::<gtk::Window>().ok())
+                    .as_ref(),
+            );
+            modal.show();
         }));
 
         Self {
             model,
             worker,
             widget,
+            modal,
             children: vec![playlist],
         }
     }
 
     fn update_liked(&self) {
         if let Some(info) = self.model.get_album_info() {
-            let is_liked = info.is_liked;
+            let is_liked = info.description.is_liked;
             self.widget.set_liked(is_liked);
         }
     }
 
     fn update_details(&mut self) {
-        if let Some(info) = self.model.get_album_info() {
-            let album = &info.title[..];
-            let artist = &info.artists_name();
+        if let Some(album) = self.model.get_album_info() {
+            let details = &album.release_details;
+            let album = &album.description;
 
-            self.widget.set_liked(info.is_liked);
+            self.widget.set_liked(album.is_liked);
             self.widget
-                .set_album_and_artist(album, artist, info.art.as_ref(), &self.worker);
+                .set_album_and_artist(&album.title[..], &album.artists_name());
             self.widget
                 .connect_artist_clicked(clone!(@weak self.model as model => move || {
                     model.view_artist();
                 }));
+
+            self.modal.set_details(
+                &album.title,
+                &album.artists_name(),
+                &details.label,
+                &details.release_date,
+                album.songs.len(),
+                &album.formatted_time(),
+                &details.copyrights(),
+            );
+
+            if let Some(art) = album.art.clone() {
+                let widget = self.widget.downgrade();
+                let modal = self.modal.downgrade();
+
+                self.worker.send_local_task(async move {
+                    let pixbuf = ImageLoader::new()
+                        .load_remote(&art[..], "jpg", 200, 200)
+                        .await;
+                    if let (Some(widget), Some(modal), Some(ref pixbuf)) =
+                        (widget.upgrade(), modal.upgrade(), pixbuf)
+                    {
+                        widget.set_artwork(pixbuf);
+                        widget.set_loaded();
+                        modal.set_artwork(pixbuf);
+                    }
+                });
+            } else {
+                self.widget.set_loaded();
+            }
         }
     }
 }

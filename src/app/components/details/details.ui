@@ -32,13 +32,36 @@
                         <property name="margin-bottom">8</property>
                         <property name="spacing">16</property>
                         <child>
-                          <object class="GtkImage" id="album_art">
-                            <property name="width-request">100</property>
-                            <property name="height-request">100</property>
-                            <property name="icon-name">emblem-music-symbolic</property>
-                            <style>
-                              <class name="details__album-art"/>
-                            </style>
+                          <object class="GtkOverlay">
+                            <child>
+                              <object class="GtkImage" id="album_art">
+                                <property name="width-request">100</property>
+                                <property name="height-request">100</property>
+                                <property name="icon-name">emblem-music-symbolic</property>
+                                <style>
+                                  <class name="details__album-art"/>
+                                </style>
+                              </object>
+                            </child>
+                            <child type="overlay">
+                              <object class="GtkButton" id="info_button">
+                                <property name="width-request">32</property>
+                                <property name="height-request">32</property>
+                                <property name="icon-name">preferences-system-details-symbolic</property>
+                                <property name="halign">end</property>
+                                <property name="valign">end</property>
+                                <property name="margin-start">5</property>
+                                <property name="margin-end">5</property>
+                                <property name="margin-top">5</property>
+                                <property name="margin-bottom">5</property>
+                                <property name="has-frame">1</property>
+                                <style>
+                                  <class name="circular"/>
+                                  <class name="osd"/>
+                                  <class name="info_btn"/>
+                                </style>
+                              </object>
+                            </child>
                           </object>
                         </child>
                         <child>

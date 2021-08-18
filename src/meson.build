@@ -115,6 +115,7 @@ sources = files(
 './app/components/details/mod.rs',
 './app/components/details/details.rs',
 './app/components/details/details_model.rs',
+'./app/components/details/release_details.rs',
 './app/components/utils.rs',
 './app/components/now_playing/now_playing_model.rs',
 './app/components/now_playing/mod.rs',

@@ -33,6 +33,7 @@
 }
 
 row {
+  transition: background-color 150ms ease;
   margin: 1px 0;
 }
 

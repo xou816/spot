@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <template class="ReleaseDetailsWindow" parent="AdwWindow">
+    <property name="can-focus">0</property>
+    <property name="modal">1</property>
+    <property name="default-width">250</property>
+    <child>
+      <object class="GtkWindowHandle">
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkButton" id="close">
+                <property name="valign">center</property>
+                <property name="receives-default">1</property>
+                <property name="halign">end</property>
+                <property name="margin-start">5</property>
+                <property name="margin-end">5</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+                <property name="has-frame">0</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="width-request">22</property>
+                    <property name="height-request">22</property>
+                    <property name="icon-name">window-close-symbolic</property>
+                  </object>
+                </child>
+                <style>
+                  <class name="circular"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow">
+                <property name="vexpand">1</property>
+                <property name="propagate-natural-height">1</property>
+                <child>
+                  <object class="AdwClamp">
+                    <property name="maximum-size">900</property>
+                    <property name="tightening-threshold">360</property>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="margin-start">10</property>
+                        <property name="margin-end">10</property>
+                        <property name="margin-top">5</property>
+                        <property name="margin-bottom">10</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkImage" id="art">
+                            <property name="width-request">200</property>
+                            <property name="height-request">200</property>
+                            <property name="can-focus">0</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
+                            <property name="icon-name">emblem-music-symbolic</property>
+                            <style>
+                              <class name="details__album-art"/>
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="margin-top">10</property>
+                            <property name="orientation">vertical</property>
+                            <property name="spacing">1</property>
+                            <child>
+                              <object class="GtkLabel" id="album_artist">
+                                <property name="halign">center</property>
+                                <property name="valign">center</property>
+                                <property name="label">Album by Artist</property>
+                                <property name="justify">center</property>
+                                <property name="wrap">1</property>
+                                <property name="wrap-mode">word-char</property>
+                                <style>
+                                  <class name="details__album-label"/>
+                                </style>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="label">
+                                <property name="margin-top">5</property>
+                                <property name="label">Label</property>
+                                <property name="justify">center</property>
+                                <property name="wrap">1</property>
+                                <property name="wrap-mode">word-char</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="release">
+                                <property name="label">Release Date</property>
+                                <property name="justify">center</property>
+                                <property name="wrap">1</property>
+                                <property name="wrap-mode">word-char</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="tracks">
+                                <property name="label">Tracks</property>
+                                <property name="justify">center</property>
+                                <property name="wrap">1</property>
+                                <property name="wrap-mode">word-char</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="duration">
+                                <property name="label">Duration</property>
+                                <property name="justify">center</property>
+                                <property name="wrap">1</property>
+                                <property name="wrap-mode">word-char</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="copyright">
+                                <property name="label">Copyright</property>
+                                <property name="justify">center</property>
+                                <property name="wrap">1</property>
+                                <property name="wrap-mode">word-char</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

@@ -37,6 +37,23 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.1.16" date="2021-08-17">
+      <description>
+        <p>
+          What's new:
+        </p>
+        <ul>
+          <li>added a new album info modal with full release details (thanks TotalDarkness-NRF!)</li>
+          <li>improved player controls: added the ability to repeat a single track or the whole queue (thanks TotalDarkness-NRF!)</li>
+          <li>improved login credentials management: (re)use auth token when possible instead of always using email and password (thanks nn1ks!)</li>
+          <li>MPRIS fixes: raising the player is now properly implemented (thanks eladyn!)</li>
+          <li>...actually fix an issue with playlists not being modifiable when login in with email</li>
+        </ul>
+        <p>
+          Special thanks to TotalDarkness-NRF for contributing several major features for this version.
+        </p>
+      </description>
+    </release>
     <release version="0.1.15" date="2021-06-30">
       <description>
         <p>

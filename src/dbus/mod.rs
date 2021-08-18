@@ -102,7 +102,8 @@ impl EventListener for AppPlaybackStateListener {
                 })
                 .unwrap();
             }
-            AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
+            AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_))
+            | AppEvent::PlaybackEvent(PlaybackEvent::RepeatModeChanged(_)) => {
                 self.with_player(|player| {
                     let meta = self.make_track_meta();
                     let (has_prev, has_next) = self.has_prev_next();
