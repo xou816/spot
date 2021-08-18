@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-15 03:30-0400\n"
+"POT-Creation-Date: 2021-08-18 19:00+0200\n"
 "PO-Revision-Date: 2021-03-15 19:18+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,83 +17,37 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#. translators: This is a menu entry.
-#: src/app/components/details/details.rs:147
-#: src/app/components/user_menu/user_menu.rs:60
-msgid "About"
-msgstr "À propos"
-
-#: src/app/components/details/details.rs:152
+#. translators: This is part of a larger label that reads "<Album> by <Artist>"
+#: src/app/components/details/release_details.rs:100
 msgid "by"
 msgstr ""
 
-#: src/app/components/details/details.rs:158
+#. translators: This refers to a music label
+#: src/app/components/details/release_details.rs:107
 msgid "Label:"
 msgstr ""
 
-#: src/app/components/details/details.rs:162
+#. translators: This refers to a release date
+#: src/app/components/details/release_details.rs:114
 #, fuzzy
 msgid "Released:"
 msgstr "Discographie"
 
-#: src/app/components/details/details.rs:168
+#. translators: This refers to a number of tracks
+#: src/app/components/details/release_details.rs:121
 #, fuzzy
 msgid "Tracks:"
 msgstr "Morceaux populaires"
 
-#: src/app/components/details/details.rs:174
+#. translators: This refers to the duration of eg. an album
+#: src/app/components/details/release_details.rs:128
 msgid "Duration:"
 msgstr ""
 
-#: src/app/components/details/details.rs:180
+#. translators: Self explanatory
+#: src/app/components/details/release_details.rs:135
 msgid "Copyright:"
-msgid_plural "Copyrights:"
-msgstr[0] ""
-msgstr[1] ""
-
-#. translators: Short text displayed instead of a song title when nothing plays
-#. Short text displayed instead of a song title when nothing plays
-#: src/app/components/playback/playback_info.rs:90 src/window.ui.in:488
-msgid "No song playing"
-msgstr "Aucune lecture en cours"
-
-#. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
-#: src/app/components/login/login_model.rs:52
-msgid "Could not save password. Make sure the session keyring is unlocked."
 msgstr ""
-"Le mot de passe n'a pu être enregistré, assurez-vous que le Trousseau de "
-"session est déverouillé."
-
-#. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:62
-msgid "Quit"
-msgstr "Quitter"
-
-#. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:67
-msgid "Log out"
-msgstr "Déconnexion"
-
-#. translators: This is a sidebar entry to browse to saved albums.
-#: src/app/components/navigation/home.rs:32
-msgid "Library"
-msgstr "Bibliothèque"
-
-#. translators: This is a sidebar entry to browse to saved playlists.
-#: src/app/components/navigation/home.rs:37
-msgid "Playlists"
-msgstr "Listes de lecture"
-
-#. This is the visible name for the play queue. It appears in the sidebar as well.
-#: src/app/components/navigation/home.rs:42
-#: src/app/components/now_playing/now_playing.ui:21
-msgid "Now playing"
-msgstr "En cours de lecture"
-
-#. translators: This text is part of a larger text that says "Search results for <search term>".
-#: src/app/components/search/search.rs:123
-msgid "Search results for"
-msgstr "Résultats pour"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
 #: src/app/components/labels.rs:5
@@ -125,15 +79,49 @@ msgstr "Retirer de la file d'attente"
 msgid "Add to {}"
 msgstr "Ajouter à {}"
 
+#. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
+#: src/app/components/login/login_model.rs:52
+msgid "Could not save password. Make sure the session keyring is unlocked."
+msgstr ""
+"Le mot de passe n'a pu être enregistré, assurez-vous que le Trousseau de "
+"session est déverouillé."
+
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/components/mod.rs:106
+#: src/app/components/mod.rs:105
 msgid "An error occured. Check logs for details!"
 msgstr ""
 "Une erreur est survenue. Consultez les journaux de débogage pour plus "
 "d'information."
 
+#: src/app/components/navigation/home.rs:35
+msgid "Library"
+msgstr "Bibliothèque"
+
+#. translators: This is a sidebar entry to browse to saved playlists.
+#: src/app/components/navigation/home.rs:41
+msgid "Playlists"
+msgstr "Listes de lecture"
+
+#. This is the visible name for the play queue. It appears in the sidebar as well.
+#: src/app/components/navigation/home.rs:46
+#: src/app/components/now_playing/now_playing.ui:14
+msgid "Now playing"
+msgstr "En cours de lecture"
+
+#. translators: Short text displayed instead of a song title when nothing plays
+#. Short text displayed instead of a song title when nothing plays
+#: src/app/components/playback/playback_info.rs:58
+#: src/app/components/playback/playback_info.ui:32
+msgid "No song playing"
+msgstr "Aucune lecture en cours"
+
+#. translators: This text is part of a larger text that says "Search results for <search term>".
+#: src/app/components/search/search.rs:102
+msgid "Search results for"
+msgstr "Résultats pour"
+
 #. This text appears when entering selection mode. It should be as short as possible.
-#: src/app/components/selection/selection_heading.rs:73 src/window.ui.in:26
+#: src/app/components/selection/selection_heading.rs:73 src/window.ui.in:51
 msgid "No song selected"
 msgstr "Aucun morceau sélectionné"
 
@@ -144,52 +132,67 @@ msgid_plural "songs selected"
 msgstr[0] "morceau sélectionné"
 msgstr[1] "morceaux sélectionnés"
 
+#. translators: This is a menu entry.
+#: src/app/components/user_menu/user_menu.rs:56
+msgid "About"
+msgstr "À propos"
+
+#. translators: This is a menu entry.
+#: src/app/components/user_menu/user_menu.rs:58
+msgid "Quit"
+msgstr "Quitter"
+
+#. translators: This is a menu entry.
+#: src/app/components/user_menu/user_menu.rs:63
+msgid "Log out"
+msgstr "Déconnexion"
+
 #: src/app/state/login_state.rs:117
 msgid "Connection restored"
 msgstr "Connexion rétablie"
 
 #. Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify.
-#: src/app/components/artist_details/artist_details.ui:57
+#: src/app/components/artist_details/artist_details.ui:42
 msgid "Top tracks"
 msgstr "Morceaux populaires"
 
 #. Title of the sections that contains all releases from an artist (both singles and albums).
-#: src/app/components/artist_details/artist_details.ui:112
+#: src/app/components/artist_details/artist_details.ui:73
 msgid "Releases"
 msgstr "Discographie"
 
 #. Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).
-#: src/app/components/login/login.ui:69
+#: src/app/components/login/login.ui:45
 msgid "Login to Spotify Premium"
 msgstr "Connexion à Spotify Premium"
 
 #. Placeholder for the username field
-#: src/app/components/login/login.ui:97
+#: src/app/components/login/login.ui:64
 msgid "Username"
 msgstr "Nom d'utilisateur"
 
 #. Placeholder for the password field
-#: src/app/components/login/login.ui:112
+#: src/app/components/login/login.ui:72
 msgid "Password"
 msgstr "Mot de passe"
 
 #. This error is shown when authentication fails.
-#: src/app/components/login/login.ui:156
+#: src/app/components/login/login.ui:95
 msgid "Authentication failed!"
 msgstr "L'authentification a échoué !"
 
 #. Log in button label
-#: src/app/components/login/login.ui:181
+#: src/app/components/login/login.ui:110
 msgid "Log in"
 msgstr "Connexion"
 
 #. This is the title of a section of the search results
-#: src/app/components/search/search.ui:95
+#: src/app/components/search/search.ui:68
 msgid "Albums"
 msgstr "Albums"
 
 #. This is the title of a section of the search results
-#: src/app/components/search/search.ui:144
+#: src/app/components/search/search.ui:101
 msgid "Artists"
 msgstr "Artistes"
 
