@@ -11,3 +11,12 @@
 .album label.album__artist {
   font-size: 14px;
 }
+
+.album__cover image {
+  border-radius: 4px;
+  transition: all 100ms ease;
+}
+
+.album__cover:hover image {
+  filter: brightness(1.15);
+}

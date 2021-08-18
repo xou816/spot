@@ -69,6 +69,8 @@ impl AlbumWidget {
     fn bind(&self, album_model: &AlbumModel, worker: Worker) {
         let widget = imp::AlbumWidget::from_instance(self);
 
+        widget.cover_image.set_overflow(gtk::Overflow::Hidden);
+
         let image = widget.cover_image.downgrade();
         let revealer = widget.revealer.downgrade();
         if let Some(url) = album_model.cover_url() {

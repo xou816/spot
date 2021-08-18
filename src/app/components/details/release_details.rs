@@ -81,6 +81,7 @@ impl ReleaseDetailsWindow {
         self.widget().art.set_from_pixbuf(Some(art));
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn set_details(
         &self,
         album: &str,
