@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-18 19:00+0200\n"
+"POT-Creation-Date: 2021-08-19 10:05+0200\n"
 "PO-Revision-Date: 2021-03-21 09:47+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -19,34 +19,34 @@ msgstr ""
 "X-Generator: Poedit 2.4.1\n"
 
 #. translators: This is part of a larger label that reads "<Album> by <Artist>"
-#: src/app/components/details/release_details.rs:100
+#: src/app/components/details/release_details.rs:101
 msgid "by"
 msgstr ""
 
 #. translators: This refers to a music label
-#: src/app/components/details/release_details.rs:107
+#: src/app/components/details/release_details.rs:108
 msgid "Label:"
 msgstr ""
 
 #. translators: This refers to a release date
-#: src/app/components/details/release_details.rs:114
+#: src/app/components/details/release_details.rs:115
 #, fuzzy
 msgid "Released:"
 msgstr "Lanzamientos"
 
 #. translators: This refers to a number of tracks
-#: src/app/components/details/release_details.rs:121
+#: src/app/components/details/release_details.rs:122
 #, fuzzy
 msgid "Tracks:"
 msgstr "Mejores canciones"
 
 #. translators: This refers to the duration of eg. an album
-#: src/app/components/details/release_details.rs:128
+#: src/app/components/details/release_details.rs:129
 msgid "Duration:"
 msgstr ""
 
 #. translators: Self explanatory
-#: src/app/components/details/release_details.rs:135
+#: src/app/components/details/release_details.rs:136
 msgid "Copyright:"
 msgstr ""
 

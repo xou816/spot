@@ -37,14 +37,14 @@ features = ["rt", "macros", "sync"]
 
 [dependencies.futures]
 package = "futures"
-version = "0.3.15"
+version = "0.3.16"
 
 [dependencies.serde]
-version = "^1.0.126"
+version = "^1.0.127"
 features = ["derive"]
 
 [dependencies.serde_json]
-version = "^1.0.64"
+version = "^1.0.66"
 
 [dependencies.isahc]
 version = "^1.2.0"
@@ -67,7 +67,7 @@ regex = "^1.4.6"
 async-std = "^1.9.0"
 form_urlencoded = "^1.0.1"
 zbus = "^2.0.0-beta.3"
-zvariant = "^2.7.0"
+zvariant = "^2.8.0"
 zvariant_derive = "^2.5.0"
 thiserror = "^1.0.26"
 lazy_static = "^1.4.0"
