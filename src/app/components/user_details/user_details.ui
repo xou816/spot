@@ -8,41 +8,37 @@
         <property name="hexpand">1</property>
         <property name="vexpand">1</property>
         <property name="child">
-          <object class="GtkViewport">
-            <property name="child">
-              <object class="GtkBox">
+          <object class="GtkBox">
+            <property name="margin-start">8</property>
+            <property name="margin-end">8</property>
+            <property name="margin-top">8</property>
+            <property name="margin-bottom">8</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">10</property>
+            <child>
+              <object class="GtkLabel" id="user_name">
+                <property name="halign">start</property>
                 <property name="margin-start">8</property>
                 <property name="margin-end">8</property>
-                <property name="margin-top">8</property>
-                <property name="margin-bottom">8</property>
-                <property name="orientation">vertical</property>
-                <property name="spacing">10</property>
-                <child>
-                  <object class="GtkLabel" id="user_name">
-                    <property name="halign">start</property>
-                    <property name="margin-start">8</property>
-                    <property name="margin-end">8</property>
-                    <property name="label">User</property>
-                    <property name="wrap">1</property>
-                    <property name="xalign">0</property>
-                    <style>
-                      <class name="user_details--name"/>
-                      <class name="large-title"/>
-                    </style>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkFlowBox" id="user_playlists">
-                    <property name="height-request">100</property>
-                    <property name="valign">start</property>
-                    <property name="hexpand">1</property>
-                    <property name="min-children-per-line">1</property>
-                    <property name="selection-mode">none</property>
-                    <property name="activate-on-single-click">0</property>
-                  </object>
-                </child>
+                <property name="label">User</property>
+                <property name="wrap">1</property>
+                <property name="xalign">0</property>
+                <style>
+                  <class name="user_details--name"/>
+                  <class name="large-title"/>
+                </style>
               </object>
-            </property>
+            </child>
+            <child>
+              <object class="GtkFlowBox" id="user_playlists">
+                <property name="height-request">100</property>
+                <property name="valign">start</property>
+                <property name="hexpand">1</property>
+                <property name="min-children-per-line">1</property>
+                <property name="selection-mode">none</property>
+                <property name="activate-on-single-click">0</property>
+              </object>
+            </child>
           </object>
         </property>
       </object>

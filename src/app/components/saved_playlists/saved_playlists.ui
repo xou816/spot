@@ -9,18 +9,14 @@
         <property name="vscrollbar-policy">always</property>
         <property name="min-content-width">250</property>
         <child>
-          <object class="GtkViewport">
-            <property name="child">
-              <object class="GtkFlowBox" id="flowbox">
-                <property name="margin-start">8</property>
-                <property name="margin-end">8</property>
-                <property name="margin-top">8</property>
-                <property name="margin-bottom">8</property>
-                <property name="min-children-per-line">1</property>
-                <property name="selection-mode">none</property>
-                <property name="activate-on-single-click">0</property>
-              </object>
-            </property>
+          <object class="GtkFlowBox" id="flowbox">
+            <property name="margin-start">8</property>
+            <property name="margin-end">8</property>
+            <property name="margin-top">8</property>
+            <property name="margin-bottom">8</property>
+            <property name="min-children-per-line">1</property>
+            <property name="selection-mode">none</property>
+            <property name="activate-on-single-click">0</property>
           </object>
         </child>
       </object>

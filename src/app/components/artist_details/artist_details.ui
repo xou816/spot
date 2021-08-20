@@ -8,75 +8,71 @@
         <property name="hexpand">1</property>
         <property name="vexpand">1</property>
         <property name="child">
-          <object class="GtkViewport">
-            <property name="child">
-              <object class="GtkBox">
+          <object class="GtkBox">
+            <property name="margin-start">8</property>
+            <property name="margin-end">8</property>
+            <property name="margin-top">8</property>
+            <property name="margin-bottom">8</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">16</property>
+            <child>
+              <object class="GtkLabel" id="artist_name">
+                <property name="halign">start</property>
                 <property name="margin-start">8</property>
                 <property name="margin-end">8</property>
-                <property name="margin-top">8</property>
-                <property name="margin-bottom">8</property>
+                <property name="label">Artist</property>
+                <property name="wrap">1</property>
+                <property name="xalign">0</property>
+                <style>
+                  <class name="artist_details--name"/>
+                  <class name="large-title"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
                 <property name="orientation">vertical</property>
-                <property name="spacing">16</property>
                 <child>
-                  <object class="GtkLabel" id="artist_name">
+                  <object class="GtkLabel">
                     <property name="halign">start</property>
                     <property name="margin-start">8</property>
                     <property name="margin-end">8</property>
-                    <property name="label">Artist</property>
-                    <property name="wrap">1</property>
-                    <property name="xalign">0</property>
+                    <property name="label" translatable="yes" comments="Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify.">Top tracks</property>
                     <style>
-                      <class name="artist_details--name"/>
-                      <class name="large-title"/>
+                      <class name="title-4"/>
                     </style>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkBox">
-                    <property name="orientation">vertical</property>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="halign">start</property>
-                        <property name="margin-start">8</property>
-                        <property name="margin-end">8</property>
-                        <property name="label" translatable="yes" comments="Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify.">Top tracks</property>
-                        <style>
-                          <class name="title-4"/>
-                        </style>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkListView" id="top_tracks">
-                        <style>
-                          <class name="artist__top-tracks"/>
-                        </style>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkExpander">
-                    <property name="margin-top">8</property>
-                    <property name="margin-bottom">8</property>
-                    <property name="expanded">1</property>
-                    <child>
-                      <object class="GtkFlowBox" id="artist_releases">
-                        <property name="height-request">100</property>
-                        <property name="hexpand">1</property>
-                        <property name="min-children-per-line">1</property>
-                        <property name="selection-mode">none</property>
-                        <property name="activate-on-single-click">0</property>
-                      </object>
-                    </child>
-                    <child type="label">
-                      <object class="GtkLabel">
-                        <property name="label" translatable="yes" comments="Title of the sections that contains all releases from an artist (both singles and albums).">Releases</property>
-                      </object>
-                    </child>
+                  <object class="GtkListView" id="top_tracks">
+                    <style>
+                      <class name="artist__top-tracks"/>
+                    </style>
                   </object>
                 </child>
               </object>
-            </property>
+            </child>
+            <child>
+              <object class="GtkExpander">
+                <property name="margin-top">8</property>
+                <property name="margin-bottom">8</property>
+                <property name="expanded">1</property>
+                <child>
+                  <object class="GtkFlowBox" id="artist_releases">
+                    <property name="height-request">100</property>
+                    <property name="hexpand">1</property>
+                    <property name="min-children-per-line">1</property>
+                    <property name="selection-mode">none</property>
+                    <property name="activate-on-single-click">0</property>
+                  </object>
+                </child>
+                <child type="label">
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes" comments="Title of the sections that contains all releases from an artist (both singles and albums).">Releases</property>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
         </property>
       </object>

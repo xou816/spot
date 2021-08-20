@@ -32,6 +32,7 @@ impl SearchBar {
                 model.search(query);
             }
         }));
+        search_entry.add_controller(&search_entry_controller);
 
         search_button.connect_clicked(clone!(@weak search_bar => move |b| {
             search_bar.set_search_mode(b.is_active());
