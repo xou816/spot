@@ -185,6 +185,12 @@ impl PlaybackWidget {
         widget.controls_mobile.set_repeat_mode(mode);
     }
 
+    pub fn set_shuffled(&self, shuffled: bool) {
+        let widget = imp::PlaybackWidget::from_instance(self);
+        widget.controls.set_shuffled(shuffled);
+        widget.controls_mobile.set_shuffled(shuffled);
+    }
+
     pub fn connect_play_pause<F>(&self, f: F)
     where
         F: Fn() + Clone + 'static,

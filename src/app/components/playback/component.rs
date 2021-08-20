@@ -37,6 +37,10 @@ impl PlaybackModel {
         self.state().playback.is_playing()
     }
 
+    fn is_shuffled(&self) -> bool {
+        self.state().playback.is_shuffled()
+    }
+
     fn current_song(&self) -> Option<impl Deref<Target = SongDescription> + '_> {
         self.app_model.map_state_opt(|s| s.playback.current_song())
     }
@@ -98,6 +102,10 @@ impl PlaybackControl {
         self.widget.set_repeat_mode(*mode);
     }
 
+    fn update_shuffled(&self) {
+        self.widget.set_shuffled(self.model.is_shuffled());
+    }
+
     fn update_playing(&self) {
         let is_playing = self.model.is_playing();
         self.widget.set_playing(is_playing);
@@ -130,6 +138,9 @@ impl EventListener for PlaybackControl {
             }
             AppEvent::PlaybackEvent(PlaybackEvent::RepeatModeChanged(mode)) => {
                 self.update_repeat(mode);
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::ShuffleChanged) => {
+                self.update_shuffled();
             }
             AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
                 self.update_current_info();

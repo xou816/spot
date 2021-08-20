@@ -100,6 +100,10 @@ impl PlaybackState {
         self.running_order_shuffled.is_some()
     }
 
+    pub fn repeat_mode(&self) -> RepeatMode {
+        self.repeat
+    }
+
     pub fn next_batch(&self) -> Option<Batch> {
         self.current_batch?.next()
     }
@@ -395,6 +399,7 @@ pub enum PlaybackAction {
     Play,
     Pause,
     Stop,
+    SetRepeatMode(RepeatMode),
     ToggleRepeat,
     ToggleShuffle,
     Seek(u32),
@@ -423,6 +428,7 @@ pub enum PlaybackEvent {
     TrackSeeked(u32),
     SeekSynced(u32),
     TrackChanged(String),
+    ShuffleChanged,
     PlaylistChanged,
     PlaybackStopped,
 }
@@ -483,9 +489,16 @@ impl UpdatableState for PlaybackState {
                 };
                 vec![PlaybackEvent::RepeatModeChanged(self.repeat)]
             }
+            PlaybackAction::SetRepeatMode(mode) => {
+                self.repeat = mode;
+                vec![PlaybackEvent::RepeatModeChanged(self.repeat)]
+            }
             PlaybackAction::ToggleShuffle => {
                 self.toggle_shuffle();
-                vec![PlaybackEvent::PlaylistChanged]
+                vec![
+                    PlaybackEvent::PlaylistChanged,
+                    PlaybackEvent::ShuffleChanged,
+                ]
             }
             PlaybackAction::Next => {
                 let old_position = self.position;

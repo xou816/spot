@@ -1,4 +1,4 @@
-use std::convert::Into;
+use std::convert::{Into, TryFrom};
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
 use zvariant::Type;
@@ -6,6 +6,43 @@ use zvariant::{Dict, Signature, Str, Value};
 
 fn boxed_value<'a, V: Into<Value<'a>>>(v: V) -> Value<'a> {
     Value::new(v.into())
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum LoopStatus {
+    None,
+    Track,
+    Playlist,
+}
+
+impl Type for LoopStatus {
+    fn signature() -> Signature<'static> {
+        Str::signature()
+    }
+}
+
+impl TryFrom<&Value<'_>> for LoopStatus {
+    type Error = zvariant::Error;
+
+    fn try_from(value: &Value<'_>) -> Result<Self, Self::Error> {
+        let s = String::try_from(value)?;
+        let s = s.as_str();
+        Ok(match s {
+            "Track" => LoopStatus::Track,
+            "Playlist" => LoopStatus::Playlist,
+            _ => LoopStatus::None,
+        })
+    }
+}
+
+impl From<LoopStatus> for Value<'_> {
+    fn from(status: LoopStatus) -> Self {
+        match status {
+            LoopStatus::None => "None".into(),
+            LoopStatus::Track => "Track".into(),
+            LoopStatus::Playlist => "Playlist".into(),
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -109,6 +146,8 @@ impl From<TrackMetadata> for Value<'_> {
 
 struct MprisState {
     status: PlaybackStatus,
+    loop_status: LoopStatus,
+    shuffled: bool,
     position: PositionMicros,
     metadata: Option<TrackMetadata>,
     has_prev: bool,
@@ -122,6 +161,8 @@ impl SharedMprisState {
     pub fn new() -> Self {
         Self(Arc::new(Mutex::new(MprisState {
             status: PlaybackStatus::Stopped,
+            loop_status: LoopStatus::None,
+            shuffled: false,
             position: PositionMicros::new(1.0),
             metadata: None,
             has_prev: false,
@@ -134,6 +175,17 @@ impl SharedMprisState {
             .lock()
             .map(|s| s.status)
             .unwrap_or(PlaybackStatus::Stopped)
+    }
+
+    pub fn loop_status(&self) -> LoopStatus {
+        self.0
+            .lock()
+            .map(|s| s.loop_status)
+            .unwrap_or(LoopStatus::None)
+    }
+
+    pub fn is_shuffled(&self) -> bool {
+        self.0.lock().ok().map(|s| s.shuffled).unwrap_or(false)
     }
 
     pub fn current_track(&self) -> Option<TrackMetadata> {
@@ -180,6 +232,18 @@ impl SharedMprisState {
         if let Ok(mut state) = self.0.lock() {
             let playing = state.status == PlaybackStatus::Playing;
             (*state).position.set(position, playing);
+        }
+    }
+
+    pub fn set_loop_status(&self, loop_status: LoopStatus) {
+        if let Ok(mut state) = self.0.lock() {
+            (*state).loop_status = loop_status;
+        }
+    }
+
+    pub fn set_shuffled(&self, shuffled: bool) {
+        if let Ok(mut state) = self.0.lock() {
+            (*state).shuffled = shuffled;
         }
     }
 

@@ -21,7 +21,7 @@ mod imp {
         pub prev: TemplateChild<gtk::Button>,
 
         #[template_child]
-        pub shuffle: TemplateChild<gtk::Button>,
+        pub shuffle: TemplateChild<gtk::ToggleButton>,
 
         #[template_child]
         pub repeat: TemplateChild<gtk::Button>,
@@ -62,6 +62,12 @@ impl PlaybackControlsWidget {
         imp::PlaybackControlsWidget::from_instance(self)
             .play_pause
             .set_icon_name(playback_icon);
+    }
+
+    pub fn set_shuffled(&self, shuffled: bool) {
+        imp::PlaybackControlsWidget::from_instance(self)
+            .shuffle
+            .set_active(shuffled);
     }
 
     pub fn set_repeat_mode(&self, mode: RepeatMode) {
