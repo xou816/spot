@@ -65,7 +65,7 @@ impl App {
         let dispatcher = Box::new(ActionDispatcherImpl::new(sender.clone(), worker.clone()));
 
         let mut components: Vec<Box<dyn EventListener>> = vec![
-            App::make_window(&self.settings, builder, Rc::clone(model), worker.clone()),
+            App::make_window(&self.settings, builder, Rc::clone(model)),
             App::make_selection_editor(builder, Rc::clone(model), dispatcher.box_clone()),
             App::make_playback(
                 builder,
@@ -109,7 +109,6 @@ impl App {
         settings: &SpotSettings,
         builder: &gtk::Builder,
         app_model: Rc<AppModel>,
-        worker: Worker,
     ) -> Box<impl EventListener> {
         let window: libadwaita::ApplicationWindow = builder.object("window").unwrap();
         let search_bar: gtk::SearchBar = builder.object("search_bar").unwrap();
@@ -118,7 +117,6 @@ impl App {
             app_model,
             window,
             search_bar,
-            worker,
         ))
     }
 

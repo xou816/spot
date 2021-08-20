@@ -1,2 +1,2 @@
 option('offline', type: 'boolean', value: true)
-option('features', type: 'string', value: 'warn-cache')
+option('features', type: 'string', value: '')

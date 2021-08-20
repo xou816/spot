@@ -10,10 +10,6 @@
     <value value="2" nick="320"/>
   </enum>
   <schema id="dev.alextren.Spot" path="/dev/alextren/Spot/">
-    <key name='old-cache-cleared' type='b'>
-      <default>false</default>
-      <summary>Has the old cache been cleared?</summary>
-    </key>
     <key name='prefers-dark-theme' type='b'>
       <default>true</default>
       <summary>Prefer dark theme</summary>

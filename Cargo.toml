@@ -4,9 +4,6 @@ version = "0.1.16"
 edition = "2018"
 license = "MIT"
 
-[features]
-warn-cache = []
-
 [dependencies.gtk]
 version = "^0.2.0"
 package = "gtk4"
