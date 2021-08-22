@@ -1,4 +1,27 @@
-.album button.album__cover {
+.album {
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.album--loaded {
+  opacity: 1;
+}
+
+/* large style */
+
+leaflet.unfolded .album .album__cover {
+  min-width: 200px;
+  min-height: 200px;
+}
+
+/* small style */
+
+leaflet.folded .album .album__cover {
+  min-width: 100px;
+  min-height: 100px;
+}
+
+.album .album__cover {
   padding: 0;
   border-radius: 0;
 }

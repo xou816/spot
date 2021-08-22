@@ -15,9 +15,6 @@ mod imp {
     #[template(resource = "/dev/alextren/Spot/components/album.ui")]
     pub struct AlbumWidget {
         #[template_child]
-        pub revealer: TemplateChild<gtk::Revealer>,
-
-        #[template_child]
         pub album_label: TemplateChild<gtk::Label>,
 
         #[template_child]
@@ -66,24 +63,33 @@ impl AlbumWidget {
         _self
     }
 
+    fn set_loaded(&self) {
+        let context = self.style_context();
+        context.add_class("album--loaded");
+    }
+
+    fn set_image(&self, pixbuf: Option<&gdk_pixbuf::Pixbuf>) {
+        imp::AlbumWidget::from_instance(self)
+            .cover_image
+            .set_from_pixbuf(pixbuf);
+    }
+
     fn bind(&self, album_model: &AlbumModel, worker: Worker) {
         let widget = imp::AlbumWidget::from_instance(self);
-
         widget.cover_image.set_overflow(gtk::Overflow::Hidden);
 
-        let image = widget.cover_image.downgrade();
-        let revealer = widget.revealer.downgrade();
         if let Some(url) = album_model.cover_url() {
+            let _self = self.downgrade();
             worker.send_local_task(async move {
-                if let (Some(image), Some(revealer)) = (image.upgrade(), revealer.upgrade()) {
+                if let Some(_self) = _self.upgrade() {
                     let loader = ImageLoader::new();
                     let result = loader.load_remote(&url, "jpg", 200, 200).await;
-                    image.set_from_pixbuf(result.as_ref());
-                    revealer.set_reveal_child(true);
+                    _self.set_image(result.as_ref());
+                    _self.set_loaded();
                 }
             });
         } else {
-            widget.revealer.set_reveal_child(true);
+            self.set_loaded();
         }
 
         album_model
