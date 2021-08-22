@@ -1,7 +1,7 @@
 #![allow(clippy::all)]
 
 use gio::prelude::*;
-use glib::subclass::prelude::*;
+use glib::{subclass::prelude::*, SignalHandlerId};
 
 glib::wrapper! {
     pub struct SongModel(ObjectSubclass<imp::SongModel>);
@@ -47,24 +47,64 @@ impl SongModel {
             .to_string()
     }
 
+    pub fn bind_index<O: ObjectType>(&self, o: &O, property: &str) {
+        imp::SongModel::from_instance(self).push_binding(
+            self.bind_property("index", o, property)
+                .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                .build(),
+        );
+    }
+
+    pub fn bind_artist<O: ObjectType>(&self, o: &O, property: &str) {
+        imp::SongModel::from_instance(self).push_binding(
+            self.bind_property("artist", o, property)
+                .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                .build(),
+        );
+    }
+
+    pub fn bind_title<O: ObjectType>(&self, o: &O, property: &str) {
+        imp::SongModel::from_instance(self).push_binding(
+            self.bind_property("title", o, property)
+                .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                .build(),
+        );
+    }
+
+    pub fn bind_duration<O: ObjectType>(&self, o: &O, property: &str) {
+        imp::SongModel::from_instance(self).push_binding(
+            self.bind_property("duration", o, property)
+                .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                .build(),
+        );
+    }
+
     pub fn connect_playing_local<F: Fn(&Self) + 'static>(&self, handler: F) {
-        self.connect_local("notify::playing", true, move |values| {
-            if let Ok(_self) = values[0].get::<Self>() {
-                handler(&_self);
-            }
-            None
-        })
-        .expect("connecting to prop 'playing' failed");
+        let signal_id = self
+            .connect_local("notify::playing", true, move |values| {
+                if let Ok(_self) = values[0].get::<Self>() {
+                    handler(&_self);
+                }
+                None
+            })
+            .expect("connecting to prop 'playing' failed");
+        imp::SongModel::from_instance(self).push_signal(signal_id);
     }
 
     pub fn connect_selected_local<F: Fn(&Self) + 'static>(&self, handler: F) {
-        self.connect_local("notify::selected", true, move |values| {
-            if let Ok(_self) = values[0].get::<Self>() {
-                handler(&_self);
-            }
-            None
-        })
-        .expect("connecting to prop 'selected' failed");
+        let signal_id = self
+            .connect_local("notify::selected", true, move |values| {
+                if let Ok(_self) = values[0].get::<Self>() {
+                    handler(&_self);
+                }
+                None
+            })
+            .expect("connecting to prop 'selected' failed");
+        imp::SongModel::from_instance(self).push_signal(signal_id);
+    }
+
+    pub fn unbind_all(&self) {
+        imp::SongModel::from_instance(self).unbind_all(self);
     }
 }
 
@@ -72,6 +112,12 @@ mod imp {
 
     use super::*;
     use std::cell::RefCell;
+
+    #[derive(Default)]
+    struct BindingsInner {
+        pub signals: Vec<SignalHandlerId>,
+        pub bindings: Vec<glib::Binding>,
+    }
 
     // This is the struct containing all state carried with
     // the new type. Generally this has to make use of
@@ -84,6 +130,25 @@ mod imp {
         duration: RefCell<Option<String>>,
         playing: RefCell<bool>,
         selected: RefCell<bool>,
+        bindings: RefCell<BindingsInner>,
+    }
+
+    impl SongModel {
+        pub fn push_signal(&self, id: SignalHandlerId) {
+            self.bindings.borrow_mut().signals.push(id);
+        }
+
+        pub fn push_binding(&self, binding: Option<glib::Binding>) {
+            if let Some(binding) = binding {
+                self.bindings.borrow_mut().bindings.push(binding);
+            }
+        }
+
+        pub fn unbind_all<O: ObjectExt>(&self, o: &O) {
+            let mut bindings = self.bindings.borrow_mut();
+            bindings.signals.drain(..).for_each(|s| o.disconnect(s));
+            bindings.bindings.drain(..).for_each(|b| b.unbind());
+        }
     }
 
     // ObjectSubclass is the trait that defines the new type and
@@ -113,6 +178,7 @@ mod imp {
                 duration: RefCell::new(None),
                 playing: RefCell::new(false),
                 selected: RefCell::new(false),
+                bindings: RefCell::new(Default::default()),
             }
         }
     }

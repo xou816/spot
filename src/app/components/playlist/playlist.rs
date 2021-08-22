@@ -86,6 +86,15 @@ where
             widget.set_menu(model.menu_for(id).as_ref());
         }));
 
+        factory.connect_unbind(|_, item| {
+            let song_model = item.item().unwrap().downcast::<SongModel>().unwrap();
+            song_model.unbind_all();
+
+            let widget = item.child().unwrap().downcast::<SongWidget>().unwrap();
+            widget.set_actions(None);
+            widget.set_menu(None);
+        });
+
         listview.connect_activate(clone!(@weak list_model, @weak model => move |_, position| {
             let song = list_model.get(position);
             let selection_enabled = model.is_selection_enabled();

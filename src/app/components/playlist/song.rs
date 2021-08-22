@@ -1,5 +1,6 @@
 use crate::app::components::screen_add_css_provider;
 use crate::app::models::SongModel;
+
 use gio::MenuModel;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -115,24 +116,11 @@ impl SongWidget {
 
     pub fn bind(&self, model: &SongModel) {
         let widget = imp::SongWidget::from_instance(self);
-        model
-            .bind_property("index", &*widget.song_index, "label")
-            .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
-            .build();
 
-        model
-            .bind_property("title", &*widget.song_title, "label")
-            .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
-            .build();
-
-        model
-            .bind_property("artist", &*widget.song_artist, "label")
-            .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
-            .build();
-        model
-            .bind_property("duration", &*widget.song_length, "label")
-            .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
-            .build();
+        model.bind_index(&*widget.song_index, "label");
+        model.bind_title(&*widget.song_title, "label");
+        model.bind_artist(&*widget.song_artist, "label");
+        model.bind_duration(&*widget.song_length, "label");
 
         self.set_playing(model.get_playing());
         model.connect_playing_local(clone!(@weak self as _self => move |song| {
