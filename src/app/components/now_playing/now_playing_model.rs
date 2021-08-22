@@ -38,10 +38,15 @@ impl NowPlayingModel {
 
     pub fn load_more_if_needed(&self) -> Option<()> {
         let queue = self.queue();
-        if !queue.exhausted() {
-            return None;
+        if queue.exhausted() {
+            self.load_more()
+        } else {
+            None
         }
+    }
 
+    pub fn load_more(&self) -> Option<()> {
+        let queue = self.queue();
         let api = self.app_model.get_spotify();
         let batch = queue.next_batch()?;
         let batch_size = batch.batch_size;
@@ -73,11 +78,7 @@ impl PlaylistModel for NowPlayingModel {
 
     fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>> {
         let queue = self.queue();
-        let offset = queue.current_offset().unwrap_or(0);
-        let songs = queue
-            .songs()
-            .enumerate()
-            .map(|(i, s)| s.to_song_model(offset + i));
+        let songs = queue.songs().enumerate().map(|(i, s)| s.to_song_model(i));
 
         match event {
             AppEvent::PlaybackEvent(PlaybackEvent::PlaylistChanged) => {

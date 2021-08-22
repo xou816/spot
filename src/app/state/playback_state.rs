@@ -129,8 +129,8 @@ impl PlaybackState {
         let Position { start, count, .. } = self.position.unwrap_or_default();
         self.running_order()
             .iter()
-            .skip(start)
-            .take(count)
+            //.skip(start)
+            //.take(count)
             .filter_map(move |id| indexed.get(id))
     }
 
