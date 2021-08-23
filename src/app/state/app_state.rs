@@ -112,7 +112,7 @@ impl AppState {
                 ]
             }
             AppAction::MoveDownSelection => {
-                if let Some(song) = self.selection.peek_selection().first() {
+                if let Some(song) = self.selection.peek_selection().next() {
                     if self.playback.move_down(&song.id) {
                         return vec![PlaybackEvent::PlaylistChanged.into()];
                     }
@@ -120,7 +120,7 @@ impl AppState {
                 vec![]
             }
             AppAction::MoveUpSelection => {
-                if let Some(song) = self.selection.peek_selection().first() {
+                if let Some(song) = self.selection.peek_selection().next() {
                     if self.playback.move_up(&song.id) {
                         return vec![PlaybackEvent::PlaylistChanged.into()];
                     }
