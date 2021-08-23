@@ -3,7 +3,7 @@ use crate::app::state::{
     login_state::{LoginAction, LoginEvent, LoginState},
     playback_state::{PlaybackAction, PlaybackEvent, PlaybackState},
     selection_state::{SelectionAction, SelectionContext, SelectionEvent, SelectionState},
-    ScreenName, UpdatableState,
+    PlaylistChange, ScreenName, UpdatableState,
 };
 
 #[derive(Clone, Debug)]
@@ -94,12 +94,13 @@ impl AppState {
             AppAction::ViewNowPlaying => vec![AppEvent::NowPlayingShown],
             AppAction::Raise => vec![AppEvent::Raised],
             AppAction::QueueSelection => {
+                let append_at = self.playback.len();
                 for track in self.selection.take_selection() {
                     self.playback.queue(track);
                 }
                 vec![
                     SelectionEvent::SelectionModeChanged(false).into(),
-                    PlaybackEvent::PlaylistChanged.into(),
+                    PlaybackEvent::PlaylistChanged(PlaylistChange::AppendedAt(append_at)).into(),
                 ]
             }
             AppAction::DequeueSelection => {
@@ -108,24 +109,32 @@ impl AppState {
                 }
                 vec![
                     SelectionEvent::SelectionModeChanged(false).into(),
-                    PlaybackEvent::PlaylistChanged.into(),
+                    PlaybackEvent::PlaylistChanged(PlaylistChange::Reset).into(),
                 ]
             }
             AppAction::MoveDownSelection => {
-                if let Some(song) = self.selection.peek_selection().next() {
-                    if self.playback.move_down(&song.id) {
-                        return vec![PlaybackEvent::PlaylistChanged.into()];
-                    }
-                }
-                vec![]
+                let mut selection = self.selection.peek_selection();
+                let playback = &mut self.playback;
+                selection
+                    .next()
+                    .and_then(|song| playback.move_down(&song.id))
+                    .map(|index| {
+                        vec![
+                            PlaybackEvent::PlaylistChanged(PlaylistChange::MovedDown(index)).into(),
+                        ]
+                    })
+                    .unwrap_or_else(Vec::new)
             }
             AppAction::MoveUpSelection => {
-                if let Some(song) = self.selection.peek_selection().next() {
-                    if self.playback.move_up(&song.id) {
-                        return vec![PlaybackEvent::PlaylistChanged.into()];
-                    }
-                }
-                vec![]
+                let mut selection = self.selection.peek_selection();
+                let playback = &mut self.playback;
+                selection
+                    .next()
+                    .and_then(|song| playback.move_up(&song.id))
+                    .map(|index| {
+                        vec![PlaybackEvent::PlaylistChanged(PlaylistChange::MovedUp(index)).into()]
+                    })
+                    .unwrap_or_else(Vec::new)
             }
             AppAction::ChangeSelectionMode(active) => {
                 let context = if active {

@@ -124,6 +124,10 @@ impl PlaybackState {
             .unwrap_or(&mut self.running_order)
     }
 
+    pub fn len(&self) -> usize {
+        self.running_order().len()
+    }
+
     pub fn songs(&self) -> impl Iterator<Item = &'_ SongDescription> + '_ {
         let indexed = &self.indexed_songs;
         let Position { start, count, .. } = self.position.unwrap_or_default();
@@ -262,33 +266,28 @@ impl PlaybackState {
         }
     }
 
-    pub fn move_down(&mut self, id: &str) -> bool {
+    pub fn move_down(&mut self, id: &str) -> Option<usize> {
         let running_order = self.running_order();
         let len = running_order.len();
-        let index = running_order
+        running_order
             .iter()
             .position(|s| s == id)
-            .filter(|&index| index + 1 < len);
-        if let Some(index) = index {
-            self.swap(index, index + 1);
-            true
-        } else {
-            false
-        }
+            .filter(|&index| index + 1 < len)
+            .map(|index| {
+                self.swap(index, index + 1);
+                index
+            })
     }
 
-    pub fn move_up(&mut self, id: &str) -> bool {
-        let index = self
-            .running_order()
+    pub fn move_up(&mut self, id: &str) -> Option<usize> {
+        self.running_order()
             .iter()
             .position(|s| s == id)
-            .filter(|&index| index > 0);
-        if let Some(index) = index {
-            self.swap(index - 1, index);
-            true
-        } else {
-            false
-        }
+            .filter(|&index| index > 0)
+            .map(|index| {
+                self.swap(index - 1, index);
+                index
+            })
     }
 
     fn play(&mut self, id: &str) -> bool {
@@ -421,6 +420,14 @@ impl From<PlaybackAction> for AppAction {
 }
 
 #[derive(Clone, Debug)]
+pub enum PlaylistChange {
+    Reset,
+    AppendedAt(usize),
+    MovedUp(usize),
+    MovedDown(usize),
+}
+
+#[derive(Clone, Debug)]
 pub enum PlaybackEvent {
     PlaybackPaused,
     PlaybackResumed,
@@ -429,7 +436,7 @@ pub enum PlaybackEvent {
     SeekSynced(u32),
     TrackChanged(String),
     ShuffleChanged,
-    PlaylistChanged,
+    PlaylistChanged(PlaylistChange),
     PlaybackStopped,
 }
 
@@ -496,7 +503,7 @@ impl UpdatableState for PlaybackState {
             PlaybackAction::ToggleShuffle => {
                 self.toggle_shuffle();
                 vec![
-                    PlaybackEvent::PlaylistChanged,
+                    PlaybackEvent::PlaylistChanged(PlaylistChange::Reset),
                     PlaybackEvent::ShuffleChanged,
                 ]
             }
@@ -506,7 +513,7 @@ impl UpdatableState for PlaybackState {
                     make_events(vec![
                         Some(PlaybackEvent::TrackChanged(id)),
                         Some(PlaybackEvent::PlaybackResumed),
-                        Some(PlaybackEvent::PlaylistChanged)
+                        Some(PlaybackEvent::PlaylistChanged(PlaylistChange::Reset))
                             .filter(|_| Position::has_range_moved(old_position, self.position)),
                     ])
                 } else {
@@ -524,7 +531,7 @@ impl UpdatableState for PlaybackState {
                     make_events(vec![
                         Some(PlaybackEvent::TrackChanged(id)),
                         Some(PlaybackEvent::PlaybackResumed),
-                        Some(PlaybackEvent::PlaylistChanged)
+                        Some(PlaybackEvent::PlaylistChanged(PlaylistChange::Reset))
                             .filter(|_| Position::has_range_moved(old_position, self.position)),
                     ])
                 } else {
@@ -537,7 +544,7 @@ impl UpdatableState for PlaybackState {
                     make_events(vec![
                         Some(PlaybackEvent::TrackChanged(id)),
                         Some(PlaybackEvent::PlaybackResumed),
-                        Some(PlaybackEvent::PlaylistChanged)
+                        Some(PlaybackEvent::PlaylistChanged(PlaylistChange::Reset))
                             .filter(|_| Position::has_range_moved(old_position, self.position)),
                     ])
                 } else {
@@ -546,29 +553,35 @@ impl UpdatableState for PlaybackState {
             }
             PlaybackAction::LoadSongs(source, tracks) => {
                 self.set_playlist(source, None, tracks);
-                vec![PlaybackEvent::PlaylistChanged]
+                vec![PlaybackEvent::PlaylistChanged(PlaylistChange::Reset)]
             }
             PlaybackAction::LoadPagedSongs(source, SongBatch { songs, batch }) => {
                 self.set_playlist(source, Some(batch), songs);
-                vec![PlaybackEvent::PlaylistChanged]
+                vec![PlaybackEvent::PlaylistChanged(PlaylistChange::Reset)]
             }
             PlaybackAction::Queue(tracks) => {
+                let append_at = self.running_order().len();
                 self.current_batch = None;
                 for track in tracks {
                     self.queue(track);
                 }
-                vec![PlaybackEvent::PlaylistChanged]
+                vec![PlaybackEvent::PlaylistChanged(PlaylistChange::AppendedAt(
+                    append_at,
+                ))]
             }
             PlaybackAction::QueuePaged(SongBatch { batch, songs }) => {
+                let append_at = self.running_order().len();
                 self.current_batch = Some(batch);
                 for song in songs {
                     self.queue(song);
                 }
-                vec![PlaybackEvent::PlaylistChanged]
+                vec![PlaybackEvent::PlaylistChanged(PlaylistChange::AppendedAt(
+                    append_at,
+                ))]
             }
             PlaybackAction::Dequeue(id) => {
                 self.dequeue(&id);
-                vec![PlaybackEvent::PlaylistChanged]
+                vec![PlaybackEvent::PlaylistChanged(PlaylistChange::Reset)]
             }
             PlaybackAction::Seek(pos) => vec![PlaybackEvent::TrackSeeked(pos)],
             PlaybackAction::SyncSeek(pos) => vec![PlaybackEvent::SeekSynced(pos)],

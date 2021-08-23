@@ -8,6 +8,7 @@ use std::sync::Arc;
 use crate::app::components::{labels, PlaylistModel, SelectionTool, SelectionToolsModel};
 use crate::app::models::SongDescription;
 use crate::app::models::SongModel;
+use crate::app::state::PlaylistChange;
 use crate::app::state::{
     PlaybackAction, PlaybackEvent, PlaybackState, PlaylistSource, SelectionAction,
     SelectionContext, SelectionState,
@@ -81,9 +82,12 @@ impl PlaylistModel for NowPlayingModel {
         let songs = queue.songs().enumerate().map(|(i, s)| s.to_song_model(i));
 
         match event {
-            AppEvent::PlaybackEvent(PlaybackEvent::PlaylistChanged) => {
-                Some(ListDiff::Set(songs.collect()))
-            }
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaylistChanged(change)) => match change {
+                PlaylistChange::Reset => Some(ListDiff::Set(songs.collect())),
+                PlaylistChange::AppendedAt(i) => Some(ListDiff::Append(songs.skip(*i).collect())),
+                PlaylistChange::MovedDown(i) => Some(ListDiff::MoveDown(*i)),
+                PlaylistChange::MovedUp(i) => Some(ListDiff::MoveUp(*i)),
+            },
             _ => None,
         }
     }
