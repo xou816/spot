@@ -69,6 +69,7 @@ where
         listview.style_context().add_class("playlist");
         listview.set_single_click_activate(true);
         listview.set_model(Some(&selection_model));
+        Self::set_selection_active(&listview, model.is_selection_enabled());
 
         factory.connect_setup(|_, item| {
             item.set_child(Some(&SongWidget::new()));
@@ -76,7 +77,7 @@ where
 
         factory.connect_bind(clone!(@weak model => move |_, item| {
             let song_model = item.item().unwrap().downcast::<SongModel>().unwrap();
-            song_model.set_state(Self::get_row_state(&*model, &song_model));
+            song_model.set_state(Self::get_item_state(&*model, &song_model));
 
             let widget = item.child().unwrap().downcast::<SongWidget>().unwrap();
             widget.bind(&song_model);
@@ -131,7 +132,7 @@ where
         }
     }
 
-    fn get_row_state(model: &Model, item: &SongModel) -> RowState {
+    fn get_item_state(model: &Model, item: &SongModel) -> RowState {
         let id = &item.get_id();
         let is_playing = model.current_song_id().map(|s| s.eq(id)).unwrap_or(false);
         let is_selected = model
@@ -146,7 +147,7 @@ where
 
     fn update_list(&self) {
         for model_song in self.list_model.iter() {
-            model_song.set_state(Self::get_row_state(&*self.model, &model_song));
+            model_song.set_state(Self::get_item_state(&*self.model, &model_song));
         }
     }
 

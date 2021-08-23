@@ -127,6 +127,7 @@ impl SongWidget {
             _self.set_playing(song.get_playing());
         }));
 
+        self.set_selected(model.get_selected());
         model.connect_selected_local(clone!(@weak self as _self => move |song| {
             _self.set_selected(song.get_selected());
         }));
