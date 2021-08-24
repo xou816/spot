@@ -172,7 +172,6 @@ where
     }
 
     fn update_list(&self) {
-        let len = self.list_model.len() as f64;
         for (i, model_song) in self.list_model.iter().enumerate() {
             let state = Self::get_item_state(&*self.model, &model_song);
             model_song.set_state(state);

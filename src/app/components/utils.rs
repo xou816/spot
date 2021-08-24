@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use gtk::prelude::*;
 use std::cell::Cell;
 use std::rc::Rc;
@@ -151,28 +149,4 @@ pub fn format_duration(duration: f64) -> String {
     } else {
         format!("{}:{:02}", minutes, seconds)
     }
-}
-
-pub fn parent_scrolled_window(widget: &gtk::Widget) -> Option<gtk::ScrolledWindow> {
-    let parent = widget.parent()?;
-    match parent.downcast_ref::<gtk::ScrolledWindow>() {
-        Some(scrolled_window) => Some(scrolled_window.clone()),
-        None => parent_scrolled_window(&parent),
-    }
-}
-
-pub fn in_viewport(widget: &gtk::Widget) -> Option<bool> {
-    let window = parent_scrolled_window(widget)?;
-    let adjustment = window.vadjustment()?;
-    let (_, y) = widget.translate_coordinates(&window, 0.0, 0.0)?;
-    Some(y > 0.0 && y < 0.9 * adjustment.page_size())
-}
-
-pub fn vscroll_to(widget: &gtk::Widget, progress: f64) -> Option<f64> {
-    let window = parent_scrolled_window(widget)?;
-    let adjustment = window.vadjustment()?;
-    let (_, y) = widget.translate_coordinates(&window, 0.0, 0.0)?;
-    let target = adjustment.value() + y * progress;
-    adjustment.set_value(target);
-    Some(target)
 }
