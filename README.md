@@ -1,4 +1,4 @@
-# Spot
+# Spot [![spot-snapshots](https://github.com/xou816/spot/actions/workflows/spot-snapshots.yml/badge.svg)](https://github.com/xou816/spot/actions/workflows/spot-snapshots.yml)
 
 Gtk/Rust native Spotify client for the GNOME desktop. **Only works with premium accounts!**
 
