@@ -1,5 +1,5 @@
 use rand::{rngs::SmallRng, seq::SliceRandom, RngCore, SeedableRng};
-use std::collections::{HashMap, VecDeque};
+use std::collections::HashMap;
 
 use crate::app::models::{Batch, SongBatch, SongDescription};
 use crate::app::state::{AppAction, AppEvent, UpdatableState};
@@ -28,8 +28,8 @@ pub const QUEUE_DEFAULT_SIZE: usize = 100;
 pub struct PlaybackState {
     rng: SmallRng,
     indexed_songs: HashMap<String, SongDescription>,
-    running_order: VecDeque<String>,
-    running_order_shuffled: Option<VecDeque<String>>,
+    running_order: Vec<String>,
+    running_order_shuffled: Option<Vec<String>>,
     position: Option<usize>,
     pub source: Option<PlaylistSource>,
     current_batch: Option<Batch>,
@@ -58,13 +58,13 @@ impl PlaybackState {
         self.indexed_songs.get(id)
     }
 
-    fn running_order(&self) -> &VecDeque<String> {
+    fn running_order(&self) -> &Vec<String> {
         self.running_order_shuffled
             .as_ref()
             .unwrap_or(&self.running_order)
     }
 
-    fn running_order_mut(&mut self) -> &mut VecDeque<String> {
+    fn running_order_mut(&mut self) -> &mut Vec<String> {
         self.running_order_shuffled
             .as_mut()
             .unwrap_or(&mut self.running_order)
@@ -120,9 +120,9 @@ impl PlaybackState {
             .filter(|&id| Some(id) != current_song)
             .cloned()
             .collect();
-        let mut final_list: VecDeque<String> = current_song.cloned().into_iter().collect();
+        let mut final_list: Vec<String> = current_song.cloned().into_iter().collect();
         to_shuffle.shuffle(&mut self.rng);
-        final_list.append(&mut to_shuffle.into());
+        final_list.append(&mut to_shuffle);
         self.position = self.position.map(|_| 0);
         self.running_order_shuffled = Some(final_list);
     }
@@ -148,7 +148,7 @@ impl PlaybackState {
             return;
         }
 
-        self.running_order.push_back(track.id.clone());
+        self.running_order.push(track.id.clone());
         if let Some(shuffled) = self.running_order_shuffled.as_mut() {
             let next = (self.rng.next_u32() as usize) % (shuffled.len() - 1);
             shuffled.insert(next + 1, track.id.clone());
@@ -304,7 +304,7 @@ impl Default for PlaybackState {
         Self {
             rng: SmallRng::from_entropy(),
             indexed_songs: HashMap::new(),
-            running_order: VecDeque::with_capacity(QUEUE_DEFAULT_SIZE),
+            running_order: Vec::with_capacity(QUEUE_DEFAULT_SIZE),
             running_order_shuffled: None,
             position: None,
             source: None,
