@@ -13,11 +13,11 @@ version = "^0.2.0"
 package = "gdk4"
 
 [dependencies.gio]
-version = "^0.14.0"
+version = "^0.14.3"
 features = ["v2_60"]
 
 [dependencies.glib]
-version = "^0.14.2"
+version = "^0.14.4"
 features = ["v2_60"]
 
 [dependencies.librespot]
@@ -37,7 +37,7 @@ package = "futures"
 version = "0.3.16"
 
 [dependencies.serde]
-version = "^1.0.127"
+version = "^1.0.128"
 features = ["derive"]
 
 [dependencies.serde_json]
