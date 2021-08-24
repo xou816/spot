@@ -153,7 +153,7 @@ pub fn format_duration(duration: f64) -> String {
     }
 }
 
-fn parent_scrolled_window(widget: &gtk::Widget) -> Option<gtk::ScrolledWindow> {
+pub fn parent_scrolled_window(widget: &gtk::Widget) -> Option<gtk::ScrolledWindow> {
     let parent = widget.parent()?;
     match parent.downcast_ref::<gtk::ScrolledWindow>() {
         Some(scrolled_window) => Some(scrolled_window.clone()),

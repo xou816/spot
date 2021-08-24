@@ -3,6 +3,7 @@ use gtk::prelude::*;
 use std::ops::Deref;
 use std::rc::Rc;
 
+use crate::app::components::utils::AnimatorDefault;
 use crate::app::components::{Component, EventListener, SongWidget};
 use crate::app::models::SongModel;
 use crate::app::{
@@ -50,6 +51,7 @@ pub trait PlaylistModel {
 }
 
 pub struct Playlist<Model> {
+    animator: AnimatorDefault,
     listview: gtk::ListView,
     _press_gesture: gtk::GestureLongPress,
     list_model: ListStore<SongModel>,
@@ -115,6 +117,7 @@ where
         }));
 
         Self {
+            animator: AnimatorDefault::ease_in_out_animator(),
             listview,
             _press_gesture: press_gesture,
             list_model,
@@ -145,9 +148,40 @@ where
         }
     }
 
+    fn autoscroll_to_playing(&self, index: usize) {
+        let len = self.list_model.len() as f64;
+        let adj = self
+            .listview
+            .parent()
+            .and_then(|p| p.downcast::<gtk::ScrolledWindow>().ok())
+            .and_then(|w| w.vadjustment());
+        if let Some(adj) = adj {
+            let v = adj.value();
+            let pos = (index as f64) * adj.upper() / len;
+            if pos < v || pos > v + 0.9 * adj.page_size() {
+                self.animator.animate(
+                    20,
+                    clone!(@weak adj => @default-return false, move |p| {
+                        let v = adj.value();
+                        adj.set_value(v + p * (pos - v));
+                        true
+                    }),
+                );
+            }
+        }
+    }
+
     fn update_list(&self) {
-        for model_song in self.list_model.iter() {
-            model_song.set_state(Self::get_item_state(&*self.model, &model_song));
+        let len = self.list_model.len() as f64;
+        for (i, model_song) in self.list_model.iter().enumerate() {
+            let state = Self::get_item_state(&*self.model, &model_song);
+            model_song.set_state(state);
+            if state.is_playing
+                && self.model.autoscroll_to_playing()
+                && !self.model.is_selection_enabled()
+            {
+                self.autoscroll_to_playing(i);
+            }
         }
     }
 
