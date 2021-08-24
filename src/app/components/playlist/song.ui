@@ -1,23 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk" version="4.0"/>
-  <template class="SongWidget" parent="GtkBox">
+  <template class="SongWidget" parent="GtkGrid">
     <property name="height-request">30</property>
     <property name="margin-start">2</property>
     <property name="margin-end">2</property>
     <property name="margin-top">2</property>
     <property name="margin-bottom">2</property>
-    <property name="spacing">8</property>
+    <property name="column-spacing">6</property>
+    <property name="row-spacing">0</property>
     <child>
       <object class="GtkOverlay">
-        <property name="child">
+        <layout>
+          <property name="row-span">2</property>
+          <property name="column">0</property>
+          <property name="row">0</property>
+        </layout>
+        <child>
           <object class="GtkLabel" id="song_index">
             <property name="label">1</property>
             <style>
               <class name="song__index"/>
             </style>
           </object>
-        </property>
+        </child>
         <child type="overlay">
           <object class="GtkImage" id="song_icon">
             <property name="icon-name">media-playback-start-symbolic</property>
@@ -38,32 +44,38 @@
       </object>
     </child>
     <child>
-      <object class="GtkBox">
+      <object class="GtkLabel" id="song_title">
+        <property name="label">Title</property>
+        <property name="ellipsize">middle</property>
+        <property name="max-width-chars">50</property>
+        <property name="xalign">0</property>
+        <property name="yalign">1</property>
         <property name="hexpand">1</property>
-        <property name="orientation">vertical</property>
-        <property name="homogeneous">1</property>
-        <child>
-          <object class="GtkLabel" id="song_title">
-            <property name="label">Title</property>
-            <property name="ellipsize">middle</property>
-            <property name="max-width-chars">50</property>
-            <property name="xalign">0</property>
-            <style>
-              <class name="song__title"/>
-            </style>
-          </object>
-        </child>
-        <child>
-          <object class="GtkLabel" id="song_artist">
-            <property name="label">Artist</property>
-            <property name="ellipsize">middle</property>
-            <property name="max-width-chars">35</property>
-            <property name="xalign">0</property>
-            <style>
-              <class name="song__artist"/>
-            </style>
-          </object>
-        </child>
+        <layout>
+          <property name="column-span">3</property>
+          <property name="column">1</property>
+          <property name="row">0</property>
+        </layout>
+        <style>
+          <class name="song__title"/>
+        </style>
+      </object>
+    </child>
+    <child>
+      <object class="GtkLabel" id="song_artist">
+        <property name="label">Artist</property>
+        <property name="ellipsize">middle</property>
+        <property name="max-width-chars">35</property>
+        <property name="xalign">0</property>
+        <property name="hexpand">1</property>
+        <layout>
+          <property name="column-span">1</property>
+          <property name="column">1</property>
+          <property name="row">1</property>
+        </layout>
+        <style>
+          <class name="song__artist"/>
+        </style>
       </object>
     </child>
     <child>
@@ -72,6 +84,12 @@
         <property name="label">0:00</property>
         <property name="max-width-chars">35</property>
         <property name="xalign">1</property>
+        <property name="hexpand">0</property>
+        <layout>
+          <property name="row-span">2</property>
+          <property name="column">3</property>
+          <property name="row">0</property>
+        </layout>
         <style>
           <class name="song__duration"/>
         </style>
@@ -79,11 +97,17 @@
     </child>
     <child>
       <object class="GtkMenuButton" id="menu_btn">
-        <property name="halign">end</property>
         <property name="focus-on-click">0</property>
         <property name="receives-default">1</property>
         <property name="icon-name">view-more-symbolic</property>
         <property name="has-frame">0</property>
+        <property name="hexpand">0</property>
+        <property name="halign">end</property>
+        <layout>
+          <property name="row-span">2</property>
+          <property name="column">4</property>
+          <property name="row">0</property>
+        </layout>
         <style>
           <class name="song__menu"/>
           <class name="flat"/>

@@ -38,7 +38,7 @@ mod imp {
     impl ObjectSubclass for SongWidget {
         const NAME: &'static str = "SongWidget";
         type Type = super::SongWidget;
-        type ParentType = gtk::Box;
+        type ParentType = gtk::Grid;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
@@ -57,11 +57,11 @@ mod imp {
     }
 
     impl WidgetImpl for SongWidget {}
-    impl BoxImpl for SongWidget {}
+    impl GridImpl for SongWidget {}
 }
 
 glib::wrapper! {
-    pub struct SongWidget(ObjectSubclass<imp::SongWidget>) @extends gtk::Widget, gtk::Box;
+    pub struct SongWidget(ObjectSubclass<imp::SongWidget>) @extends gtk::Widget, gtk::Grid;
 }
 
 impl SongWidget {

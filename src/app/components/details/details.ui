@@ -24,10 +24,6 @@
                 <child>
                   <object class="GtkBox">
                     <property name="valign">start</property>
-                    <property name="margin-start">8</property>
-                    <property name="margin-end">8</property>
-                    <property name="margin-top">8</property>
-                    <property name="margin-bottom">8</property>
                     <property name="spacing">16</property>
                     <property name="vexpand">0</property>
                     <child>
@@ -131,8 +127,6 @@
                 <child>
                   <object class="GtkListView" id="album_tracks">
                     <property name="valign">start</property>
-                    <property name="margin-start">8</property>
-                    <property name="margin-end">8</property>
                     <style>
                       <class name="details__songs"/>
                     </style>
