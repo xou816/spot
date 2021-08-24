@@ -982,9 +982,9 @@ dependencies = [
 
 [[package]]
 name = "gio"
-version = "0.14.0"
+version = "0.14.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "86c6823b39d46d22cac2466de261f28d7f049ebc18f7b35296a42c7ed8a88325"
+checksum = "402a7057cd21d64bfa7ac027b344a7f50f677fb3308693df0e8c70fb55d29f0d"
 dependencies = [
  "bitflags",
  "futures-channel",
