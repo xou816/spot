@@ -37,6 +37,18 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.2.0" date="2021-08-24">
+      <description>
+        <p>
+          What's new:
+        </p>
+        <ul>
+          <li>ported app to GTK4 and libadwaita</li>
+          <li>MPRIS: handle shuffling and loop status</li>
+          <li>improved album size on small screens</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.16" date="2021-08-17">
       <description>
         <p>
