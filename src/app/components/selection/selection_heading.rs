@@ -37,7 +37,7 @@ impl SelectionHeadingModel {
 
 pub struct SelectionHeading {
     model: Rc<SelectionHeadingModel>,
-    headerbar: libhandy::HeaderBar,
+    headerbar: libadwaita::HeaderBar,
     selection_toggle: gtk::ToggleButton,
     selection_label: gtk::Label,
 }
@@ -45,7 +45,7 @@ pub struct SelectionHeading {
 impl SelectionHeading {
     pub fn new(
         model: SelectionHeadingModel,
-        headerbar: libhandy::HeaderBar,
+        headerbar: libadwaita::HeaderBar,
         selection_toggle: gtk::ToggleButton,
         selection_label: gtk::Label,
     ) -> Self {

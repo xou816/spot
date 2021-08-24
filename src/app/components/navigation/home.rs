@@ -4,11 +4,11 @@ use gtk::prelude::*;
 use crate::app::components::{Component, EventListener, ScreenFactory};
 use crate::app::AppEvent;
 
-fn find_listbox_descendant(w: &gtk::Widget) -> Option<gtk::ListBox> {
-    match w.clone().downcast::<gtk::ListBox>() {
-        Ok(listbox) => Some(listbox),
-        Err(widget) => {
-            let next = widget.downcast::<gtk::Bin>().ok()?.child()?;
+fn find_listbox_descendant(widget: &gtk::Widget) -> Option<gtk::ListBox> {
+    match widget.downcast_ref::<gtk::ListBox>() {
+        Some(listbox) => Some(listbox.clone()),
+        None => {
+            let next = widget.first_child()?;
             find_listbox_descendant(&next)
         }
     }
@@ -29,16 +29,20 @@ impl HomePane {
         let stack = gtk::Stack::new();
         stack.set_transition_type(gtk::StackTransitionType::Crossfade);
         // translators: This is a sidebar entry to browse to saved albums.
-        stack.add_titled(library.get_root_widget(), "library", &gettext("Library"));
+        stack.add_titled(
+            library.get_root_widget(),
+            Some("library"),
+            &gettext("Library"),
+        );
         stack.add_titled(
             saved_playlists.get_root_widget(),
-            "saved_playlists",
+            Some("saved_playlists"),
             // translators: This is a sidebar entry to browse to saved playlists.
             &gettext("Playlists"),
         );
         stack.add_titled(
             now_playing.get_root_widget(),
-            "now_playing",
+            Some("now_playing"),
             &gettext("Now playing"),
         );
 

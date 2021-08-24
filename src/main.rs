@@ -8,7 +8,6 @@ use gettextrs::*;
 use gio::prelude::*;
 use gio::SimpleAction;
 use gtk::prelude::*;
-use gtk::traits::SettingsExt;
 
 mod api;
 mod app;
@@ -18,6 +17,7 @@ mod player;
 mod settings;
 pub use config::VERSION;
 
+use crate::app::components::expose_widgets;
 use crate::app::dispatch::{spawn_task_handler, DispatchLoop};
 use crate::app::{state::PlaybackAction, App, AppAction, BrowserAction};
 
@@ -30,8 +30,9 @@ fn main() {
     let settings = settings::SpotSettings::new_from_gsettings().unwrap_or_default();
     startup(&settings);
     let gtk_app = gtk::Application::new(Some(config::APPID), Default::default());
+    expose_widgets();
     let builder = gtk::Builder::from_resource("/dev/alextren/Spot/window.ui");
-    let window: libhandy::ApplicationWindow = builder.object("window").unwrap();
+    let window: libadwaita::ApplicationWindow = builder.object("window").unwrap();
     if cfg!(debug_assertions) {
         window.style_context().add_class("devel");
     }
@@ -70,7 +71,7 @@ fn main() {
 
 fn startup(settings: &settings::SpotSettings) {
     gtk::init().unwrap_or_else(|_| panic!("Failed to initialize GTK"));
-    libhandy::init();
+    libadwaita::init();
 
     let res = gio::Resource::load(config::PKGDATADIR.to_owned() + "/spot.gresource")
         .expect("Could not load resources");
@@ -83,8 +84,8 @@ fn startup(settings: &settings::SpotSettings) {
     let provider = gtk::CssProvider::new();
     provider.load_from_resource("/dev/alextren/Spot/app.css");
 
-    gtk::StyleContext::add_provider_for_screen(
-        &gdk::Screen::default().expect("Error initializing gtk css provider."),
+    gtk::StyleContext::add_provider_for_display(
+        &gdk::Display::default().unwrap(),
         &provider,
         gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
     );
@@ -96,35 +97,30 @@ fn register_actions(app: &gtk::Application, sender: UnboundedSender<AppAction>) 
         app.quit();
     }));
     app.add_action(&quit);
-    app.set_accels_for_action("app.quit", &["<Ctrl>Q"]);
 
     app.add_action(&make_action(
         "toggle_playback",
         PlaybackAction::TogglePlay.into(),
         sender.clone(),
     ));
-    app.set_accels_for_action("app.toggle_playback", &["space"]);
 
     app.add_action(&make_action(
         "player_prev",
         PlaybackAction::Previous.into(),
         sender.clone(),
     ));
-    app.set_accels_for_action("app.player_prev", &["<Alt>P"]);
 
     app.add_action(&make_action(
         "player_next",
         PlaybackAction::Next.into(),
         sender.clone(),
     ));
-    app.set_accels_for_action("app.player_next", &["<Alt>N"]);
 
     app.add_action(&make_action(
         "nav_pop",
         AppAction::BrowserAction(BrowserAction::NavigationPop),
         sender,
     ));
-    app.set_accels_for_action("app.nav_pop", &["<Alt>Left"]);
 }
 
 fn make_action(

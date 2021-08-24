@@ -188,7 +188,11 @@ impl PlaylistModel for PlaylistDetailsModel {
         menu.append(Some(&*labels::VIEW_ALBUM), Some("song.view_album"));
         for artist in song.artists.iter() {
             menu.append(
-                Some(&format!("{} {}", *labels::MORE_FROM, artist.name)),
+                Some(&format!(
+                    "{} {}",
+                    *labels::MORE_FROM,
+                    glib::markup_escape_text(&artist.name)
+                )),
                 Some(&format!("song.view_artist_{}", artist.id)),
             );
         }
@@ -284,7 +288,6 @@ impl PlaylistDetailsModel {
         let id = playlist.to_string();
         let uris: Vec<String> = selection
             .peek_selection()
-            .iter()
             .map(|s| &s.uri)
             .cloned()
             .collect();

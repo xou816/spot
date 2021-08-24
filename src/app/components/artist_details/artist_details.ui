@@ -1,20 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 -->
 <interface>
-  <requires lib="gtk+" version="3.24"/>
-  <!-- interface-css-provider-path artist_details.css -->
-  <object class="GtkScrolledWindow" id="root">
-    <property name="visible">True</property>
-    <property name="can-focus">True</property>
-    <property name="hscrollbar-policy">never</property>
+  <requires lib="gtk" version="4.0"/>
+  <template class="ArtistDetailsWidget" parent="GtkBox">
     <child>
-      <object class="GtkViewport">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <child>
+      <object class="GtkScrolledWindow" id="scrolled_window">
+        <property name="hscrollbar-policy">never</property>
+        <property name="hexpand">1</property>
+        <property name="vexpand">1</property>
+        <property name="child">
           <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="margin-start">8</property>
             <property name="margin-end">8</property>
             <property name="margin-top">8</property>
@@ -23,34 +17,23 @@
             <property name="spacing">16</property>
             <child>
               <object class="GtkLabel" id="artist_name">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="halign">start</property>
                 <property name="margin-start">8</property>
                 <property name="margin-end">8</property>
                 <property name="label">Artist</property>
-                <property name="wrap">True</property>
+                <property name="wrap">1</property>
                 <property name="xalign">0</property>
                 <style>
                   <class name="artist_details--name"/>
                   <class name="large-title"/>
                 </style>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkBox">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="halign">start</property>
                     <property name="margin-start">8</property>
                     <property name="margin-end">8</property>
@@ -59,72 +42,43 @@
                       <class name="title-4"/>
                     </style>
                   </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
                 </child>
                 <child>
-                  <object class="GtkListBox" id="top_tracks">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="selection-mode">none</property>
+                  <object class="GtkListView" id="top_tracks">
                     <style>
                       <class name="artist__top-tracks"/>
                     </style>
                   </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
                 </child>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
             </child>
             <child>
               <object class="GtkExpander">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
                 <property name="margin-top">8</property>
                 <property name="margin-bottom">8</property>
-                <property name="expanded">True</property>
+                <property name="expanded">1</property>
                 <child>
                   <object class="GtkFlowBox" id="artist_releases">
                     <property name="height-request">100</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="hexpand">True</property>
+                    <property name="hexpand">1</property>
                     <property name="min-children-per-line">1</property>
                     <property name="selection-mode">none</property>
-                    <property name="activate-on-single-click">False</property>
+                    <property name="activate-on-single-click">0</property>
                   </object>
                 </child>
                 <child type="label">
                   <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="label" translatable="yes" comments="Title of the sections that contains all releases from an artist (both singles and albums).">Releases</property>
                   </object>
                 </child>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">3</property>
-              </packing>
             </child>
           </object>
-        </child>
+        </property>
       </object>
     </child>
     <style>
       <class name="artist"/>
     </style>
-  </object>
+  </template>
 </interface>

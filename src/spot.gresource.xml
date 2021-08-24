@@ -15,6 +15,7 @@
     <!-- details -->
     <file alias="components/details.css">app/components/details/details.css</file>
     <file alias="components/details.ui">app/components/details/details.ui</file>
+    <file alias="components/release_details.ui">app/components/details/release_details.ui</file>
     <!-- playlist details -->
     <file alias="components/playlist_details.css">app/components/playlist_details/playlist_details.css</file>
     <file alias="components/playlist_details.ui">app/components/playlist_details/playlist_details.ui</file>
@@ -34,5 +35,10 @@
     <!-- user details -->
     <file alias="components/user_details.css">app/components/user_details/user_details.css</file>
     <file alias="components/user_details.ui">app/components/user_details/user_details.ui</file>
+    <!-- playback -->
+    <file alias="components/playback.css">app/components/playback/playback.css</file>
+    <file alias="components/playback_controls.ui">app/components/playback/playback_controls.ui</file>
+    <file alias="components/playback_info.ui">app/components/playback/playback_info.ui</file>
+    <file alias="components/playback_widget.ui">app/components/playback/playback_widget.ui</file>
   </gresource>
 </gresources>

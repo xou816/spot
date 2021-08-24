@@ -4,7 +4,7 @@ use std::thread;
 use zbus::fdo;
 
 use crate::app::components::EventListener;
-use crate::app::state::PlaybackEvent;
+use crate::app::state::{PlaybackEvent, RepeatMode};
 use crate::app::{models::SongDescription, AppAction, AppEvent, AppModel};
 
 mod mpris;
@@ -73,6 +73,20 @@ impl AppPlaybackStateListener {
             state.playback.next_song().is_some(),
         )
     }
+
+    fn is_shuffled(&self) -> bool {
+        let state = self.app_model.get_state();
+        state.playback.is_shuffled()
+    }
+
+    fn loop_status(&self) -> LoopStatus {
+        let state = self.app_model.get_state();
+        match state.playback.repeat_mode() {
+            RepeatMode::None => LoopStatus::None,
+            RepeatMode::Song => LoopStatus::Track,
+            RepeatMode::Playlist => LoopStatus::Playlist,
+        }
+    }
 }
 
 impl EventListener for AppPlaybackStateListener {
@@ -102,8 +116,7 @@ impl EventListener for AppPlaybackStateListener {
                 })
                 .unwrap();
             }
-            AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_))
-            | AppEvent::PlaybackEvent(PlaybackEvent::RepeatModeChanged(_)) => {
+            AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
                 self.with_player(|player| {
                     let meta = self.make_track_meta();
                     let (has_prev, has_next) = self.has_prev_next();
@@ -111,6 +124,26 @@ impl EventListener for AppPlaybackStateListener {
                     player.state.set_has_prev(has_prev);
                     player.state.set_has_next(has_next);
                     player.notify_metadata_and_prev_next()?;
+                    Ok(())
+                })
+                .unwrap();
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::RepeatModeChanged(_)) => {
+                self.with_player(|player| {
+                    let (has_prev, has_next) = self.has_prev_next();
+                    player.state.set_loop_status(self.loop_status());
+                    player.loop_status_changed()?;
+                    player.state.set_has_prev(has_prev);
+                    player.state.set_has_next(has_next);
+                    player.notify_metadata_and_prev_next()?;
+                    Ok(())
+                })
+                .unwrap();
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::ShuffleChanged) => {
+                self.with_player(|player| {
+                    player.state.set_shuffled(self.is_shuffled());
+                    player.shuffle_changed()?;
                     Ok(())
                 })
                 .unwrap();

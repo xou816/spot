@@ -1,5 +1,5 @@
 use rand::{rngs::SmallRng, seq::SliceRandom, RngCore, SeedableRng};
-use std::collections::{HashMap, VecDeque};
+use std::collections::HashMap;
 
 use crate::app::models::{Batch, SongBatch, SongDescription};
 use crate::app::state::{AppAction, AppEvent, UpdatableState};
@@ -25,62 +25,12 @@ impl Eq for PlaylistSource {}
 const RANGE_SIZE: usize = 25;
 pub const QUEUE_DEFAULT_SIZE: usize = 100;
 
-#[derive(Debug, Copy, Clone)]
-struct Position {
-    pub index: usize,
-    pub start: usize,
-    pub count: usize,
-}
-
-impl Default for Position {
-    fn default() -> Self {
-        Position {
-            index: 0,
-            start: 0,
-            count: 2 * RANGE_SIZE,
-        }
-    }
-}
-
-impl Position {
-    fn has_range_moved(old: Option<Self>, new: Option<Self>) -> bool {
-        old.and_then(|old| new.map(|new| old.start != new.start))
-            .unwrap_or(true)
-    }
-
-    fn update_into(self, pos: usize, max: usize) -> Self {
-        let cutoff = RANGE_SIZE.saturating_sub(max - pos);
-        let start = pos.saturating_sub(RANGE_SIZE + cutoff);
-        let count = usize::min(2 * RANGE_SIZE, max - start);
-        Self {
-            index: usize::min(pos, max - 1),
-            start,
-            count,
-        }
-    }
-
-    fn update(&mut self, pos: usize, max: usize) {
-        let s = *self;
-        *self = s.update_into(pos, max);
-    }
-
-    fn update_count(&mut self, max: usize) {
-        let s = *self;
-        *self = s.update_into(self.index, max);
-    }
-
-    fn decrement(&mut self) {
-        let s = *self;
-        *self = s.update_into(self.index.saturating_sub(1), self.count.saturating_sub(1));
-    }
-}
-
 pub struct PlaybackState {
     rng: SmallRng,
     indexed_songs: HashMap<String, SongDescription>,
-    running_order: VecDeque<String>,
-    running_order_shuffled: Option<VecDeque<String>>,
-    position: Option<Position>,
+    running_order: Vec<String>,
+    running_order_shuffled: Option<Vec<String>>,
+    position: Option<usize>,
     pub source: Option<PlaylistSource>,
     current_batch: Option<Batch>,
     repeat: RepeatMode,
@@ -88,16 +38,16 @@ pub struct PlaybackState {
 }
 
 impl PlaybackState {
-    pub fn current_offset(&self) -> Option<usize> {
-        self.position.map(|p| p.start)
-    }
-
     pub fn is_playing(&self) -> bool {
         self.is_playing && self.position.is_some()
     }
 
     pub fn is_shuffled(&self) -> bool {
         self.running_order_shuffled.is_some()
+    }
+
+    pub fn repeat_mode(&self) -> RepeatMode {
+        self.repeat
     }
 
     pub fn next_batch(&self) -> Option<Batch> {
@@ -108,30 +58,31 @@ impl PlaybackState {
         self.indexed_songs.get(id)
     }
 
-    fn running_order(&self) -> &VecDeque<String> {
+    fn running_order(&self) -> &Vec<String> {
         self.running_order_shuffled
             .as_ref()
             .unwrap_or(&self.running_order)
     }
 
-    fn running_order_mut(&mut self) -> &mut VecDeque<String> {
+    fn running_order_mut(&mut self) -> &mut Vec<String> {
         self.running_order_shuffled
             .as_mut()
             .unwrap_or(&mut self.running_order)
     }
 
+    pub fn len(&self) -> usize {
+        self.running_order().len()
+    }
+
     pub fn songs(&self) -> impl Iterator<Item = &'_ SongDescription> + '_ {
         let indexed = &self.indexed_songs;
-        let Position { start, count, .. } = self.position.unwrap_or_default();
         self.running_order()
             .iter()
-            .skip(start)
-            .take(count)
             .filter_map(move |id| indexed.get(id))
     }
 
     pub fn current_song_id(&self) -> Option<&String> {
-        self.position.map(|pos| &self.running_order()[pos.index])
+        self.position.map(|pos| &self.running_order()[pos])
     }
 
     pub fn current_song(&self) -> Option<&SongDescription> {
@@ -169,12 +120,10 @@ impl PlaybackState {
             .filter(|&id| Some(id) != current_song)
             .cloned()
             .collect();
-        let mut final_list: VecDeque<String> = current_song.cloned().into_iter().collect();
+        let mut final_list: Vec<String> = current_song.cloned().into_iter().collect();
         to_shuffle.shuffle(&mut self.rng);
-        final_list.append(&mut to_shuffle.into());
-        if let Some(p) = self.position.as_mut() {
-            p.update(0, final_list.len())
-        }
+        final_list.append(&mut to_shuffle);
+        self.position = self.position.map(|_| 0);
         self.running_order_shuffled = Some(final_list);
     }
 
@@ -199,18 +148,13 @@ impl PlaybackState {
             return;
         }
 
-        self.running_order.push_back(track.id.clone());
+        self.running_order.push(track.id.clone());
         if let Some(shuffled) = self.running_order_shuffled.as_mut() {
             let next = (self.rng.next_u32() as usize) % (shuffled.len() - 1);
             shuffled.insert(next + 1, track.id.clone());
         }
 
         self.indexed_songs.insert(track.id.clone(), track);
-
-        let max = self.running_order().len();
-        if let Some(position) = self.position.as_mut() {
-            position.update_count(max);
-        }
     }
 
     pub fn dequeue(&mut self, id: &str) {
@@ -219,22 +163,15 @@ impl PlaybackState {
         }
 
         if let Some(position) = self.running_order().iter().position(|t| t == id) {
-            let new_max = {
+            let new_len = {
                 let running_order = self.running_order_mut();
                 running_order.remove(position);
                 running_order.len()
             };
-            let current_comes_after = self.position.map(|p| p.index >= position).unwrap_or(false);
-            // fix the position of the current song
-            if current_comes_after {
-                if new_max > 0 {
-                    if let Some(position) = self.position.as_mut() {
-                        position.decrement();
-                    }
-                } else {
-                    self.position = None;
-                }
-            }
+            self.position =
+                self.position
+                    .filter(|_| new_len > 0)
+                    .map(|p| if p >= position { p - 1 } else { p });
         }
 
         // if the playlist is shuffled, we also need to remove the track from the unshuffled list
@@ -246,59 +183,50 @@ impl PlaybackState {
     }
 
     fn swap(&mut self, index: usize, other_index: usize) {
-        let max = self.running_order().len();
         let running_order = self.running_order_mut();
         running_order.swap(index, other_index);
-        if let Some(position) = self.position.as_mut() {
-            if index == position.index {
-                position.update(other_index, max);
-            } else if other_index == position.index {
-                position.update(index, max);
-            }
-        }
+        self.position = self.position.map(|position| match position {
+            i if i == index => other_index,
+            i if i == other_index => index,
+            _ => position,
+        });
     }
 
-    pub fn move_down(&mut self, id: &str) -> bool {
+    pub fn move_down(&mut self, id: &str) -> Option<usize> {
         let running_order = self.running_order();
         let len = running_order.len();
-        let index = running_order
+        running_order
             .iter()
             .position(|s| s == id)
-            .filter(|&index| index + 1 < len);
-        if let Some(index) = index {
-            self.swap(index, index + 1);
-            true
-        } else {
-            false
-        }
+            .filter(|&index| index + 1 < len)
+            .map(|index| {
+                self.swap(index, index + 1);
+                index
+            })
     }
 
-    pub fn move_up(&mut self, id: &str) -> bool {
-        let index = self
-            .running_order()
+    pub fn move_up(&mut self, id: &str) -> Option<usize> {
+        self.running_order()
             .iter()
             .position(|s| s == id)
-            .filter(|&index| index > 0);
-        if let Some(index) = index {
-            self.swap(index - 1, index);
-            true
-        } else {
-            false
-        }
+            .filter(|&index| index > 0)
+            .map(|index| {
+                self.swap(index - 1, index);
+                index
+            })
     }
 
     fn play(&mut self, id: &str) -> bool {
         if self.current_song_id().map(|cur| cur == id).unwrap_or(false) {
             return false;
         }
-        let max = self.running_order().len();
         if let Some(mut index) = self.running_order().iter().position(|s| s == id) {
             if self.is_shuffled() && self.position.is_none() {
                 // Hacky fix for now if we reach this state
                 self.running_order_mut().swap(index, 0);
                 index = 0;
             }
-            self.position = Some(self.position.unwrap_or_default().update_into(index, max));
+            self.position.replace(index);
             self.is_playing = true;
             true
         } else {
@@ -312,10 +240,8 @@ impl PlaybackState {
     }
 
     fn play_index(&mut self, index: usize) -> String {
-        // Assumes index is in running order
-        let len = self.running_order().len();
         self.is_playing = true;
-        self.position = Some(self.position.unwrap_or_default().update_into(index, len));
+        self.position.replace(index);
         self.running_order()[index].clone()
     }
 
@@ -326,9 +252,9 @@ impl PlaybackState {
     fn next_index(&self) -> Option<usize> {
         let len = self.running_order().len();
         self.position.and_then(|p| match self.repeat {
-            RepeatMode::Song => Some(p.index),
-            RepeatMode::Playlist => Some((p.index + 1) % len),
-            RepeatMode::None => Some(p.index + 1).filter(|&i| i < len),
+            RepeatMode::Song => Some(p),
+            RepeatMode::Playlist => Some((p + 1) % len),
+            RepeatMode::None => Some(p + 1).filter(|&i| i < len),
         })
     }
 
@@ -339,9 +265,9 @@ impl PlaybackState {
     fn prev_index(&self) -> Option<usize> {
         let len = self.running_order().len();
         self.position.and_then(|p| match self.repeat {
-            RepeatMode::Song => Some(p.index),
-            RepeatMode::Playlist => Some((if p.index == 0 { len } else { p.index }) - 1),
-            RepeatMode::None => Some(p.index).filter(|&i| i > 0).map(|i| i - 1),
+            RepeatMode::Song => Some(p),
+            RepeatMode::Playlist => Some((if p == 0 { len } else { p }) - 1),
+            RepeatMode::None => Some(p).filter(|&i| i > 0).map(|i| i - 1),
         })
     }
 
@@ -368,7 +294,7 @@ impl PlaybackState {
 
     pub fn exhausted(&self) -> bool {
         self.position
-            .map(|pos| pos.index + RANGE_SIZE >= self.running_order().len() - 1)
+            .map(|pos| pos + RANGE_SIZE >= self.running_order().len() - 1)
             .unwrap_or(false)
     }
 }
@@ -378,7 +304,7 @@ impl Default for PlaybackState {
         Self {
             rng: SmallRng::from_entropy(),
             indexed_songs: HashMap::new(),
-            running_order: VecDeque::with_capacity(QUEUE_DEFAULT_SIZE),
+            running_order: Vec::with_capacity(QUEUE_DEFAULT_SIZE),
             running_order_shuffled: None,
             position: None,
             source: None,
@@ -395,6 +321,7 @@ pub enum PlaybackAction {
     Play,
     Pause,
     Stop,
+    SetRepeatMode(RepeatMode),
     ToggleRepeat,
     ToggleShuffle,
     Seek(u32),
@@ -416,6 +343,14 @@ impl From<PlaybackAction> for AppAction {
 }
 
 #[derive(Clone, Debug)]
+pub enum PlaylistChange {
+    Reset,
+    AppendedAt(usize),
+    MovedUp(usize),
+    MovedDown(usize),
+}
+
+#[derive(Clone, Debug)]
 pub enum PlaybackEvent {
     PlaybackPaused,
     PlaybackResumed,
@@ -423,7 +358,8 @@ pub enum PlaybackEvent {
     TrackSeeked(u32),
     SeekSynced(u32),
     TrackChanged(String),
-    PlaylistChanged,
+    ShuffleChanged,
+    PlaylistChanged(PlaylistChange),
     PlaybackStopped,
 }
 
@@ -483,18 +419,22 @@ impl UpdatableState for PlaybackState {
                 };
                 vec![PlaybackEvent::RepeatModeChanged(self.repeat)]
             }
+            PlaybackAction::SetRepeatMode(mode) => {
+                self.repeat = mode;
+                vec![PlaybackEvent::RepeatModeChanged(self.repeat)]
+            }
             PlaybackAction::ToggleShuffle => {
                 self.toggle_shuffle();
-                vec![PlaybackEvent::PlaylistChanged]
+                vec![
+                    PlaybackEvent::PlaylistChanged(PlaylistChange::Reset),
+                    PlaybackEvent::ShuffleChanged,
+                ]
             }
             PlaybackAction::Next => {
-                let old_position = self.position;
                 if let Some(id) = self.play_next() {
                     make_events(vec![
                         Some(PlaybackEvent::TrackChanged(id)),
                         Some(PlaybackEvent::PlaybackResumed),
-                        Some(PlaybackEvent::PlaylistChanged)
-                            .filter(|_| Position::has_range_moved(old_position, self.position)),
                     ])
                 } else {
                     self.stop();
@@ -506,26 +446,21 @@ impl UpdatableState for PlaybackState {
                 vec![PlaybackEvent::PlaybackStopped]
             }
             PlaybackAction::Previous => {
-                let old_position = self.position;
                 if let Some(id) = self.play_prev() {
                     make_events(vec![
                         Some(PlaybackEvent::TrackChanged(id)),
                         Some(PlaybackEvent::PlaybackResumed),
-                        Some(PlaybackEvent::PlaylistChanged)
-                            .filter(|_| Position::has_range_moved(old_position, self.position)),
                     ])
                 } else {
                     vec![]
                 }
             }
             PlaybackAction::Load(id) => {
-                let old_position = self.position;
                 if self.play(&id) {
                     make_events(vec![
                         Some(PlaybackEvent::TrackChanged(id)),
                         Some(PlaybackEvent::PlaybackResumed),
-                        Some(PlaybackEvent::PlaylistChanged)
-                            .filter(|_| Position::has_range_moved(old_position, self.position)),
+                        Some(PlaybackEvent::PlaylistChanged(PlaylistChange::Reset)),
                     ])
                 } else {
                     vec![]
@@ -533,29 +468,35 @@ impl UpdatableState for PlaybackState {
             }
             PlaybackAction::LoadSongs(source, tracks) => {
                 self.set_playlist(source, None, tracks);
-                vec![PlaybackEvent::PlaylistChanged]
+                vec![PlaybackEvent::PlaylistChanged(PlaylistChange::Reset)]
             }
             PlaybackAction::LoadPagedSongs(source, SongBatch { songs, batch }) => {
                 self.set_playlist(source, Some(batch), songs);
-                vec![PlaybackEvent::PlaylistChanged]
+                vec![PlaybackEvent::PlaylistChanged(PlaylistChange::Reset)]
             }
             PlaybackAction::Queue(tracks) => {
+                let append_at = self.running_order().len();
                 self.current_batch = None;
                 for track in tracks {
                     self.queue(track);
                 }
-                vec![PlaybackEvent::PlaylistChanged]
+                vec![PlaybackEvent::PlaylistChanged(PlaylistChange::AppendedAt(
+                    append_at,
+                ))]
             }
             PlaybackAction::QueuePaged(SongBatch { batch, songs }) => {
+                let append_at = self.running_order().len();
                 self.current_batch = Some(batch);
                 for song in songs {
                     self.queue(song);
                 }
-                vec![PlaybackEvent::PlaylistChanged]
+                vec![PlaybackEvent::PlaylistChanged(PlaylistChange::AppendedAt(
+                    append_at,
+                ))]
             }
             PlaybackAction::Dequeue(id) => {
                 self.dequeue(&id);
-                vec![PlaybackEvent::PlaylistChanged]
+                vec![PlaybackEvent::PlaylistChanged(PlaylistChange::Reset)]
             }
             PlaybackAction::Seek(pos) => vec![PlaybackEvent::TrackSeeked(pos)],
             PlaybackAction::SyncSeek(pos) => vec![PlaybackEvent::SeekSynced(pos)],
@@ -586,7 +527,7 @@ mod tests {
 
     impl PlaybackState {
         fn current_position(&self) -> Option<usize> {
-            Some(self.position?.index)
+            self.position
         }
 
         fn song_ids(&self) -> Vec<&str> {

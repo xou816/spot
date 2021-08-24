@@ -8,6 +8,7 @@ use std::sync::Arc;
 use crate::app::components::{labels, PlaylistModel, SelectionTool, SelectionToolsModel};
 use crate::app::models::SongDescription;
 use crate::app::models::SongModel;
+use crate::app::state::PlaylistChange;
 use crate::app::state::{
     PlaybackAction, PlaybackEvent, PlaybackState, PlaylistSource, SelectionAction,
     SelectionContext, SelectionState,
@@ -38,10 +39,15 @@ impl NowPlayingModel {
 
     pub fn load_more_if_needed(&self) -> Option<()> {
         let queue = self.queue();
-        if !queue.exhausted() {
-            return None;
+        if queue.exhausted() {
+            self.load_more()
+        } else {
+            None
         }
+    }
 
+    pub fn load_more(&self) -> Option<()> {
+        let queue = self.queue();
         let api = self.app_model.get_spotify();
         let batch = queue.next_batch()?;
         let batch_size = batch.batch_size;
@@ -73,16 +79,15 @@ impl PlaylistModel for NowPlayingModel {
 
     fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>> {
         let queue = self.queue();
-        let offset = queue.current_offset().unwrap_or(0);
-        let songs = queue
-            .songs()
-            .enumerate()
-            .map(|(i, s)| s.to_song_model(offset + i));
+        let songs = queue.songs().enumerate().map(|(i, s)| s.to_song_model(i));
 
         match event {
-            AppEvent::PlaybackEvent(PlaybackEvent::PlaylistChanged) => {
-                Some(ListDiff::Set(songs.collect()))
-            }
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaylistChanged(change)) => match change {
+                PlaylistChange::Reset => Some(ListDiff::Set(songs.collect())),
+                PlaylistChange::AppendedAt(i) => Some(ListDiff::Append(songs.skip(*i).collect())),
+                PlaylistChange::MovedDown(i) => Some(ListDiff::MoveDown(*i)),
+                PlaylistChange::MovedUp(i) => Some(ListDiff::MoveUp(*i)),
+            },
             _ => None,
         }
     }
@@ -114,7 +119,11 @@ impl PlaylistModel for NowPlayingModel {
         menu.append(Some(&*labels::VIEW_ALBUM), Some("song.view_album"));
         for artist in song.artists.iter() {
             menu.append(
-                Some(&format!("{} {}", *labels::MORE_FROM, artist.name)),
+                Some(&format!(
+                    "{} {}",
+                    *labels::MORE_FROM,
+                    glib::markup_escape_text(&artist.name)
+                )),
                 Some(&format!("song.view_artist_{}", artist.id)),
             );
         }

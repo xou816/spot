@@ -10,6 +10,8 @@ where
 {
     Set(Vec<GType>),
     Append(Vec<GType>),
+    MoveUp(usize),
+    MoveDown(usize),
 }
 
 pub struct ListStore<GType> {
@@ -37,6 +39,8 @@ where
         match diff {
             ListDiff::Set(elements) => self.replace_all(elements.into_iter()),
             ListDiff::Append(elements) => self.extend(elements.into_iter()),
+            ListDiff::MoveDown(i) => self.move_down_unchecked(i as u32),
+            ListDiff::MoveUp(i) => self.move_up_unchecked(i as u32),
         }
     }
 
@@ -52,6 +56,21 @@ where
     pub fn replace_all(&mut self, elements: impl Iterator<Item = GType>) {
         let upcast_vec: Vec<glib::Object> = elements.map(|e| e.upcast::<glib::Object>()).collect();
         self.store.splice(0, self.store.n_items(), &upcast_vec[..]);
+    }
+
+    pub fn move_up_unchecked(&mut self, index: u32) {
+        self.swap(index - 1, index).unwrap();
+    }
+
+    pub fn move_down_unchecked(&mut self, index: u32) {
+        self.swap(index, index + 1).unwrap();
+    }
+
+    fn swap(&mut self, ia: u32, ib: u32) -> Option<()> {
+        let a = self.store.item(ia)?;
+        let b = self.store.item(ib)?;
+        self.store.splice(ia, 2, &[b, a]);
+        Some(())
     }
 
     pub fn insert(&mut self, position: u32, element: GType) {

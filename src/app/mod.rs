@@ -1,7 +1,6 @@
 use crate::api::CachedSpotifyClient;
 use crate::settings::SpotSettings;
 use futures::channel::mpsc::UnboundedSender;
-use gtk::prelude::*;
 use std::rc::Rc;
 use std::sync::Arc;
 
@@ -66,10 +65,9 @@ impl App {
         let dispatcher = Box::new(ActionDispatcherImpl::new(sender.clone(), worker.clone()));
 
         let mut components: Vec<Box<dyn EventListener>> = vec![
-            App::make_window(&self.settings, builder, Rc::clone(model), worker.clone()),
+            App::make_window(&self.settings, builder, Rc::clone(model)),
             App::make_selection_editor(builder, Rc::clone(model), dispatcher.box_clone()),
-            App::make_playback_control(builder, Rc::clone(model), dispatcher.box_clone()),
-            App::make_playback_info(
+            App::make_playback(
                 builder,
                 Rc::clone(model),
                 dispatcher.box_clone(),
@@ -111,16 +109,14 @@ impl App {
         settings: &SpotSettings,
         builder: &gtk::Builder,
         app_model: Rc<AppModel>,
-        worker: Worker,
     ) -> Box<impl EventListener> {
-        let window: libhandy::ApplicationWindow = builder.object("window").unwrap();
-        let search_bar: libhandy::SearchBar = builder.object("search_bar").unwrap();
+        let window: libadwaita::ApplicationWindow = builder.object("window").unwrap();
+        let search_bar: gtk::SearchBar = builder.object("search_bar").unwrap();
         Box::new(MainWindow::new(
             settings.window.clone(),
             app_model,
             window,
             search_bar,
-            worker,
         ))
     }
 
@@ -129,7 +125,7 @@ impl App {
         app_model: Rc<AppModel>,
         dispatcher: Box<dyn ActionDispatcher>,
     ) -> Box<impl EventListener> {
-        let headerbar: libhandy::HeaderBar = builder.object("header_bar").unwrap();
+        let headerbar: libadwaita::HeaderBar = builder.object("header_bar").unwrap();
         let selection_toggle: gtk::ToggleButton = builder.object("selection_toggle").unwrap();
         let selection_label: gtk::Label = builder.object("selection_label").unwrap();
         let model = SelectionHeadingModel::new(app_model, dispatcher);
@@ -148,7 +144,7 @@ impl App {
         worker: Worker,
     ) -> Box<Navigation> {
         let back_btn: gtk::Button = builder.object("nav_back").unwrap();
-        let leaflet: libhandy::Leaflet = builder.object("leaflet").unwrap();
+        let leaflet: libadwaita::Leaflet = builder.object("leaflet").unwrap();
         let navigation_stack: gtk::Stack = builder.object("navigation_stack").unwrap();
         let home_stack_sidebar: gtk::StackSidebar = builder.object("home_stack_sidebar").unwrap();
 
@@ -171,57 +167,18 @@ impl App {
         Box::new(Login::new(parent, model))
     }
 
-    fn make_playback_info(
+    fn make_playback(
         builder: &gtk::Builder,
         app_model: Rc<AppModel>,
         dispatcher: Box<dyn ActionDispatcher>,
         worker: Worker,
-    ) -> Box<PlaybackInfo> {
-        let now_playing: gtk::Button = builder.object("now_playing").unwrap();
-        let now_playing_small: gtk::Button = builder.object("now_playing_small").unwrap();
-        let image: gtk::Image = builder.object("playing_image").unwrap();
-        let image_small: gtk::Image = builder.object("playing_image_small").unwrap();
-        let current_song_info: gtk::Label = builder.object("current_song_info").unwrap();
-
-        let model = PlaybackInfoModel::new(app_model, dispatcher);
-        Box::new(PlaybackInfo::new(
+    ) -> Box<impl EventListener> {
+        let model = PlaybackModel::new(app_model, dispatcher);
+        Box::new(PlaybackControl::new(
             model,
+            builder.object("playback").unwrap(),
             worker,
-            now_playing,
-            now_playing_small,
-            image,
-            image_small,
-            current_song_info,
         ))
-    }
-
-    fn make_playback_control(
-        builder: &gtk::Builder,
-        app_model: Rc<AppModel>,
-        dispatcher: Box<dyn ActionDispatcher>,
-    ) -> Box<PlaybackControl> {
-        let play_button: gtk::Button = builder.object("play_pause").unwrap();
-        let next: gtk::Button = builder.object("next").unwrap();
-        let prev: gtk::Button = builder.object("prev").unwrap();
-        let shuffle_button: gtk::Button = builder.object("shuffle").unwrap();
-        let repeat_button: gtk::Button = builder.object("repeat").unwrap();
-        let seek_bar: gtk::Scale = builder.object("seek_bar").unwrap();
-        let track_position: gtk::Label = builder.object("track_position").unwrap();
-        let track_duration: gtk::Label = builder.object("track_duration").unwrap();
-
-        let widget = PlaybackControlWidget::new(
-            play_button,
-            seek_bar,
-            track_position,
-            track_duration,
-            next,
-            prev,
-            shuffle_button,
-            repeat_button,
-        );
-
-        let model = PlaybackControlModel::new(app_model, dispatcher);
-        Box::new(PlaybackControl::new(model, widget))
     }
 
     fn make_search_bar(
@@ -230,7 +187,7 @@ impl App {
     ) -> Box<SearchBar> {
         let search_button: gtk::ToggleButton = builder.object("search_button").unwrap();
         let search_entry: gtk::SearchEntry = builder.object("search_entry").unwrap();
-        let search_bar: libhandy::SearchBar = builder.object("search_bar").unwrap();
+        let search_bar: gtk::SearchBar = builder.object("search_bar").unwrap();
         let model = SearchBarModel(dispatcher);
         Box::new(SearchBar::new(
             model,

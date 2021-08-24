@@ -9,6 +9,7 @@ use zbus::ObjectServer;
 use zvariant::ObjectPath;
 
 use super::types::*;
+use crate::app::state::RepeatMode;
 use crate::app::{state::PlaybackAction, AppAction};
 
 #[derive(Clone)]
@@ -270,6 +271,23 @@ impl SpotMprisPlayer {
     }
 
     #[dbus_interface(property)]
+    pub fn loop_status(&self) -> LoopStatus {
+        self.state.loop_status()
+    }
+
+    #[dbus_interface(property)]
+    pub fn set_loop_status(&self, value: LoopStatus) -> Result<()> {
+        let mode = match value {
+            LoopStatus::None => RepeatMode::None,
+            LoopStatus::Track => RepeatMode::Song,
+            LoopStatus::Playlist => RepeatMode::Playlist,
+        };
+        self.sender
+            .unbounded_send(PlaybackAction::SetRepeatMode(mode).into())
+            .map_err(|_| zbus::fdo::Error::Failed("Could not send action".to_string()))
+    }
+
+    #[dbus_interface(property)]
     pub fn position(&self) -> i64 {
         self.state.position() as i64
     }
@@ -284,11 +302,15 @@ impl SpotMprisPlayer {
 
     #[dbus_interface(property)]
     pub fn shuffle(&self) -> bool {
-        false
+        self.state.is_shuffled()
     }
 
     #[dbus_interface(property)]
-    pub fn set_shuffle(&self, value: bool) {}
+    pub fn set_shuffle(&self, value: bool) -> Result<()> {
+        self.sender
+            .unbounded_send(PlaybackAction::ToggleShuffle.into())
+            .map_err(|_| zbus::fdo::Error::Failed("Could not send action".to_string()))
+    }
 
     #[dbus_interface(property)]
     pub fn volume(&self) -> f64 {

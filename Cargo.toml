@@ -4,16 +4,13 @@ version = "0.1.16"
 edition = "2018"
 license = "MIT"
 
-[features]
-warn-cache = []
-
 [dependencies.gtk]
-version = "^0.14.0"
-features = ["v3_24"]
+version = "^0.2.0"
+package = "gtk4"
 
 [dependencies.gdk]
-version = "^0.14.0"
-features = ["v3_24"]
+version = "^0.2.0"
+package = "gdk4"
 
 [dependencies.gio]
 version = "^0.14.0"
@@ -61,8 +58,7 @@ features = ["gettext-system"]
 [dependencies]
 secret-service = "^2.0.1"
 gdk-pixbuf = "^0.14.0"
-libhandy = "^0.8.0"
-gladis = "^1.0.0"
+libadwaita = "0.1.0-alpha-2"
 ref_filter_map = "^1.0.1"
 regex = "^1.4.6"
 async-std = "^1.9.0"

@@ -25,11 +25,11 @@
   opacity: 1;
 }
 
-list.playlist_details__songs {
+listview.playlist_details__songs {
   padding: 8px;
   border-radius: 8px;
 }
 
-list.playlist_details__songs row {
+listview.playlist_details__songs row {
   border-radius: 4px;
 }

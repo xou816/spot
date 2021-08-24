@@ -226,7 +226,10 @@ async fn get_access_token_and_expiry_time(
 ) -> Result<(String, SystemTime), SpotifyError> {
     let token = keymaster::get_token(session, CLIENT_ID, SCOPES)
         .await
-        .map_err(|_| SpotifyError::TokenFailed)?;
+        .map_err(|e| {
+            dbg!(e);
+            SpotifyError::TokenFailed
+        })?;
     let expiry_time = SystemTime::now() + Duration::from_secs(token.expires_in.into());
     Ok((token.access_token, expiry_time))
 }
@@ -234,7 +237,10 @@ async fn get_access_token_and_expiry_time(
 async fn create_session(credentials: Credentials) -> Result<Session, SpotifyError> {
     let session_config = SessionConfig::default();
     let result = Session::connect(session_config, credentials, None).await;
-    result.map_err(|_| SpotifyError::LoginFailed)
+    result.map_err(|e| {
+        dbg!(e);
+        SpotifyError::LoginFailed
+    })
 }
 
 async fn player_setup_delegate(

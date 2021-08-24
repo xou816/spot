@@ -19,12 +19,13 @@
   opacity: 1;
 }
 
-.playlist--selectable .song__index {
+.playlist--selectable .song__index, .playlist--selectable .song__icon {
   opacity: 0;
 }
 
-.playlist--selectable .song__checkbox {
+.playlist--selectable .song__checkbox, .playlist--selectable .song__checkbox check {
   opacity: 1;
+  filter: none;
 }
 
 .song__title {
@@ -32,6 +33,7 @@
 }
 
 row {
+  transition: background-color 150ms ease;
   margin: 1px 0;
 }
 
@@ -49,7 +51,7 @@ row {
 }
 
 .song__menu {
-  opacity: 0
+  opacity: 0;
 }
 
 .song__menu--enabled {
@@ -58,4 +60,18 @@ row {
 
 row:hover .song__menu--enabled, .song__menu--enabled:checked {
   opacity: 1;
+}
+
+.song check {
+  filter: opacity(1);
+}
+
+/* copied from adwaita */
+
+.playlist row:hover {
+  background-color: alpha(currentColor, 0.07);
+}
+
+.playlist row:active {
+  background-color: alpha(currentColor, 0.16);
 }

@@ -30,12 +30,12 @@ label.details__album-label {
   opacity: 1;
 }
 
-list.details__songs {
+listview.details__songs {
   padding: 8px;
   border-radius: 8px;
 }
 
-list.details__songs row {
+listview.details__songs row {
   border-radius: 4px;
 }
 

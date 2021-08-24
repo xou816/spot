@@ -3,16 +3,31 @@ use std::cell::Cell;
 use std::rc::Rc;
 use std::time::Duration;
 
+#[derive(Clone)]
 pub struct Clock {
     interval_ms: u32,
-    source: Cell<Option<glib::source::SourceId>>,
+    source: Rc<Cell<Option<glib::source::SourceId>>>,
+}
+
+impl Default for Clock {
+    fn default() -> Self {
+        Self::new(1000)
+    }
+}
+
+impl std::fmt::Debug for Clock {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Clock")
+            .field("interval_ms", &self.interval_ms)
+            .finish()
+    }
 }
 
 impl Clock {
-    pub fn new() -> Self {
+    pub fn new(interval_ms: u32) -> Self {
         Self {
-            interval_ms: 1000,
-            source: Cell::new(None),
+            interval_ms,
+            source: Rc::new(Cell::new(None)),
         }
     }
 
@@ -120,8 +135,7 @@ pub fn wrap_flowbox_item<
     let item = item.downcast_ref::<Model>().unwrap();
     let widget = f(item);
     let child = gtk::FlowBoxChild::new();
-    child.add(&widget);
-    child.show_all();
+    child.set_child(Some(&widget));
     child.upcast::<gtk::Widget>()
 }
 
@@ -135,30 +149,4 @@ pub fn format_duration(duration: f64) -> String {
     } else {
         format!("{}:{:02}", minutes, seconds)
     }
-}
-
-fn parent_scrolled_window(widget: &gtk::Widget) -> Option<gtk::ScrolledWindow> {
-    let parent = widget.parent()?;
-    match parent.downcast_ref::<gtk::ScrolledWindow>() {
-        Some(scrolled_window) => Some(scrolled_window.clone()),
-        None => parent_scrolled_window(&parent),
-    }
-}
-
-pub fn in_viewport(widget: &gtk::Widget) -> Option<bool> {
-    let window = parent_scrolled_window(widget)?;
-    let adjustment = window.vadjustment();
-    let (_, y) = widget.translate_coordinates(&window, 0, 0)?;
-    let y = y as f64;
-    Some(y > 0.0 && y < 0.9 * adjustment.page_size())
-}
-
-pub fn vscroll_to(widget: &gtk::Widget, progress: f64) -> Option<f64> {
-    let window = parent_scrolled_window(widget)?;
-    let adjustment = window.vadjustment();
-    let (_, y) = widget.translate_coordinates(&window, 0, 0)?;
-    let y = y as f64;
-    let target = adjustment.value() + y * progress;
-    adjustment.set_value(target);
-    Some(target)
 }

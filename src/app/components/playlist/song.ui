@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 -->
 <interface>
-  <requires lib="gtk+" version="3.24"/>
-  <!-- interface-css-provider-path song.css -->
-  <object class="GtkBox" id="root">
+  <requires lib="gtk" version="4.0"/>
+  <template class="SongWidget" parent="GtkBox">
     <property name="height-request">30</property>
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="margin-start">2</property>
     <property name="margin-end">2</property>
     <property name="margin-top">2</property>
@@ -14,25 +10,16 @@
     <property name="spacing">8</property>
     <child>
       <object class="GtkOverlay">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <child>
+        <property name="child">
           <object class="GtkLabel" id="song_index">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="label">1</property>
             <style>
               <class name="song__index"/>
             </style>
           </object>
-          <packing>
-            <property name="index">-1</property>
-          </packing>
-        </child>
+        </property>
         <child type="overlay">
           <object class="GtkImage" id="song_icon">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="icon-name">media-playback-start-symbolic</property>
             <style>
               <class name="song__icon"/>
@@ -41,37 +28,22 @@
         </child>
         <child type="overlay">
           <object class="GtkCheckButton" id="song_checkbox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="receives-default">False</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
-            <property name="draw-indicator">True</property>
             <style>
               <class name="song__checkbox"/>
             </style>
           </object>
-          <packing>
-            <property name="index">1</property>
-          </packing>
         </child>
       </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">0</property>
-      </packing>
     </child>
     <child>
       <object class="GtkBox">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
+        <property name="hexpand">1</property>
         <property name="orientation">vertical</property>
-        <property name="homogeneous">True</property>
+        <property name="homogeneous">1</property>
         <child>
           <object class="GtkLabel" id="song_title">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="label">Title</property>
             <property name="ellipsize">middle</property>
             <property name="max-width-chars">50</property>
@@ -80,16 +52,9 @@
               <class name="song__title"/>
             </style>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
         </child>
         <child>
           <object class="GtkLabel" id="song_artist">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="label">Artist</property>
             <property name="ellipsize">middle</property>
             <property name="max-width-chars">35</property>
@@ -98,50 +63,12 @@
               <class name="song__artist"/>
             </style>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
         </child>
       </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">1</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkMenuButton" id="menu_btn">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="focus-on-click">False</property>
-        <property name="receives-default">True</property>
-        <child>
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="icon-name">view-more-symbolic</property>
-          </object>
-        </child>
-        <style>
-          <class name="song__menu"/>
-          <class name="flat"/>
-        </style>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">False</property>
-        <property name="pack-type">end</property>
-        <property name="position">2</property>
-      </packing>
     </child>
     <child>
       <object class="GtkLabel" id="song_length">
-        <property name="visible">True</property>
-        <property name="sensitive">False</property>
-        <property name="can-focus">False</property>
-        <property name="xpad">0</property>
+        <property name="sensitive">0</property>
         <property name="label">0:00</property>
         <property name="max-width-chars">35</property>
         <property name="xalign">1</property>
@@ -149,15 +76,22 @@
           <class name="song__duration"/>
         </style>
       </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="pack-type">end</property>
-        <property name="position">4</property>
-      </packing>
+    </child>
+    <child>
+      <object class="GtkMenuButton" id="menu_btn">
+        <property name="halign">end</property>
+        <property name="focus-on-click">0</property>
+        <property name="receives-default">1</property>
+        <property name="icon-name">view-more-symbolic</property>
+        <property name="has-frame">0</property>
+        <style>
+          <class name="song__menu"/>
+          <class name="flat"/>
+        </style>
+      </object>
     </child>
     <style>
       <class name="song"/>
     </style>
-  </object>
+  </template>
 </interface>

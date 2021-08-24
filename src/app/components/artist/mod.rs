@@ -1,67 +1,89 @@
-use gladis::Gladis;
 use gtk::prelude::*;
+use gtk::subclass::prelude::*;
+use gtk::CompositeTemplate;
 
-use crate::app::components::Component;
 use crate::app::loader::ImageLoader;
 use crate::app::models::ArtistModel;
 use crate::app::Worker;
 
-#[derive(Gladis, Clone)]
-struct ArtistWidget {
-    root: gtk::Widget,
-    artist: gtk::Label,
-    avatar_btn: gtk::Button,
-    avatar: libhandy::Avatar,
+mod imp {
+
+    use super::*;
+
+    #[derive(Debug, Default, CompositeTemplate)]
+    #[template(resource = "/dev/alextren/Spot/components/artist.ui")]
+    pub struct ArtistWidget {
+        #[template_child]
+        pub artist: TemplateChild<gtk::Label>,
+
+        #[template_child]
+        pub avatar_btn: TemplateChild<gtk::Button>,
+
+        #[template_child]
+        pub avatar: TemplateChild<libadwaita::Avatar>,
+    }
+
+    #[glib::object_subclass]
+    impl ObjectSubclass for ArtistWidget {
+        const NAME: &'static str = "ArtistWidget";
+        type Type = super::ArtistWidget;
+        type ParentType = gtk::Box;
+
+        fn class_init(klass: &mut Self::Class) {
+            Self::bind_template(klass);
+        }
+
+        fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
+            obj.init_template();
+        }
+    }
+
+    impl ObjectImpl for ArtistWidget {}
+    impl WidgetImpl for ArtistWidget {}
+    impl BoxImpl for ArtistWidget {}
+}
+
+glib::wrapper! {
+    pub struct ArtistWidget(ObjectSubclass<imp::ArtistWidget>) @extends gtk::Widget, gtk::Box;
 }
 
 impl ArtistWidget {
     pub fn new() -> Self {
-        Self::from_resource(resource!("/components/artist.ui")).unwrap()
+        glib::Object::new(&[]).expect("Failed to create an instance of ArtistWidget")
     }
-}
 
-pub struct Artist {
-    widget: ArtistWidget,
-    model: ArtistModel,
-}
+    pub fn for_model(model: &ArtistModel, worker: Worker) -> Self {
+        let _self = Self::new();
+        _self.bind(model, worker);
+        _self
+    }
 
-impl Artist {
-    pub fn new(artist_model: &ArtistModel, worker: Worker) -> Self {
-        let widget = ArtistWidget::new();
+    pub fn connect_artist_pressed<F: Fn(&Self) + 'static>(&self, f: F) {
+        imp::ArtistWidget::from_instance(self)
+            .avatar_btn
+            .connect_clicked(clone!(@weak self as _self => move |_| {
+                f(&_self);
+            }));
+    }
 
-        if let Some(url) = artist_model.image_url() {
+    fn bind(&self, model: &ArtistModel, worker: Worker) {
+        let widget = imp::ArtistWidget::from_instance(self);
+
+        if let Some(url) = model.image_url() {
             let avatar = widget.avatar.downgrade();
             worker.send_local_task(async move {
                 if let Some(avatar) = avatar.upgrade() {
                     let loader = ImageLoader::new();
                     let pixbuf = loader.load_remote(&url, "jpg", 200, 200).await;
-                    avatar.set_image_load_func(Some(Box::new(move |_| pixbuf.clone())));
+                    let texture = pixbuf.as_ref().map(|p| gdk::Texture::for_pixbuf(p));
+                    avatar.set_custom_image(texture.as_ref());
                 }
             });
         }
 
-        artist_model
-            .bind_property("artist", &widget.artist, "label")
+        model
+            .bind_property("artist", &*widget.artist, "label")
             .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
             .build();
-
-        Self {
-            widget,
-            model: artist_model.clone(),
-        }
-    }
-
-    pub fn connect_artist_pressed<F: Fn(&ArtistModel) + 'static>(&self, f: F) {
-        self.widget
-            .avatar_btn
-            .connect_clicked(clone!(@weak self.model as model => move |_| {
-                f(&model);
-            }));
-    }
-}
-
-impl Component for Artist {
-    fn get_root_widget(&self) -> &gtk::Widget {
-        &self.widget.root
     }
 }

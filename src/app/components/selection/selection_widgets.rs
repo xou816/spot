@@ -29,15 +29,13 @@ struct AddSelectionButton {
 
 impl AddSelectionButton {
     fn new(tools: Vec<AddSelectionTool>, model: &Rc<impl SelectionToolsModel + 'static>) -> Self {
-        let image = gtk::ImageBuilder::new()
-            .icon_name("list-add-symbolic")
-            .icon_size(gtk::IconSize::LargeToolbar)
-            .build();
         let button = gtk::MenuButtonBuilder::new()
             .visible(true)
-            .image(&image)
+            .icon_name("list-add-symbolic")
             .build();
-        button.style_context().add_class("osd");
+        let ctx = button.style_context();
+        ctx.add_class("osd");
+        ctx.add_class("tool");
 
         let action_group = SimpleActionGroup::new();
         button.insert_action_group("add_to", Some(&action_group));
@@ -80,10 +78,11 @@ impl AddSelectionButton {
             }
         }
 
-        let popover = gtk::Popover::from_model(Some(&button), &menu);
+        let popover = gtk::PopoverMenu::from_model(Some(&menu));
         popover.style_context().add_class("osd");
+        popover.set_position(gtk::PositionType::Top);
         button.set_popover(Some(&popover));
-        MenuButtonExt::set_direction(&button, gtk::ArrowType::Up);
+        gtk::MenuButton::set_direction(&button, gtk::ArrowType::Up);
 
         Self { button }
     }
@@ -102,15 +101,13 @@ struct SelectionButton {
 
 impl SelectionButton {
     fn new(tool: SimpleSelectionTool, model: &Rc<impl SelectionToolsModel + 'static>) -> Self {
-        let image = gtk::ImageBuilder::new()
-            .icon_name(tool.icon_name())
-            .icon_size(gtk::IconSize::LargeToolbar)
-            .build();
         let button = gtk::ButtonBuilder::new()
             .visible(true)
-            .image(&image)
+            .icon_name(tool.icon_name())
             .build();
-        button.style_context().add_class("osd");
+        let ctx = button.style_context();
+        ctx.add_class("osd");
+        ctx.add_class("tool");
         button.connect_clicked(clone!(@weak model => move |_| {
             let selection = model.enabled_selection();
             if let Some(selection) = selection {
@@ -165,7 +162,9 @@ where
 
     fn update_visible_tools(&mut self) {
         self.selection_widgets = vec![];
-        self.button_box.foreach(|w| self.button_box.remove(w));
+        while let Some(w) = self.button_box.first_child() {
+            self.button_box.remove(&w);
+        }
 
         if self.model.enabled_selection().is_some() {
             self.selection_widgets = Self::make_buttons(&self.button_box, &self.model);
@@ -184,7 +183,7 @@ where
                     SelectionTool::Simple(tool) => Some({
                         let button = SelectionButton::new(*tool, model);
                         button.update_for_state(&*selection);
-                        button_box.add(&button.button);
+                        button_box.append(&button.button);
                         Box::new(button) as Box<dyn SelectionWidget>
                     }),
                     _ => None,
@@ -201,7 +200,7 @@ where
             if !add_tools.is_empty() {
                 let button = AddSelectionButton::new(add_tools, model);
                 button.update_for_state(&*selection);
-                button_box.add(&button.button);
+                button_box.append(&button.button);
                 other_tools.push(Box::new(button));
             }
 
@@ -215,16 +214,22 @@ where
         let button_box = gtk::BoxBuilder::new()
             .halign(gtk::Align::Center)
             .valign(gtk::Align::End)
-            .margin(20)
+            .margin_bottom(20)
+            .margin_top(20)
+            .margin_start(20)
+            .margin_end(20)
             .build();
         button_box.style_context().add_class("linked");
         button_box
     }
 
     fn make_widgets(main_child: &gtk::Widget) -> (gtk::Widget, gtk::Box) {
-        let root = gtk::OverlayBuilder::new().expand(true).build();
+        let root = gtk::OverlayBuilder::new()
+            .hexpand(true)
+            .vexpand(true)
+            .build();
         let button_box = Self::make_button_box();
-        root.add(main_child);
+        root.set_child(Some(main_child));
         root.add_overlay(&button_box);
         (root.upcast(), button_box)
     }

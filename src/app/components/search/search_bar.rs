@@ -1,5 +1,4 @@
 use gtk::prelude::*;
-use libhandy::traits::SearchBarExt;
 use std::rc::Rc;
 
 use super::SearchBarModel;
@@ -11,7 +10,7 @@ impl SearchBar {
     pub fn new(
         model: SearchBarModel,
         search_button: gtk::ToggleButton,
-        search_bar: libhandy::SearchBar,
+        search_bar: gtk::SearchBar,
         search_entry: gtk::SearchEntry,
     ) -> Self {
         let model = Rc::new(model);
@@ -26,13 +25,14 @@ impl SearchBar {
             });
         }
 
-        search_entry.connect_focus_in_event(move |s, _| {
-            let query = s.text().as_str().to_string();
+        let search_entry_controller = gtk::EventControllerFocus::new();
+        search_entry_controller.connect_enter(clone!(@weak search_entry => move |_| {
+            let query = search_entry.text().as_str().to_string();
             if !query.is_empty() {
                 model.search(query);
             }
-            Inhibit(false)
-        });
+        }));
+        search_entry.add_controller(&search_entry_controller);
 
         search_button.connect_clicked(clone!(@weak search_bar => move |b| {
             search_bar.set_search_mode(b.is_active());

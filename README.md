@@ -6,8 +6,6 @@ Based on [librespot](https://github.com/librespot-org/librespot/).
 
 ![Spot screenshot](./data/appstream/2.png)
 
-[Older demo gif](./demo.gif)
-
 ## Installing
 
 | Package | Maintainer | Repo |
@@ -15,11 +13,6 @@ Based on [librespot](https://github.com/librespot-org/librespot/).
 | <a href='https://flathub.org/apps/details/dev.alextren.Spot'><img width='130' alt='Download on Flathub' src='https://flathub.org/assets/badges/flathub-badge-en.png'/></a> | xou816 | https://github.com/flathub/dev.alextren.Spot |
 | <a href='https://snapcraft.io/spot'><img width='130' alt="Get it from the Snap Store" src="https://snapcraft.io/static/images/badges/en/snap-store-black.svg"></a> | popey | https://github.com/popey/spot-snap |
 | <a href='https://aur.archlinux.org/packages/spot-client/'><img alt="AUR version" src="https://img.shields.io/aur/version/spot-client"></a> | dpeukert | https://gitlab.com/dpeukert/pkgbuilds/tree/main/spot-client |
-
-
-## GTK4
-
-**The GTK4 port is almost ready :) all future development and contributions should ideally target the [gtk4/main](https://github.com/xou816/spot/tree/gtk4/main) branch!**
 
 
 ## Usage notes
@@ -77,7 +70,7 @@ See [this comment](https://github.com/xou816/spot/issues/209#issuecomment-860180
 - playlist management (creation and edition)
 - liked tracks
 - GNOME search provider?
-- improved search? (track results, )
+- improved search? (track results)
 - recommendations?
 
 ## Contributing
@@ -105,17 +98,15 @@ If you can't build Spot locally, you may run the `spot-snapshots` action against
 
 ### With GNOME Builder and flatpak
 
-Pre-requisite: install the `org.freedesktop.Sdk.Extension.rust-stable` SDK extension with flatpak. Builder might do this for you automatically, but it will install an older version; make sure  the version installed matches the version of the Freedesktop SDK GNOME uses (at the time of writing: 20.08).
+Pre-requisite: install the `org.freedesktop.Sdk.Extension.rust-stable` SDK extension with flatpak. Builder might do this for you automatically, but it will install an older version; make sure  the version installed matches the version of the Freedesktop SDK GNOME uses.
 
 Open the project in GNOME Builder and make the `dev.alextren.Spot.development.json` configuration active. Then build :)
 
 ### Manually
 
-Requires Rust (stable), GTK3, and a couple other things. Also requires libhandy1: it is not packaged on all distros at the moment, you might have to build it yourself!
+Requires Rust (stable), **GTK4**, and a couple other things. Also requires **libadwaita**: it is not packaged on all distros at the moment, you might have to build it yourself!
 
-**Build** dependencies on Ubuntu 20.04 for instance: ```build-essential pkg-config meson libssl-dev libglib2.0-dev-bin libgtk-3-dev libasound2-dev libpulse-dev```. 
-
-Then, with meson:
+With meson:
 
 ```
 meson target -Dbuildtype=debug -Doffline=false --prefix="$HOME/.local"

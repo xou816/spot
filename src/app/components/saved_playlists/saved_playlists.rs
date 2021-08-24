@@ -1,28 +1,92 @@
-use gladis::Gladis;
 use gtk::prelude::*;
-
-use std::rc::{Rc, Weak};
+use gtk::subclass::prelude::*;
+use gtk::CompositeTemplate;
+use std::rc::Rc;
 
 use super::SavedPlaylistsModel;
-use crate::app::components::{Album, Component, EventListener};
+use crate::app::components::{AlbumWidget, Component, EventListener};
 use crate::app::dispatch::Worker;
 use crate::app::models::AlbumModel;
 use crate::app::state::LoginEvent;
-use crate::app::AppEvent;
+use crate::app::{AppEvent, ListStore};
 
-#[derive(Clone, Gladis)]
-struct SavedPlaylistsWidget {
-    pub scrolled_window: gtk::ScrolledWindow,
-    pub flowbox: gtk::FlowBox,
+mod imp {
+
+    use super::*;
+
+    #[derive(Debug, Default, CompositeTemplate)]
+    #[template(resource = "/dev/alextren/Spot/components/saved_playlists.ui")]
+    pub struct SavedPlaylistsWidget {
+        #[template_child]
+        pub scrolled_window: TemplateChild<gtk::ScrolledWindow>,
+
+        #[template_child]
+        pub flowbox: TemplateChild<gtk::FlowBox>,
+    }
+
+    #[glib::object_subclass]
+    impl ObjectSubclass for SavedPlaylistsWidget {
+        const NAME: &'static str = "SavedPlaylistsWidget";
+        type Type = super::SavedPlaylistsWidget;
+        type ParentType = gtk::Box;
+
+        fn class_init(klass: &mut Self::Class) {
+            Self::bind_template(klass);
+        }
+
+        fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
+            obj.init_template();
+        }
+    }
+
+    impl ObjectImpl for SavedPlaylistsWidget {}
+    impl WidgetImpl for SavedPlaylistsWidget {}
+    impl BoxImpl for SavedPlaylistsWidget {}
+}
+
+glib::wrapper! {
+    pub struct SavedPlaylistsWidget(ObjectSubclass<imp::SavedPlaylistsWidget>) @extends gtk::Widget, gtk::Box;
 }
 
 impl SavedPlaylistsWidget {
-    fn new() -> Self {
-        Self::from_resource(resource!("/components/saved_playlists.ui")).unwrap()
+    pub fn new() -> Self {
+        glib::Object::new(&[]).expect("Failed to create an instance of SavedPlaylistsWidget")
     }
 
-    fn root(&self) -> &gtk::Widget {
-        self.scrolled_window.upcast_ref()
+    fn connect_bottom_edge<F>(&self, f: F)
+    where
+        F: Fn() + 'static,
+    {
+        imp::SavedPlaylistsWidget::from_instance(self)
+            .scrolled_window
+            .connect_edge_reached(move |_, pos| {
+                if let gtk::PositionType::Bottom = pos {
+                    f()
+                }
+            });
+    }
+
+    fn bind_albums<F>(&self, worker: Worker, store: &ListStore<AlbumModel>, on_album_pressed: F)
+    where
+        F: Fn(&String) + Clone + 'static,
+    {
+        imp::SavedPlaylistsWidget::from_instance(self)
+            .flowbox
+            .bind_model(Some(store.unsafe_store()), move |item| {
+                let album_model = item.downcast_ref::<AlbumModel>().unwrap();
+                let child = gtk::FlowBoxChild::new();
+                let album = AlbumWidget::for_model(album_model, worker.clone());
+
+                let f = on_album_pressed.clone();
+                album.connect_album_pressed(clone!(@weak album_model => move |_| {
+                    if let Some(id) = album_model.uri().as_ref() {
+                        f(id);
+                    }
+                }));
+
+                child.set_child(Some(&album));
+                child.upcast::<gtk::Widget>()
+            });
     }
 }
 
@@ -38,12 +102,9 @@ impl SavedPlaylists {
 
         let widget = SavedPlaylistsWidget::new();
 
-        let weak_model = Rc::downgrade(&model);
-        widget.scrolled_window.connect_edge_reached(move |_, pos| {
-            if let (gtk::PositionType::Bottom, Some(model)) = (pos, weak_model.upgrade()) {
-                let _ = model.load_more_playlists();
-            }
-        });
+        widget.connect_bottom_edge(clone!(@weak model => move || {
+            model.load_more_playlists();
+        }));
 
         Self {
             widget,
@@ -52,16 +113,14 @@ impl SavedPlaylists {
         }
     }
 
-    fn bind_flowbox(&self, store: &gio::ListStore) {
-        let weak_model = Rc::downgrade(&self.model);
-        let worker_clone = self.worker.clone();
-
-        self.widget.flowbox.bind_model(Some(store), move |item| {
-            let item = item.downcast_ref::<AlbumModel>().unwrap();
-            let child = create_album_for(item, worker_clone.clone(), weak_model.clone());
-            child.show_all();
-            child.upcast::<gtk::Widget>()
-        });
+    fn bind_flowbox(&self) {
+        self.widget.bind_albums(
+            self.worker.clone(),
+            &*self.model.get_list_store().unwrap(),
+            clone!(@weak self.model as model => move |id| {
+                model.open_playlist(id.clone());
+            }),
+        );
     }
 }
 
@@ -70,7 +129,7 @@ impl EventListener for SavedPlaylists {
         match event {
             AppEvent::Started => {
                 let _ = self.model.refresh_saved_playlists();
-                self.bind_flowbox(self.model.get_list_store().unwrap().unsafe_store())
+                self.bind_flowbox();
             }
             AppEvent::LoginEvent(LoginEvent::LoginCompleted(_)) => {
                 let _ = self.model.refresh_saved_playlists();
@@ -82,25 +141,6 @@ impl EventListener for SavedPlaylists {
 
 impl Component for SavedPlaylists {
     fn get_root_widget(&self) -> &gtk::Widget {
-        self.widget.root()
+        self.widget.as_ref()
     }
-}
-
-fn create_album_for(
-    album_model: &AlbumModel,
-    worker: Worker,
-    model: Weak<SavedPlaylistsModel>,
-) -> gtk::FlowBoxChild {
-    let child = gtk::FlowBoxChild::new();
-
-    let album = Album::new(album_model, worker);
-    child.add(album.get_root_widget());
-
-    album.connect_album_pressed(move |a| {
-        if let (Some(model), Some(id)) = (model.upgrade(), a.uri()) {
-            model.open_playlist(id);
-        }
-    });
-
-    child
 }
