@@ -19,7 +19,10 @@ mod imp {
     #[template(resource = "/dev/alextren/Spot/components/details.ui")]
     pub struct AlbumDetailsWidget {
         #[template_child]
-        pub root: TemplateChild<gtk::Widget>,
+        pub scrolled_window: TemplateChild<gtk::ScrolledWindow>,
+
+        #[template_child]
+        pub header_revealer: TemplateChild<gtk::Revealer>,
 
         #[template_child]
         pub album_label: TemplateChild<gtk::Label>,
@@ -75,6 +78,30 @@ impl AlbumDetailsWidget {
 
     fn widget(&self) -> &imp::AlbumDetailsWidget {
         imp::AlbumDetailsWidget::from_instance(self)
+    }
+
+    fn set_header_visible(&self, visible: bool) -> bool {
+        let widget = self.widget();
+        let is_up_to_date = widget.header_revealer.reveals_child() == visible;
+        if !is_up_to_date {
+            widget.header_revealer.set_reveal_child(visible);
+        }
+        is_up_to_date
+    }
+
+    fn connect_header(&self) {
+        self.set_header_visible(true);
+
+        let scroll_controller =
+            gtk::EventControllerScroll::new(gtk::EventControllerScrollFlags::VERTICAL);
+        scroll_controller.connect_scroll(
+            clone!(@weak self as _self => @default-return gtk::Inhibit(false), move |_, _, dy| {
+                gtk::Inhibit(!_self.set_header_visible(dy < 0f64))
+            }),
+        );
+
+        let widget = self.widget();
+        widget.scrolled_window.add_controller(&scroll_controller);
     }
 
     fn connect_liked<F>(&self, f: F)
@@ -150,6 +177,8 @@ impl Details {
         let modal = ReleaseDetailsWindow::new();
 
         widget.connect_liked(clone!(@weak model => move || model.toggle_save_album()));
+
+        widget.connect_header();
 
         widget.connect_info(clone!(@weak modal, @weak widget => move || {
             let modal = modal.upcast_ref::<libadwaita::Window>();

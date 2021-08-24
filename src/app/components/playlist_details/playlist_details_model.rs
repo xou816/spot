@@ -288,7 +288,6 @@ impl PlaylistDetailsModel {
         let id = playlist.to_string();
         let uris: Vec<String> = selection
             .peek_selection()
-            .iter()
             .map(|s| &s.uri)
             .cloned()
             .collect();

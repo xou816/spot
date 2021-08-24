@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::app::models::SongDescription;
 use crate::app::state::{AppAction, AppEvent, UpdatableState};
 
@@ -34,14 +36,16 @@ pub enum SelectionContext {
 }
 
 pub struct SelectionState {
-    selected_songs: Option<Vec<SongDescription>>,
+    selected_songs: HashMap<String, SongDescription>,
+    selection_active: bool,
     pub context: SelectionContext,
 }
 
 impl Default for SelectionState {
     fn default() -> Self {
         Self {
-            selected_songs: None,
+            selected_songs: Default::default(),
+            selection_active: false,
             context: SelectionContext::Global,
         }
     }
@@ -49,39 +53,29 @@ impl Default for SelectionState {
 
 impl SelectionState {
     fn select(&mut self, song: SongDescription) -> bool {
-        if let Some(selected_songs) = self.selected_songs.as_mut() {
-            let selected = selected_songs.iter().any(|t| t.id == song.id);
-            if !selected {
-                selected_songs.push(song);
-            }
-            !selected
-        } else {
-            false
+        let selected = self.selected_songs.contains_key(&song.id);
+        if !selected {
+            self.selected_songs.insert(song.id.clone(), song);
         }
+        !selected
     }
 
     fn deselect(&mut self, id: &str) -> bool {
-        if let Some(selected_songs) = self.selected_songs.as_mut() {
-            let selected = selected_songs.iter().any(|t| t.id == id);
-            if selected {
-                selected_songs.retain(|t| t.id != id);
-            }
-            selected
-        } else {
-            false
-        }
+        self.selected_songs.remove(id).is_some()
     }
 
     pub fn set_mode(&mut self, context: Option<SelectionContext>) -> Option<bool> {
-        let currently_active = self.selected_songs.is_some();
+        let currently_active = self.selection_active;
         match (currently_active, context) {
             (false, Some(context)) => {
-                self.selected_songs = Some(vec![]);
+                self.selected_songs = Default::default();
+                self.selection_active = true;
                 self.context = context;
                 Some(true)
             }
             (true, None) => {
-                self.selected_songs = None;
+                self.selected_songs = Default::default();
+                self.selection_active = false;
                 Some(false)
             }
             _ => None,
@@ -89,14 +83,11 @@ impl SelectionState {
     }
 
     pub fn is_selection_enabled(&self) -> bool {
-        self.selected_songs.is_some()
+        self.selection_active
     }
 
     pub fn is_song_selected(&self, id: &str) -> bool {
-        self.selected_songs
-            .as_ref()
-            .map(|s| s.iter().any(|t| t.id == id))
-            .unwrap_or(false)
+        self.selected_songs.contains_key(id)
     }
 
     pub fn all_selected<'a>(&self, mut ids: impl Iterator<Item = &'a String>) -> bool {
@@ -104,15 +95,15 @@ impl SelectionState {
     }
 
     pub fn count(&self) -> usize {
-        self.selected_songs.as_ref().map(|s| s.len()).unwrap_or(0)
+        self.selected_songs.len()
     }
 
     pub fn take_selection(&mut self) -> Vec<SongDescription> {
-        self.selected_songs.take().unwrap_or_else(Vec::new)
+        std::mem::take(self).selected_songs.into_values().collect()
     }
 
-    pub fn peek_selection(&self) -> &[SongDescription] {
-        self.selected_songs.as_ref().map(|s| &s[..]).unwrap_or(&[])
+    pub fn peek_selection(&self) -> impl Iterator<Item = &'_ SongDescription> {
+        self.selected_songs.values()
     }
 }
 
@@ -143,7 +134,7 @@ impl UpdatableState for SelectionState {
                 }
             }
             SelectionAction::Clear => {
-                self.selected_songs = None;
+                self.take_selection();
                 vec![SelectionEvent::SelectionModeChanged(false)]
             }
         }

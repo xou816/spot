@@ -17,6 +17,9 @@ mod imp {
     pub struct NowPlayingWidget {
         #[template_child]
         pub song_list: TemplateChild<gtk::ListView>,
+
+        #[template_child]
+        pub scrolled_window: TemplateChild<gtk::ScrolledWindow>,
     }
 
     #[glib::object_subclass]
@@ -49,6 +52,19 @@ impl NowPlayingWidget {
         glib::Object::new(&[]).expect("Failed to create an instance of NowPlayingWidget")
     }
 
+    fn connect_bottom_edge<F>(&self, f: F)
+    where
+        F: Fn() + 'static,
+    {
+        imp::NowPlayingWidget::from_instance(self)
+            .scrolled_window
+            .connect_edge_reached(move |_, pos| {
+                if let gtk::PositionType::Bottom = pos {
+                    f()
+                }
+            });
+    }
+
     fn song_list_widget(&self) -> &gtk::ListView {
         imp::NowPlayingWidget::from_instance(self)
             .song_list
@@ -65,6 +81,10 @@ pub struct NowPlaying {
 impl NowPlaying {
     pub fn new(model: Rc<NowPlayingModel>) -> Self {
         let widget = NowPlayingWidget::new();
+
+        widget.connect_bottom_edge(clone!(@weak model => move || {
+            model.load_more();
+        }));
 
         let playlist = Playlist::new(widget.song_list_widget().clone(), model.clone());
 

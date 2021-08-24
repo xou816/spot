@@ -18,7 +18,10 @@ mod imp {
     #[template(resource = "/dev/alextren/Spot/components/playlist_details.ui")]
     pub struct PlaylistDetailsWidget {
         #[template_child]
-        pub root: TemplateChild<gtk::ScrolledWindow>,
+        pub scrolled_window: TemplateChild<gtk::ScrolledWindow>,
+
+        #[template_child]
+        pub header_revealer: TemplateChild<gtk::Revealer>,
 
         #[template_child]
         pub name_label: TemplateChild<gtk::Label>,
@@ -88,13 +91,37 @@ impl PlaylistDetailsWidget {
     where
         F: Fn() + 'static,
     {
-        imp::PlaylistDetailsWidget::from_instance(self)
-            .root
+        self.widget()
+            .scrolled_window
             .connect_edge_reached(move |_, pos| {
                 if let gtk::PositionType::Bottom = pos {
                     f()
                 }
             });
+    }
+
+    fn set_header_visible(&self, visible: bool) -> bool {
+        let widget = self.widget();
+        let is_up_to_date = widget.header_revealer.reveals_child() == visible;
+        if !is_up_to_date {
+            widget.header_revealer.set_reveal_child(visible);
+        }
+        is_up_to_date
+    }
+
+    fn connect_header(&self) {
+        self.set_header_visible(true);
+
+        let scroll_controller =
+            gtk::EventControllerScroll::new(gtk::EventControllerScrollFlags::VERTICAL);
+        scroll_controller.connect_scroll(
+            clone!(@weak self as _self => @default-return gtk::Inhibit(false), move |_, _, dy| {
+                gtk::Inhibit(!_self.set_header_visible(dy < 0f64))
+            }),
+        );
+
+        let widget = self.widget();
+        widget.scrolled_window.add_controller(&scroll_controller);
     }
 
     fn set_loaded(&self) {
@@ -148,6 +175,8 @@ impl PlaylistDetails {
             widget.playlist_tracks_widget().clone(),
             model.clone(),
         ));
+
+        widget.connect_header();
 
         widget.connect_bottom_edge(clone!(@weak model => move || {
             model.load_more_tracks();
