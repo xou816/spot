@@ -1,53 +1,42 @@
-# English translations for spot package.
-# Copyright (C) 2021 THE spot'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the spot package.
-# Automatically generated, 2021.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: spot\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-19 10:05+0200\n"
-"PO-Revision-Date: 2021-03-16 19:21+0100\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
-"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ASCII\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: POEditor.com\n"
+"Project-Id-Version: Spot\n"
+"Language: en\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. translators: This is part of a larger label that reads "<Album> by <Artist>"
 #: src/app/components/details/release_details.rs:101
 msgid "by"
-msgstr ""
+msgstr "by"
 
 #. translators: This refers to a music label
 #: src/app/components/details/release_details.rs:108
 msgid "Label:"
-msgstr ""
+msgstr "Label:"
 
 #. translators: This refers to a release date
 #: src/app/components/details/release_details.rs:115
-#, fuzzy
 msgid "Released:"
-msgstr "Releases"
+msgstr "Released:"
 
 #. translators: This refers to a number of tracks
 #: src/app/components/details/release_details.rs:122
-#, fuzzy
 msgid "Tracks:"
-msgstr "Top tracks"
+msgstr "Tracks:"
 
 #. translators: This refers to the duration of eg. an album
 #: src/app/components/details/release_details.rs:129
 msgid "Duration:"
-msgstr ""
+msgstr "Duration:"
 
 #. translators: Self explanatory
 #: src/app/components/details/release_details.rs:136
 msgid "Copyright:"
-msgstr ""
+msgstr "Copyright:"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
 #: src/app/components/labels.rs:5
@@ -192,8 +181,3 @@ msgstr "Albums"
 msgid "Artists"
 msgstr "Artists"
 
-#~ msgid "Remove selected tracks from queue"
-#~ msgstr "Remove selected tracks from queue"
-
-#~ msgid "Add selected tracks to queue"
-#~ msgstr "Add selected tracks to queue"
