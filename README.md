@@ -83,7 +83,7 @@ For any large feature/change, please consider opening an issue first to discuss 
 
 Translations are managed using `gettext` and are available in the `po/` subdirectory.
 
-**I am now experimenting an online service, [POEditor](https://poeditor.com/projects/view?id=469205), to manage translations; PRs are still welcome if you feel like using these instead!**
+**I am now experimenting an online service, [POEditor](https://poeditor.com/join/project?hash=xfVrpQfRBM), to manage translations; PRs are still welcome if you feel like using these instead!**
 
 If you feel like it, you are welcome to open a PR to be added to the `TRANSLATORS` file!
 
