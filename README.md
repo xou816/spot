@@ -77,22 +77,15 @@ See [this comment](https://github.com/xou816/spot/issues/209#issuecomment-860180
 
 Contributions are welcome! If you wish, add yourself to the `AUTHORS` files when submitting your contribution.
 
+For any large feature/change, please consider opening an issue first to discuss implementation and design decisions.
+
 ### Translating
 
 Translations are managed using `gettext` and are available in the `po/` subdirectory.
 
+**I am now experimenting an online service, [POEditor](https://poeditor.com/projects/view?id=469205), to manage translations; PRs are still welcome if you feel like using these instead!**
 
-**Before attempting to edit the potfiles manually, note that nice tools exist to help you work with them ([Poedit](https://poedit.net/) for instance).**
-
-Otherwise, here is a rough overview of how to contribute translations:
-- fork the repository;
-- copy the `po/spot.pot` file and rename it to match your language code, or edit the relevant `po` file if it already exists;
-- if needed, add your language code to `po/LINGUAS`;
-- make sure the `Language` and `Plural-Forms` keys are correct;
-- edit the `msgstr` entries;
-- if you wish, add yourself to the `TRANSLATORS` file.
-
-If you can't build Spot locally, you may run the `spot-snapshots` action against your branch from your Github fork (...I think?) to obtain a flatpak debug build.
+If you feel like it, you are welcome to open a PR to be added to the `TRANSLATORS` file!
 
 ## Building
 
