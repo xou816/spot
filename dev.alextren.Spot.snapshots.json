@@ -13,6 +13,7 @@
         "--socket=fallback-x11",
         "--socket=wayland",
         "--socket=pulseaudio",
+        "--device=dri",
         "--talk-name=org.freedesktop.secrets",
         "--own-name=org.mpris.MediaPlayer2.Spot"
     ],
