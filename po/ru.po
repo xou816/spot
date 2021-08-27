@@ -8,48 +8,46 @@ msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-08-19 10:05+0200\n"
-"PO-Revision-Date: 2021-05-07 13:40+0300\n"
+"PO-Revision-Date: 2021-08-27 17:48+0300\n"
 "Last-Translator: Automatically generated\n"
-"Language-Team: Paul Bragin <zeusmods@protonmail.com>\n"
+"Language-Team: Igor Dyatlov <dyatlov.igor@protonmail.com>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
-"X-Generator: Poedit 2.4.3\n"
+"X-Generator: Poedit 3.0\n"
 
 #. translators: This is part of a larger label that reads "<Album> by <Artist>"
 #: src/app/components/details/release_details.rs:101
 msgid "by"
-msgstr ""
+msgstr "от"
 
 #. translators: This refers to a music label
 #: src/app/components/details/release_details.rs:108
 msgid "Label:"
-msgstr ""
+msgstr "Лейбл:"
 
 #. translators: This refers to a release date
 #: src/app/components/details/release_details.rs:115
-#, fuzzy
 msgid "Released:"
-msgstr "Релизы"
+msgstr "Выпущено:"
 
 #. translators: This refers to a number of tracks
 #: src/app/components/details/release_details.rs:122
-#, fuzzy
 msgid "Tracks:"
-msgstr "Топ треков"
+msgstr "Треков:"
 
 #. translators: This refers to the duration of eg. an album
 #: src/app/components/details/release_details.rs:129
 msgid "Duration:"
-msgstr ""
+msgstr "Продолжительность:"
 
 #. translators: Self explanatory
 #: src/app/components/details/release_details.rs:136
 msgid "Copyright:"
-msgstr ""
+msgstr "Авторское право:"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
 #: src/app/components/labels.rs:5
@@ -79,18 +77,19 @@ msgstr "Удалить из очереди"
 #. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
 #: src/app/components/labels.rs:24
 msgid "Add to {}"
-msgstr ""
+msgstr "Добавить к {}"
 
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:52
 msgid "Could not save password. Make sure the session keyring is unlocked."
 msgstr ""
-"Не удалось сохранить пароль. Проверьте, GNOME Keyring/KDE wallet открыта."
+"Не удалось сохранить пароль. Убедитесь, что связка ключей сеанса "
+"разблокирована."
 
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
 #: src/app/components/mod.rs:105
 msgid "An error occured. Check logs for details!"
-msgstr "Ошибка появилась. Посмотрите в логи за подробностями!"
+msgstr "Произошла ошибка. Подробности смотрите в журналах!"
 
 #: src/app/components/navigation/home.rs:35
 msgid "Library"
@@ -135,12 +134,12 @@ msgstr[2] "песни были выбраны"
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:56
 msgid "About"
-msgstr "Об"
+msgstr "О приложении"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:58
 msgid "Quit"
-msgstr "Выйти из программы"
+msgstr "Выйти из приложения"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:63
@@ -194,7 +193,7 @@ msgstr "Альбомы"
 #. This is the title of a section of the search results
 #: src/app/components/search/search.ui:101
 msgid "Artists"
-msgstr "Артисты"
+msgstr "Исполнители"
 
 #~ msgid "Remove selected tracks from queue"
 #~ msgstr "Удалить выбранные треки из очереди"
