@@ -4,17 +4,18 @@ use gtk::CompositeTemplate;
 use std::rc::Rc;
 
 use crate::app::components::{display_add_css_provider, Component, EventListener, Playlist};
-use crate::app::{state::PlaybackEvent, AppEvent};
+use crate::app::state::LoginEvent;
+use crate::app::AppEvent;
 
-use super::NowPlayingModel;
+use super::SavedTracksModel;
 
 mod imp {
 
     use super::*;
 
     #[derive(Debug, Default, CompositeTemplate)]
-    #[template(resource = "/dev/alextren/Spot/components/now_playing.ui")]
-    pub struct NowPlayingWidget {
+    #[template(resource = "/dev/alextren/Spot/components/saved_tracks.ui")]
+    pub struct SavedTracksWidget {
         #[template_child]
         pub song_list: TemplateChild<gtk::ListView>,
 
@@ -23,9 +24,9 @@ mod imp {
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for NowPlayingWidget {
-        const NAME: &'static str = "NowPlayingWidget";
-        type Type = super::NowPlayingWidget;
+    impl ObjectSubclass for SavedTracksWidget {
+        const NAME: &'static str = "SavedTracksWidget";
+        type Type = super::SavedTracksWidget;
         type ParentType = gtk::Box;
 
         fn class_init(klass: &mut Self::Class) {
@@ -37,26 +38,26 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for NowPlayingWidget {}
-    impl WidgetImpl for NowPlayingWidget {}
-    impl BoxImpl for NowPlayingWidget {}
+    impl ObjectImpl for SavedTracksWidget {}
+    impl WidgetImpl for SavedTracksWidget {}
+    impl BoxImpl for SavedTracksWidget {}
 }
 
 glib::wrapper! {
-    pub struct NowPlayingWidget(ObjectSubclass<imp::NowPlayingWidget>) @extends gtk::Widget, gtk::Box;
+    pub struct SavedTracksWidget(ObjectSubclass<imp::SavedTracksWidget>) @extends gtk::Widget, gtk::Box;
 }
 
-impl NowPlayingWidget {
+impl SavedTracksWidget {
     fn new() -> Self {
-        display_add_css_provider(resource!("/components/now_playing.css"));
-        glib::Object::new(&[]).expect("Failed to create an instance of NowPlayingWidget")
+        display_add_css_provider(resource!("/components/saved_tracks.css"));
+        glib::Object::new(&[]).expect("Failed to create an instance of SavedTracksWidget")
     }
 
     fn connect_bottom_edge<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        imp::NowPlayingWidget::from_instance(self)
+        imp::SavedTracksWidget::from_instance(self)
             .scrolled_window
             .connect_edge_reached(move |_, pos| {
                 if let gtk::PositionType::Bottom = pos {
@@ -66,21 +67,21 @@ impl NowPlayingWidget {
     }
 
     fn song_list_widget(&self) -> &gtk::ListView {
-        imp::NowPlayingWidget::from_instance(self)
+        imp::SavedTracksWidget::from_instance(self)
             .song_list
             .as_ref()
     }
 }
 
-pub struct NowPlaying {
-    widget: NowPlayingWidget,
-    model: Rc<NowPlayingModel>,
+pub struct SavedTracks {
+    widget: SavedTracksWidget,
+    model: Rc<SavedTracksModel>,
     children: Vec<Box<dyn EventListener>>,
 }
 
-impl NowPlaying {
-    pub fn new(model: Rc<NowPlayingModel>) -> Self {
-        let widget = NowPlayingWidget::new();
+impl SavedTracks {
+    pub fn new(model: Rc<SavedTracksModel>) -> Self {
+        let widget = SavedTracksWidget::new();
 
         widget.connect_bottom_edge(clone!(@weak model => move || {
             model.load_more();
@@ -96,7 +97,7 @@ impl NowPlaying {
     }
 }
 
-impl Component for NowPlaying {
+impl Component for SavedTracks {
     fn get_root_widget(&self) -> &gtk::Widget {
         self.widget.upcast_ref()
     }
@@ -106,10 +107,13 @@ impl Component for NowPlaying {
     }
 }
 
-impl EventListener for NowPlaying {
+impl EventListener for SavedTracks {
     fn on_event(&mut self, event: &AppEvent) {
-        if let AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) = event {
-            self.model.load_more();
+        match event {
+            AppEvent::Started | AppEvent::LoginEvent(LoginEvent::LoginCompleted(_)) => {
+                self.model.load_initial();
+            }
+            _ => {}
         }
         self.broadcast_event(event);
     }

@@ -6,7 +6,7 @@ use std::rc::Rc;
 use super::release_details::ReleaseDetailsWindow;
 use super::DetailsModel;
 
-use crate::app::components::{screen_add_css_provider, Component, EventListener, Playlist};
+use crate::app::components::{display_add_css_provider, Component, EventListener, Playlist};
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
 use crate::app::{AppEvent, BrowserEvent};
@@ -72,7 +72,7 @@ glib::wrapper! {
 
 impl AlbumDetailsWidget {
     fn new() -> Self {
-        screen_add_css_provider(resource!("/components/details.css"));
+        display_add_css_provider(resource!("/components/details.css"));
         glib::Object::new(&[]).expect("Failed to create an instance of AlbumDetailsWidget")
     }
 

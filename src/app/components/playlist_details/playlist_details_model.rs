@@ -12,9 +12,8 @@ use crate::app::models::*;
 use crate::app::state::{
     BrowserAction, BrowserEvent, PlaybackAction, SelectionAction, SelectionContext, SelectionState,
 };
-use crate::app::BatchQuery;
 use crate::app::{
-    ActionDispatcher, AppAction, AppEvent, AppModel, AppState, ListDiff, SongsSource,
+    ActionDispatcher, AppAction, AppEvent, AppModel, AppState, BatchQuery, ListDiff, SongsSource,
 };
 
 pub struct PlaylistDetailsModel {
@@ -70,7 +69,7 @@ impl PlaylistDetailsModel {
     }
 
     pub fn load_more_tracks(&self) -> Option<()> {
-        let last_batch = self.songs_ref()?.last_batch();
+        let last_batch = self.songs_ref()?.last_batch()?;
         let query = BatchQuery {
             source: SongsSource::Playlist(self.id.clone()),
             batch: last_batch,
@@ -81,9 +80,12 @@ impl PlaylistDetailsModel {
         let loader = self.app_model.get_batch_loader();
 
         self.dispatcher.dispatch_async(Box::pin(async move {
-            loader.query(next_query).await.map(|song_batch| {
-                BrowserAction::AppendPlaylistTracks(id, Box::new(song_batch)).into()
-            })
+            let action = loader
+                .query(next_query, |song_batch| {
+                    BrowserAction::AppendPlaylistTracks(id, Box::new(song_batch)).into()
+                })
+                .await;
+            Some(action)
         }));
 
         Some(())

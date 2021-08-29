@@ -1,4 +1,4 @@
-use crate::app::components::screen_add_css_provider;
+use crate::app::components::display_add_css_provider;
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
 use crate::app::models::AlbumModel;
@@ -53,7 +53,7 @@ glib::wrapper! {
 
 impl AlbumWidget {
     pub fn new() -> Self {
-        screen_add_css_provider(resource!("/components/album.css"));
+        display_add_css_provider(resource!("/components/album.css"));
         glib::Object::new(&[]).expect("Failed to create an instance of AlbumWidget")
     }
 

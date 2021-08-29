@@ -29,6 +29,9 @@
     <!-- now playing -->
     <file alias="components/now_playing.ui">app/components/now_playing/now_playing.ui</file>
     <file alias="components/now_playing.css">app/components/now_playing/now_playing.css</file>
+    <!-- liked songs -->
+    <file alias="components/saved_tracks.ui">app/components/saved_tracks/saved_tracks.ui</file>
+    <file alias="components/saved_tracks.css">app/components/saved_tracks/saved_tracks.css</file>
     <!-- song -->
     <file alias="components/song.css">app/components/playlist/song.css</file>
     <file alias="components/song.ui">app/components/playlist/song.ui</file>

@@ -92,7 +92,7 @@ impl SongList {
     fn iter_from(&self, i: usize) -> impl Iterator<Item = &'_ SongDescription> {
         let indexed_songs = &self.indexed_songs;
         self.iter_ids_from(i)
-            .filter_map(move |id| indexed_songs.get(id))
+            .filter_map(move |(_, id)| indexed_songs.get(id))
     }
 
     pub fn partial_len(&self) -> usize {
@@ -113,19 +113,30 @@ impl SongList {
         self.total
     }
 
-    pub fn iter_ids_from(&self, i: usize) -> impl Iterator<Item = &'_ String> {
+    fn iter_ids_from(&self, i: usize) -> impl Iterator<Item = (usize, &'_ String)> {
         let batch_size = self.batch_size;
         let index = i / batch_size;
         self.iter_range(index, self.last_batch_key)
             .skip(i % batch_size)
     }
 
-    fn iter_range(&self, a: usize, b: usize) -> impl Iterator<Item = &'_ String> {
+    pub fn find_index(&self, song_id: &str) -> Option<usize> {
+        self.iter_ids_from(0)
+            .find(|(_, id)| &id[..] == song_id)
+            .map(|(pos, _)| pos)
+    }
+
+    fn iter_range(&self, a: usize, b: usize) -> impl Iterator<Item = (usize, &'_ String)> {
+        let batch_size = self.batch_size;
         let batches = &self.batches;
         (a..=b)
             .into_iter()
-            .filter_map(move |i| batches.get(&i))
-            .flat_map(|b| b.iter())
+            .filter_map(move |i| batches.get_key_value(&i))
+            .flat_map(move |(k, b)| {
+                b.iter()
+                    .enumerate()
+                    .map(move |(i, id)| (i + *k * batch_size, id))
+            })
     }
 
     fn batches_add(batches: &mut HashMap<usize, Vec<String>>, batch_size: usize, id: &str) {
@@ -144,8 +155,8 @@ impl SongList {
     pub fn remove(&mut self, ids: &[String]) {
         let mut batches = HashMap::<usize, Vec<String>>::default();
         self.iter_ids_from(0)
-            .filter(|s| !ids.contains(s))
-            .for_each(|next| {
+            .filter(|(_, s)| !ids.contains(s))
+            .for_each(|(_, next)| {
                 Self::batches_add(&mut batches, self.batch_size, next);
             });
         self.last_batch_key = batches.len().saturating_sub(1);
@@ -181,6 +192,7 @@ impl SongList {
         assert_eq!(batch.batch_size, self.batch_size);
 
         let index = batch.offset / batch.batch_size;
+
         if self.batches.contains_key(&index) {
             return None;
         }
@@ -238,18 +250,19 @@ impl SongList {
             .and_then(move |id| indexed_songs.get(id))
     }
 
-    pub fn has_batch_for(&self, i: usize) -> (Batch, bool) {
+    pub fn needed_batch_for(&self, i: usize) -> Option<Batch> {
         let total = self.total;
         let batch_size = self.batch_size;
         let batch_id = i / batch_size;
-        (
-            Batch {
+        if self.batches.contains_key(&batch_id) {
+            None
+        } else {
+            Some(Batch {
                 batch_size,
                 total,
                 offset: batch_id * batch_size,
-            },
-            self.batches.contains_key(&batch_id),
-        )
+            })
+        }
     }
 
     pub fn song_batch_for(&self, i: usize) -> Option<SongBatch> {
@@ -271,11 +284,15 @@ impl SongList {
         })
     }
 
-    pub fn last_batch(&self) -> Batch {
-        Batch {
-            batch_size: self.batch_size,
-            total: self.total,
-            offset: self.last_batch_key * self.batch_size,
+    pub fn last_batch(&self) -> Option<Batch> {
+        if self.total_loaded == 0 {
+            None
+        } else {
+            Some(Batch {
+                batch_size: self.batch_size,
+                total: self.total,
+                offset: self.last_batch_key * self.batch_size,
+            })
         }
     }
 
@@ -387,6 +404,16 @@ mod tests {
         let range = list.add(batch(2));
         assert_eq!(range, None);
         assert_eq!(list.partial_len(), 8);
+    }
+
+    #[test]
+    fn test_find_non_contiguous() {
+        let mut list = SongList::new_from_initial_batch(batch(0));
+        list.add(batch(3));
+
+        let index = list.find_index("song6");
+
+        assert_eq!(index, Some(6));
     }
 
     #[test]

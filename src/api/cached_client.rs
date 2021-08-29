@@ -57,6 +57,8 @@ pub trait SpotifyApiClient {
         limit: usize,
     ) -> BoxFuture<SpotifyResult<Vec<AlbumDescription>>>;
 
+    fn get_saved_tracks(&self, offset: usize, limit: usize) -> BoxFuture<SpotifyResult<SongBatch>>;
+
     fn save_album(&self, id: &str) -> BoxFuture<SpotifyResult<AlbumDescription>>;
 
     fn remove_saved_album(&self, id: &str) -> BoxFuture<SpotifyResult<()>>;
@@ -99,6 +101,7 @@ pub trait SpotifyApiClient {
 
 enum SpotCacheKey<'a> {
     SavedAlbums(usize, usize),
+    SavedTracks(usize, usize),
     SavedPlaylists(usize, usize),
     Album(&'a str),
     AlbumLiked(&'a str),
@@ -116,6 +119,7 @@ impl<'a> SpotCacheKey<'a> {
     fn into_raw(self) -> String {
         match self {
             Self::SavedAlbums(offset, limit) => format!("me_albums_{}_{}.json", offset, limit),
+            Self::SavedTracks(offset, limit) => format!("me_tracks_{}_{}.json", offset, limit),
             Self::SavedPlaylists(offset, limit) => {
                 format!("me_playlists_{}_{}.json", offset, limit)
             }
@@ -251,6 +255,21 @@ impl SpotifyApiClient for CachedSpotifyClient {
                 .collect::<Vec<AlbumDescription>>();
 
             Ok(albums)
+        })
+    }
+
+    fn get_saved_tracks(&self, offset: usize, limit: usize) -> BoxFuture<SpotifyResult<SongBatch>> {
+        Box::pin(async move {
+            let page = self
+                .cache_get_or_write(SpotCacheKey::SavedTracks(offset, limit), None, |etag| {
+                    self.client
+                        .get_saved_tracks(offset, limit)
+                        .etag(etag)
+                        .send()
+                })
+                .await?;
+
+            Ok(page.into())
         })
     }
 

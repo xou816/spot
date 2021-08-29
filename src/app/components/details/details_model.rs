@@ -104,7 +104,7 @@ impl DetailsModel {
     }
 
     pub fn load_more(&self) -> Option<()> {
-        let last_batch = self.songs_ref()?.last_batch();
+        let last_batch = self.songs_ref()?.last_batch()?;
         let query = BatchQuery {
             source: SongsSource::Album(self.id.clone()),
             batch: last_batch,
@@ -115,10 +115,12 @@ impl DetailsModel {
         let loader = self.app_model.get_batch_loader();
 
         self.dispatcher.dispatch_async(Box::pin(async move {
-            loader
-                .query(next_query)
-                .await
-                .map(|song_batch| BrowserAction::AppendAlbumTracks(id, Box::new(song_batch)).into())
+            let action = loader
+                .query(next_query, |song_batch| {
+                    BrowserAction::AppendAlbumTracks(id, Box::new(song_batch)).into()
+                })
+                .await;
+            Some(action)
         }));
 
         Some(())

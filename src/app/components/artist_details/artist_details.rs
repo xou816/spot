@@ -4,7 +4,7 @@ use gtk::CompositeTemplate;
 use std::rc::Rc;
 
 use crate::app::components::{
-    screen_add_css_provider, AlbumWidget, Component, EventListener, Playlist,
+    display_add_css_provider, AlbumWidget, Component, EventListener, Playlist,
 };
 use crate::app::{models::*, ListStore};
 use crate::app::{AppEvent, BrowserEvent, Worker};
@@ -57,7 +57,7 @@ glib::wrapper! {
 
 impl ArtistDetailsWidget {
     fn new() -> Self {
-        screen_add_css_provider(resource!("/components/artist_details.css"));
+        display_add_css_provider(resource!("/components/artist_details.css"));
         glib::Object::new(&[]).expect("Failed to create an instance of ArtistDetailsWidget")
     }
 
