@@ -7,3 +7,4 @@ Terminal=false
 Type=Application
 Categories=GTK;GNOME;Music;AudioVideo;
 StartupNotify=true
+X-Purism-FormFactor=Workstation;Mobile;
