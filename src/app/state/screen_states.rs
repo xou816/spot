@@ -115,27 +115,14 @@ impl UpdatableState for PlaylistDetailsState {
             BrowserAction::AppendPlaylistTracks(id, song_batch) if id == self.id => {
                 let offset = song_batch.batch.offset;
                 if let Some(playlist) = self.playlist.as_mut() {
-                    playlist.songs.extend(song_batch.songs);
-                    playlist.last_batch = song_batch.batch;
+                    playlist.songs.add(song_batch);
                 }
                 vec![BrowserEvent::PlaylistTracksAppended(id, offset)]
             }
             BrowserAction::RemoveTracksFromPlaylist(uris) => {
                 if let Some(playlist) = self.playlist.as_mut() {
                     let id = playlist.id.clone();
-                    playlist.songs = playlist
-                        .songs
-                        .drain(..)
-                        .filter(|s| !&uris.contains(&s.uri))
-                        .collect();
-                    let Batch {
-                        batch_size, total, ..
-                    } = playlist.last_batch;
-                    playlist.last_batch = Batch {
-                        batch_size,
-                        total,
-                        offset: playlist.songs.len(),
-                    };
+                    playlist.songs.remove(&uris[..]);
                     vec![BrowserEvent::PlaylistTracksRemoved(id, uris)]
                 } else {
                     vec![]

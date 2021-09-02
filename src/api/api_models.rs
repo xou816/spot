@@ -1,7 +1,10 @@
 use form_urlencoded::Serializer;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::convert::Into;
+use std::{
+    convert::{Into, TryFrom, TryInto},
+    vec::IntoIter,
+};
 
 use crate::app::models::*;
 
@@ -56,28 +59,40 @@ impl SearchQuery {
 #[derive(Deserialize, Debug, Clone)]
 pub struct Page<T> {
     items: Option<Vec<T>>,
-    pub total: usize,
+    offset: Option<usize>,
+    limit: Option<usize>,
+    total: usize,
 }
 
 impl<T> Page<T> {
-    pub fn new(items: Vec<T>) -> Self {
+    fn new(items: Vec<T>) -> Self {
+        let l = items.len();
         Self {
-            total: items.len(),
+            total: l,
             items: Some(items),
+            offset: Some(0),
+            limit: Some(l),
         }
     }
 
-    pub fn empty() -> Self {
-        Self {
-            items: None,
-            total: 0,
-        }
+    pub fn limit(&self) -> usize {
+        self.limit
+            .or_else(|| Some(self.items.as_ref()?.len()))
+            .unwrap_or(50)
+    }
+
+    pub fn total(&self) -> usize {
+        self.total
+    }
+
+    pub fn offset(&self) -> usize {
+        self.offset.unwrap_or(0)
     }
 }
 
 impl<T> IntoIterator for Page<T> {
     type Item = T;
-    type IntoIter = std::vec::IntoIter<Self::Item>;
+    type IntoIter = IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.items.unwrap_or_else(Vec::new).into_iter()
@@ -86,7 +101,12 @@ impl<T> IntoIterator for Page<T> {
 
 impl<T> Default for Page<T> {
     fn default() -> Self {
-        Self::empty()
+        Self {
+            items: None,
+            total: 0,
+            offset: Some(0),
+            limit: Some(0),
+        }
     }
 }
 
@@ -134,6 +154,12 @@ impl WithImages for Playlist {
 pub struct PlaylistTrack {
     pub is_local: bool,
     pub track: FailibleTrackItem,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct SavedTrack {
+    pub added_at: String,
+    pub track: TrackItem,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -256,13 +282,17 @@ impl From<Artist> for ArtistSummary {
     }
 }
 
-impl From<Page<PlaylistTrack>> for Vec<SongDescription> {
-    fn from(page: Page<PlaylistTrack>) -> Self {
-        let items = page
-            .into_iter()
-            .filter_map(|PlaylistTrack { is_local, track }| track.get().filter(|_| !is_local))
-            .collect::<Vec<TrackItem>>();
-        Page::new(items).into()
+impl TryFrom<PlaylistTrack> for TrackItem {
+    type Error = ();
+
+    fn try_from(PlaylistTrack { is_local, track }: PlaylistTrack) -> Result<Self, Self::Error> {
+        track.get().filter(|_| !is_local).ok_or(())
+    }
+}
+
+impl From<SavedTrack> for TrackItem {
+    fn from(track: SavedTrack) -> Self {
+        track.track
     }
 }
 
@@ -272,50 +302,68 @@ impl From<TopTracks> for Vec<SongDescription> {
     }
 }
 
-impl From<Page<TrackItem>> for Vec<SongDescription> {
-    fn from(page: Page<TrackItem>) -> Self {
-        page.into_iter()
-            .map(
-                |TrackItem {
-                     album,
-                     artists,
-                     id,
-                     uri,
-                     name,
-                     duration_ms,
-                 }| {
-                    let artists = artists
-                        .into_iter()
-                        .map(|a| ArtistRef {
-                            id: a.id,
-                            name: a.name,
-                        })
-                        .collect::<Vec<ArtistRef>>();
+impl<T> From<Page<T>> for Vec<SongDescription>
+where
+    T: TryInto<TrackItem>,
+{
+    fn from(page: Page<T>) -> Self {
+        SongBatch::from(page).songs
+    }
+}
 
-                    let album = album.unwrap();
-                    let art = album.best_image_for_width(200).map(|i| &i.url).cloned();
-                    let Album {
-                        id: album_id,
-                        name: album_name,
-                        ..
-                    } = album;
-                    let album_ref = AlbumRef {
-                        id: album_id,
-                        name: album_name,
-                    };
+impl<T> From<Page<T>> for SongBatch
+where
+    T: TryInto<TrackItem>,
+{
+    fn from(page: Page<T>) -> Self {
+        let batch = Batch {
+            offset: page.offset(),
+            batch_size: page.limit(),
+            total: page.total(),
+        };
+        let songs = page
+            .into_iter()
+            .filter_map(|t| {
+                let TrackItem {
+                    album,
+                    artists,
+                    id,
+                    uri,
+                    name,
+                    duration_ms,
+                } = t.try_into().ok()?;
+                let artists = artists
+                    .into_iter()
+                    .map(|a| ArtistRef {
+                        id: a.id,
+                        name: a.name,
+                    })
+                    .collect::<Vec<ArtistRef>>();
 
-                    SongDescription {
-                        id,
-                        uri,
-                        title: name,
-                        artists,
-                        album: album_ref,
-                        duration: duration_ms as u32,
-                        art,
-                    }
-                },
-            )
-            .collect()
+                let album = album.unwrap();
+                let art = album.best_image_for_width(200).map(|i| &i.url).cloned();
+                let Album {
+                    id: album_id,
+                    name: album_name,
+                    ..
+                } = album;
+                let album_ref = AlbumRef {
+                    id: album_id,
+                    name: album_name,
+                };
+
+                Some(SongDescription {
+                    id,
+                    uri,
+                    title: name,
+                    artists,
+                    album: album_ref,
+                    duration: duration_ms as u32,
+                    art,
+                })
+            })
+            .collect();
+        SongBatch { songs, batch }
     }
 }
 
@@ -416,35 +464,26 @@ impl From<Copyright> for CopyrightDetails {
     }
 }
 
-impl Playlist {
-    pub fn into_playlist_description(
-        self,
-        batch_size: usize,
-        offset: usize,
-    ) -> PlaylistDescription {
-        let art = self.best_image_for_width(200).map(|i| i.url.clone());
+impl From<Playlist> for PlaylistDescription {
+    fn from(playlist: Playlist) -> Self {
+        let art = playlist.best_image_for_width(200).map(|i| i.url.clone());
         let Playlist {
             id,
             name,
             tracks,
             owner,
             ..
-        } = self;
+        } = playlist;
         let PlaylistOwner {
             id: owner_id,
             display_name,
         } = owner;
-        let total = tracks.total;
+        let song_batch = tracks.into();
         PlaylistDescription {
             id,
             title: name,
             art,
-            songs: tracks.into(),
-            last_batch: Batch {
-                offset,
-                batch_size,
-                total,
-            },
+            songs: SongList::new(song_batch),
             owner: UserRef {
                 id: owner_id,
                 display_name,

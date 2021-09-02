@@ -32,7 +32,7 @@ impl PlaylistDetailsModel {
         }
     }
 
-    fn songs_ref(&self) -> Option<impl Deref<Target = Vec<SongDescription>> + '_> {
+    fn songs_ref(&self) -> Option<impl Deref<Target = SongList> + '_> {
         self.app_model.map_state_opt(|s| {
             Some(
                 &s.browser
@@ -72,12 +72,16 @@ impl PlaylistDetailsModel {
     pub fn load_more_tracks(&self) -> Option<()> {
         let id = self.id.clone();
         let state = self.app_model.get_state();
-        let query: BatchQuery = state
-            .browser
-            .playlist_details_state(&id)?
-            .playlist
-            .as_ref()?
-            .into();
+        /*let query: BatchQuery = state
+        .browser
+        .playlist_details_state(&id)?
+        .playlist
+        .as_ref()?
+        .into();*/
+        let query = BatchQuery {
+            source: SongsSource::Playlist("".to_string()),
+            batch: Batch::first_of_size(1),
+        };
         let next_query = query.next()?;
 
         let loader = self.app_model.get_batch_loader();
@@ -117,8 +121,8 @@ impl PlaylistModel for PlaylistDetailsModel {
             //FIXME
             if let Some(playlist) = self.get_playlist_info() {
                 let source = SongsSource::Playlist(self.id.clone());
-                self.dispatcher
-                    .dispatch(PlaybackAction::LoadPagedSongs(source, (&*playlist).into()).into());
+                //self.dispatcher
+                //    .dispatch(PlaybackAction::LoadPagedSongs(source, (&*playlist).into()).into());
             }
         }
         self.dispatcher
@@ -264,7 +268,8 @@ impl SelectionToolsModel for PlaylistDetailsModel {
         match tool {
             SelectionTool::Simple(SimpleSelectionTool::SelectAll) => {
                 if let Some(songs) = self.songs_ref() {
-                    self.handle_select_all_tool(selection, &songs[..]);
+                    let vec = songs.iter().collect::<Vec<&SongDescription>>();
+                    self.handle_select_all_tool_borrowed(selection, &vec[..]);
                 }
             }
             SelectionTool::Simple(SimpleSelectionTool::Remove) => {

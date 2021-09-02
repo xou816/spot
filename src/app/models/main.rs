@@ -1,29 +1,9 @@
-use std::{collections::HashMap, convert::From};
+use std::convert::From;
 
-pub use super::gtypes::*;
-use super::{BatchQuery, SongsSource};
+use super::core::{Batch, SongList};
+use super::gtypes::*;
+
 use crate::app::components::utils::format_duration;
-
-struct SongListBatch {
-    batch: Batch,
-    ids: Vec<String>,
-}
-
-struct SongList {
-    batches: HashMap<usize, SongListBatch>,
-    indexed_songs: HashMap<String, SongDescription>,
-}
-
-impl SongList {
-    fn iter(&self) -> impl Iterator<Item = &'_ SongDescription> {
-        let indexed_songs = &self.indexed_songs;
-        self.batches.iter().flat_map(move |(batch_id, song)| {
-            song.ids.iter().filter_map(move |id| indexed_songs.get(id))
-        })
-    }
-
-    fn get(&self, i: usize) {}
-}
 
 impl From<&AlbumDescription> for AlbumModel {
     fn from(album: &AlbumDescription) -> Self {
@@ -149,8 +129,7 @@ pub struct PlaylistDescription {
     pub id: String,
     pub title: String,
     pub art: Option<String>,
-    pub songs: Vec<SongDescription>,
-    pub last_batch: Batch,
+    pub songs: SongList,
     pub owner: UserRef,
 }
 
@@ -178,38 +157,6 @@ impl SongDescription {
             .map(|a| a.name.to_string())
             .collect::<Vec<String>>()
             .join(", ")
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct Batch {
-    pub offset: usize,
-    pub batch_size: usize,
-    pub total: usize,
-}
-
-impl Batch {
-    pub fn first_of_size(batch_size: usize) -> Self {
-        Self {
-            offset: 0,
-            batch_size,
-            total: usize::MAX,
-        }
-    }
-
-    pub fn next(self) -> Option<Self> {
-        let Self {
-            offset,
-            batch_size,
-            total,
-        } = self;
-
-        Some(Self {
-            offset: offset + batch_size,
-            batch_size,
-            total,
-        })
-        .filter(|b| b.offset < total)
     }
 }
 
@@ -248,40 +195,4 @@ pub struct UserDescription {
     pub id: String,
     pub name: String,
     pub playlists: Vec<PlaylistDescription>,
-}
-
-impl From<&AlbumDescription> for BatchQuery {
-    fn from(album: &AlbumDescription) -> Self {
-        BatchQuery {
-            source: SongsSource::Album(album.id.clone()),
-            batch: album.last_batch,
-        }
-    }
-}
-
-impl From<&PlaylistDescription> for BatchQuery {
-    fn from(playlist: &PlaylistDescription) -> Self {
-        BatchQuery {
-            source: SongsSource::Playlist(playlist.id.clone()),
-            batch: playlist.last_batch,
-        }
-    }
-}
-
-impl From<&AlbumDescription> for SongBatch {
-    fn from(album: &AlbumDescription) -> Self {
-        SongBatch {
-            songs: album.songs.clone(),
-            batch: album.last_batch,
-        }
-    }
-}
-
-impl From<&PlaylistDescription> for SongBatch {
-    fn from(playlist: &PlaylistDescription) -> Self {
-        SongBatch {
-            songs: playlist.songs.clone(),
-            batch: playlist.last_batch,
-        }
-    }
 }

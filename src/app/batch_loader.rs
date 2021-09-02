@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::api::SpotifyApiClient;
-use crate::app::models::{Batch, SongBatch};
+use crate::app::models::*;
 
 #[derive(Clone)]
 pub struct BatchLoader {
@@ -45,6 +45,24 @@ impl BatchLoader {
                 api.get_playlist_tracks(&id, offset, batch_size).await.ok()
             }
             _ => None,
+        }
+    }
+}
+
+impl From<&AlbumDescription> for BatchQuery {
+    fn from(album: &AlbumDescription) -> Self {
+        BatchQuery {
+            source: SongsSource::Album(album.id.clone()),
+            batch: album.last_batch,
+        }
+    }
+}
+
+impl From<&AlbumDescription> for SongBatch {
+    fn from(album: &AlbumDescription) -> Self {
+        SongBatch {
+            songs: album.songs.clone(),
+            batch: album.last_batch,
         }
     }
 }
