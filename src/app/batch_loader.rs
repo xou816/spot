@@ -14,6 +14,19 @@ pub enum SongsSource {
     Album(String),
 }
 
+impl PartialEq for SongsSource {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Playlist(l), Self::Playlist(r)) => l == r,
+            (Self::Album(l), Self::Album(r)) => l == r,
+            _ => false,
+        }
+    }
+}
+
+impl Eq for SongsSource {}
+
+#[derive(Debug)]
 pub struct BatchQuery {
     pub source: SongsSource,
     pub batch: Batch,

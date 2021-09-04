@@ -483,7 +483,7 @@ impl From<Playlist> for PlaylistDescription {
             id,
             title: name,
             art,
-            songs: SongList::new(song_batch),
+            songs: SongList::new_from_initial_batch(song_batch),
             owner: UserRef {
                 id: owner_id,
                 display_name,

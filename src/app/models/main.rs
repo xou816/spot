@@ -173,6 +173,39 @@ impl SongBatch {
             batch: Batch::first_of_size(0),
         }
     }
+
+    pub fn resize(self, batch_size: usize) -> Vec<Self> {
+        let SongBatch { mut songs, batch } = self;
+        if batch_size > batch.batch_size {
+            let new_batch = Batch {
+                batch_size,
+                ..batch
+            };
+            vec![Self {
+                songs,
+                batch: new_batch,
+            }]
+        } else {
+            let n = songs.len();
+            let iter_count = n / batch_size + (if n % batch_size > 0 { 1 } else { 0 });
+            (0..iter_count)
+                .map(|i| {
+                    let offset = batch.offset + i * batch_size;
+                    let new_batch = Batch {
+                        offset,
+                        total: batch.total,
+                        batch_size,
+                    };
+                    let drain_upper = usize::min(batch_size, songs.len());
+                    let new_songs = songs.drain(0..drain_upper).collect();
+                    Self {
+                        songs: new_songs,
+                        batch: new_batch,
+                    }
+                })
+                .collect()
+        }
+    }
 }
 
 #[derive(Clone, Debug)]

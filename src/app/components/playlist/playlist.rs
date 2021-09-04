@@ -19,7 +19,12 @@ struct RowState {
 
 pub trait PlaylistModel {
     fn current_song_id(&self) -> Option<String>;
-    fn play_song(&self, id: &str);
+    fn play_song(&self, id: &str) {}
+
+    fn play_song_at(&self, pos: usize, id: &str) {
+        self.play_song(id);
+    }
+
     fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>>;
 
     fn autoscroll_to_playing(&self) -> bool {
@@ -104,7 +109,7 @@ where
             if selection_enabled {
                 Self::select_song(&*model, &song);
             } else {
-                model.play_song(&song.get_id());
+                model.play_song_at(position as usize, &song.get_id());
             }
         }));
 

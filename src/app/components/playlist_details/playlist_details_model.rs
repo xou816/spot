@@ -70,20 +70,14 @@ impl PlaylistDetailsModel {
     }
 
     pub fn load_more_tracks(&self) -> Option<()> {
-        let id = self.id.clone();
-        let state = self.app_model.get_state();
-        /*let query: BatchQuery = state
-        .browser
-        .playlist_details_state(&id)?
-        .playlist
-        .as_ref()?
-        .into();*/
+        let last_batch = self.songs_ref()?.last_batch();
         let query = BatchQuery {
-            source: SongsSource::Playlist("".to_string()),
-            batch: Batch::first_of_size(1),
+            source: SongsSource::Playlist(self.id.clone()),
+            batch: last_batch,
         };
-        let next_query = query.next()?;
 
+        let id = self.id.clone();
+        let next_query = query.next()?;
         let loader = self.app_model.get_batch_loader();
 
         self.dispatcher.dispatch_async(Box::pin(async move {
@@ -116,17 +110,17 @@ impl PlaylistModel for PlaylistDetailsModel {
         self.state().playback.current_song_id().cloned()
     }
 
-    fn play_song(&self, id: &str) {
-        if true {
-            //FIXME
-            if let Some(playlist) = self.get_playlist_info() {
-                let source = SongsSource::Playlist(self.id.clone());
-                //self.dispatcher
-                //    .dispatch(PlaybackAction::LoadPagedSongs(source, (&*playlist).into()).into());
-            }
+    fn play_song_at(&self, pos: usize, id: &str) {
+        let source = SongsSource::Playlist(self.id.clone());
+        let batch = self
+            .get_playlist_info()
+            .and_then(|playlist| playlist.songs.batch_for(pos));
+        if let Some(batch) = batch {
+            self.dispatcher
+                .dispatch(PlaybackAction::LoadPagedSongs(source, batch).into());
+            self.dispatcher
+                .dispatch(PlaybackAction::Load(id.to_string()).into());
         }
-        self.dispatcher
-            .dispatch(PlaybackAction::Load(id.to_string()).into());
     }
 
     fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>> {
@@ -163,7 +157,7 @@ impl PlaylistModel for PlaylistDetailsModel {
 
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
         let songs = self.songs_ref()?;
-        let song = songs.iter().find(|&song| song.id == id)?;
+        let song = songs.get(id)?;
 
         let group = SimpleActionGroup::new();
 
@@ -179,7 +173,7 @@ impl PlaylistModel for PlaylistDetailsModel {
 
     fn menu_for(&self, id: &str) -> Option<gio::MenuModel> {
         let songs = self.songs_ref()?;
-        let song = songs.iter().find(|&song| song.id == id)?;
+        let song = songs.get(id)?;
 
         let menu = gio::Menu::new();
         menu.append(Some(&*labels::VIEW_ALBUM), Some("song.view_album"));
@@ -201,9 +195,7 @@ impl PlaylistModel for PlaylistDetailsModel {
     }
 
     fn select_song(&self, id: &str) {
-        let song = self
-            .songs_ref()
-            .and_then(|songs| songs.iter().find(|&song| song.id == id).cloned());
+        let song = self.songs_ref().and_then(|s| s.get(id).cloned());
         if let Some(song) = song {
             self.dispatcher
                 .dispatch(SelectionAction::Select(vec![song]).into());

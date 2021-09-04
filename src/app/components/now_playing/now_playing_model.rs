@@ -54,10 +54,11 @@ impl NowPlayingModel {
         let query = queue.next_query()?;
 
         self.dispatcher.dispatch_async(Box::pin(async move {
+            let source = query.source.clone();
             loader
                 .query(query)
                 .await
-                .map(|song_batch| PlaybackAction::QueuePaged(song_batch).into())
+                .map(|song_batch| PlaybackAction::LoadPagedSongs(source, song_batch).into())
         }));
 
         Some(())
@@ -81,6 +82,9 @@ impl PlaylistModel for NowPlayingModel {
         match event {
             AppEvent::PlaybackEvent(PlaybackEvent::PlaylistChanged(change)) => match change {
                 PlaylistChange::Reset => Some(ListDiff::Set(songs.collect())),
+                PlaylistChange::InsertedAt(i, n) => {
+                    Some(ListDiff::Insert(*i, songs.skip(*i).take(*n).collect()))
+                }
                 PlaylistChange::AppendedAt(i) => Some(ListDiff::Append(songs.skip(*i).collect())),
                 PlaylistChange::MovedDown(i) => Some(ListDiff::MoveDown(*i)),
                 PlaylistChange::MovedUp(i) => Some(ListDiff::MoveUp(*i)),
