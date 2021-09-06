@@ -76,7 +76,7 @@ pub struct AlbumDescription {
     pub title: String,
     pub artists: Vec<ArtistRef>,
     pub art: Option<String>,
-    pub songs: Vec<SongDescription>,
+    pub songs: SongList,
     pub last_batch: Batch,
     pub is_liked: bool,
 }

@@ -32,7 +32,7 @@ impl DetailsModel {
         }
     }
 
-    fn songs_ref(&self) -> Option<impl Deref<Target = Vec<SongDescription>> + '_> {
+    fn songs_ref(&self) -> Option<impl Deref<Target = SongList> + '_> {
         self.app_model.map_state_opt(|s| {
             Some(
                 &s.browser
@@ -140,17 +140,15 @@ impl PlaylistModel for DetailsModel {
         self.state().playback.current_song_id().cloned()
     }
 
-    fn play_song(&self, id: &str) {
-        if true {
-            //FIXME
-            let songs = self.songs_ref();
-            if let Some(songs) = songs {
-                self.dispatcher
-                    .dispatch(PlaybackAction::LoadSongs(None, songs.clone()).into());
-            }
+    fn play_song_at(&self, pos: usize, id: &str) {
+        let source = SongsSource::Album(self.id.clone());
+        let batch = self.songs_ref().and_then(|songs| songs.batch_for(pos));
+        if let Some(batch) = batch {
+            self.dispatcher
+                .dispatch(PlaybackAction::LoadPagedSongs(source, batch).into());
+            self.dispatcher
+                .dispatch(PlaybackAction::Load(id.to_string()).into());
         }
-        self.dispatcher
-            .dispatch(PlaybackAction::Load(id.to_string()).into());
     }
 
     fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>> {
@@ -173,7 +171,7 @@ impl PlaylistModel for DetailsModel {
 
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
         let songs = self.songs_ref()?;
-        let song = songs.iter().find(|&song| song.id == id)?;
+        let song = songs.get(id)?;
 
         let group = SimpleActionGroup::new();
 
@@ -188,7 +186,7 @@ impl PlaylistModel for DetailsModel {
 
     fn menu_for(&self, id: &str) -> Option<gio::MenuModel> {
         let songs = self.songs_ref()?;
-        let song = songs.iter().find(|&song| song.id == id)?;
+        let song = songs.get(id)?;
 
         let menu = gio::Menu::new();
         for artist in song.artists.iter() {
@@ -242,7 +240,8 @@ impl SelectionToolsModel for DetailsModel {
         match tool {
             SelectionTool::Simple(SimpleSelectionTool::SelectAll) => {
                 if let Some(songs) = self.songs_ref() {
-                    self.handle_select_all_tool(selection, &songs[..]);
+                    let vec = songs.iter().collect::<Vec<&SongDescription>>();
+                    self.handle_select_all_tool_borrowed(selection, &vec[..]);
                 }
             }
             _ => self.default_handle_tool_activated(selection, tool),

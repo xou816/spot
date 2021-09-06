@@ -367,15 +367,21 @@ where
     }
 }
 
-impl From<Album> for Vec<SongDescription> {
+impl From<Album> for SongBatch {
     fn from(album: Album) -> Self {
         let art = album.best_image_for_width(200).map(|i| &i.url).cloned();
         let Album { id, name, .. } = album;
         let album_ref = AlbumRef { id, name };
 
-        album
-            .tracks
-            .unwrap_or_default()
+        let tracks = album.tracks.unwrap_or_default();
+
+        let batch = Batch {
+            offset: tracks.offset(),
+            batch_size: tracks.limit(),
+            total: tracks.total(),
+        };
+
+        let songs = tracks
             .into_iter()
             .map(|item| {
                 let artists = item
@@ -397,7 +403,9 @@ impl From<Album> for Vec<SongDescription> {
                     art: art.clone(),
                 }
             })
-            .collect()
+            .collect::<Vec<SongDescription>>();
+
+        Self { songs, batch }
     }
 }
 
@@ -422,7 +430,7 @@ impl From<Album> for AlbumDescription {
                 name: a.name.clone(),
             })
             .collect::<Vec<ArtistRef>>();
-        let songs: Vec<SongDescription> = album.clone().into();
+        let songs = SongList::new_from_initial_batch(album.clone().into());
         let total = album.tracks.as_ref().map(|t| t.total).unwrap_or(100);
         let last_batch = Batch::first_of_size(100);
         let art = album.best_image_for_width(200).map(|i| i.url.clone());

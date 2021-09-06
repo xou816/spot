@@ -67,9 +67,13 @@ impl PlaybackState {
         self.next_index().and_then(|i| self.songs.index(i))
     }
 
-    fn add_batch(&mut self, source: SongsSource, song_batch: SongBatch) -> Option<InsertionRange> {
-        let SongBatch { songs, batch } = song_batch;
+    fn set_source(&mut self, source: SongsSource) {
+        self.songs = SongList::new_sized(2 * RANGE_SIZE);
         self.source = Some(source);
+    }
+
+    fn add_batch(&mut self, song_batch: SongBatch) -> Option<InsertionRange> {
+        let SongBatch { songs, batch } = song_batch;
         self.songs.add(SongBatch { songs, batch })
     }
 
@@ -356,8 +360,10 @@ impl UpdatableState for PlaybackState {
                 //FIXME
                 vec![PlaybackEvent::PlaylistChanged(PlaylistChange::Reset)]
             }
-            PlaybackAction::LoadPagedSongs(source, batch) => {
-                let e = if let Some(InsertionRange(a, b)) = self.add_batch(source, batch) {
+            PlaybackAction::LoadPagedSongs(source, batch)
+                if Some(&source) == self.source.as_ref() =>
+            {
+                let e = if let Some(InsertionRange(a, b)) = self.add_batch(batch) {
                     vec![PlaybackEvent::PlaylistChanged(PlaylistChange::InsertedAt(
                         a, b,
                     ))]
@@ -366,6 +372,13 @@ impl UpdatableState for PlaybackState {
                 };
                 dbg!("{}", &e);
                 e
+            }
+            PlaybackAction::LoadPagedSongs(source, batch)
+                if Some(&source) != self.source.as_ref() =>
+            {
+                self.set_source(source);
+                self.add_batch(batch);
+                vec![PlaybackEvent::PlaylistChanged(PlaylistChange::Reset)]
             }
             PlaybackAction::Queue(tracks) => {
                 let append_at = self.songs.partial_len();
@@ -383,6 +396,7 @@ impl UpdatableState for PlaybackState {
             }
             PlaybackAction::Seek(pos) => vec![PlaybackEvent::TrackSeeked(pos)],
             PlaybackAction::SyncSeek(pos) => vec![PlaybackEvent::SeekSynced(pos)],
+            _ => vec![],
         }
     }
 }

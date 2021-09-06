@@ -61,21 +61,3 @@ impl BatchLoader {
         }
     }
 }
-
-impl From<&AlbumDescription> for BatchQuery {
-    fn from(album: &AlbumDescription) -> Self {
-        BatchQuery {
-            source: SongsSource::Album(album.id.clone()),
-            batch: album.last_batch,
-        }
-    }
-}
-
-impl From<&AlbumDescription> for SongBatch {
-    fn from(album: &AlbumDescription) -> Self {
-        SongBatch {
-            songs: album.songs.clone(),
-            batch: album.last_batch,
-        }
-    }
-}
