@@ -394,8 +394,7 @@ mod tests {
             title: "".to_owned(),
             artists: vec![],
             art: Some("".to_owned()),
-            songs: vec![],
-            last_batch: Batch::first_of_size(100),
+            songs: SongList::new_sized(100),
             is_liked: false,
         };
         let mut artist_state = ArtistState::new("id".to_owned());

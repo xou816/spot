@@ -1,6 +1,5 @@
 use gio::prelude::*;
 use gio::SimpleActionGroup;
-use std::borrow::Borrow;
 use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
@@ -13,9 +12,7 @@ use crate::app::state::PlaylistChange;
 use crate::app::state::{
     PlaybackAction, PlaybackEvent, PlaybackState, SelectionAction, SelectionContext, SelectionState,
 };
-use crate::app::{
-    ActionDispatcher, AppAction, AppEvent, AppModel, AppState, ListDiff, SongsSource,
-};
+use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState, ListDiff};
 use crate::{api::SpotifyApiClient, app::components::SimpleSelectionTool};
 
 pub struct NowPlayingModel {
@@ -37,15 +34,6 @@ impl NowPlayingModel {
 
     fn queue(&self) -> Ref<'_, PlaybackState> {
         Ref::map(self.state(), |s| &s.playback)
-    }
-
-    pub fn load_more_if_needed(&self) -> Option<()> {
-        let queue = self.queue();
-        if queue.exhausted() {
-            self.load_more()
-        } else {
-            None
-        }
     }
 
     pub fn load_more(&self) -> Option<()> {
@@ -70,7 +58,7 @@ impl PlaylistModel for NowPlayingModel {
         self.queue().current_song_id().cloned()
     }
 
-    fn play_song(&self, id: &str) {
+    fn play_song_at(&self, _pos: usize, id: &str) {
         self.dispatcher
             .dispatch(PlaybackAction::Load(id.to_string()).into());
     }

@@ -109,7 +109,7 @@ impl Component for NowPlaying {
 impl EventListener for NowPlaying {
     fn on_event(&mut self, event: &AppEvent) {
         if let AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) = event {
-            self.model.load_more_if_needed();
+            self.model.load_more();
         }
         self.broadcast_event(event);
     }

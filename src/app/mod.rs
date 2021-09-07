@@ -24,6 +24,9 @@ pub use batch_loader::*;
 pub mod credentials;
 pub mod loader;
 
+pub mod rng;
+pub use rng::LazyRandomIndex;
+
 pub struct App {
     settings: SpotSettings,
     builder: gtk::Builder,

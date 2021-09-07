@@ -30,7 +30,7 @@ impl Batch {
         Self {
             offset: 0,
             batch_size,
-            total: usize::MAX,
+            total: 100,
         }
     }
 
@@ -69,7 +69,7 @@ pub struct SongList {
 impl SongList {
     pub fn new_sized(batch_size: usize) -> Self {
         Self {
-            total: usize::MAX,
+            total: 100,
             batch_size,
             max_batch: 0,
             batches: Default::default(),
@@ -225,6 +225,20 @@ impl SongList {
             .get(&batch_id)
             .and_then(|batch| batch.get(i % batch_size))
             .and_then(move |id| indexed_songs.get(id))
+    }
+
+    pub fn has_batch_for(&self, i: usize) -> (Batch, bool) {
+        let total = self.total;
+        let batch_size = self.batch_size;
+        let batch_id = i / batch_size;
+        (
+            Batch {
+                batch_size,
+                total,
+                offset: batch_id * batch_size,
+            },
+            self.batches.contains_key(&batch_id),
+        )
     }
 
     pub fn batch_for(&self, i: usize) -> Option<SongBatch> {

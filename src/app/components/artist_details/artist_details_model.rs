@@ -87,7 +87,7 @@ impl PlaylistModel for ArtistDetailsModel {
             .cloned()
     }
 
-    fn play_song(&self, id: &str) {
+    fn play_song_at(&self, _pos: usize, id: &str) {
         let tracks = self.tracks_ref();
         if let Some(tracks) = tracks {
             self.dispatcher

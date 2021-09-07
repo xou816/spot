@@ -19,11 +19,8 @@ struct RowState {
 
 pub trait PlaylistModel {
     fn current_song_id(&self) -> Option<String>;
-    fn play_song(&self, id: &str) {}
 
-    fn play_song_at(&self, pos: usize, id: &str) {
-        self.play_song(id);
-    }
+    fn play_song_at(&self, pos: usize, id: &str);
 
     fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>>;
 
