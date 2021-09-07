@@ -67,9 +67,9 @@ impl PlaybackState {
         self.next_index().and_then(|i| self.songs.index(i))
     }
 
-    fn set_source(&mut self, source: SongsSource) {
+    fn set_source(&mut self, source: Option<SongsSource>) {
         self.songs = SongList::new_sized(2 * RANGE_SIZE);
-        self.source = Some(source);
+        self.source = source;
     }
 
     fn add_batch(&mut self, song_batch: SongBatch) -> Option<InsertionRange> {
@@ -217,7 +217,7 @@ pub enum PlaybackAction {
     Seek(u32),
     SyncSeek(u32),
     Load(String),
-    LoadSongs(Option<()>, Vec<SongDescription>),
+    LoadSongs(Vec<SongDescription>),
     LoadPagedSongs(SongsSource, SongBatch),
     Next,
     Previous,
@@ -356,8 +356,11 @@ impl UpdatableState for PlaybackState {
                     vec![]
                 }
             }
-            PlaybackAction::LoadSongs(_, _) => {
-                //FIXME
+            PlaybackAction::LoadSongs(tracks) => {
+                self.set_source(None);
+                for track in tracks {
+                    self.queue(track);
+                }
                 vec![PlaybackEvent::PlaylistChanged(PlaylistChange::Reset)]
             }
             PlaybackAction::LoadPagedSongs(source, batch)
@@ -376,7 +379,7 @@ impl UpdatableState for PlaybackState {
             PlaybackAction::LoadPagedSongs(source, batch)
                 if Some(&source) != self.source.as_ref() =>
             {
-                self.set_source(source);
+                self.set_source(Some(source));
                 self.add_batch(batch);
                 vec![PlaybackEvent::PlaylistChanged(PlaylistChange::Reset)]
             }

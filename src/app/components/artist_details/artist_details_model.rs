@@ -91,7 +91,7 @@ impl PlaylistModel for ArtistDetailsModel {
         let tracks = self.tracks_ref();
         if let Some(tracks) = tracks {
             self.dispatcher
-                .dispatch(PlaybackAction::LoadSongs(None, tracks.clone()).into());
+                .dispatch(PlaybackAction::LoadSongs(tracks.clone()).into());
             self.dispatcher
                 .dispatch(PlaybackAction::Load(id.to_string()).into());
         }

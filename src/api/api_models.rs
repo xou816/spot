@@ -367,13 +367,15 @@ where
     }
 }
 
-impl From<Album> for SongBatch {
-    fn from(album: Album) -> Self {
+impl TryFrom<Album> for SongBatch {
+    type Error = ();
+
+    fn try_from(album: Album) -> Result<Self, Self::Error> {
         let art = album.best_image_for_width(200).map(|i| &i.url).cloned();
         let Album { id, name, .. } = album;
         let album_ref = AlbumRef { id, name };
 
-        let tracks = album.tracks.unwrap_or_default();
+        let tracks = album.tracks.ok_or(())?;
 
         let batch = Batch {
             offset: tracks.offset(),
@@ -405,7 +407,7 @@ impl From<Album> for SongBatch {
             })
             .collect::<Vec<SongDescription>>();
 
-        Self { songs, batch }
+        Ok(Self { songs, batch })
     }
 }
 
@@ -430,7 +432,12 @@ impl From<Album> for AlbumDescription {
                 name: a.name.clone(),
             })
             .collect::<Vec<ArtistRef>>();
-        let songs = SongList::new_from_initial_batch(album.clone().into());
+        let songs = SongList::new_from_initial_batch(
+            album
+                .clone()
+                .try_into()
+                .unwrap_or_else(|_| SongBatch::empty()),
+        ); //FIXME
         let total = album.tracks.as_ref().map(|t| t.total).unwrap_or(100);
         let last_batch = Batch::first_of_size(100);
         let art = album.best_image_for_width(200).map(|i| i.url.clone());

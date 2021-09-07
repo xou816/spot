@@ -170,7 +170,7 @@ impl SongBatch {
     pub fn empty() -> Self {
         Self {
             songs: vec![],
-            batch: Batch::first_of_size(0),
+            batch: Batch::first_of_size(1),
         }
     }
 
