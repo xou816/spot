@@ -103,13 +103,7 @@ impl PlaylistModel for ArtistDetailsModel {
             AppEvent::BrowserEvent(BrowserEvent::ArtistDetailsUpdated(id)) if id == &self.id
         ) {
             let tracks = self.tracks_ref()?;
-            Some(ListDiff::Set(
-                tracks
-                    .iter()
-                    .enumerate()
-                    .map(|(i, s)| s.to_song_model(i))
-                    .collect(),
-            ))
+            Some(ListDiff::Set(tracks.iter().map(|s| s.into()).collect()))
         } else {
             None
         }

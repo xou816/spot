@@ -34,15 +34,21 @@ impl From<PlaylistDescription> for AlbumModel {
     }
 }
 
-impl SongDescription {
-    pub fn to_song_model(&self, position: usize) -> SongModel {
+impl From<&SongDescription> for SongModel {
+    fn from(song: &SongDescription) -> Self {
         SongModel::new(
-            &self.id,
-            (position + 1) as u32,
-            &self.title,
-            &self.artists_name(),
-            &format_duration(self.duration.into()),
+            &song.id,
+            song.track_number,
+            &song.title,
+            &song.artists_name(),
+            &format_duration(song.duration.into()),
         )
+    }
+}
+
+impl From<SongDescription> for SongModel {
+    fn from(song: SongDescription) -> Self {
+        SongModel::from(&song)
     }
 }
 
@@ -125,6 +131,7 @@ pub struct PlaylistSummary {
 #[derive(Clone, Debug)]
 pub struct SongDescription {
     pub id: String,
+    pub track_number: u32,
     pub uri: String,
     pub title: String,
     pub artists: Vec<ArtistRef>,

@@ -155,13 +155,7 @@ impl PlaylistModel for DetailsModel {
             AppEvent::BrowserEvent(BrowserEvent::AlbumDetailsLoaded(id)) if id == &self.id
         ) {
             let songs = self.songs_ref()?;
-            Some(ListDiff::Set(
-                songs
-                    .iter()
-                    .enumerate()
-                    .map(|(i, s)| s.to_song_model(i))
-                    .collect(),
-            ))
+            Some(ListDiff::Set(songs.iter().map(|s| s.into()).collect()))
         } else {
             None
         }

@@ -242,6 +242,7 @@ pub struct TopTracks {
 #[derive(Deserialize, Debug, Clone)]
 pub struct TrackItem {
     pub id: String,
+    pub track_number: Option<usize>,
     pub uri: String,
     pub name: String,
     pub duration_ms: i64,
@@ -323,7 +324,8 @@ where
         };
         let songs = page
             .into_iter()
-            .filter_map(|t| {
+            .enumerate()
+            .filter_map(|(i, t)| {
                 let TrackItem {
                     album,
                     artists,
@@ -331,7 +333,9 @@ where
                     uri,
                     name,
                     duration_ms,
+                    ..
                 } = t.try_into().ok()?;
+                let track_number = (batch.offset + i + 1) as u32;
                 let artists = artists
                     .into_iter()
                     .map(|a| ArtistRef {
@@ -354,6 +358,7 @@ where
 
                 Some(SongDescription {
                     id,
+                    track_number,
                     uri,
                     title: name,
                     artists,
@@ -385,7 +390,9 @@ impl TryFrom<Album> for SongBatch {
 
         let songs = tracks
             .into_iter()
-            .map(|item| {
+            .enumerate()
+            .map(|(i, item)| {
+                let track_number = item.track_number.unwrap_or_else(|| batch.offset + i + 1) as u32;
                 let artists = item
                     .artists
                     .into_iter()
@@ -397,6 +404,7 @@ impl TryFrom<Album> for SongBatch {
 
                 SongDescription {
                     id: item.id,
+                    track_number,
                     uri: item.uri,
                     title: item.name,
                     artists,

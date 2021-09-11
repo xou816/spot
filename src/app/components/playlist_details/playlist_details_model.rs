@@ -127,25 +127,14 @@ impl PlaylistModel for PlaylistDetailsModel {
                 if id == &self.id =>
             {
                 let songs = self.songs_ref()?;
-                Some(ListDiff::Set(
-                    songs
-                        .iter()
-                        .enumerate()
-                        .map(|(i, s)| s.to_song_model(i))
-                        .collect(),
-                ))
+                Some(ListDiff::Set(songs.iter().map(|s| s.into()).collect()))
             }
             AppEvent::BrowserEvent(BrowserEvent::PlaylistTracksAppended(id, index))
                 if id == &self.id =>
             {
                 let songs = self.songs_ref()?;
                 Some(ListDiff::Append(
-                    songs
-                        .iter()
-                        .enumerate()
-                        .skip(*index)
-                        .map(|(i, s)| s.to_song_model(i))
-                        .collect(),
+                    songs.iter().skip(*index).map(|s| s.into()).collect(),
                 ))
             }
             _ => None,

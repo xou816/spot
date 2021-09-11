@@ -65,7 +65,7 @@ impl PlaylistModel for NowPlayingModel {
 
     fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>> {
         let queue = self.queue();
-        let songs = queue.songs().enumerate().map(|(i, s)| s.to_song_model(i));
+        let songs = queue.songs().map(|s| s.into());
 
         match event {
             AppEvent::PlaybackEvent(PlaybackEvent::PlaylistChanged(change)) => match change {
