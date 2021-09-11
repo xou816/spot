@@ -67,12 +67,12 @@ pub enum BrowserEvent {
 }
 
 pub enum BrowserScreen {
-    Home(HomeState),
-    AlbumDetails(DetailsState),
-    Search(SearchState),
-    Artist(ArtistState),
-    PlaylistDetails(PlaylistDetailsState),
-    User(UserState),
+    Home(Box<HomeState>),
+    AlbumDetails(Box<DetailsState>),
+    Search(Box<SearchState>),
+    Artist(Box<ArtistState>),
+    PlaylistDetails(Box<PlaylistDetailsState>),
+    User(Box<UserState>),
 }
 
 impl BrowserScreen {
@@ -80,25 +80,27 @@ impl BrowserScreen {
         match name {
             ScreenName::Home => BrowserScreen::Home(Default::default()),
             ScreenName::AlbumDetails(id) => {
-                BrowserScreen::AlbumDetails(DetailsState::new(id.to_string()))
+                BrowserScreen::AlbumDetails(Box::new(DetailsState::new(id.to_string())))
             }
             ScreenName::Search => BrowserScreen::Search(Default::default()),
-            ScreenName::Artist(id) => BrowserScreen::Artist(ArtistState::new(id.to_string())),
-            ScreenName::PlaylistDetails(id) => {
-                BrowserScreen::PlaylistDetails(PlaylistDetailsState::new(id.to_string()))
+            ScreenName::Artist(id) => {
+                BrowserScreen::Artist(Box::new(ArtistState::new(id.to_string())))
             }
-            ScreenName::User(id) => BrowserScreen::User(UserState::new(id.to_string())),
+            ScreenName::PlaylistDetails(id) => {
+                BrowserScreen::PlaylistDetails(Box::new(PlaylistDetailsState::new(id.to_string())))
+            }
+            ScreenName::User(id) => BrowserScreen::User(Box::new(UserState::new(id.to_string()))),
         }
     }
 
     fn state(&mut self) -> &mut dyn UpdatableState<Action = BrowserAction, Event = BrowserEvent> {
         match self {
-            Self::Home(state) => state,
-            Self::AlbumDetails(state) => state,
-            Self::Search(state) => state,
-            Self::Artist(state) => state,
-            Self::PlaylistDetails(state) => state,
-            Self::User(state) => state,
+            Self::Home(state) => &mut **state,
+            Self::AlbumDetails(state) => &mut **state,
+            Self::Search(state) => &mut **state,
+            Self::Artist(state) => &mut **state,
+            Self::PlaylistDetails(state) => &mut **state,
+            Self::User(state) => &mut **state,
         }
     }
 }
@@ -203,6 +205,24 @@ pub struct BrowserState {
     navigation: NavStack<BrowserScreen>,
 }
 
+macro_rules! extract_state {
+    ($e:expr, $p:pat if $guard:expr => $i:ident) => {
+        extract_state_full!($e, $p if $guard => $i)
+    };
+    ($e:expr, $p:pat => $i:ident) => {
+        extract_state_full!($e, $p if true => $i)
+    };
+}
+
+macro_rules! extract_state_full {
+    ($e:expr, $p:pat if $guard:expr => $i:ident) => {{
+        $e.navigation.iter_rev().find_map(|screen| match screen {
+            $p if $guard => Some(&**$i),
+            _ => None,
+        })
+    }};
+}
+
 impl BrowserState {
     pub fn new() -> Self {
         Self {
@@ -227,45 +247,27 @@ impl BrowserState {
     }
 
     pub fn home_state(&self) -> Option<&HomeState> {
-        self.navigation.iter_rev().find_map(|screen| match screen {
-            BrowserScreen::Home(state) => Some(state),
-            _ => None,
-        })
+        extract_state!(&self, BrowserScreen::Home(s) => s)
     }
 
     pub fn details_state(&self, id: &str) -> Option<&DetailsState> {
-        self.navigation.iter_rev().find_map(|screen| match screen {
-            BrowserScreen::AlbumDetails(state) if state.id == id => Some(state),
-            _ => None,
-        })
+        extract_state!(&self, BrowserScreen::AlbumDetails(state) if state.id == id => state)
     }
 
     pub fn search_state(&self) -> Option<&SearchState> {
-        self.navigation.iter_rev().find_map(|screen| match screen {
-            BrowserScreen::Search(state) => Some(state),
-            _ => None,
-        })
+        extract_state!(&self, BrowserScreen::Search(s) => s)
     }
 
     pub fn artist_state(&self, id: &str) -> Option<&ArtistState> {
-        self.navigation.iter_rev().find_map(|screen| match screen {
-            BrowserScreen::Artist(state) if state.id == id => Some(state),
-            _ => None,
-        })
+        extract_state!(&self, BrowserScreen::Artist(state) if state.id == id => state)
     }
 
     pub fn playlist_details_state(&self, id: &str) -> Option<&PlaylistDetailsState> {
-        self.navigation.iter_rev().find_map(|screen| match screen {
-            BrowserScreen::PlaylistDetails(state) if state.id == id => Some(state),
-            _ => None,
-        })
+        extract_state!(&self, BrowserScreen::PlaylistDetails(state) if state.id == id => state)
     }
 
     pub fn user_state(&self, id: &str) -> Option<&UserState> {
-        self.navigation.iter_rev().find_map(|screen| match screen {
-            BrowserScreen::User(state) if state.id == id => Some(state),
-            _ => None,
-        })
+        extract_state!(&self, BrowserScreen::User(state) if state.id == id => state)
     }
 
     fn push_if_needed(&mut self, name: ScreenName) -> Vec<BrowserEvent> {
