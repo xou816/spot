@@ -49,7 +49,7 @@ impl ArtistDetailsModel {
             .call_spotify_and_dispatch(move || async move {
                 api.get_artist(&id)
                     .await
-                    .map(|artist| BrowserAction::SetArtistDetails(artist).into())
+                    .map(|artist| BrowserAction::SetArtistDetails(Box::new(artist)).into())
             });
     }
 

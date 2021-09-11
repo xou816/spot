@@ -65,7 +65,7 @@ impl PlaylistDetailsModel {
             .call_spotify_and_dispatch(move || async move {
                 api.get_playlist(&id)
                     .await
-                    .map(|playlist| BrowserAction::SetPlaylistDetails(playlist).into())
+                    .map(|playlist| BrowserAction::SetPlaylistDetails(Box::new(playlist)).into())
             });
     }
 
@@ -81,10 +81,9 @@ impl PlaylistDetailsModel {
         let loader = self.app_model.get_batch_loader();
 
         self.dispatcher.dispatch_async(Box::pin(async move {
-            loader
-                .query(next_query)
-                .await
-                .map(|song_batch| BrowserAction::AppendPlaylistTracks(id, song_batch).into())
+            loader.query(next_query).await.map(|song_batch| {
+                BrowserAction::AppendPlaylistTracks(id, Box::new(song_batch)).into()
+            })
         }));
 
         Some(())

@@ -35,7 +35,7 @@ impl UserDetailsModel {
             .call_spotify_and_dispatch(move || async move {
                 api.get_user(&id)
                     .await
-                    .map(|user| BrowserAction::SetUserDetails(user).into())
+                    .map(|user| BrowserAction::SetUserDetails(Box::new(user)).into())
             });
     }
 

@@ -31,7 +31,7 @@ impl SearchResultsModel {
                 .call_spotify_and_dispatch(move || async move {
                     api.search(&query, 0, 5)
                         .await
-                        .map(|albums| BrowserAction::SetSearchResults(albums).into())
+                        .map(|albums| BrowserAction::SetSearchResults(Box::new(albums)).into())
                 });
         }
     }

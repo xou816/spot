@@ -69,7 +69,7 @@ impl DetailsModel {
             .call_spotify_and_dispatch(move || async move {
                 api.get_album(&id)
                     .await
-                    .map(|album| BrowserAction::SetAlbumDetails(album).into())
+                    .map(|album| BrowserAction::SetAlbumDetails(Box::new(album)).into())
             });
     }
 
@@ -93,7 +93,7 @@ impl DetailsModel {
                     if !is_liked {
                         api.save_album(&id)
                             .await
-                            .map(|album| BrowserAction::SaveAlbum(album).into())
+                            .map(|album| BrowserAction::SaveAlbum(Box::new(album)).into())
                     } else {
                         api.remove_saved_album(&id)
                             .await
