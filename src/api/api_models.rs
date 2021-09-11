@@ -452,26 +452,23 @@ impl From<Album> for AlbumDescription {
 }
 
 impl From<AlbumInfo> for AlbumReleaseDetails {
-    fn from(info: AlbumInfo) -> Self {
-        let copyrights = info
-            .copyrights
-            .iter()
-            .map(|c| c.clone().into())
-            .collect::<Vec<CopyrightDetails>>();
-
-        Self {
-            label: info.label,
-            release_date: info.release_date,
+    fn from(
+        AlbumInfo {
+            label,
+            release_date,
             copyrights,
-        }
-    }
-}
+        }: AlbumInfo,
+    ) -> Self {
+        let copyright_text = copyrights
+            .iter()
+            .map(|c| format!("[{}] {}", c.type_, c.text))
+            .collect::<Vec<String>>()
+            .join(",\n ");
 
-impl From<Copyright> for CopyrightDetails {
-    fn from(copyright: Copyright) -> Self {
         Self {
-            text: copyright.text,
-            type_: copyright.type_,
+            label,
+            release_date,
+            copyright_text,
         }
     }
 }

@@ -112,7 +112,7 @@ impl PlaylistModel for PlaylistDetailsModel {
 
     fn play_song_at(&self, pos: usize, id: &str) {
         let source = SongsSource::Playlist(self.id.clone());
-        let batch = self.songs_ref().and_then(|songs| songs.batch_for(pos));
+        let batch = self.songs_ref().and_then(|songs| songs.song_batch_for(pos));
         if let Some(batch) = batch {
             self.dispatcher
                 .dispatch(PlaybackAction::LoadPagedSongs(source, batch).into());

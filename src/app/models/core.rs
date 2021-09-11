@@ -1,7 +1,7 @@
 use super::main::*;
 use std::collections::HashMap;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct InsertionRange(pub usize, pub usize);
 
 impl InsertionRange {
@@ -30,7 +30,7 @@ impl Batch {
         Self {
             offset: 0,
             batch_size,
-            total: 100,
+            total: 0,
         }
     }
 
@@ -60,8 +60,9 @@ pub enum SongIndexStatus {
 #[derive(Clone, Debug)]
 pub struct SongList {
     total: usize,
+    total_loaded: usize,
     batch_size: usize,
-    max_batch: usize,
+    last_batch_key: usize,
     batches: HashMap<usize, Vec<String>>,
     indexed_songs: HashMap<String, SongDescription>,
 }
@@ -69,22 +70,17 @@ pub struct SongList {
 impl SongList {
     pub fn new_sized(batch_size: usize) -> Self {
         Self {
-            total: 100,
+            total: 0,
+            total_loaded: 0,
             batch_size,
-            max_batch: 0,
+            last_batch_key: 0,
             batches: Default::default(),
             indexed_songs: Default::default(),
         }
     }
 
     pub fn new_from_initial_batch(initial: SongBatch) -> Self {
-        let mut s = Self {
-            total: initial.batch.total,
-            batch_size: initial.batch.batch_size,
-            max_batch: Default::default(),
-            batches: Default::default(),
-            indexed_songs: Default::default(),
-        };
+        let mut s = Self::new_sized(initial.batch.batch_size);
         s.add(initial);
         s
     }
@@ -93,14 +89,24 @@ impl SongList {
         self.iter_from(0)
     }
 
-    pub fn iter_from(&self, i: usize) -> impl Iterator<Item = &'_ SongDescription> {
+    fn iter_from(&self, i: usize) -> impl Iterator<Item = &'_ SongDescription> {
         let indexed_songs = &self.indexed_songs;
         self.iter_ids_from(i)
             .filter_map(move |id| indexed_songs.get(id))
     }
 
     pub fn partial_len(&self) -> usize {
-        self.iter_ids_from(0).count()
+        self.total_loaded
+    }
+
+    fn estimated_len(&self, up_to_batch_index: usize) -> usize {
+        let batches = &self.batches;
+        let batch_size = self.batch_size;
+        let batch_count = (0..up_to_batch_index)
+            .into_iter()
+            .filter(move |i| batches.contains_key(i))
+            .count();
+        batch_size * batch_count
     }
 
     pub fn len(&self) -> usize {
@@ -110,16 +116,16 @@ impl SongList {
     pub fn iter_ids_from(&self, i: usize) -> impl Iterator<Item = &'_ String> {
         let batch_size = self.batch_size;
         let index = i / batch_size;
-        self.iter_range(index, self.max_batch).skip(i % batch_size)
+        self.iter_range(index, self.last_batch_key)
+            .skip(i % batch_size)
     }
 
     fn iter_range(&self, a: usize, b: usize) -> impl Iterator<Item = &'_ String> {
         let batches = &self.batches;
         (a..=b)
             .into_iter()
-            .map(move |i| batches.get(&i))
-            .take_while(|b| b.is_some())
-            .flat_map(|b| b.unwrap().iter())
+            .filter_map(move |i| batches.get(&i))
+            .flat_map(|b| b.iter())
     }
 
     fn batches_add(batches: &mut HashMap<usize, Vec<String>>, batch_size: usize, id: &str) {
@@ -142,18 +148,20 @@ impl SongList {
             .for_each(|next| {
                 Self::batches_add(&mut batches, self.batch_size, next);
             });
-        self.max_batch = batches.len().saturating_sub(1);
+        self.last_batch_key = batches.len().saturating_sub(1);
         self.batches = batches;
         self.total = self.total.saturating_sub(ids.len());
+        self.total_loaded = self.total_loaded.saturating_sub(ids.len());
     }
 
     pub fn append(&mut self, songs: Vec<SongDescription>) {
         self.total = self.total.saturating_add(songs.len());
+        self.total_loaded = self.total_loaded.saturating_add(songs.len());
         for song in songs {
             Self::batches_add(&mut self.batches, self.batch_size, &song.id);
             self.indexed_songs.insert(song.id.clone(), song);
         }
-        self.max_batch = self.batches.len().saturating_sub(1);
+        self.last_batch_key = self.batches.len().saturating_sub(1);
     }
 
     pub fn add(&mut self, song_batch: SongBatch) -> Option<InsertionRange> {
@@ -162,7 +170,7 @@ impl SongList {
                 .resize(self.batch_size)
                 .into_iter()
                 .map(|new_batch| self.add_one(new_batch))
-                .reduce(|a, b| InsertionRange::union(a, b))
+                .reduce(InsertionRange::union)
                 .unwrap_or(None)
         } else {
             self.add_one(song_batch)
@@ -177,6 +185,7 @@ impl SongList {
             return None;
         }
 
+        let insertion_start = self.estimated_len(index);
         let len = songs.len();
         let ids = songs
             .into_iter()
@@ -186,11 +195,13 @@ impl SongList {
                 song_id
             })
             .collect();
+
         self.batches.insert(index, ids);
         self.total = batch.total;
-        self.max_batch = usize::max(self.max_batch, index);
+        self.total_loaded += len;
+        self.last_batch_key = usize::max(self.last_batch_key, index);
 
-        Some(InsertionRange(batch.offset, len))
+        Some(InsertionRange(insertion_start, len))
     }
 
     fn index_mut(&mut self, i: usize) -> Option<&mut String> {
@@ -241,7 +252,7 @@ impl SongList {
         )
     }
 
-    pub fn batch_for(&self, i: usize) -> Option<SongBatch> {
+    pub fn song_batch_for(&self, i: usize) -> Option<SongBatch> {
         let total = self.total;
         let batch_size = self.batch_size;
         let batch_id = i / batch_size;
@@ -264,7 +275,7 @@ impl SongList {
         Batch {
             batch_size: self.batch_size,
             total: self.total,
-            offset: self.max_batch * self.batch_size,
+            offset: self.last_batch_key * self.batch_size,
         }
     }
 
@@ -276,6 +287,7 @@ impl SongList {
         if i >= self.total {
             return SongIndexStatus::OutOfBounds;
         }
+
         let batch_size = self.batch_size;
         let batch_id = i / batch_size;
         self.batches
@@ -356,18 +368,36 @@ mod tests {
     }
 
     #[test]
+    fn test_add_with_range() {
+        let mut list = SongList::new_from_initial_batch(batch(0));
+
+        let range = list.add(batch(1));
+        assert_eq!(range, Some(InsertionRange(2, 2)));
+        assert_eq!(list.partial_len(), 4);
+
+        let range = list.add(batch(3));
+        assert_eq!(range, Some(InsertionRange(4, 2)));
+        assert_eq!(list.partial_len(), 6);
+
+        let range = list.add(batch(2));
+        assert_eq!(range, Some(InsertionRange(4, 2)));
+        assert_eq!(list.partial_len(), 8);
+
+        let range = list.add(batch(2));
+        assert_eq!(range, None);
+        assert_eq!(list.partial_len(), 8);
+    }
+
+    #[test]
     fn test_iter_non_contiguous() {
         let mut list = SongList::new_from_initial_batch(batch(0));
         list.add(batch(2));
 
-        assert_eq!(list.partial_len(), 2);
+        assert_eq!(list.partial_len(), 4);
 
         let mut list_iter = list.iter();
         assert_eq!(list_iter.next().unwrap().id, "song0");
         assert_eq!(list_iter.next().unwrap().id, "song1");
-        assert!(list_iter.next().is_none());
-
-        let mut list_iter = list.iter_from(4);
         assert_eq!(list_iter.next().unwrap().id, "song4");
         assert_eq!(list_iter.next().unwrap().id, "song5");
         assert!(list_iter.next().is_none());
@@ -406,16 +436,8 @@ mod tests {
 
         assert_eq!(list.partial_len(), 8);
 
-        let batch = list.batch_for(3);
+        let batch = list.song_batch_for(3);
         assert_eq!(batch.unwrap().batch.offset, 2);
-    }
-
-    #[test]
-    fn test_add_existing_batch() {
-        let mut list = SongList::new_from_initial_batch(batch(0));
-        list.add(batch(0));
-
-        assert_eq!(list.partial_len(), 2);
     }
 
     #[test]

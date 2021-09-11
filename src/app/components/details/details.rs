@@ -228,7 +228,7 @@ impl Details {
                 &details.release_date,
                 album.songs.len(),
                 &album.formatted_time(),
-                &details.copyrights(),
+                &details.copyright_text,
             );
 
             if let Some(art) = album.art.clone() {

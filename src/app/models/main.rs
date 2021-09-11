@@ -104,23 +104,7 @@ pub struct AlbumFullDescription {
 pub struct AlbumReleaseDetails {
     pub label: String,
     pub release_date: String,
-    pub copyrights: Vec<CopyrightDetails>,
-}
-
-impl AlbumReleaseDetails {
-    pub fn copyrights(&self) -> String {
-        self.copyrights
-            .iter()
-            .map(|c| format!("[{}] {}", c.type_, c.text))
-            .collect::<Vec<String>>()
-            .join(",\n ")
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct CopyrightDetails {
-    pub text: String,
-    pub type_: char,
+    pub copyright_text: String,
 }
 
 #[derive(Clone, Debug)]

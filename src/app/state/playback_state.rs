@@ -49,7 +49,7 @@ impl PlaybackState {
     }
 
     pub fn songs(&self) -> impl Iterator<Item = &'_ SongDescription> + '_ {
-        self.songs.iter_from(0)
+        self.songs.iter()
     }
 
     fn index(&self, i: usize) -> Option<&SongDescription> {
@@ -106,7 +106,7 @@ impl PlaybackState {
     }
 
     fn swap(&mut self, index: usize, other_index: usize) {
-        let len = self.songs.partial_len();
+        let len = self.songs.len();
         self.songs.swap(index, other_index);
         self.position = self
             .position
@@ -171,7 +171,7 @@ impl PlaybackState {
     }
 
     fn next_index(&self) -> Option<usize> {
-        let len = self.songs.partial_len();
+        let len = self.songs.len();
         self.position.and_then(|p| match self.repeat {
             RepeatMode::Song => Some(p),
             RepeatMode::Playlist => Some((p + 1) % len),
@@ -184,7 +184,7 @@ impl PlaybackState {
     }
 
     fn prev_index(&self) -> Option<usize> {
-        let len = self.songs.partial_len();
+        let len = self.songs.len();
         self.position.and_then(|p| match self.repeat {
             RepeatMode::Song => Some(p),
             RepeatMode::Playlist => Some((if p == 0 { len } else { p }) - 1),

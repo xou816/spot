@@ -112,9 +112,7 @@ impl DetailsModel {
 
 impl PlaylistModel for DetailsModel {
     fn select_song(&self, id: &str) {
-        let song = self
-            .songs_ref()
-            .and_then(|songs| songs.iter().find(|&song| song.id == id).cloned());
+        let song = self.songs_ref().and_then(|songs| songs.get(id).cloned());
         if let Some(song) = song {
             self.dispatcher
                 .dispatch(SelectionAction::Select(vec![song]).into());
@@ -142,7 +140,7 @@ impl PlaylistModel for DetailsModel {
 
     fn play_song_at(&self, pos: usize, id: &str) {
         let source = SongsSource::Album(self.id.clone());
-        let batch = self.songs_ref().and_then(|songs| songs.batch_for(pos));
+        let batch = self.songs_ref().and_then(|songs| songs.song_batch_for(pos));
         if let Some(batch) = batch {
             self.dispatcher
                 .dispatch(PlaybackAction::LoadPagedSongs(source, batch).into());
