@@ -80,6 +80,7 @@ impl PlaybackState {
         self.songs = SongList::new_sized(2 * RANGE_SIZE);
         self.source = source;
         self.index = Default::default();
+        self.position = None;
     }
 
     fn add_batch(&mut self, song_batch: SongBatch) -> Option<InsertionRange> {
@@ -333,10 +334,7 @@ impl UpdatableState for PlaybackState {
             }
             PlaybackAction::ToggleShuffle => {
                 self.toggle_shuffle();
-                vec![
-                    // PlaybackEvent::PlaylistChanged(PlaylistChange::Reset),
-                    PlaybackEvent::ShuffleChanged,
-                ]
+                vec![PlaybackEvent::ShuffleChanged]
             }
             PlaybackAction::Next => {
                 if let Some(id) = self.play_next().cloned() {
@@ -368,7 +366,6 @@ impl UpdatableState for PlaybackState {
                     make_events(vec![
                         Some(PlaybackEvent::TrackChanged(id)),
                         Some(PlaybackEvent::PlaybackResumed),
-                        Some(PlaybackEvent::PlaylistChanged(PlaylistChange::Reset)),
                     ])
                 } else {
                     vec![]
@@ -384,15 +381,13 @@ impl UpdatableState for PlaybackState {
             PlaybackAction::LoadPagedSongs(source, batch)
                 if Some(&source) == self.source.as_ref() =>
             {
-                let e = if let Some(InsertionRange(a, b)) = self.add_batch(batch) {
+                if let Some(InsertionRange(a, b)) = self.add_batch(batch) {
                     vec![PlaybackEvent::PlaylistChanged(PlaylistChange::InsertedAt(
                         a, b,
                     ))]
                 } else {
                     vec![]
-                };
-                dbg!("{}", &e);
-                e
+                }
             }
             PlaybackAction::LoadPagedSongs(source, batch)
                 if Some(&source) != self.source.as_ref() =>
@@ -440,6 +435,7 @@ mod tests {
             },
             duration: 1000,
             art: None,
+            track_number: 0,
         }
     }
 
