@@ -153,7 +153,7 @@ impl WithImages for Playlist {
 #[derive(Deserialize, Debug, Clone)]
 pub struct PlaylistTrack {
     pub is_local: bool,
-    pub track: FailibleTrackItem,
+    pub track: Option<FailibleTrackItem>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -287,7 +287,7 @@ impl TryFrom<PlaylistTrack> for TrackItem {
     type Error = ();
 
     fn try_from(PlaylistTrack { is_local, track }: PlaylistTrack) -> Result<Self, Self::Error> {
-        track.get().filter(|_| !is_local).ok_or(())
+        track.ok_or(())?.get().filter(|_| !is_local).ok_or(())
     }
 }
 
