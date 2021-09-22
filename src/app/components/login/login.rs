@@ -194,6 +194,7 @@ impl EventListener for Login {
                 self.hide_and_save_creds(creds.clone());
             }
             AppEvent::LoginEvent(LoginEvent::LoginFailed) => {
+                self.model.clear_saved_credentials();
                 self.reveal_error();
             }
             AppEvent::Started => {

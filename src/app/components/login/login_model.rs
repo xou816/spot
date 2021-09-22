@@ -36,6 +36,10 @@ impl LoginModel {
         }
     }
 
+    pub fn clear_saved_credentials(&self) {
+        let _ = Credentials::logout();
+    }
+
     pub fn save_token(&self, token: String, token_expiry_time: SystemTime) {
         if let Ok(mut credentials) = Credentials::retrieve() {
             credentials.token = token;
