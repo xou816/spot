@@ -508,3 +508,33 @@ impl From<Playlist> for PlaylistDescription {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_playlist_track_null() {
+        let track = r#"{"is_local": false, "track": null}"#;
+        let deserialized: PlaylistTrack = serde_json::from_str(track).unwrap();
+        let track_item: Option<TrackItem> = deserialized.try_into().ok();
+        assert!(track_item.is_none());
+    }
+
+    #[test]
+    fn test_playlist_track_local() {
+        let track = r#"{"is_local": true, "track": {"name": ""}}"#;
+        let deserialized: PlaylistTrack = serde_json::from_str(track).unwrap();
+        let track_item: Option<TrackItem> = deserialized.try_into().ok();
+        assert!(track_item.is_none());
+    }
+
+    #[test]
+    fn test_playlist_track_ok() {
+        let track = r#"{"is_local":false,"track":{"album":{"artists":[{"external_urls":{"spotify":""},"href":"","id":"","name":"","type":"artist","uri":""}],"id":"","images":[{"height":64,"url":"","width":64}],"name":""},"artists":[{"id":"","name":""}],"duration_ms":1,"id":"","name":"","uri":""}}"#;
+        let deserialized: PlaylistTrack = serde_json::from_str(track).unwrap();
+        let track_item: Option<TrackItem> = deserialized.try_into().ok();
+        assert!(track_item.is_some());
+    }
+}
