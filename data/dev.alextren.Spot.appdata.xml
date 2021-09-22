@@ -3,14 +3,27 @@
   <id>dev.alextren.Spot</id>
   <url type="homepage">https://github.com/xou816/spot</url>
   <name>Spot</name>
-  <summary>Spotify Client for the GNOME desktop</summary>
+  <summary>Listen to music on Spotify</summary>
   <launchable type="desktop-id">dev.alextren.Spot.desktop</launchable>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
   <content_rating type="oars-1.1" />
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+    <control>touch</control>
+  </recommends>
+  <!-- see https://puri.sm/posts/specify-form-factors-in-your-librem-5-apps/ -->
+  <custom>
+    <value key="Purism::form_factor">workstation</value>
+    <value key="Purism::form_factor">mobile</value>
+  </custom>
   <description>
     <p>
-      Spotify Client for the GNOME desktop. <b>Requires a premium account.</b>
+      Listen to music on Spotify. <b>Requires a premium account.</b>
     </p>
     <p>Current features:</p>
     <ul>
@@ -245,8 +258,4 @@
       </description>
     </release>
   </releases>
-  <custom>
-    <value key="Purism::form_factor">workstation</value>
-    <value key="Purism::form_factor">mobile</value>
-  </custom>
 </component>
