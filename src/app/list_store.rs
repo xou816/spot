@@ -9,6 +9,7 @@ where
     GType: Clone,
 {
     Set(Vec<GType>),
+    Insert(usize, Vec<GType>),
     Append(Vec<GType>),
     MoveUp(usize),
     MoveDown(usize),
@@ -38,6 +39,7 @@ where
     pub fn update(&mut self, diff: ListDiff<GType>) {
         match diff {
             ListDiff::Set(elements) => self.replace_all(elements.into_iter()),
+            ListDiff::Insert(i, elements) => self.insert_multiple(i as u32, elements.into_iter()),
             ListDiff::Append(elements) => self.extend(elements.into_iter()),
             ListDiff::MoveDown(i) => self.move_down_unchecked(i as u32),
             ListDiff::MoveUp(i) => self.move_up_unchecked(i as u32),
@@ -71,6 +73,11 @@ where
         let b = self.store.item(ib)?;
         self.store.splice(ia, 2, &[b, a]);
         Some(())
+    }
+
+    pub fn insert_multiple(&mut self, position: u32, elements: impl Iterator<Item = GType>) {
+        let upcast_vec: Vec<glib::Object> = elements.map(|e| e.upcast::<glib::Object>()).collect();
+        self.store.splice(position, 0, &upcast_vec[..]);
     }
 
     pub fn insert(&mut self, position: u32, element: GType) {

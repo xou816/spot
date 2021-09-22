@@ -1,6 +1,8 @@
 use std::convert::From;
 
-pub use super::gtypes::*;
+use super::core::{Batch, SongList};
+use super::gtypes::*;
+
 use crate::app::components::utils::format_duration;
 
 impl From<&AlbumDescription> for AlbumModel {
@@ -32,15 +34,21 @@ impl From<PlaylistDescription> for AlbumModel {
     }
 }
 
-impl SongDescription {
-    pub fn to_song_model(&self, position: usize) -> SongModel {
+impl From<&SongDescription> for SongModel {
+    fn from(song: &SongDescription) -> Self {
         SongModel::new(
-            &self.id,
-            (position + 1) as u32,
-            &self.title,
-            &self.artists_name(),
-            &format_duration(self.duration.into()),
+            &song.id,
+            song.track_number,
+            &song.title,
+            &song.artists_name(),
+            &format_duration(song.duration.into()),
         )
+    }
+}
+
+impl From<SongDescription> for SongModel {
+    fn from(song: SongDescription) -> Self {
+        SongModel::from(&song)
     }
 }
 
@@ -74,7 +82,7 @@ pub struct AlbumDescription {
     pub title: String,
     pub artists: Vec<ArtistRef>,
     pub art: Option<String>,
-    pub songs: Vec<SongDescription>,
+    pub songs: SongList,
     pub is_liked: bool,
 }
 
@@ -92,14 +100,6 @@ impl AlbumDescription {
     }
 }
 
-impl PartialEq for AlbumDescription {
-    fn eq(&self, other: &AlbumDescription) -> bool {
-        self.id == other.id
-    }
-}
-
-impl Eq for AlbumDescription {}
-
 #[derive(Clone, Debug)]
 pub struct AlbumFullDescription {
     pub description: AlbumDescription,
@@ -110,23 +110,7 @@ pub struct AlbumFullDescription {
 pub struct AlbumReleaseDetails {
     pub label: String,
     pub release_date: String,
-    pub copyrights: Vec<CopyrightDetails>,
-}
-
-impl AlbumReleaseDetails {
-    pub fn copyrights(&self) -> String {
-        self.copyrights
-            .iter()
-            .map(|c| format!("[{}] {}", c.type_, c.text))
-            .collect::<Vec<String>>()
-            .join(",\n ")
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct CopyrightDetails {
-    pub text: String,
-    pub type_: char,
+    pub copyright_text: String,
 }
 
 #[derive(Clone, Debug)]
@@ -134,8 +118,7 @@ pub struct PlaylistDescription {
     pub id: String,
     pub title: String,
     pub art: Option<String>,
-    pub songs: Vec<SongDescription>,
-    pub last_batch: Batch,
+    pub songs: SongList,
     pub owner: UserRef,
 }
 
@@ -148,6 +131,7 @@ pub struct PlaylistSummary {
 #[derive(Clone, Debug)]
 pub struct SongDescription {
     pub id: String,
+    pub track_number: u32,
     pub uri: String,
     pub title: String,
     pub artists: Vec<ArtistRef>,
@@ -166,34 +150,52 @@ impl SongDescription {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
-pub struct Batch {
-    pub offset: usize,
-    pub batch_size: usize,
-    pub total: usize,
-}
-
-impl Batch {
-    pub fn next(self) -> Option<Self> {
-        let Self {
-            offset,
-            batch_size,
-            total,
-        } = self;
-
-        Some(Self {
-            offset: offset + batch_size,
-            batch_size,
-            total,
-        })
-        .filter(|b| b.offset < total)
-    }
-}
-
 #[derive(Debug, Clone)]
 pub struct SongBatch {
     pub songs: Vec<SongDescription>,
     pub batch: Batch,
+}
+
+impl SongBatch {
+    pub fn empty() -> Self {
+        Self {
+            songs: vec![],
+            batch: Batch::first_of_size(1),
+        }
+    }
+
+    pub fn resize(self, batch_size: usize) -> Vec<Self> {
+        let SongBatch { mut songs, batch } = self;
+        if batch_size > batch.batch_size {
+            let new_batch = Batch {
+                batch_size,
+                ..batch
+            };
+            vec![Self {
+                songs,
+                batch: new_batch,
+            }]
+        } else {
+            let n = songs.len();
+            let iter_count = n / batch_size + (if n % batch_size > 0 { 1 } else { 0 });
+            (0..iter_count)
+                .map(|i| {
+                    let offset = batch.offset + i * batch_size;
+                    let new_batch = Batch {
+                        offset,
+                        total: batch.total,
+                        batch_size,
+                    };
+                    let drain_upper = usize::min(batch_size, songs.len());
+                    let new_songs = songs.drain(0..drain_upper).collect();
+                    Self {
+                        songs: new_songs,
+                        batch: new_batch,
+                    }
+                })
+                .collect()
+        }
+    }
 }
 
 #[derive(Clone, Debug)]

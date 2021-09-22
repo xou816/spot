@@ -10,7 +10,6 @@ pub use dispatch::{ActionDispatcher, ActionDispatcherImpl, DispatchLoop, Worker}
 pub mod components;
 use components::*;
 
-pub mod gtypes;
 pub mod models;
 
 mod list_store;
@@ -19,8 +18,14 @@ pub use list_store::*;
 pub mod state;
 pub use state::{AppAction, AppEvent, AppModel, AppState, BrowserAction, BrowserEvent};
 
+mod batch_loader;
+pub use batch_loader::*;
+
 pub mod credentials;
 pub mod loader;
+
+pub mod rng;
+pub use rng::LazyRandomIndex;
 
 pub struct App {
     settings: SpotSettings,

@@ -49,7 +49,7 @@ impl ArtistDetailsModel {
             .call_spotify_and_dispatch(move || async move {
                 api.get_artist(&id)
                     .await
-                    .map(|artist| BrowserAction::SetArtistDetails(artist).into())
+                    .map(|artist| BrowserAction::SetArtistDetails(Box::new(artist)).into())
             });
     }
 
@@ -87,11 +87,11 @@ impl PlaylistModel for ArtistDetailsModel {
             .cloned()
     }
 
-    fn play_song(&self, id: &str) {
+    fn play_song_at(&self, _pos: usize, id: &str) {
         let tracks = self.tracks_ref();
         if let Some(tracks) = tracks {
             self.dispatcher
-                .dispatch(PlaybackAction::LoadSongs(None, tracks.clone()).into());
+                .dispatch(PlaybackAction::LoadSongs(tracks.clone()).into());
             self.dispatcher
                 .dispatch(PlaybackAction::Load(id.to_string()).into());
         }
@@ -103,13 +103,7 @@ impl PlaylistModel for ArtistDetailsModel {
             AppEvent::BrowserEvent(BrowserEvent::ArtistDetailsUpdated(id)) if id == &self.id
         ) {
             let tracks = self.tracks_ref()?;
-            Some(ListDiff::Set(
-                tracks
-                    .iter()
-                    .enumerate()
-                    .map(|(i, s)| s.to_song_model(i))
-                    .collect(),
-            ))
+            Some(ListDiff::Set(tracks.iter().map(|s| s.into()).collect()))
         } else {
             None
         }

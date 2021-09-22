@@ -10,10 +10,12 @@ use crate::app::components::{labels, PlaylistModel, SelectionTool, SelectionTool
 use crate::app::components::{AddSelectionTool, SimpleSelectionTool};
 use crate::app::models::*;
 use crate::app::state::{
-    BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource, SelectionAction, SelectionContext,
-    SelectionState,
+    BrowserAction, BrowserEvent, PlaybackAction, SelectionAction, SelectionContext, SelectionState,
 };
-use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState, ListDiff};
+use crate::app::BatchQuery;
+use crate::app::{
+    ActionDispatcher, AppAction, AppEvent, AppModel, AppState, ListDiff, SongsSource,
+};
 
 pub struct PlaylistDetailsModel {
     pub id: String,
@@ -30,7 +32,7 @@ impl PlaylistDetailsModel {
         }
     }
 
-    fn songs_ref(&self) -> Option<impl Deref<Target = Vec<SongDescription>> + '_> {
+    fn songs_ref(&self) -> Option<impl Deref<Target = SongList> + '_> {
         self.app_model.map_state_opt(|s| {
             Some(
                 &s.browser
@@ -63,31 +65,26 @@ impl PlaylistDetailsModel {
             .call_spotify_and_dispatch(move || async move {
                 api.get_playlist(&id)
                     .await
-                    .map(|playlist| BrowserAction::SetPlaylistDetails(playlist).into())
+                    .map(|playlist| BrowserAction::SetPlaylistDetails(Box::new(playlist)).into())
             });
     }
 
     pub fn load_more_tracks(&self) -> Option<()> {
-        let api = self.app_model.get_spotify();
+        let last_batch = self.songs_ref()?.last_batch();
+        let query = BatchQuery {
+            source: SongsSource::Playlist(self.id.clone()),
+            batch: last_batch,
+        };
+
         let id = self.id.clone();
+        let next_query = query.next()?;
+        let loader = self.app_model.get_batch_loader();
 
-        let state = self.app_model.get_state();
-        let next_batch = &state
-            .browser
-            .playlist_details_state(&id)?
-            .playlist
-            .as_ref()?
-            .last_batch
-            .next()?;
-        let next_offset = next_batch.offset;
-        let batch_size = next_batch.batch_size;
-
-        self.dispatcher
-            .call_spotify_and_dispatch(move || async move {
-                api.get_playlist_tracks(&id, next_offset, batch_size)
-                    .await
-                    .map(|tracks| BrowserAction::AppendPlaylistTracks(id, tracks).into())
-            });
+        self.dispatcher.dispatch_async(Box::pin(async move {
+            loader.query(next_query).await.map(|song_batch| {
+                BrowserAction::AppendPlaylistTracks(id, Box::new(song_batch)).into()
+            })
+        }));
 
         Some(())
     }
@@ -112,24 +109,15 @@ impl PlaylistModel for PlaylistDetailsModel {
         self.state().playback.current_song_id().cloned()
     }
 
-    fn play_song(&self, id: &str) {
-        let source = Some(PlaylistSource::Playlist(self.id.clone()));
-        if self.app_model.get_state().playback.source != source {
-            if let Some(playlist) = self.get_playlist_info() {
-                self.dispatcher.dispatch(
-                    PlaybackAction::LoadPagedSongs(
-                        source,
-                        SongBatch {
-                            batch: playlist.last_batch,
-                            songs: playlist.songs.clone(),
-                        },
-                    )
-                    .into(),
-                );
-            }
+    fn play_song_at(&self, pos: usize, id: &str) {
+        let source = SongsSource::Playlist(self.id.clone());
+        let batch = self.songs_ref().and_then(|songs| songs.song_batch_for(pos));
+        if let Some(batch) = batch {
+            self.dispatcher
+                .dispatch(PlaybackAction::LoadPagedSongs(source, batch).into());
+            self.dispatcher
+                .dispatch(PlaybackAction::Load(id.to_string()).into());
         }
-        self.dispatcher
-            .dispatch(PlaybackAction::Load(id.to_string()).into());
     }
 
     fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>> {
@@ -139,25 +127,14 @@ impl PlaylistModel for PlaylistDetailsModel {
                 if id == &self.id =>
             {
                 let songs = self.songs_ref()?;
-                Some(ListDiff::Set(
-                    songs
-                        .iter()
-                        .enumerate()
-                        .map(|(i, s)| s.to_song_model(i))
-                        .collect(),
-                ))
+                Some(ListDiff::Set(songs.iter().map(|s| s.into()).collect()))
             }
             AppEvent::BrowserEvent(BrowserEvent::PlaylistTracksAppended(id, index))
                 if id == &self.id =>
             {
                 let songs = self.songs_ref()?;
                 Some(ListDiff::Append(
-                    songs
-                        .iter()
-                        .enumerate()
-                        .skip(*index)
-                        .map(|(i, s)| s.to_song_model(i))
-                        .collect(),
+                    songs.iter().skip(*index).map(|s| s.into()).collect(),
                 ))
             }
             _ => None,
@@ -166,7 +143,7 @@ impl PlaylistModel for PlaylistDetailsModel {
 
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
         let songs = self.songs_ref()?;
-        let song = songs.iter().find(|&song| song.id == id)?;
+        let song = songs.get(id)?;
 
         let group = SimpleActionGroup::new();
 
@@ -182,7 +159,7 @@ impl PlaylistModel for PlaylistDetailsModel {
 
     fn menu_for(&self, id: &str) -> Option<gio::MenuModel> {
         let songs = self.songs_ref()?;
-        let song = songs.iter().find(|&song| song.id == id)?;
+        let song = songs.get(id)?;
 
         let menu = gio::Menu::new();
         menu.append(Some(&*labels::VIEW_ALBUM), Some("song.view_album"));
@@ -204,9 +181,7 @@ impl PlaylistModel for PlaylistDetailsModel {
     }
 
     fn select_song(&self, id: &str) {
-        let song = self
-            .songs_ref()
-            .and_then(|songs| songs.iter().find(|&song| song.id == id).cloned());
+        let song = self.songs_ref().and_then(|s| s.get(id).cloned());
         if let Some(song) = song {
             self.dispatcher
                 .dispatch(SelectionAction::Select(vec![song]).into());
@@ -271,7 +246,8 @@ impl SelectionToolsModel for PlaylistDetailsModel {
         match tool {
             SelectionTool::Simple(SimpleSelectionTool::SelectAll) => {
                 if let Some(songs) = self.songs_ref() {
-                    self.handle_select_all_tool(selection, &songs[..]);
+                    let vec = songs.iter().collect::<Vec<&SongDescription>>();
+                    self.handle_select_all_tool_borrowed(selection, &vec[..]);
                 }
             }
             SelectionTool::Simple(SimpleSelectionTool::Remove) => {

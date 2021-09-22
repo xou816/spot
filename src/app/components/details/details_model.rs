@@ -13,9 +13,9 @@ use crate::app::components::{
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
 use crate::app::state::{
-    BrowserAction, BrowserEvent, PlaybackAction, PlaylistSource, SelectionAction, SelectionState,
+    BrowserAction, BrowserEvent, PlaybackAction, SelectionAction, SelectionState,
 };
-use crate::app::{AppAction, AppEvent, AppModel, AppState, ListDiff};
+use crate::app::{AppAction, AppEvent, AppModel, AppState, ListDiff, SongsSource};
 
 pub struct DetailsModel {
     pub id: String,
@@ -32,7 +32,7 @@ impl DetailsModel {
         }
     }
 
-    fn songs_ref(&self) -> Option<impl Deref<Target = Vec<SongDescription>> + '_> {
+    fn songs_ref(&self) -> Option<impl Deref<Target = SongList> + '_> {
         self.app_model.map_state_opt(|s| {
             Some(
                 &s.browser
@@ -69,7 +69,7 @@ impl DetailsModel {
             .call_spotify_and_dispatch(move || async move {
                 api.get_album(&id)
                     .await
-                    .map(|album| BrowserAction::SetAlbumDetails(album).into())
+                    .map(|album| BrowserAction::SetAlbumDetails(Box::new(album)).into())
             });
     }
 
@@ -93,7 +93,7 @@ impl DetailsModel {
                     if !is_liked {
                         api.save_album(&id)
                             .await
-                            .map(|album| BrowserAction::SaveAlbum(album).into())
+                            .map(|album| BrowserAction::SaveAlbum(Box::new(album)).into())
                     } else {
                         api.remove_saved_album(&id)
                             .await
@@ -112,9 +112,7 @@ impl DetailsModel {
 
 impl PlaylistModel for DetailsModel {
     fn select_song(&self, id: &str) {
-        let song = self
-            .songs_ref()
-            .and_then(|songs| songs.iter().find(|&song| song.id == id).cloned());
+        let song = self.songs_ref().and_then(|songs| songs.get(id).cloned());
         if let Some(song) = song {
             self.dispatcher
                 .dispatch(SelectionAction::Select(vec![song]).into());
@@ -140,17 +138,15 @@ impl PlaylistModel for DetailsModel {
         self.state().playback.current_song_id().cloned()
     }
 
-    fn play_song(&self, id: &str) {
-        let source = Some(PlaylistSource::Album(self.id.clone()));
-        if self.app_model.get_state().playback.source != source {
-            let songs = self.songs_ref();
-            if let Some(songs) = songs {
-                self.dispatcher
-                    .dispatch(PlaybackAction::LoadSongs(source, songs.clone()).into());
-            }
+    fn play_song_at(&self, pos: usize, id: &str) {
+        let source = SongsSource::Album(self.id.clone());
+        let batch = self.songs_ref().and_then(|songs| songs.song_batch_for(pos));
+        if let Some(batch) = batch {
+            self.dispatcher
+                .dispatch(PlaybackAction::LoadPagedSongs(source, batch).into());
+            self.dispatcher
+                .dispatch(PlaybackAction::Load(id.to_string()).into());
         }
-        self.dispatcher
-            .dispatch(PlaybackAction::Load(id.to_string()).into());
     }
 
     fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>> {
@@ -159,13 +155,7 @@ impl PlaylistModel for DetailsModel {
             AppEvent::BrowserEvent(BrowserEvent::AlbumDetailsLoaded(id)) if id == &self.id
         ) {
             let songs = self.songs_ref()?;
-            Some(ListDiff::Set(
-                songs
-                    .iter()
-                    .enumerate()
-                    .map(|(i, s)| s.to_song_model(i))
-                    .collect(),
-            ))
+            Some(ListDiff::Set(songs.iter().map(|s| s.into()).collect()))
         } else {
             None
         }
@@ -173,7 +163,7 @@ impl PlaylistModel for DetailsModel {
 
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
         let songs = self.songs_ref()?;
-        let song = songs.iter().find(|&song| song.id == id)?;
+        let song = songs.get(id)?;
 
         let group = SimpleActionGroup::new();
 
@@ -188,7 +178,7 @@ impl PlaylistModel for DetailsModel {
 
     fn menu_for(&self, id: &str) -> Option<gio::MenuModel> {
         let songs = self.songs_ref()?;
-        let song = songs.iter().find(|&song| song.id == id)?;
+        let song = songs.get(id)?;
 
         let menu = gio::Menu::new();
         for artist in song.artists.iter() {
@@ -242,7 +232,8 @@ impl SelectionToolsModel for DetailsModel {
         match tool {
             SelectionTool::Simple(SimpleSelectionTool::SelectAll) => {
                 if let Some(songs) = self.songs_ref() {
-                    self.handle_select_all_tool(selection, &songs[..]);
+                    let vec = songs.iter().collect::<Vec<&SongDescription>>();
+                    self.handle_select_all_tool_borrowed(selection, &vec[..]);
                 }
             }
             _ => self.default_handle_tool_activated(selection, tool),

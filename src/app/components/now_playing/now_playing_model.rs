@@ -10,8 +10,7 @@ use crate::app::models::SongDescription;
 use crate::app::models::SongModel;
 use crate::app::state::PlaylistChange;
 use crate::app::state::{
-    PlaybackAction, PlaybackEvent, PlaybackState, PlaylistSource, SelectionAction,
-    SelectionContext, SelectionState,
+    PlaybackAction, PlaybackEvent, PlaybackState, SelectionAction, SelectionContext, SelectionState,
 };
 use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState, ListDiff};
 use crate::{api::SpotifyApiClient, app::components::SimpleSelectionTool};
@@ -37,31 +36,18 @@ impl NowPlayingModel {
         Ref::map(self.state(), |s| &s.playback)
     }
 
-    pub fn load_more_if_needed(&self) -> Option<()> {
-        let queue = self.queue();
-        if queue.exhausted() {
-            self.load_more()
-        } else {
-            None
-        }
-    }
-
     pub fn load_more(&self) -> Option<()> {
         let queue = self.queue();
-        let api = self.app_model.get_spotify();
-        let batch = queue.next_batch()?;
-        let batch_size = batch.batch_size;
-        let next_offset = batch.offset;
+        let loader = self.app_model.get_batch_loader();
+        let query = queue.next_query()?;
 
-        if let Some(PlaylistSource::Playlist(id)) = queue.source.as_ref() {
-            let id = id.clone();
-            self.dispatcher
-                .call_spotify_and_dispatch(move || async move {
-                    api.get_playlist_tracks(&id, next_offset, batch_size)
-                        .await
-                        .map(move |song_batch| PlaybackAction::QueuePaged(song_batch).into())
-                });
-        }
+        self.dispatcher.dispatch_async(Box::pin(async move {
+            let source = query.source.clone();
+            loader
+                .query(query)
+                .await
+                .map(|song_batch| PlaybackAction::LoadPagedSongs(source, song_batch).into())
+        }));
 
         Some(())
     }
@@ -72,18 +58,21 @@ impl PlaylistModel for NowPlayingModel {
         self.queue().current_song_id().cloned()
     }
 
-    fn play_song(&self, id: &str) {
+    fn play_song_at(&self, _pos: usize, id: &str) {
         self.dispatcher
             .dispatch(PlaybackAction::Load(id.to_string()).into());
     }
 
     fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>> {
         let queue = self.queue();
-        let songs = queue.songs().enumerate().map(|(i, s)| s.to_song_model(i));
+        let songs = queue.songs().map(|s| s.into());
 
         match event {
             AppEvent::PlaybackEvent(PlaybackEvent::PlaylistChanged(change)) => match change {
                 PlaylistChange::Reset => Some(ListDiff::Set(songs.collect())),
+                PlaylistChange::InsertedAt(i, n) => {
+                    Some(ListDiff::Insert(*i, songs.skip(*i).take(*n).collect()))
+                }
                 PlaylistChange::AppendedAt(i) => Some(ListDiff::Append(songs.skip(*i).collect())),
                 PlaylistChange::MovedDown(i) => Some(ListDiff::MoveDown(*i)),
                 PlaylistChange::MovedUp(i) => Some(ListDiff::MoveUp(*i)),

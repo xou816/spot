@@ -1,11 +1,12 @@
 use crate::api::SpotifyApiClient;
-use crate::app::state::*;
+use crate::app::{state::*, BatchLoader};
 use ref_filter_map::*;
 use std::cell::{Ref, RefCell};
 use std::sync::Arc;
 
 pub struct AppServices {
     pub spotify_api: Arc<dyn SpotifyApiClient + Send + Sync>,
+    pub batch_loader: BatchLoader,
 }
 
 pub struct AppModel {
@@ -15,13 +16,20 @@ pub struct AppModel {
 
 impl AppModel {
     pub fn new(state: AppState, spotify_api: Arc<dyn SpotifyApiClient + Send + Sync>) -> Self {
-        let services = AppServices { spotify_api };
+        let services = AppServices {
+            batch_loader: BatchLoader::new(Arc::clone(&spotify_api)),
+            spotify_api,
+        };
         let state = RefCell::new(state);
         Self { state, services }
     }
 
     pub fn get_spotify(&self) -> Arc<dyn SpotifyApiClient + Send + Sync> {
         Arc::clone(&self.services.spotify_api)
+    }
+
+    pub fn get_batch_loader(&self) -> BatchLoader {
+        self.services.batch_loader.clone()
     }
 
     pub fn get_state(&self) -> Ref<'_, AppState> {

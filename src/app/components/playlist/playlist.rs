@@ -19,7 +19,9 @@ struct RowState {
 
 pub trait PlaylistModel {
     fn current_song_id(&self) -> Option<String>;
-    fn play_song(&self, id: &str);
+
+    fn play_song_at(&self, pos: usize, id: &str);
+
     fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>>;
 
     fn autoscroll_to_playing(&self) -> bool {
@@ -92,10 +94,6 @@ where
         factory.connect_unbind(|_, item| {
             let song_model = item.item().unwrap().downcast::<SongModel>().unwrap();
             song_model.unbind_all();
-
-            let widget = item.child().unwrap().downcast::<SongWidget>().unwrap();
-            widget.set_actions(None);
-            widget.set_menu(None);
         });
 
         listview.connect_activate(clone!(@weak list_model, @weak model => move |_, position| {
@@ -104,7 +102,7 @@ where
             if selection_enabled {
                 Self::select_song(&*model, &song);
             } else {
-                model.play_song(&song.get_id());
+                model.play_song_at(position as usize, &song.get_id());
             }
         }));
 

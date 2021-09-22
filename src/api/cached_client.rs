@@ -260,7 +260,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
 
             let albums = page
                 .into_iter()
-                .map(|playlist| playlist.into_playlist_description(limit, offset))
+                .map(|playlist| playlist.into())
                 .collect::<Vec<PlaylistDescription>>();
 
             Ok(albums)
@@ -363,7 +363,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
                 })
                 .await?;
 
-            Ok(playlist.into_playlist_description(100, 0))
+            Ok(playlist.into())
         })
     }
 
@@ -389,13 +389,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
                 )
                 .await?;
 
-            let batch = Batch {
-                batch_size: limit,
-                offset,
-                total: songs.total,
-            };
-            let songs: Vec<SongDescription> = songs.into();
-            Ok(SongBatch { songs, batch })
+            Ok(songs.into())
         })
     }
 
@@ -517,7 +511,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
 
             let playlists = playlists
                 .into_iter()
-                .map(|a| a.into_playlist_description(limit, offset))
+                .map(|a| a.into())
                 .collect::<Vec<PlaylistDescription>>();
 
             Ok(playlists)
