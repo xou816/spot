@@ -1,10 +1,11 @@
 [Desktop Entry]
 Version=1.0
 Name=Spot
-Exec=spot
+Exec=spot %u
 Icon=dev.alextren.Spot
 Terminal=false
 Type=Application
 Categories=GTK;GNOME;Music;AudioVideo;
+MimeType=x-scheme-handler/spotify;
 StartupNotify=true
 X-Purism-FormFactor=Workstation;Mobile;
