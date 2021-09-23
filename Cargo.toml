@@ -13,11 +13,11 @@ version = "^0.2.0"
 package = "gdk4"
 
 [dependencies.gio]
-version = "^0.14.3"
+version = "^0.14.8"
 features = ["v2_60"]
 
 [dependencies.glib]
-version = "^0.14.4"
+version = "^0.14.8"
 features = ["v2_60"]
 
 [dependencies.librespot]
@@ -34,7 +34,7 @@ features = ["rt", "macros", "sync"]
 
 [dependencies.futures]
 package = "futures"
-version = "0.3.16"
+version = "0.3.17"
 
 [dependencies.serde]
 version = "^1.0.130"
@@ -64,7 +64,7 @@ regex = "^1.4.6"
 async-std = "^1.10.0"
 form_urlencoded = "^1.0.1"
 zbus = "^2.0.0-beta.3"
-zvariant = "^2.8.0"
+zvariant = "^2.9.0"
 zvariant_derive = "^2.5.0"
 thiserror = "^1.0.29"
 lazy_static = "^1.4.0"
