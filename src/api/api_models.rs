@@ -153,7 +153,7 @@ impl WithImages for Playlist {
 #[derive(Deserialize, Debug, Clone)]
 pub struct PlaylistTrack {
     pub is_local: bool,
-    pub track: FailibleTrackItem,
+    pub track: Option<FailibleTrackItem>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -287,7 +287,7 @@ impl TryFrom<PlaylistTrack> for TrackItem {
     type Error = ();
 
     fn try_from(PlaylistTrack { is_local, track }: PlaylistTrack) -> Result<Self, Self::Error> {
-        track.get().filter(|_| !is_local).ok_or(())
+        track.ok_or(())?.get().filter(|_| !is_local).ok_or(())
     }
 }
 
@@ -506,5 +506,35 @@ impl From<Playlist> for PlaylistDescription {
                 display_name,
             },
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_playlist_track_null() {
+        let track = r#"{"is_local": false, "track": null}"#;
+        let deserialized: PlaylistTrack = serde_json::from_str(track).unwrap();
+        let track_item: Option<TrackItem> = deserialized.try_into().ok();
+        assert!(track_item.is_none());
+    }
+
+    #[test]
+    fn test_playlist_track_local() {
+        let track = r#"{"is_local": true, "track": {"name": ""}}"#;
+        let deserialized: PlaylistTrack = serde_json::from_str(track).unwrap();
+        let track_item: Option<TrackItem> = deserialized.try_into().ok();
+        assert!(track_item.is_none());
+    }
+
+    #[test]
+    fn test_playlist_track_ok() {
+        let track = r#"{"is_local":false,"track":{"album":{"artists":[{"external_urls":{"spotify":""},"href":"","id":"","name":"","type":"artist","uri":""}],"id":"","images":[{"height":64,"url":"","width":64}],"name":""},"artists":[{"id":"","name":""}],"duration_ms":1,"id":"","name":"","uri":""}}"#;
+        let deserialized: PlaylistTrack = serde_json::from_str(track).unwrap();
+        let track_item: Option<TrackItem> = deserialized.try_into().ok();
+        assert!(track_item.is_some());
     }
 }
