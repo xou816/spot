@@ -7,6 +7,7 @@ extern crate log;
 
 use futures::channel::mpsc::UnboundedSender;
 use gettextrs::*;
+use gio::ApplicationFlags;
 use gio::prelude::*;
 use gio::SimpleAction;
 use gtk::prelude::*;
@@ -33,7 +34,7 @@ fn main() {
 
     let settings = settings::SpotSettings::new_from_gsettings().unwrap_or_default();
     startup(&settings);
-    let gtk_app = gtk::Application::new(Some(config::APPID), Default::default());
+    let gtk_app = gtk::Application::new(Some(config::APPID), ApplicationFlags::HANDLES_OPEN);
     expose_widgets();
     let builder = gtk::Builder::from_resource("/dev/alextren/Spot/window.ui");
     let window: libadwaita::ApplicationWindow = builder.object("window").unwrap();
@@ -64,6 +65,58 @@ fn main() {
             window.set_application(Some(gtk_app));
             gtk_app.add_window(&window);
             sender.unbounded_send(AppAction::Start).unwrap();
+        }
+    });
+
+    gtk_app.connect_open(move |_, targets, _| {
+        // TODO: the activate signal isn't called when open is, but window and sender are already moved to the activate closure at this point
+        // There should only be one target because %u is used in desktop file
+        let target = &targets[0];
+        let uri = target.uri().to_string();
+        let mut parts = uri.split(':');
+        if parts.next().unwrap_or_default() != "spotify" {
+            return
+        }
+        let action = parts.next().unwrap_or_default();
+        // Might start with /// because of https://gitlab.gnome.org/GNOME/glib/-/issues/1886/
+        let action = action.strip_prefix("///").unwrap_or(action);
+        if action.is_empty() {
+            return
+        }
+        let data = parts.next().unwrap_or_default();
+        if data.is_empty() {
+            return
+        }
+        match action {
+            "artist" => {
+                todo!("Handle artist in URI")
+            },
+            "album" => {
+                todo!("Handle album in URI")
+            },
+            "track" => {
+                todo!("Handle track in URI")
+            },
+            "search" => {
+                todo!("Handle search in URI")
+            },
+            "user" => {
+                let user_action = parts.next().unwrap_or_default();
+                if user_action.is_empty() {
+                    return
+                }
+                let user_data = parts.next().unwrap_or_default();        
+                if user_data.is_empty() {
+                    return
+                }
+                match user_action {
+                    "playlist" => {
+                        todo!("Handle playlist in URI")
+                    }
+                    _ => return,
+                }
+            },
+            _ => return,
         }
     });
 
