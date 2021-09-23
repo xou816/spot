@@ -35,6 +35,14 @@ impl Credentials {
         serde_json::from_slice(&item).map_err(|_| Error::Parse)
     }
 
+    pub fn logout() -> Result<(), Error> {
+        let service = SecretService::new(EncryptionType::Dh)?;
+        let collection = service.get_default_collection()?;
+        let result = collection.search_items(make_attributes())?;
+        let item = result.get(0).ok_or(Error::NoResult)?;
+        item.delete()
+    }
+
     pub fn save(&self) -> Result<(), Error> {
         let service = SecretService::new(EncryptionType::Dh)?;
         let collection = service.get_default_collection()?;
@@ -48,13 +56,4 @@ impl Credentials {
         )?;
         Ok(())
     }
-}
-
-pub fn logout() -> Result<(), Error> {
-    let service = SecretService::new(EncryptionType::Dh)?;
-    let collection = service.get_default_collection()?;
-    let result = collection.search_items(make_attributes())?;
-
-    let item = result.get(0).ok_or(Error::NoResult)?;
-    item.delete()
 }
