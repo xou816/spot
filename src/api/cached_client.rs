@@ -35,6 +35,13 @@ pub trait SpotifyApiClient {
 
     fn get_album(&self, id: &str) -> BoxFuture<SpotifyResult<AlbumFullDescription>>;
 
+    fn get_album_tracks(
+        &self,
+        id: &str,
+        offset: usize,
+        limit: usize,
+    ) -> BoxFuture<SpotifyResult<SongBatch>>;
+
     fn get_playlist(&self, id: &str) -> BoxFuture<SpotifyResult<PlaylistDescription>>;
 
     fn get_playlist_tracks(
@@ -95,6 +102,7 @@ enum SpotCacheKey<'a> {
     SavedPlaylists(usize, usize),
     Album(&'a str),
     AlbumLiked(&'a str),
+    AlbumTracks(&'a str, usize, usize),
     Playlist(&'a str),
     PlaylistTracks(&'a str, usize, usize),
     ArtistAlbums(&'a str, usize, usize),
@@ -112,6 +120,9 @@ impl<'a> SpotCacheKey<'a> {
                 format!("me_playlists_{}_{}.json", offset, limit)
             }
             Self::Album(id) => format!("album_{}.json", id),
+            Self::AlbumTracks(id, offset, limit) => {
+                format!("album_item_{}_{}_{}.json", id, offset, limit)
+            }
             Self::AlbumLiked(id) => format!("album_liked_{}.json", id),
             Self::Playlist(id) => format!("playlist_{}.json", id),
             Self::PlaylistTracks(id, offset, limit) => {
@@ -201,7 +212,7 @@ impl CachedSpotifyClient {
             Ok(t) => Ok(t),
             // parsing failed: cache is likely invalid, request again, ignoring cache
             Err(e) => {
-                dbg!(e);
+                dbg!(&cache_key, e);
                 let new_raw = self
                     .cache
                     .get_or_write(&cache_key, CachePolicy::IgnoreCached, |etag| {
@@ -350,6 +361,37 @@ impl SpotifyApiClient for CachedSpotifyClient {
                 .await
                 .unwrap_or(());
             self.client.remove_saved_album(&id).send_no_response().await
+        })
+    }
+
+    fn get_album_tracks(
+        &self,
+        id: &str,
+        offset: usize,
+        limit: usize,
+    ) -> BoxFuture<SpotifyResult<SongBatch>> {
+        let id = id.to_owned();
+
+        Box::pin(async move {
+            let album = self.cache_get_or_write(
+                SpotCacheKey::Album(&id),
+                Some(CachePolicy::IgnoreExpiry),
+                |etag| self.client.get_album(&id).etag(etag).send(),
+            );
+
+            let songs = self.cache_get_or_write(
+                SpotCacheKey::AlbumTracks(&id, offset, limit),
+                None,
+                |etag| {
+                    self.client
+                        .get_album_tracks(&id, offset, limit)
+                        .etag(etag)
+                        .send()
+                },
+            );
+
+            let (album, songs) = join!(album, songs);
+            Ok((songs?, &album?.album).into())
         })
     }
 

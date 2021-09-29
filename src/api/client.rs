@@ -323,6 +323,22 @@ impl SpotifyClient {
             .uri(format!("/v1/albums/{}", id), None)
     }
 
+    pub(crate) fn get_album_tracks(
+        &self,
+        id: &str,
+        offset: usize,
+        limit: usize,
+    ) -> SpotifyRequest<'_, (), Page<AlbumTrackItem>> {
+        let query = make_query_params()
+            .append_pair("offset", &offset.to_string()[..])
+            .append_pair("limit", &limit.to_string()[..])
+            .finish();
+
+        self.request()
+            .method(Method::GET)
+            .uri(format!("/v1/albums/{}/tracks", id), Some(&query))
+    }
+
     pub(crate) fn get_playlist(&self, id: &str) -> SpotifyRequest<'_, (), Playlist> {
         let query = make_query_params()
             .append_pair(
