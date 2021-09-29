@@ -90,6 +90,9 @@ impl LibraryWidget {
             },
         );
     }
+    pub fn get_status_page(&self) -> &libadwaita::StatusPage {
+        &imp::LibraryWidget::from_instance(self).status_page
+    }
 }
 
 pub struct Library {
@@ -136,9 +139,7 @@ impl EventListener for Library {
             }
             AppEvent::BrowserEvent(BrowserEvent::LibraryUpdated) => {
                 if let Some(list) = self.model.get_list_store() {
-                    imp::LibraryWidget::from_instance(&self.widget)
-                        .status_page
-                        .set_visible(list.len() == 0);
+                    self.widget.get_status_page().set_visible(list.len() == 0);
                 }
             }
             _ => {}

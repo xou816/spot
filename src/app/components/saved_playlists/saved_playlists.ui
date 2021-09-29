@@ -23,10 +23,10 @@
             </child>
             <child type="overlay">
               <object class="AdwStatusPage" id="status_page">
-                <property name="title" translatable="yes" comments="A title that is shown when the user has not saved any playlists.">You have no saved playlists</property>
+                <property name="title" translatable="yes" comments="A title that is shown when the user has not saved any playlists.">You have no saved playlists.</property>
                 <property name="description" translatable="yes" comments="A description of what happens when the user has saved playlists.">Your playlists will be shown here.</property>
                 <property name="icon-name">emblem-music-symbolic</property>
-                <property name="visible">false</property>
+                <property name="visible">true</property>
               </object>
             </child>
           </object>

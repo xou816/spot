@@ -90,6 +90,9 @@ impl SavedPlaylistsWidget {
                 child.upcast::<gtk::Widget>()
             });
     }
+    pub fn get_status_page(&self) -> &libadwaita::StatusPage {
+        &imp::LibraryWidget::from_instance(self).status_page
+    }
 }
 
 pub struct SavedPlaylists {
@@ -138,9 +141,7 @@ impl EventListener for SavedPlaylists {
             }
             AppEvent::BrowserEvent(BrowserEvent::SavedPlaylistsUpdated) => {
                 if let Some(list) = self.model.get_list_store() {
-                    imp::SavedPlaylistsWidget::from_instance(&self.widget)
-                        .status_page
-                        .set_visible(list.len() == 0);
+                    self.widget.get_status_page().set_visible(list.len() == 0);
                 }
             }
             _ => {}
