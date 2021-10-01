@@ -138,9 +138,9 @@ impl EventListener for Library {
                 let _ = self.model.refresh_saved_albums();
             }
             AppEvent::BrowserEvent(BrowserEvent::LibraryUpdated) => {
-                if let Some(list) = self.model.get_list_store() {
-                    self.widget.get_status_page().set_visible(list.len() == 0);
-                }
+                self.widget
+                    .get_status_page()
+                    .set_visible(!self.model.has_albums());
             }
             _ => {}
         }

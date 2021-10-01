@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-29 11:14-0300\n"
+"POT-Creation-Date: 2021-10-01 11:43-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -158,7 +158,7 @@ msgstr ""
 
 #. A title that is shown when the user has not saved any albums.
 #: src/app/components/library/library.ui:26
-msgid "You have no saved albums"
+msgid "You have no saved albums."
 msgstr ""
 
 #. A description of what happens when the user has saved albums.
@@ -193,7 +193,7 @@ msgstr ""
 
 #. A title that is shown when the user has not saved any playlists.
 #: src/app/components/saved_playlists/saved_playlists.ui:26
-msgid "You have no saved playlists"
+msgid "You have no saved playlists."
 msgstr ""
 
 #. A description of what happens when the user has saved playlists.

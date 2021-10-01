@@ -91,7 +91,7 @@ impl SavedPlaylistsWidget {
             });
     }
     pub fn get_status_page(&self) -> &libadwaita::StatusPage {
-        &imp::LibraryWidget::from_instance(self).status_page
+        &imp::SavedPlaylistsWidget::from_instance(self).status_page
     }
 }
 
@@ -140,9 +140,9 @@ impl EventListener for SavedPlaylists {
                 let _ = self.model.refresh_saved_playlists();
             }
             AppEvent::BrowserEvent(BrowserEvent::SavedPlaylistsUpdated) => {
-                if let Some(list) = self.model.get_list_store() {
-                    self.widget.get_status_page().set_visible(list.len() == 0);
-                }
+                self.widget
+                    .get_status_page()
+                    .set_visible(!self.model.has_playlists());
             }
             _ => {}
         }
