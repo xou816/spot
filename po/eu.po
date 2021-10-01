@@ -5,186 +5,182 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: POEditor.com\n"
 "Project-Id-Version: Spot\n"
-"Language: ru\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Language: eu\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. translators: This is part of a larger label that reads "<Album> by <Artist>"
 #: src/app/components/details/release_details.rs:101
 msgid "by"
-msgstr ""
+msgstr "by"
 
 #. translators: This refers to a music label
 #: src/app/components/details/release_details.rs:108
 msgid "Label:"
-msgstr ""
+msgstr "Etiketa:"
 
 #. translators: This refers to a release date
 #: src/app/components/details/release_details.rs:115
-#, fuzzy
 msgid "Released:"
-msgstr "Релизы"
+msgstr "Argitaratua:"
 
 #. translators: This refers to a number of tracks
 #: src/app/components/details/release_details.rs:122
-#, fuzzy
 msgid "Tracks:"
-msgstr "Топ треков"
+msgstr "Pistak:"
 
 #. translators: This refers to the duration of eg. an album
 #: src/app/components/details/release_details.rs:129
 msgid "Duration:"
-msgstr ""
+msgstr "Iraupena:"
 
 #. translators: Self explanatory
 #: src/app/components/details/release_details.rs:136
 msgid "Copyright:"
-msgstr ""
+msgstr "Egile-eskubideak:"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
 #: src/app/components/labels.rs:5
 msgid "View album"
-msgstr "Посмотреть альбом"
+msgstr "Albuma ikusi"
 
 #. translators: This is part of a contextual menu attached to a single track; the full text is "More from <artist>".
 #: src/app/components/labels.rs:8
 msgid "More from"
-msgstr "Больше от"
+msgstr "Gehiago honi buruz"
 
 #. translators: This is part of a contextual menu attached to a single track; the intent is to copy the link (public URL) to a specific track.
 #: src/app/components/labels.rs:11
 msgid "Copy link"
-msgstr "Скопировать ссылку"
+msgstr "Kopiatu esteka"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry adds a track at the end of the play queue.
 #: src/app/components/labels.rs:14
 msgid "Add to queue"
-msgstr "Добавить в очередь"
+msgstr "Gehitu isatsari"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry removes a track from the play queue.
 #: src/app/components/labels.rs:17
 msgid "Remove from queue"
-msgstr "Удалить из очереди"
+msgstr "Ezabatu isatsetik"
 
 #. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
 #: src/app/components/labels.rs:24
 msgid "Add to {}"
-msgstr ""
+msgstr "Gehitu {} (r)i"
 
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:52
 msgid "Could not save password. Make sure the session keyring is unlocked."
-msgstr "Не удалось сохранить пароль. Проверьте, GNOME Keyring/KDE wallet открыта."
+msgstr "Ezin izan da pasahitza gorde. Ziurtatu saioko giltzatakoa desblokeatuta dagoela."
 
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
 #: src/app/components/mod.rs:108
 msgid "An error occured. Check logs for details!"
-msgstr "Ошибка появилась. Посмотрите в логи за подробностями!"
+msgstr "Errore bat gertatu da. Egiaztatu xehetasunak erregistroetan!"
 
 #. translators: This is a sidebar entry to browse to saved albums.
 #: src/app/components/navigation/home.rs:36
 msgid "Library"
-msgstr "Библиотека"
+msgstr "Biblioteka"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
 #: src/app/components/navigation/home.rs:42
 msgid "Playlists"
-msgstr "Плейлисты"
+msgstr "Erreprodukzio-zerrendak"
 
 #. This is the visible name for the play queue. It appears in the sidebar as well.
 #: src/app/components/navigation/home.rs:52
 #: src/app/components/now_playing/now_playing.ui:14
 msgid "Now playing"
-msgstr "Сейчас играет"
+msgstr "Orain erreproduzitzen"
 
 #. translators: Short text displayed instead of a song title when nothing plays
 #. Short text displayed instead of a song title when nothing plays
 #: src/app/components/playback/playback_info.rs:58
 #: src/app/components/playback/playback_info.ui:32
 msgid "No song playing"
-msgstr "Песня сейчас не играет"
+msgstr "Ez da abestirik erreproduzitzen ari"
 
 #. translators: This text is part of a larger text that says "Search results for <search term>".
 #: src/app/components/search/search.rs:102
 msgid "Search results for"
-msgstr "Результаты поиска для"
+msgstr "Bilaketaren emaitzak"
 
 #. This text appears when entering selection mode. It should be as short as possible.
 #: src/app/components/selection/selection_heading.rs:73 src/window.ui.in:51
 msgid "No song selected"
-msgstr "Песня не выбрана"
+msgstr "Ez da abestirik aukeratu"
 
 #. translators: This is part of a larger text that says "<n> songs selected" when in selection mode. This text should be as short as possible.
 #: src/app/components/selection/selection_heading.rs:87
 msgid "song selected"
 msgid_plural "songs selected"
-msgstr[0] "песня выбрана"
-msgstr[1] "песни выбраны"
-msgstr[2] "песни были выбраны"
-msgstr[3] ""
+msgstr[0] "Aukeratutako abesti bat"
+msgstr[1] "Aukeratutako abestiak"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:56
 msgid "About"
-msgstr "Об"
+msgstr "Honi buruz"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:58
 msgid "Quit"
-msgstr "Выйти из программы"
+msgstr "Utzi"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:63
 msgid "Log out"
-msgstr "Выйти из аккаунта"
+msgstr "Saioa itxi"
 
 #: src/app/state/login_state.rs:117
 msgid "Connection restored"
-msgstr "Подключение восстановлено"
+msgstr "Konexioa leheneratu da"
 
 #. Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify.
 #: src/app/components/artist_details/artist_details.ui:40
 msgid "Top tracks"
-msgstr "Топ треков"
+msgstr "Pista nagusiak"
 
 #. Title of the sections that contains all releases from an artist (both singles and albums).
 #: src/app/components/artist_details/artist_details.ui:71
 msgid "Releases"
-msgstr "Релизы"
+msgstr "Jaurtiketak"
 
 #. Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).
 #: src/app/components/login/login.ui:45
 msgid "Login to Spotify Premium"
-msgstr "Войти в Spotify Premium"
+msgstr "Saioa hasi Spotify Premiumen"
 
 #. Placeholder for the username field
 #: src/app/components/login/login.ui:64
 msgid "Username"
-msgstr "Имя аккаунта"
+msgstr "Erabiltzailearen izena"
 
 #. Placeholder for the password field
 #: src/app/components/login/login.ui:72
 msgid "Password"
-msgstr "Пароль"
+msgstr "Pasahitza"
 
 #. This error is shown when authentication fails.
 #: src/app/components/login/login.ui:95
 msgid "Authentication failed!"
-msgstr "Вход не удался!"
+msgstr "Autentifikazioak huts egin du!"
 
 #. Log in button label
 #: src/app/components/login/login.ui:110
 msgid "Log in"
-msgstr "Войти"
+msgstr "Hasi saioa"
 
 #. This is the title of a section of the search results
 #: src/app/components/search/search.ui:66
 msgid "Albums"
-msgstr "Альбомы"
+msgstr "Albumak"
 
 #. This is the title of a section of the search results
 #: src/app/components/search/search.ui:99
 msgid "Artists"
-msgstr "Артисты"
+msgstr "Artistak"
 
 #: src/app/components/navigation/home.rs:47
 msgid "Saved tracks"
