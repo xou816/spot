@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-19 10:05+0200\n"
+"POT-Creation-Date: 2021-10-01 11:43-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -79,7 +79,7 @@ msgid "Add to {}"
 msgstr ""
 
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
-#: src/app/components/login/login_model.rs:52
+#: src/app/components/login/login_model.rs:56
 msgid "Could not save password. Make sure the session keyring is unlocked."
 msgstr ""
 
@@ -147,13 +147,23 @@ msgid "Connection restored"
 msgstr ""
 
 #. Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify.
-#: src/app/components/artist_details/artist_details.ui:42
+#: src/app/components/artist_details/artist_details.ui:40
 msgid "Top tracks"
 msgstr ""
 
 #. Title of the sections that contains all releases from an artist (both singles and albums).
-#: src/app/components/artist_details/artist_details.ui:73
+#: src/app/components/artist_details/artist_details.ui:71
 msgid "Releases"
+msgstr ""
+
+#. A title that is shown when the user has not saved any albums.
+#: src/app/components/library/library.ui:26
+msgid "You have no saved albums."
+msgstr ""
+
+#. A description of what happens when the user has saved albums.
+#: src/app/components/library/library.ui:27
+msgid "Your library will be shown here."
 msgstr ""
 
 #. Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).
@@ -181,12 +191,22 @@ msgstr ""
 msgid "Log in"
 msgstr ""
 
+#. A title that is shown when the user has not saved any playlists.
+#: src/app/components/saved_playlists/saved_playlists.ui:26
+msgid "You have no saved playlists."
+msgstr ""
+
+#. A description of what happens when the user has saved playlists.
+#: src/app/components/saved_playlists/saved_playlists.ui:27
+msgid "Your playlists will be shown here."
+msgstr ""
+
 #. This is the title of a section of the search results
-#: src/app/components/search/search.ui:68
+#: src/app/components/search/search.ui:66
 msgid "Albums"
 msgstr ""
 
 #. This is the title of a section of the search results
-#: src/app/components/search/search.ui:101
+#: src/app/components/search/search.ui:99
 msgid "Artists"
 msgstr ""

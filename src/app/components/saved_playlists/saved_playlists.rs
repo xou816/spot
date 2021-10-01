@@ -8,7 +8,7 @@ use crate::app::components::{AlbumWidget, Component, EventListener};
 use crate::app::dispatch::Worker;
 use crate::app::models::AlbumModel;
 use crate::app::state::LoginEvent;
-use crate::app::{AppEvent, ListStore};
+use crate::app::{AppEvent, BrowserEvent, ListStore};
 
 mod imp {
 
@@ -22,6 +22,8 @@ mod imp {
 
         #[template_child]
         pub flowbox: TemplateChild<gtk::FlowBox>,
+        #[template_child]
+        pub status_page: TemplateChild<libadwaita::StatusPage>,
     }
 
     #[glib::object_subclass]
@@ -88,6 +90,9 @@ impl SavedPlaylistsWidget {
                 child.upcast::<gtk::Widget>()
             });
     }
+    pub fn get_status_page(&self) -> &libadwaita::StatusPage {
+        &imp::SavedPlaylistsWidget::from_instance(self).status_page
+    }
 }
 
 pub struct SavedPlaylists {
@@ -133,6 +138,11 @@ impl EventListener for SavedPlaylists {
             }
             AppEvent::LoginEvent(LoginEvent::LoginCompleted(_)) => {
                 let _ = self.model.refresh_saved_playlists();
+            }
+            AppEvent::BrowserEvent(BrowserEvent::SavedPlaylistsUpdated) => {
+                self.widget
+                    .get_status_page()
+                    .set_visible(!self.model.has_playlists());
             }
             _ => {}
         }

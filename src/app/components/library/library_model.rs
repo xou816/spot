@@ -41,6 +41,12 @@ impl LibraryModel {
         Some(())
     }
 
+    pub fn has_albums(&self) -> bool {
+        self.get_list_store()
+            .map(|list| list.len() > 0)
+            .unwrap_or(false)
+    }
+
     pub fn load_more_albums(&self) -> Option<()> {
         let api = self.app_model.get_spotify();
 
