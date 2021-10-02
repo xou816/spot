@@ -75,6 +75,24 @@ impl<T> Page<T> {
         }
     }
 
+    fn map<Mapper, U>(self, mapper: Mapper) -> Page<U>
+    where
+        Mapper: Fn(T) -> U,
+    {
+        let Page {
+            items,
+            offset,
+            limit,
+            total,
+        } = self;
+        Page {
+            items: items.map(|item| item.into_iter().map(mapper).collect()),
+            offset,
+            limit,
+            total,
+        }
+    }
+
     pub fn limit(&self) -> usize {
         self.limit
             .or_else(|| Some(self.items.as_ref()?.len()))
@@ -178,7 +196,7 @@ pub struct FullAlbum {
 #[derive(Deserialize, Debug, Clone)]
 pub struct Album {
     pub id: String,
-    pub tracks: Option<Page<TrackItem>>,
+    pub tracks: Option<Page<AlbumTrackItem>>,
     pub artists: Vec<Artist>,
     pub name: String,
     pub images: Vec<Image>,
@@ -240,14 +258,20 @@ pub struct TopTracks {
 }
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct TrackItem {
+pub struct AlbumTrackItem {
     pub id: String,
     pub track_number: Option<usize>,
     pub uri: String,
     pub name: String,
     pub duration_ms: i64,
     pub artists: Vec<Artist>,
-    pub album: Option<Album>,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct TrackItem {
+    #[serde(flatten)]
+    pub track: AlbumTrackItem,
+    pub album: Album,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -312,6 +336,16 @@ where
     }
 }
 
+impl From<(Page<AlbumTrackItem>, &Album)> for SongBatch {
+    fn from(page_and_album: (Page<AlbumTrackItem>, &Album)) -> Self {
+        let (page, album) = page_and_album;
+        Self::from(page.map(|track| TrackItem {
+            track,
+            album: album.clone(),
+        }))
+    }
+}
+
 impl<T> From<Page<T>> for SongBatch
 where
     T: TryInto<TrackItem>,
@@ -326,16 +360,16 @@ where
             .into_iter()
             .enumerate()
             .filter_map(|(i, t)| {
-                let TrackItem {
-                    album,
+                let TrackItem { track, album } = t.try_into().ok()?;
+                let AlbumTrackItem {
                     artists,
                     id,
                     uri,
                     name,
                     duration_ms,
-                    ..
-                } = t.try_into().ok()?;
-                let track_number = (batch.offset + i + 1) as u32;
+                    track_number,
+                } = track;
+                let track_number = track_number.unwrap_or_else(|| batch.offset + i + 1) as u32;
                 let artists = artists
                     .into_iter()
                     .map(|a| ArtistRef {
@@ -344,13 +378,13 @@ where
                     })
                     .collect::<Vec<ArtistRef>>();
 
-                let album = album.unwrap();
                 let art = album.best_image_for_width(200).map(|i| &i.url).cloned();
                 let Album {
                     id: album_id,
                     name: album_name,
                     ..
                 } = album;
+
                 let album_ref = AlbumRef {
                     id: album_id,
                     name: album_name,
@@ -375,47 +409,9 @@ where
 impl TryFrom<Album> for SongBatch {
     type Error = ();
 
-    fn try_from(album: Album) -> Result<Self, Self::Error> {
-        let art = album.best_image_for_width(200).map(|i| &i.url).cloned();
-        let Album { id, name, .. } = album;
-        let album_ref = AlbumRef { id, name };
-
-        let tracks = album.tracks.ok_or(())?;
-
-        let batch = Batch {
-            offset: tracks.offset(),
-            batch_size: tracks.limit(),
-            total: tracks.total(),
-        };
-
-        let songs = tracks
-            .into_iter()
-            .enumerate()
-            .map(|(i, item)| {
-                let track_number = item.track_number.unwrap_or_else(|| batch.offset + i + 1) as u32;
-                let artists = item
-                    .artists
-                    .into_iter()
-                    .map(|a| ArtistRef {
-                        id: a.id,
-                        name: a.name,
-                    })
-                    .collect::<Vec<ArtistRef>>();
-
-                SongDescription {
-                    id: item.id,
-                    track_number,
-                    uri: item.uri,
-                    title: item.name,
-                    artists,
-                    album: album_ref.clone(),
-                    duration: item.duration_ms as u32,
-                    art: art.clone(),
-                }
-            })
-            .collect::<Vec<SongDescription>>();
-
-        Ok(Self { songs, batch })
+    fn try_from(mut album: Album) -> Result<Self, Self::Error> {
+        let tracks = std::mem::replace(&mut album.tracks, None).ok_or(())?;
+        Ok((tracks, &album).into())
     }
 }
 

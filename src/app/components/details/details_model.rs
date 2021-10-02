@@ -15,7 +15,7 @@ use crate::app::models::*;
 use crate::app::state::{
     BrowserAction, BrowserEvent, PlaybackAction, SelectionAction, SelectionState,
 };
-use crate::app::{AppAction, AppEvent, AppModel, AppState, ListDiff, SongsSource};
+use crate::app::{AppAction, AppEvent, AppModel, AppState, BatchQuery, ListDiff, SongsSource};
 
 pub struct DetailsModel {
     pub id: String,
@@ -102,6 +102,27 @@ impl DetailsModel {
                 });
         }
     }
+
+    pub fn load_more(&self) -> Option<()> {
+        let last_batch = self.songs_ref()?.last_batch();
+        let query = BatchQuery {
+            source: SongsSource::Album(self.id.clone()),
+            batch: last_batch,
+        };
+
+        let id = self.id.clone();
+        let next_query = query.next()?;
+        let loader = self.app_model.get_batch_loader();
+
+        self.dispatcher.dispatch_async(Box::pin(async move {
+            loader
+                .query(next_query)
+                .await
+                .map(|song_batch| BrowserAction::AppendAlbumTracks(id, Box::new(song_batch)).into())
+        }));
+
+        Some(())
+    }
 }
 
 impl DetailsModel {
@@ -150,14 +171,20 @@ impl PlaylistModel for DetailsModel {
     }
 
     fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>> {
-        if matches!(
-            event,
-            AppEvent::BrowserEvent(BrowserEvent::AlbumDetailsLoaded(id)) if id == &self.id
-        ) {
-            let songs = self.songs_ref()?;
-            Some(ListDiff::Set(songs.iter().map(|s| s.into()).collect()))
-        } else {
-            None
+        match event {
+            AppEvent::BrowserEvent(BrowserEvent::AlbumDetailsLoaded(id)) if id == &self.id => {
+                let songs = self.songs_ref()?;
+                Some(ListDiff::Set(songs.iter().map(|s| s.into()).collect()))
+            }
+            AppEvent::BrowserEvent(BrowserEvent::AlbumTracksAppended(id, index))
+                if id == &self.id =>
+            {
+                let songs = self.songs_ref()?;
+                Some(ListDiff::Append(
+                    songs.iter().skip(*index).map(|s| s.into()).collect(),
+                ))
+            }
+            _ => None,
         }
     }
 

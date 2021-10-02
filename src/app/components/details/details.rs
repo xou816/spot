@@ -104,6 +104,19 @@ impl AlbumDetailsWidget {
         widget.scrolled_window.add_controller(&scroll_controller);
     }
 
+    fn connect_bottom_edge<F>(&self, f: F)
+    where
+        F: Fn() + 'static,
+    {
+        self.widget()
+            .scrolled_window
+            .connect_edge_reached(move |_, pos| {
+                if let gtk::PositionType::Bottom = pos {
+                    f()
+                }
+            });
+    }
+
     fn connect_liked<F>(&self, f: F)
     where
         F: Fn() + 'static,
@@ -179,6 +192,10 @@ impl Details {
         widget.connect_liked(clone!(@weak model => move || model.toggle_save_album()));
 
         widget.connect_header();
+
+        widget.connect_bottom_edge(clone!(@weak model => move || {
+            model.load_more();
+        }));
 
         widget.connect_info(clone!(@weak modal, @weak widget => move || {
             let modal = modal.upcast_ref::<libadwaita::Window>();

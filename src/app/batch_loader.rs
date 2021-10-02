@@ -57,7 +57,12 @@ impl BatchLoader {
                 } = query.batch;
                 api.get_playlist_tracks(&id, offset, batch_size).await.ok()
             }
-            _ => None,
+            SongsSource::Album(id) => {
+                let Batch {
+                    offset, batch_size, ..
+                } = query.batch;
+                api.get_album_tracks(&id, offset, batch_size).await.ok()
+            }
         }
     }
 }

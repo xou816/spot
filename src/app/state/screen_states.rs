@@ -63,6 +63,19 @@ impl UpdatableState for DetailsState {
                 self.content = Some(*album);
                 vec![BrowserEvent::AlbumDetailsLoaded(id)]
             }
+            BrowserAction::AppendAlbumTracks(id, batch) if id == self.id => {
+                let offset = batch.batch.offset;
+                if self
+                    .content
+                    .as_mut()
+                    .and_then(|content| content.description.songs.add(*batch))
+                    .is_some()
+                {
+                    vec![BrowserEvent::AlbumTracksAppended(id, offset)]
+                } else {
+                    vec![]
+                }
+            }
             BrowserAction::SaveAlbum(album) if album.id == self.id => {
                 let id = album.id;
                 if let Some(mut album) = self.content.as_mut() {
@@ -114,10 +127,16 @@ impl UpdatableState for PlaylistDetailsState {
             }
             BrowserAction::AppendPlaylistTracks(id, song_batch) if id == self.id => {
                 let offset = song_batch.batch.offset;
-                if let Some(playlist) = self.playlist.as_mut() {
-                    playlist.songs.add(*song_batch);
+                if self
+                    .playlist
+                    .as_mut()
+                    .and_then(|playlist| playlist.songs.add(*song_batch))
+                    .is_some()
+                {
+                    vec![BrowserEvent::PlaylistTracksAppended(id, offset)]
+                } else {
+                    vec![]
                 }
-                vec![BrowserEvent::PlaylistTracksAppended(id, offset)]
             }
             BrowserAction::RemoveTracksFromPlaylist(uris) => {
                 if let Some(playlist) = self.playlist.as_mut() {
