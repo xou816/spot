@@ -259,6 +259,12 @@ pub enum PlaylistChange {
     MovedDown(usize),
 }
 
+#[derive(Clone, Copy, Debug)]
+pub enum Device {
+    Local,
+    Connect,
+}
+
 #[derive(Clone, Debug)]
 pub enum PlaybackEvent {
     PlaybackPaused,
@@ -270,6 +276,7 @@ pub enum PlaybackEvent {
     ShuffleChanged,
     PlaylistChanged(PlaylistChange),
     PlaybackStopped,
+    SwitchDevice(Device),
 }
 
 #[derive(Clone, Copy, Debug)]

@@ -2,11 +2,13 @@ use futures::channel::mpsc::{unbounded, UnboundedReceiver, UnboundedSender};
 use librespot::core::spotify_id::SpotifyId;
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::sync::Arc;
 use std::time::SystemTime;
 use tokio::task;
 
+use crate::api::SpotifyApiClient;
 use crate::app::credentials::Credentials;
-use crate::app::state::{LoginAction, PlaybackAction, SetLoginSuccessAction};
+use crate::app::state::{Device, LoginAction, PlaybackAction, SetLoginSuccessAction};
 use crate::app::AppAction;
 
 mod player;
@@ -23,6 +25,7 @@ pub enum Command {
     PlayerStop,
     PlayerSeek(u32),
     RefreshToken,
+    SwitchDevice(Device),
 }
 
 struct AppPlayerDelegate {
@@ -96,6 +99,7 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
 
 #[tokio::main]
 async fn player_main(
+    api: Arc<dyn SpotifyApiClient + Send + Sync>,
     player_settings: SpotifyPlayerSettings,
     appaction_sender: UnboundedSender<AppAction>,
     receiver: UnboundedReceiver<Command>,
@@ -104,7 +108,7 @@ async fn player_main(
         .run_until(async move {
             task::spawn_local(async move {
                 let delegate = Rc::new(AppPlayerDelegate::new(appaction_sender.clone()));
-                let player = SpotifyPlayer::new(player_settings, delegate);
+                let player = SpotifyPlayer::new(api, player_settings, delegate);
                 player.start(receiver).await.unwrap();
             })
             .await
@@ -114,10 +118,11 @@ async fn player_main(
 }
 
 pub fn start_player_service(
+    api: Arc<dyn SpotifyApiClient + Send + Sync>,
     player_settings: SpotifyPlayerSettings,
     appaction_sender: UnboundedSender<AppAction>,
 ) -> UnboundedSender<Command> {
     let (sender, receiver) = unbounded::<Command>();
-    std::thread::spawn(move || player_main(player_settings, appaction_sender, receiver));
+    std::thread::spawn(move || player_main(api, player_settings, appaction_sender, receiver));
     sender
 }
