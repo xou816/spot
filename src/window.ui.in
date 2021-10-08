@@ -95,7 +95,6 @@
           <object class="AdwLeaflet" id="leaflet">
             <property name="vexpand">1</property>
             <property name="visible-child">main</property>
-            <property name="interpolate-size">1</property>
             <child>
               <object class="AdwLeafletPage">
                 <property name="navigatable">0</property>
