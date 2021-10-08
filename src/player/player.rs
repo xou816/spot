@@ -20,10 +20,13 @@ use std::env;
 use std::error::Error;
 use std::fmt;
 use std::rc::Rc;
+use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 
 use super::Command;
+use crate::api::SpotifyApiClient;
 use crate::app::credentials;
+use crate::app::state::Device;
 use crate::settings::SpotSettings;
 
 #[derive(Debug)]
@@ -86,81 +89,122 @@ impl Default for SpotifyPlayerSettings {
 }
 
 pub struct SpotifyPlayer {
+    api: Arc<dyn SpotifyApiClient + Send + Sync>,
     settings: SpotifyPlayerSettings,
     player: Option<Player>,
     mixer: Option<Box<dyn Mixer>>,
     session: Option<Session>,
     delegate: Rc<dyn SpotifyPlayerDelegate>,
+    device: Device,
 }
 
 impl SpotifyPlayer {
-    pub fn new(settings: SpotifyPlayerSettings, delegate: Rc<dyn SpotifyPlayerDelegate>) -> Self {
+    pub fn new(
+        api: Arc<dyn SpotifyApiClient + Send + Sync>,
+        settings: SpotifyPlayerSettings,
+        delegate: Rc<dyn SpotifyPlayerDelegate>,
+    ) -> Self {
         Self {
+            api,
             settings,
             mixer: None,
             player: None,
             session: None,
             delegate,
+            device: Device::Connect,
         }
     }
 
     async fn handle(&mut self, action: Command) -> Result<(), SpotifyError> {
-        match action {
-            Command::PlayerSetVolume(volume) => {
+        match (self.device, action) {
+            (Device::Local, Command::PlayerSetVolume(volume)) => {
                 if let Some(mixer) = self.mixer.as_mut() {
                     mixer.set_volume((VolumeCtrl::MAX_VOLUME as f64 * volume) as u16);
                 }
                 Ok(())
             }
-            Command::PlayerResume => {
+            (Device::Local, Command::PlayerResume)) => {
                 self.player
                     .as_ref()
                     .ok_or(SpotifyError::PlayerNotReady)?
                     .play();
                 Ok(())
             }
-            Command::PlayerPause => {
+            (Device::Connect, Command::PlayerResume) => {
+                self.api.player_play(None).await.unwrap();
+                Ok(())
+            }
+            (Device::Local, Command::PlayerPause)) => {
                 self.player
                     .as_ref()
                     .ok_or(SpotifyError::PlayerNotReady)?
                     .pause();
                 Ok(())
             }
-            Command::PlayerStop => {
+            (Device::Connect, Command::PlayerPause) => {
+                self.api.player_pause().await.unwrap();
+                Ok(())
+            }
+            (Device::Local, Command::PlayerStop)) => {
                 self.player
                     .as_ref()
                     .ok_or(SpotifyError::PlayerNotReady)?
                     .stop();
                 Ok(())
             }
-            Command::PlayerSeek(position) => {
+            (Device::Local, Command::PlayerSeek(position)) => {
                 self.player
                     .as_ref()
                     .ok_or(SpotifyError::PlayerNotReady)?
                     .seek(position);
                 Ok(())
             }
-            Command::PlayerLoad(track) => {
+            (Device::Connect, Command::PlayerSeek(position)) => {
+                self.api.player_seek(position as usize).await.unwrap();
+                Ok(())
+            }
+            (Device::Local, Command::PlayerLoad(track)) => {
                 self.player
                     .as_mut()
                     .ok_or(SpotifyError::PlayerNotReady)?
                     .load(track, true, 0);
                 Ok(())
             }
-            Command::PlayerPreload(track) => {
+            (Device::Connect, Command::PlayerLoad(track)) => {
+                let uri = track.to_uri();
+                self.api.player_play(Some(uri)).await.unwrap();
+                Ok(())
+            }
+            (Device::Local, Command::PlayerPreload(track)) => {
                 self.player
                     .as_mut()
                     .ok_or(SpotifyError::PlayerNotReady)?
                     .preload(track);
                 Ok(())
             }
-            Command::RefreshToken => {
+            (Device::Local, Command::SwitchDevice(Device::Local)) => Ok(()),
+            (Device::Local, Command::SwitchDevice(Device::Connect)) => {
+                let player = player.as_mut().ok_or(SpotifyError::PlayerNotReady)?;
+                player.pause();
+                *self.device.borrow_mut() = Device::Connect;
+                self.api.player_play(None).await.unwrap();
+                Ok(())
+            }
+            (Device::Connect, Command::SwitchDevice(Device::Local)) => {
+                let player = player.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
+                self.api.player_pause().await.unwrap();
+                *self.device.borrow_mut() = Device::Local;
+                player.play();
+                Ok(())
+            }
+            (Device::Connect, Command::SwitchDevice(Device::Connect)) => Ok(()),
+            (_, Command::RefreshToken) => {
                 let session = self.session.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
                 let (token, token_expiry_time) = get_access_token_and_expiry_time(session).await?;
                 self.delegate.refresh_successful(token, token_expiry_time);
                 Ok(())
             }
-            Command::Logout => {
+            (_, Command::Logout) => {
                 self.session
                     .take()
                     .ok_or(SpotifyError::PlayerNotReady)?
@@ -168,7 +212,7 @@ impl SpotifyPlayer {
                 let _ = self.player.take();
                 Ok(())
             }
-            Command::PasswordLogin { username, password } => {
+            (_, Command::PasswordLogin { username, password }) => {
                 let credentials = Credentials::with_password(username, password.clone());
                 let new_session = create_session(&credentials, self.settings.ap_port).await?;
                 let (token, token_expiry_time) =
@@ -189,7 +233,7 @@ impl SpotifyPlayer {
 
                 Ok(())
             }
-            Command::TokenLogin { username, token } => {
+            (_, Command::TokenLogin { username, token }) => {
                 let credentials = Credentials {
                     username,
                     auth_type: AuthenticationType::AUTHENTICATION_SPOTIFY_TOKEN,
@@ -289,6 +333,7 @@ user-top-read,\
 user-read-recently-played,\
 playlist-modify-public,\
 playlist-modify-private,\
+user-modify-playback-state,\
 streaming,\
 playlist-modify-public";
 

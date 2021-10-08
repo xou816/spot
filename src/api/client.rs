@@ -536,6 +536,67 @@ impl SpotifyClient {
             .method(Method::GET)
             .uri(format!("/v1/users/{id}/playlists"), Some(&query))
     }
+
+    pub(crate) fn get_player_devices(&self) -> SpotifyRequest<'_, (), ()> {
+        self.request()
+            .method(Method::GET)
+            .uri("/v1/me/player/devices".to_string(), None)
+    }
+
+    pub(crate) fn get_player_playing(&self) -> SpotifyRequest<'_, (), ()> {
+        self.request()
+            .method(Method::GET)
+            .uri("/v1/me/player/currently-playing".to_string(), None)
+    }
+
+    pub(crate) fn player_play(&self) -> SpotifyRequest<'_, (), ()> {
+        self.request()
+            .method(Method::PUT)
+            .uri("/v1/me/player/play".to_string(), None)
+    }
+
+    pub(crate) fn player_play_uri(&self, uri: String) -> SpotifyRequest<'_, Vec<u8>, ()> {
+        self.request()
+            .method(Method::PUT)
+            .uri("/v1/me/player/play".to_string(), None)
+            .json_body(Uris { uris: vec![uri] })
+    }
+
+    pub(crate) fn player_pause(&self) -> SpotifyRequest<'_, (), ()> {
+        self.request()
+            .method(Method::PUT)
+            .uri("/v1/me/player/pause".to_string(), None)
+    }
+
+    pub(crate) fn player_next(&self) -> SpotifyRequest<'_, (), ()> {
+        self.request()
+            .method(Method::PUT)
+            .uri("/v1/me/player/next".to_string(), None)
+    }
+
+    pub(crate) fn add_to_queue(&self, uri: String) -> SpotifyRequest<'_, (), ()> {
+        let query = make_query_params().append_pair("uri", &uri).finish();
+
+        self.request()
+            .method(Method::POST)
+            .uri("/v1/me/player/queue".to_string(), Some(&query))
+    }
+
+    pub(crate) fn player_previous(&self) -> SpotifyRequest<'_, (), ()> {
+        self.request()
+            .method(Method::PUT)
+            .uri("/v1/me/player/previous".to_string(), None)
+    }
+
+    pub(crate) fn player_seek(&self, pos: usize) -> SpotifyRequest<'_, (), ()> {
+        let query = make_query_params()
+            .append_pair("position_ms", &pos.to_string()[..])
+            .finish();
+
+        self.request()
+            .method(Method::PUT)
+            .uri("/v1/me/player/seek".to_string(), Some(&query))
+    }
 }
 
 #[cfg(test)]

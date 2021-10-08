@@ -91,6 +91,12 @@ pub trait SpotifyApiClient {
     ) -> BoxFuture<SpotifyResult<Vec<PlaylistDescription>>>;
 
     fn update_token(&self, token: String);
+
+    fn player_pause(&self) -> BoxFuture<SpotifyResult<()>>;
+    fn player_play(&self, uri: Option<String>) -> BoxFuture<SpotifyResult<()>>;
+    fn player_next(&self) -> BoxFuture<SpotifyResult<()>>;
+    fn player_seek(&self, pos: usize) -> BoxFuture<SpotifyResult<()>>;
+    fn add_to_queue(&self, uri: String) -> BoxFuture<SpotifyResult<()>>;
 }
 
 enum SpotCacheKey<'a> {
@@ -652,6 +658,45 @@ impl SpotifyApiClient for CachedSpotifyClient {
                 playlists: playlists?,
             };
             Ok(result)
+        })
+    }
+
+    fn player_pause(&self) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(async move {
+            self.client.player_pause().send_no_response().await?;
+            Ok(())
+        })
+    }
+
+    fn player_play(&self, uri: Option<String>) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(async move {
+            if let Some(uri) = uri {
+                self.client.player_play_uri(uri).send_no_response().await?;
+            } else {
+                self.client.player_play().send_no_response().await?;
+            }
+            Ok(())
+        })
+    }
+
+    fn player_next(&self) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(async move {
+            self.client.player_next().send_no_response().await?;
+            Ok(())
+        })
+    }
+
+    fn add_to_queue(&self, uri: String) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(async move {
+            self.client.add_to_queue(uri).send_no_response().await?;
+            Ok(())
+        })
+    }
+
+    fn player_seek(&self, pos: usize) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(async move {
+            self.client.player_seek(pos).send_no_response().await?;
+            Ok(())
         })
     }
 }

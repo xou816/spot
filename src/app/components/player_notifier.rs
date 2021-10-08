@@ -41,6 +41,9 @@ impl EventListener for PlayerNotifier {
             AppEvent::PlaybackEvent(PlaybackEvent::TrackSeeked(position)) => {
                 Some(Command::PlayerSeek(*position))
             }
+            AppEvent::PlaybackEvent(PlaybackEvent::SwitchDevice(device)) => {
+                Some(Command::SwitchDevice(*device))
+            }
             AppEvent::LoginEvent(LoginEvent::LoginStarted(LoginStartedEvent::Password {
                 username,
                 password,

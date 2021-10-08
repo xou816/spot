@@ -1,4 +1,6 @@
-use crate::api::CachedSpotifyClient;
+use crate::api::{CachedSpotifyClient, SpotifyApiClient};
+use crate::app::components::sidebar_listbox::{build_sidebar_listbox, SideBarItem};
+use crate::glib::StaticType;
 use crate::settings::SpotSettings;
 use futures::channel::mpsc::UnboundedSender;
 use std::rc::Rc;
@@ -48,7 +50,7 @@ impl App {
         let model = Rc::new(AppModel::new(state, spotify_client));
 
         let components: Vec<Box<dyn EventListener>> = vec![
-            App::make_player_notifier(&settings, sender.clone()),
+            App::make_player_notifier(model.get_spotify(), &settings, sender.clone()),
             App::make_dbus(Rc::clone(&model), sender.clone()),
         ];
 
@@ -94,12 +96,13 @@ impl App {
     }
 
     fn make_player_notifier(
+        api: Arc<dyn SpotifyApiClient + Send + Sync>,
         settings: &SpotSettings,
         sender: UnboundedSender<AppAction>,
     ) -> Box<impl EventListener> {
         Box::new(PlayerNotifier::new(
             sender.clone(),
-            crate::player::start_player_service(settings.player_settings.clone(), sender),
+            crate::player::start_player_service(api, settings.player_settings.clone(), sender),
         ))
     }
 
