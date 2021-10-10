@@ -60,7 +60,16 @@ impl SpotifyPlayerSettings {
             )),
             _ => None,
         }?;
-        Some(Self { bitrate, backend })
+        let ap_port = settings.uint("ap-port");
+        if ap_port > 65535 {
+            panic!("Invalid access point port");
+        }
+
+        Some(Self {
+            bitrate,
+            backend,
+            ap_port: ap_port as u16,
+        })
     }
 }
 
