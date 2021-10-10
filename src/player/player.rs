@@ -240,10 +240,12 @@ async fn get_access_token_and_expiry_time(
 }
 
 async fn create_session(credentials: Credentials, ap_port: u16) -> Result<Session, SpotifyError> {
-    let mut session_config = SessionConfig::default();
-    session_config.ap_port = match ap_port {
-        0 => None,
-        x => Some(x),
+    let session_config = SessionConfig {
+        ap_port: match ap_port {
+            0 => None,
+            x => Some(x),
+        },
+        ..Default::default()
     };
     let result = Session::connect(session_config, credentials, None).await;
     result.map_err(|e| {
