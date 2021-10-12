@@ -236,7 +236,10 @@ async fn get_access_token_and_expiry_time(
     Ok((token.access_token, expiry_time))
 }
 
-async fn create_session(credentials: Credentials, ap_port: Option<u16>) -> Result<Session, SpotifyError> {
+async fn create_session(
+    credentials: Credentials,
+    ap_port: Option<u16>,
+) -> Result<Session, SpotifyError> {
     let session_config = SessionConfig {
         ap_port,
         ..Default::default()
