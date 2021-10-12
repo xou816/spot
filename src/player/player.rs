@@ -59,7 +59,7 @@ pub enum AudioBackend {
 pub struct SpotifyPlayerSettings {
     pub bitrate: Bitrate,
     pub backend: AudioBackend,
-    pub ap_port: u16,
+    pub ap_port: Option<u16>,
 }
 
 impl Default for SpotifyPlayerSettings {
@@ -67,10 +67,7 @@ impl Default for SpotifyPlayerSettings {
         Self {
             bitrate: Bitrate::Bitrate160,
             backend: AudioBackend::PulseAudio,
-            // Access points usually use port 80, 443 or 4070. Since gsettings
-            // does not allow optional values, we use 0 to indicate that any
-            // port is OK and we should pass None to librespot's ap-port.
-            ap_port: 0,
+            ap_port: None,
         }
     }
 }
@@ -239,12 +236,9 @@ async fn get_access_token_and_expiry_time(
     Ok((token.access_token, expiry_time))
 }
 
-async fn create_session(credentials: Credentials, ap_port: u16) -> Result<Session, SpotifyError> {
+async fn create_session(credentials: Credentials, ap_port: Option<u16>) -> Result<Session, SpotifyError> {
     let session_config = SessionConfig {
-        ap_port: match ap_port {
-            0 => None,
-            x => Some(x),
-        },
+        ap_port,
         ..Default::default()
     };
     let result = Session::connect(session_config, credentials, None).await;
