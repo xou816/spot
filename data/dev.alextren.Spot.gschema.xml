@@ -38,5 +38,9 @@
       <default>'default'</default>
       <summary>Alsa device (if audio backend is 'alsa')</summary>
     </key>
+    <key name='ap-port' type='u'>
+      <default>0</default>
+      <summary>Port to communicate with Spotify's server (access point). Setting to 0 (default) allows Spot to use servers running on any port.</summary>
+    </key>
   </schema>
 </schemalist>

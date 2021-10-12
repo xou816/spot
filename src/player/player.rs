@@ -59,6 +59,7 @@ pub enum AudioBackend {
 pub struct SpotifyPlayerSettings {
     pub bitrate: Bitrate,
     pub backend: AudioBackend,
+    pub ap_port: Option<u16>,
 }
 
 impl Default for SpotifyPlayerSettings {
@@ -66,6 +67,7 @@ impl Default for SpotifyPlayerSettings {
         Self {
             bitrate: Bitrate::Bitrate160,
             backend: AudioBackend::PulseAudio,
+            ap_port: None,
         }
     }
 }
@@ -132,7 +134,7 @@ impl SpotifyPlayer {
             }
             Command::PasswordLogin { username, password } => {
                 let credentials = Credentials::with_password(username, password.clone());
-                let new_session = create_session(credentials).await?;
+                let new_session = create_session(credentials, self.settings.ap_port).await?;
                 let (token, token_expiry_time) =
                     get_access_token_and_expiry_time(&new_session).await?;
                 let credentials = credentials::Credentials {
@@ -157,7 +159,7 @@ impl SpotifyPlayer {
                     auth_type: AuthenticationType::AUTHENTICATION_SPOTIFY_TOKEN,
                     auth_data: token.clone().into_bytes(),
                 };
-                let new_session = create_session(credentials).await?;
+                let new_session = create_session(credentials, self.settings.ap_port).await?;
                 self.delegate
                     .token_login_successful(new_session.username(), token);
 
@@ -234,8 +236,14 @@ async fn get_access_token_and_expiry_time(
     Ok((token.access_token, expiry_time))
 }
 
-async fn create_session(credentials: Credentials) -> Result<Session, SpotifyError> {
-    let session_config = SessionConfig::default();
+async fn create_session(
+    credentials: Credentials,
+    ap_port: Option<u16>,
+) -> Result<Session, SpotifyError> {
+    let session_config = SessionConfig {
+        ap_port,
+        ..Default::default()
+    };
     let result = Session::connect(session_config, credentials, None).await;
     result.map_err(|e| {
         dbg!(e);

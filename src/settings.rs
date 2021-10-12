@@ -60,7 +60,24 @@ impl SpotifyPlayerSettings {
             )),
             _ => None,
         }?;
-        Some(Self { bitrate, backend })
+        let ap_port_val = settings.uint("ap-port");
+        if ap_port_val > 65535 {
+            panic!("Invalid access point port");
+        }
+
+        // Access points usually use port 80, 443 or 4070. Since gsettings
+        // does not allow optional values, we use 0 to indicate that any
+        // port is OK and we should pass None to librespot's ap-port.
+        let ap_port = match ap_port_val {
+            0 => None,
+            x => Some(x as u16),
+        };
+
+        Some(Self {
+            bitrate,
+            backend,
+            ap_port,
+        })
     }
 }
 
