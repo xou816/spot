@@ -30,9 +30,14 @@ impl PlaybackState {
     }
 
     pub fn next_query(&self) -> Option<BatchQuery> {
-        let next_index = self.index.get(self.next_index()?)?;
-        let (batch, has_batch) = self.songs.has_batch_for(next_index);
-        if !has_batch {
+        let next_index = self.next_index()?;
+        let next_index = if self.is_shuffled {
+            self.index.get(next_index)?
+        } else {
+            next_index
+        };
+        let batch = self.songs.needed_batch_for(next_index);
+        if let Some(batch) = batch {
             let source = self.source.as_ref().cloned()?;
             Some(BatchQuery { source, batch })
         } else {
@@ -96,7 +101,7 @@ impl PlaybackState {
     }
 
     pub fn dequeue(&mut self, id: &str) {
-        let position = self.songs.iter_ids_from(0).position(|s| s == id);
+        let position = self.songs.find_index(id);
         self.songs.remove(&[id.to_string()]);
         let new_len = self.songs.len();
         self.position = self
@@ -120,17 +125,13 @@ impl PlaybackState {
     }
 
     pub fn move_down(&mut self, id: &str) -> Option<usize> {
-        let index = self.songs.iter_ids_from(0).position(|s| s == id)?;
+        let index = self.songs.find_index(id)?;
         self.swap(index, index + 1);
         Some(index)
     }
 
     pub fn move_up(&mut self, id: &str) -> Option<usize> {
-        let index = self
-            .songs
-            .iter_ids_from(0)
-            .position(|s| s == id)
-            .filter(|&index| index > 0)?;
+        let index = self.songs.find_index(id).filter(|&index| index > 0)?;
         self.swap(index - 1, index);
         Some(index)
     }
@@ -140,7 +141,7 @@ impl PlaybackState {
             return false;
         }
 
-        let found_index = self.songs.iter_ids_from(0).position(|s| &s[..] == id);
+        let found_index = self.songs.find_index(id);
 
         if let Some(index) = found_index {
             if self.is_shuffled {

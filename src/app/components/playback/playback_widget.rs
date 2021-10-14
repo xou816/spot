@@ -2,7 +2,7 @@ use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{glib, CompositeTemplate};
 
-use crate::app::components::screen_add_css_provider;
+use crate::app::components::display_add_css_provider;
 use crate::app::components::utils::{format_duration, Clock, Debouncer};
 use crate::app::loader::ImageLoader;
 use crate::app::state::RepeatMode;
@@ -62,7 +62,7 @@ mod imp {
             self.parent_constructed(obj);
             self.now_playing_mobile.set_info_visible(false);
             self.now_playing.set_info_visible(true);
-            screen_add_css_provider(resource!("/components/playback.css"));
+            display_add_css_provider(resource!("/components/playback.css"));
         }
     }
 

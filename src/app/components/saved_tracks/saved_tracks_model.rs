@@ -1,26 +1,24 @@
 use gio::prelude::*;
 use gio::SimpleActionGroup;
-use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 use std::sync::Arc;
 
 use crate::app::components::{labels, PlaylistModel, SelectionTool, SelectionToolsModel};
-use crate::app::models::SongDescription;
-use crate::app::models::SongModel;
-use crate::app::state::PlaylistChange;
-use crate::app::state::{
-    PlaybackAction, PlaybackEvent, PlaybackState, SelectionAction, SelectionContext, SelectionState,
+use crate::app::models::*;
+use crate::app::state::{PlaybackAction, SelectionAction, SelectionContext, SelectionState};
+use crate::app::{
+    ActionDispatcher, AppAction, AppEvent, AppModel, BatchQuery, BrowserAction, BrowserEvent,
+    ListDiff, SongsSource,
 };
-use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState, ListDiff};
 use crate::{api::SpotifyApiClient, app::components::SimpleSelectionTool};
 
-pub struct NowPlayingModel {
+pub struct SavedTracksModel {
     app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>,
 }
 
-impl NowPlayingModel {
+impl SavedTracksModel {
     pub fn new(app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
         Self {
             app_model,
@@ -28,57 +26,73 @@ impl NowPlayingModel {
         }
     }
 
-    fn state(&self) -> Ref<'_, AppState> {
-        self.app_model.get_state()
+    fn songs(&self) -> Option<impl Deref<Target = SongList> + '_> {
+        self.app_model
+            .map_state_opt(|s| Some(&s.browser.home_state()?.saved_tracks))
     }
 
-    fn queue(&self) -> Ref<'_, PlaybackState> {
-        Ref::map(self.state(), |s| &s.playback)
+    pub fn load_initial(&self) {
+        let query = BatchQuery {
+            source: SongsSource::SavedTracks,
+            batch: Batch::first_of_size(50),
+        };
+
+        self.load_batch(query);
     }
 
     pub fn load_more(&self) -> Option<()> {
-        let queue = self.queue();
+        let last_batch = self.songs()?.last_batch()?;
+        let query = BatchQuery {
+            source: SongsSource::SavedTracks,
+            batch: last_batch,
+        };
+
+        self.load_batch(query.next()?);
+        Some(())
+    }
+
+    fn load_batch(&self, query: BatchQuery) {
         let loader = self.app_model.get_batch_loader();
-        let query = queue.next_query()?;
 
         self.dispatcher.dispatch_async(Box::pin(async move {
-            let source = query.source.clone();
             let action = loader
                 .query(query, |song_batch| {
-                    PlaybackAction::LoadPagedSongs(source, song_batch).into()
+                    BrowserAction::AppendSavedTracks(Box::new(song_batch)).into()
                 })
                 .await;
             Some(action)
         }));
-
-        Some(())
     }
 }
 
-impl PlaylistModel for NowPlayingModel {
+impl PlaylistModel for SavedTracksModel {
     fn current_song_id(&self) -> Option<String> {
-        self.queue().current_song_id().cloned()
+        self.app_model
+            .get_state()
+            .playback
+            .current_song_id()
+            .cloned()
     }
 
-    fn play_song_at(&self, _pos: usize, id: &str) {
-        self.dispatcher
-            .dispatch(PlaybackAction::Load(id.to_string()).into());
+    fn play_song_at(&self, pos: usize, id: &str) {
+        let source = SongsSource::SavedTracks;
+        let batch = self.songs().and_then(|songs| songs.song_batch_for(pos));
+        if let Some(batch) = batch {
+            self.dispatcher
+                .dispatch(PlaybackAction::LoadPagedSongs(source, batch).into());
+            self.dispatcher
+                .dispatch(PlaybackAction::Load(id.to_string()).into());
+        }
     }
 
     fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>> {
-        let queue = self.queue();
-        let songs = queue.songs().map(|s| s.into());
-
         match event {
-            AppEvent::PlaybackEvent(PlaybackEvent::PlaylistChanged(change)) => match change {
-                PlaylistChange::Reset => Some(ListDiff::Set(songs.collect())),
-                PlaylistChange::InsertedAt(i, n) => {
-                    Some(ListDiff::Insert(*i, songs.skip(*i).take(*n).collect()))
-                }
-                PlaylistChange::AppendedAt(i) => Some(ListDiff::Append(songs.skip(*i).collect())),
-                PlaylistChange::MovedDown(i) => Some(ListDiff::MoveDown(*i)),
-                PlaylistChange::MovedUp(i) => Some(ListDiff::MoveUp(*i)),
-            },
+            AppEvent::BrowserEvent(BrowserEvent::SavedTracksAppended(i)) => {
+                let songs = self.songs()?;
+                Some(ListDiff::Append(
+                    songs.iter().skip(*i).map(|s| s.into()).collect(),
+                ))
+            }
             _ => None,
         }
     }
@@ -88,8 +102,9 @@ impl PlaylistModel for NowPlayingModel {
     }
 
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
-        let queue = self.queue();
-        let song = queue.song(id)?;
+        let songs = self.songs()?;
+        let song = songs.get(id)?;
+
         let group = SimpleActionGroup::new();
 
         for view_artist in song.make_artist_actions(self.dispatcher.box_clone(), None) {
@@ -97,14 +112,13 @@ impl PlaylistModel for NowPlayingModel {
         }
         group.add_action(&song.make_album_action(self.dispatcher.box_clone(), None));
         group.add_action(&song.make_link_action(None));
-        group.add_action(&song.make_dequeue_action(self.dispatcher.box_clone(), None));
 
         Some(group.upcast())
     }
 
     fn menu_for(&self, id: &str) -> Option<gio::MenuModel> {
-        let queue = self.queue();
-        let song = queue.song(id)?;
+        let songs = self.songs()?;
+        let song = songs.get(id)?;
 
         let menu = gio::Menu::new();
         menu.append(Some(&*labels::VIEW_ALBUM), Some("song.view_album"));
@@ -120,16 +134,15 @@ impl PlaylistModel for NowPlayingModel {
         }
 
         menu.append(Some(&*labels::COPY_LINK), Some("song.copy_link"));
-        menu.append(Some(&*labels::REMOVE_FROM_QUEUE), Some("song.dequeue"));
 
         Some(menu.upcast())
     }
 
     fn select_song(&self, id: &str) {
-        let queue = self.queue();
-        if let Some(song) = queue.song(id) {
+        let song = self.songs().and_then(|s| s.get(id).cloned());
+        if let Some(song) = song {
             self.dispatcher
-                .dispatch(SelectionAction::Select(vec![song.clone()]).into());
+                .dispatch(SelectionAction::Select(vec![song]).into());
         }
     }
 
@@ -153,7 +166,7 @@ impl PlaylistModel for NowPlayingModel {
     }
 }
 
-impl SelectionToolsModel for NowPlayingModel {
+impl SelectionToolsModel for SavedTracksModel {
     fn dispatcher(&self) -> Box<dyn ActionDispatcher> {
         self.dispatcher.box_clone()
     }
@@ -171,29 +184,16 @@ impl SelectionToolsModel for NowPlayingModel {
     }
 
     fn tools_visible(&self, _: &SelectionState) -> Vec<SelectionTool> {
-        vec![
-            SelectionTool::Simple(SimpleSelectionTool::SelectAll),
-            SelectionTool::Simple(SimpleSelectionTool::MoveDown),
-            SelectionTool::Simple(SimpleSelectionTool::MoveUp),
-            SelectionTool::Simple(SimpleSelectionTool::Remove),
-        ]
+        vec![SelectionTool::Simple(SimpleSelectionTool::SelectAll)]
     }
 
     fn handle_tool_activated(&self, selection: &SelectionState, tool: &SelectionTool) {
         match tool {
             SelectionTool::Simple(SimpleSelectionTool::SelectAll) => {
-                let queue = self.queue();
-                let songs = queue.songs().collect::<Vec<&SongDescription>>();
-                self.handle_select_all_tool_borrowed(selection, &songs);
-            }
-            SelectionTool::Simple(SimpleSelectionTool::Remove) => {
-                self.dispatcher().dispatch(AppAction::DequeueSelection);
-            }
-            SelectionTool::Simple(SimpleSelectionTool::MoveDown) => {
-                self.dispatcher().dispatch(AppAction::MoveDownSelection);
-            }
-            SelectionTool::Simple(SimpleSelectionTool::MoveUp) => {
-                self.dispatcher().dispatch(AppAction::MoveUpSelection);
+                if let Some(songs) = self.songs() {
+                    let vec = songs.iter().collect::<Vec<&SongDescription>>();
+                    self.handle_select_all_tool_borrowed(selection, &vec[..]);
+                }
             }
             _ => self.default_handle_tool_activated(selection, tool),
         };

@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 use super::PlaylistDetailsModel;
 
-use crate::app::components::{screen_add_css_provider, Component, EventListener, Playlist};
+use crate::app::components::{display_add_css_provider, Component, EventListener, Playlist};
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
 use crate::app::{AppEvent, BrowserEvent};
@@ -65,7 +65,7 @@ glib::wrapper! {
 
 impl PlaylistDetailsWidget {
     fn new() -> Self {
-        screen_add_css_provider(resource!("/components/playlist_details.css"));
+        display_add_css_provider(resource!("/components/playlist_details.css"));
         glib::Object::new(&[]).expect("Failed to create an instance of PlaylistDetailsWidget")
     }
 

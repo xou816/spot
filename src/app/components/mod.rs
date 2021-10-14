@@ -52,6 +52,9 @@ pub use user_details::*;
 mod now_playing;
 pub use now_playing::*;
 
+mod saved_tracks;
+pub use saved_tracks::*;
+
 mod user_menu;
 pub use user_menu::*;
 
@@ -112,7 +115,7 @@ impl dyn ActionDispatcher {
 
 thread_local!(static CSS_ADDED: RefCell<HashSet<&'static str>> = RefCell::new(HashSet::new()));
 
-pub fn screen_add_css_provider(resource: &'static str) {
+pub fn display_add_css_provider(resource: &'static str) {
     CSS_ADDED.with(|set| {
         if set.borrow().contains(resource) {
             return;

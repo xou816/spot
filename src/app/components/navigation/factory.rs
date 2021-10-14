@@ -41,6 +41,14 @@ impl ScreenFactory {
         SelectionTools::new(NowPlaying::new(Rc::clone(&model)), model)
     }
 
+    pub fn make_saved_tracks(&self) -> impl ListenerComponent {
+        let model = Rc::new(SavedTracksModel::new(
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        ));
+        SelectionTools::new(SavedTracks::new(Rc::clone(&model)), model)
+    }
+
     pub fn make_album_details(&self, id: String) -> impl ListenerComponent {
         let model = Rc::new(DetailsModel::new(
             id,

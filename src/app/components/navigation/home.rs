@@ -24,14 +24,15 @@ impl HomePane {
     pub fn new(stack_sidebar: gtk::StackSidebar, screen_factory: &ScreenFactory) -> Self {
         let library = screen_factory.make_library();
         let saved_playlists = screen_factory.make_saved_playlists();
+        let saved_tracks = screen_factory.make_saved_tracks();
         let now_playing = screen_factory.make_now_playing();
 
         let stack = gtk::Stack::new();
         stack.set_transition_type(gtk::StackTransitionType::Crossfade);
-        // translators: This is a sidebar entry to browse to saved albums.
         stack.add_titled(
             library.get_root_widget(),
             Some("library"),
+            // translators: This is a sidebar entry to browse to saved albums.
             &gettext("Library"),
         );
         stack.add_titled(
@@ -39,6 +40,12 @@ impl HomePane {
             Some("saved_playlists"),
             // translators: This is a sidebar entry to browse to saved playlists.
             &gettext("Playlists"),
+        );
+        stack.add_titled(
+            saved_tracks.get_root_widget(),
+            Some("saved_tracks"),
+            // translators: This is a sidebar entry to browse to saved tracks.
+            &gettext("Saved tracks"),
         );
         stack.add_titled(
             now_playing.get_root_widget(),
@@ -54,6 +61,7 @@ impl HomePane {
             components: vec![
                 Box::new(library),
                 Box::new(saved_playlists),
+                Box::new(saved_tracks),
                 Box::new(now_playing),
             ],
         }

@@ -311,13 +311,23 @@ impl TryFrom<PlaylistTrack> for TrackItem {
     type Error = ();
 
     fn try_from(PlaylistTrack { is_local, track }: PlaylistTrack) -> Result<Self, Self::Error> {
-        track.ok_or(())?.get().filter(|_| !is_local).ok_or(())
+        track
+            .ok_or(())?
+            .get()
+            .filter(|_| !is_local)
+            .map(|mut track| {
+                std::mem::take(&mut track.track.track_number);
+                track
+            })
+            .ok_or(())
     }
 }
 
 impl From<SavedTrack> for TrackItem {
     fn from(track: SavedTrack) -> Self {
-        track.track
+        let mut track = track.track;
+        std::mem::take(&mut track.track.track_number);
+        track
     }
 }
 
