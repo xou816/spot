@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-02 16:37-0400\n"
+"POT-Creation-Date: 2021-10-16 13:23+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -187,13 +187,18 @@ msgstr ""
 msgid "Password"
 msgstr ""
 
-#. This error is shown when authentication fails.
+#. This information is shown when Caps Lock is enabled.
 #: src/app/components/login/login.ui:95
+msgid "Caps Lock is enabled!"
+msgstr ""
+
+#. This error is shown when authentication fails.
+#: src/app/components/login/login.ui:126
 msgid "Authentication failed!"
 msgstr ""
 
 #. Log in button label
-#: src/app/components/login/login.ui:110
+#: src/app/components/login/login.ui:141
 msgid "Log in"
 msgstr ""
 
