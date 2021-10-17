@@ -50,6 +50,22 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.2.1" date="2021-10-17">
+      <description>
+        <p>
+          What's new:
+        </p>
+        <ul>
+          <li>browse saved tracks from Spot</li>
+          <li>a status page is now displayed when no albums or playlists have been added (thanks @Diegovsky!)</li>
+          <li>change the access point port from GSettings; this should help users running Spot behind a firewall (thanks @sei0o!)</li>
+          <li>display a warning in the login dialog if Caps Lock is enabled (thanks @przebor!)</li>
+          <li>added Purism form-factor metadata; this should improve the discoverability of Spot (thanks @1peter10!), and generally improved the appstream metadata to match the updated guidelines</li>
+          <li>various bugfixes (clear credentials on auth failure, load all tracks for long albums...)</li>
+        </ul>
+        <p>Thank you to the many contributors to this release, as well as to all those contributing translations on POEditor!</p>
+      </description>
+    </release>
     <release version="0.2.0" date="2021-08-24">
       <description>
         <p>
