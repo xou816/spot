@@ -191,20 +191,24 @@ msgstr "Zachowane piosenki"
 #: 
 msgctxt "A title that is shown when the user has not saved any albums."
 msgid "You have no saved albums."
-msgstr ""
+msgstr "Nie masz zapisanych albumów."
 
 #: 
 msgctxt "A description of what happens when the user has saved albums."
 msgid "Your library will be shown here."
-msgstr ""
+msgstr "Twoja biblioteka będzie tu pokazana."
 
 #: 
 msgctxt "A title that is shown when the user has not saved any playlists."
 msgid "You have no saved playlists."
-msgstr ""
+msgstr "Nie masz zapisanych playlist."
 
 #: 
 msgctxt "A description of what happens when the user has saved playlists."
 msgid "Your playlists will be shown here."
+msgstr "Twoje playlisty będą tu pokazane."
+
+#: 
+msgid "Caps Lock is enabled!"
 msgstr ""
 

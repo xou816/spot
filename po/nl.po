@@ -206,3 +206,7 @@ msgctxt "A description of what happens when the user has saved playlists."
 msgid "Your playlists will be shown here."
 msgstr "Je afspeellijsten worden hier getoond."
 
+#: 
+msgid "Caps Lock is enabled!"
+msgstr "Caps Lock is ingeschakeld!"
+
