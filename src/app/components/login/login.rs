@@ -31,7 +31,10 @@ mod imp {
         pub login_button: TemplateChild<gtk::Button>,
 
         #[template_child]
-        pub error_container: TemplateChild<gtk::Revealer>,
+        pub caps_lock_info_container: TemplateChild<gtk::Revealer>,
+
+        #[template_child]
+        pub auth_error_container: TemplateChild<gtk::Revealer>,
     }
 
     #[glib::object_subclass]
@@ -84,7 +87,8 @@ impl LoginWindow {
         let controller = gtk::EventControllerKey::new();
         controller.set_propagation_phase(gtk::PropagationPhase::Capture);
         controller.connect_key_pressed(
-            clone!(@weak self as _self => @default-return gtk::Inhibit(false), move |_, key, _, _| {
+            clone!(@weak self as _self => @default-return gtk::Inhibit(false), move |_, key, _, modifier| {
+                _self.show_caps_lock_info((modifier == gdk::ModifierType::LOCK_MASK) ^ (key == gdk::keys::constants::Caps_Lock));
                 if key == gdk::keys::constants::Return {
                     _self.submit(&on_submit_clone);
                     gtk::Inhibit(true)
@@ -102,9 +106,14 @@ impl LoginWindow {
             }));
     }
 
-    fn show_error(&self, shown: bool) {
+    fn show_auth_error(&self, shown: bool) {
         let widget = imp::LoginWindow::from_instance(self);
-        widget.error_container.set_reveal_child(shown);
+        widget.auth_error_container.set_reveal_child(shown);
+    }
+
+    fn show_caps_lock_info(&self, shown: bool) {
+        let widget = imp::LoginWindow::from_instance(self);
+        widget.caps_lock_info_container.set_reveal_child(shown);
     }
 
     fn submit<SubmitFn>(&self, on_submit: &SubmitFn)
@@ -113,7 +122,7 @@ impl LoginWindow {
     {
         let widget = imp::LoginWindow::from_instance(self);
 
-        self.show_error(false);
+        self.show_auth_error(false);
 
         let username_text = widget.username.text();
         let password_text = widget.password.text();
@@ -181,7 +190,7 @@ impl Login {
     }
 
     fn reveal_error(&self) {
-        self.login_window.show_error(true);
+        self.login_window.show_auth_error(true);
     }
 }
 
