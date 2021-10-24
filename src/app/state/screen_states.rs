@@ -191,8 +191,12 @@ impl UpdatableState for ArtistState {
                 self.albums
                     .replace_all(albums.into_iter().map(|a| a.into()));
                 self.next_page.reset_count(self.albums.len());
-
+                // Truncate top tracks to length of 5 (as in proprietary Spotify client)
                 top_tracks.truncate(5);
+                // Set track index according to its position on the list
+                for pos in 0u32..5u32 {
+                    top_tracks[pos as usize].track_number = pos + 1;
+                }
                 self.top_tracks = top_tracks;
 
                 vec![BrowserEvent::ArtistDetailsUpdated(id)]
