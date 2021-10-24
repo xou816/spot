@@ -14,6 +14,7 @@
         <property name="valign">center</property>
         <property name="has-frame">0</property>
         <property name="icon-name">media-playlist-shuffle-symbolic</property>
+        <property name="tooltip-text" translatable="yes">Shuffle</property>
       </object>
     </child>
     <child>
@@ -23,6 +24,7 @@
         <property name="valign">center</property>
         <property name="has-frame">0</property>
         <property name="icon-name">media-skip-backward-symbolic</property>
+        <property name="tooltip-text" translatable="yes">Previous</property>
       </object>
     </child>
     <child>
@@ -31,6 +33,7 @@
         <property name="halign">center</property>
         <property name="valign">center</property>
         <property name="icon-name">media-playback-start-symbolic</property>
+        <property name="tooltip-text" translatable="yes">Play/Pause</property>
         <style>
           <class name="circular"/>
           <class name="playback-button"/>
@@ -44,6 +47,7 @@
         <property name="valign">center</property>
         <property name="has-frame">0</property>
         <property name="icon-name">media-skip-forward-symbolic</property>
+        <property name="tooltip-text" translatable="yes">Next</property>
       </object>
     </child>
     <child>
@@ -53,6 +57,7 @@
         <property name="valign">center</property>
         <property name="has-frame">0</property>
         <property name="icon-name">media-playlist-consecutive-symbolic</property>
+        <property name="tooltip-text" translatable="yes">Repeat</property>
       </object>
     </child>
   </template>

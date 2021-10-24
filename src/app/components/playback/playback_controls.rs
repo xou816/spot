@@ -59,9 +59,16 @@ impl PlaybackControlsWidget {
             "media-playback-start-symbolic"
         };
 
-        imp::PlaybackControlsWidget::from_instance(self)
-            .play_pause
-            .set_icon_name(playback_icon);
+        let tooltip_text = if is_playing {
+            Some("Pause")
+        } else {
+            Some("Play")
+        };
+
+        let playback_control = imp::PlaybackControlsWidget::from_instance(self);
+
+        playback_control.play_pause.set_icon_name(playback_icon);
+        playback_control.play_pause.set_tooltip_text(tooltip_text);
     }
 
     pub fn set_shuffled(&self, shuffled: bool) {
