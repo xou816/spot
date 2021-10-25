@@ -10,10 +10,6 @@
     <value value="2" nick="320"/>
   </enum>
   <schema id="dev.alextren.Spot" path="/dev/alextren/Spot/">
-    <key name='prefers-dark-theme' type='b'>
-      <default>true</default>
-      <summary>Prefer dark theme</summary>
-    </key>
     <key name="window-width" type="i">
       <default>1080</default>
       <summary>The width of the window</summary>

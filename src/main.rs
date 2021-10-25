@@ -80,8 +80,8 @@ fn startup(settings: &settings::SpotSettings) {
     gio::resources_register(&res);
 
     gtk::Settings::default()
-        .unwrap()
-        .set_gtk_application_prefer_dark_theme(settings.prefers_dark_theme);
+        .unwrap();
+
 
     let provider = gtk::CssProvider::new();
     provider.load_from_resource("/dev/alextren/Spot/app.css");

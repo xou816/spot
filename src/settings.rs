@@ -82,7 +82,6 @@ impl SpotifyPlayerSettings {
 }
 
 pub struct SpotSettings {
-    pub prefers_dark_theme: bool,
     pub player_settings: SpotifyPlayerSettings,
     pub window: WindowGeometry,
 }
@@ -90,9 +89,7 @@ pub struct SpotSettings {
 impl SpotSettings {
     pub fn new_from_gsettings() -> Option<Self> {
         let settings = gio::Settings::new(SETTINGS);
-        let prefers_dark_theme = settings.boolean("prefers-dark-theme");
         Some(Self {
-            prefers_dark_theme,
             player_settings: SpotifyPlayerSettings::new_from_gsettings()?,
             window: WindowGeometry::new_from_gsettings(),
         })
@@ -102,7 +99,6 @@ impl SpotSettings {
 impl Default for SpotSettings {
     fn default() -> Self {
         Self {
-            prefers_dark_theme: true,
             player_settings: Default::default(),
             window: Default::default(),
         }
