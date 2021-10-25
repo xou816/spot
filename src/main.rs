@@ -72,6 +72,8 @@ fn main() {
 fn startup(settings: &settings::SpotSettings) {
     gtk::init().unwrap_or_else(|_| panic!("Failed to initialize GTK"));
     libadwaita::init();
+    let manager = libadwaita::StyleManager::default().unwrap();
+    manager.set_color_scheme(libadwaita::ColorScheme::PreferDark);
 
     let res = gio::Resource::load(config::PKGDATADIR.to_owned() + "/spot.gresource")
         .expect("Could not load resources");
