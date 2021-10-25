@@ -5,11 +5,11 @@ edition = "2018"
 license = "MIT"
 
 [dependencies.gtk]
-version = "^0.2.0"
+version = "^0.3.0"
 package = "gtk4"
 
 [dependencies.gdk]
-version = "^0.2.0"
+version = "^0.3.0"
 package = "gdk4"
 
 [dependencies.gio]
@@ -58,7 +58,7 @@ features = ["gettext-system"]
 [dependencies]
 secret-service = "^2.0.1"
 gdk-pixbuf = "^0.14.0"
-libadwaita = "0.1.0-alpha-2"
+libadwaita = "^0.1.0-alpha-3"
 ref_filter_map = "^1.0.1"
 regex = "^1.4.6"
 async-std = "^1.10.0"
