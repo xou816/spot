@@ -1,3 +1,4 @@
+use gettextrs::gettext;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{glib, CompositeTemplate};
@@ -59,11 +60,12 @@ impl PlaybackControlsWidget {
             "media-playback-start-symbolic"
         };
 
-        let tooltip_text = if is_playing {
-            Some("Pause")
+        let translated_tooltip = if is_playing {
+            gettext("Pause")
         } else {
-            Some("Play")
+            gettext("Play")
         };
+        let tooltip_text = Some(translated_tooltip.as_str());
 
         let playback_control = imp::PlaybackControlsWidget::from_instance(self);
 
