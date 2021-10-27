@@ -78,13 +78,11 @@ fn startup(settings: &settings::SpotSettings) {
         .expect("Could not load resources");
     gio::resources_register(&res);
 
-    gtk::Settings::default()
-        .unwrap();
+    gtk::Settings::default().unwrap();
 
     if settings.prefers_dark_theme {
         manager.set_color_scheme(libadwaita::ColorScheme::PreferDark);
-    }
-    else {
+    } else {
         manager.set_color_scheme(libadwaita::ColorScheme::PreferLight);
     }
 
