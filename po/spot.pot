@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-27 13:15-0400\n"
+"POT-Creation-Date: 2021-10-27 13:19-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -99,7 +99,9 @@ msgid "Playlists"
 msgstr ""
 
 #. translators: This is a sidebar entry to browse to saved tracks.
+#. This is the visible name for the list of liked songs. It appears in the sidebar as well.
 #: src/app/components/navigation/home.rs:48
+#: src/app/components/saved_tracks/saved_tracks.ui:14
 msgid "Saved tracks"
 msgstr ""
 
@@ -160,6 +162,22 @@ msgstr ""
 msgid "Connection restored"
 msgstr ""
 
+#: src/app/components/playback/playback_controls.ui:17
+msgid "Shuffle"
+msgstr ""
+
+#: src/app/components/playback/playback_controls.ui:27
+msgid "Previous"
+msgstr ""
+
+#: src/app/components/playback/playback_controls.ui:50
+msgid "Next"
+msgstr ""
+
+#: src/app/components/playback/playback_controls.ui:60
+msgid "Repeat"
+msgstr ""
+
 #. Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify.
 #: src/app/components/artist_details/artist_details.ui:40
 msgid "Top tracks"
@@ -168,16 +186,6 @@ msgstr ""
 #. Title of the sections that contains all releases from an artist (both singles and albums).
 #: src/app/components/artist_details/artist_details.ui:71
 msgid "Releases"
-msgstr ""
-
-#. A title that is shown when the user has not saved any albums.
-#: src/app/components/library/library.ui:26
-msgid "You have no saved albums."
-msgstr ""
-
-#. A description of what happens when the user has saved albums.
-#: src/app/components/library/library.ui:27
-msgid "Your library will be shown here."
 msgstr ""
 
 #. Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).
@@ -210,22 +218,6 @@ msgstr ""
 msgid "Log in"
 msgstr ""
 
-#: src/app/components/playback/playback_controls.ui:17
-msgid "Shuffle"
-msgstr ""
-
-#: src/app/components/playback/playback_controls.ui:27
-msgid "Previous"
-msgstr ""
-
-#: src/app/components/playback/playback_controls.ui:50
-msgid "Next"
-msgstr ""
-
-#: src/app/components/playback/playback_controls.ui:60
-msgid "Repeat"
-msgstr ""
-
 #. A title that is shown when the user has not saved any playlists.
 #: src/app/components/saved_playlists/saved_playlists.ui:26
 msgid "You have no saved playlists."
@@ -234,6 +226,16 @@ msgstr ""
 #. A description of what happens when the user has saved playlists.
 #: src/app/components/saved_playlists/saved_playlists.ui:27
 msgid "Your playlists will be shown here."
+msgstr ""
+
+#. A title that is shown when the user has not saved any albums.
+#: src/app/components/library/library.ui:26
+msgid "You have no saved albums."
+msgstr ""
+
+#. A description of what happens when the user has saved albums.
+#: src/app/components/library/library.ui:27
+msgid "Your library will be shown here."
 msgstr ""
 
 #. This is the title of a section of the search results

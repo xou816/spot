@@ -14,20 +14,21 @@ src/app/state/login_state.rs
 src/main.rs
 
 # find src -name "*.ui*" -print
-src/app/components/album/album.ui
-src/app/components/artist/artist.ui
-src/app/components/artist_details/artist_details.ui
-src/app/components/details/details.ui
-src/app/components/details/release_details.ui
-src/app/components/library/library.ui
-src/app/components/login/login.ui
-src/app/components/now_playing/now_playing.ui
-src/app/components/playback/playback_controls.ui
-src/app/components/playback/playback_info.ui
-src/app/components/playback/playback_widget.ui
-src/app/components/playlist_details/playlist_details.ui
-src/app/components/playlist/song.ui
-src/app/components/saved_playlists/saved_playlists.ui
-src/app/components/search/search.ui
-src/app/components/user_details/user_details.ui
 src/window.ui.in
+src/app/components/details/release_details.ui
+src/app/components/details/details.ui
+src/app/components/artist/artist.ui
+src/app/components/playback/playback_controls.ui
+src/app/components/playback/playback_widget.ui
+src/app/components/playback/playback_info.ui
+src/app/components/user_details/user_details.ui
+src/app/components/playlist_details/playlist_details.ui
+src/app/components/album/album.ui
+src/app/components/artist_details/artist_details.ui
+src/app/components/login/login.ui
+src/app/components/saved_playlists/saved_playlists.ui
+src/app/components/library/library.ui
+src/app/components/now_playing/now_playing.ui
+src/app/components/playlist/song.ui
+src/app/components/saved_tracks/saved_tracks.ui
+src/app/components/search/search.ui
