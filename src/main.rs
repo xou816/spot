@@ -73,15 +73,20 @@ fn startup(settings: &settings::SpotSettings) {
     gtk::init().unwrap_or_else(|_| panic!("Failed to initialize GTK"));
     libadwaita::init();
     let manager = libadwaita::StyleManager::default().unwrap();
-    manager.set_color_scheme(libadwaita::ColorScheme::PreferDark);
 
     let res = gio::Resource::load(config::PKGDATADIR.to_owned() + "/spot.gresource")
         .expect("Could not load resources");
     gio::resources_register(&res);
 
     gtk::Settings::default()
-        .unwrap()
-        .set_gtk_application_prefer_dark_theme(settings.prefers_dark_theme);
+        .unwrap();
+
+    if settings.prefers_dark_theme {
+        manager.set_color_scheme(libadwaita::ColorScheme::PreferDark);
+    }
+    else {
+        manager.set_color_scheme(libadwaita::ColorScheme::PreferLight);
+    }
 
     let provider = gtk::CssProvider::new();
     provider.load_from_resource("/dev/alextren/Spot/app.css");
