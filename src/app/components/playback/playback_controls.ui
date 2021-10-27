@@ -33,7 +33,7 @@
         <property name="halign">center</property>
         <property name="valign">center</property>
         <property name="icon-name">media-playback-start-symbolic</property>
-        <property name="tooltip-text" translatable="yes">Play/Pause</property>
+        <property name="tooltip-text" translatable="no">Play/Pause</property>
         <style>
           <class name="circular"/>
           <class name="playback-button"/>

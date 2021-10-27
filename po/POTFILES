@@ -1,9 +1,11 @@
 # grep gettext src/**/*.rs | cut -d: -f1 | uniq
+src/app/batch_loader.rs
 src/app/components/details/release_details.rs
 src/app/components/labels.rs
 src/app/components/login/login_model.rs
 src/app/components/mod.rs
 src/app/components/navigation/home.rs
+src/app/components/playback/playback_controls.rs
 src/app/components/playback/playback_info.rs
 src/app/components/search/search.rs
 src/app/components/selection/selection_heading.rs

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-16 13:23+0200\n"
+"POT-Creation-Date: 2021-10-27 13:15-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,11 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#. translators: This notification is the default message for unhandled errors. Logs refer to console output.
+#: src/app/batch_loader.rs:91 src/app/components/mod.rs:108
+msgid "An error occured. Check logs for details!"
+msgstr ""
 
 #. translators: This is part of a larger label that reads "<Album> by <Artist>"
 #: src/app/components/details/release_details.rs:101
@@ -83,11 +88,6 @@ msgstr ""
 msgid "Could not save password. Make sure the session keyring is unlocked."
 msgstr ""
 
-#. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/components/mod.rs:108
-msgid "An error occured. Check logs for details!"
-msgstr ""
-
 #. translators: This is a sidebar entry to browse to saved albums.
 #: src/app/components/navigation/home.rs:36
 msgid "Library"
@@ -107,6 +107,14 @@ msgstr ""
 #: src/app/components/navigation/home.rs:53
 #: src/app/components/now_playing/now_playing.ui:14
 msgid "Now playing"
+msgstr ""
+
+#: src/app/components/playback/playback_controls.rs:64
+msgid "Pause"
+msgstr ""
+
+#: src/app/components/playback/playback_controls.rs:66
+msgid "Play"
 msgstr ""
 
 #. translators: Short text displayed instead of a song title when nothing plays
@@ -200,6 +208,22 @@ msgstr ""
 #. Log in button label
 #: src/app/components/login/login.ui:141
 msgid "Log in"
+msgstr ""
+
+#: src/app/components/playback/playback_controls.ui:17
+msgid "Shuffle"
+msgstr ""
+
+#: src/app/components/playback/playback_controls.ui:27
+msgid "Previous"
+msgstr ""
+
+#: src/app/components/playback/playback_controls.ui:50
+msgid "Next"
+msgstr ""
+
+#: src/app/components/playback/playback_controls.ui:60
+msgid "Repeat"
 msgstr ""
 
 #. A title that is shown when the user has not saved any playlists.
