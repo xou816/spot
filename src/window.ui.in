@@ -76,7 +76,7 @@
             <child type="end">
               <object class="GtkToggleButton" id="selection_toggle">
                 <property name="receives-default">1</property>
-                <property name="icon-name">object-select-symbolic</property>
+                <property name="icon-name">selection-mode-symbolic</property>
               </object>
             </child>
           </object>
