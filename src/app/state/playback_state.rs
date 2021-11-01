@@ -176,8 +176,9 @@ impl PlaybackState {
         let len = self.songs.len();
         self.position.and_then(|p| match self.repeat {
             RepeatMode::Song => Some(p),
-            RepeatMode::Playlist => Some((p + 1) % len),
+            RepeatMode::Playlist if len != 0 => Some((p + 1) % len),
             RepeatMode::None => Some(p + 1).filter(|&i| i < len),
+            _ => None,
         })
     }
 
