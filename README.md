@@ -121,7 +121,7 @@ ninja spot-update-po -C target
 
 ### Pulling updates strings from POEditor
 
-We are now using POEditior and the wonderful (`poeditor-sync`)[https://github.com/mick88/poeditor-sync] tool.
+We are now using POEditior and the wonderful [`poeditor-sync`](https://github.com/mick88/poeditor-sync) tool.
 
 ```
 poeditor pull
