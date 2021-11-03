@@ -23,7 +23,7 @@ mod imp {
         pub song_index: TemplateChild<gtk::Label>,
 
         #[template_child]
-        pub song_icon: TemplateChild<gtk::Image>,
+        pub song_icon: TemplateChild<gtk::Spinner>,
 
         #[template_child]
         pub song_checkbox: TemplateChild<gtk::CheckButton>,
