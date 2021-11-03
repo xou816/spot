@@ -180,16 +180,16 @@ impl SpotifyPlayer {
             bitrate: self.settings.bitrate,
             ..Default::default()
         };
-        println!("bitrate: {:?}", &player_config.bitrate);
+        info!("bitrate: {:?}", &player_config.bitrate);
 
         Player::new(player_config, session, None, move || match backend {
             AudioBackend::PulseAudio => {
-                println!("using pulseaudio");
+                info!("using pulseaudio");
                 let backend = audio_backend::find(Some("pulseaudio".to_string())).unwrap();
                 backend(None, AudioFormat::default())
             }
             AudioBackend::Alsa(device) => {
-                println!("using alsa ({})", &device);
+                info!("using alsa ({})", &device);
                 let backend = audio_backend::find(Some("alsa".to_string())).unwrap();
                 backend(Some(device), AudioFormat::default())
             }

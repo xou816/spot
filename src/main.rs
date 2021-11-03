@@ -2,6 +2,8 @@
 extern crate glib;
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
+extern crate log;
 
 use futures::channel::mpsc::UnboundedSender;
 use gettextrs::*;
@@ -22,6 +24,7 @@ use crate::app::dispatch::{spawn_task_handler, DispatchLoop};
 use crate::app::{state::PlaybackAction, App, AppAction, BrowserAction};
 
 fn main() {
+    env_logger::init();
     textdomain("spot")
         .and_then(|_| bindtextdomain("spot", config::LOCALEDIR))
         .and_then(|_| bind_textdomain_codeset("spot", "UTF-8"))

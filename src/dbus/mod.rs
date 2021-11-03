@@ -197,7 +197,7 @@ pub fn start_dbus_server(
         let mut object_server = register_mpris(&conn_clone, mpris_clone, player_clone).unwrap();
         loop {
             if let Err(err) = object_server.try_handle_next() {
-                eprintln!("{}", err);
+                error!("{}", err);
             }
         }
     });

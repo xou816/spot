@@ -102,7 +102,7 @@ impl dyn ActionDispatcher {
                     retried
                 }
                 Err(err) => {
-                    println!("Error: {:?}", err);
+                    error!("Error: {:?}", err);
                     vec![AppAction::ShowNotification(gettext(
                         // translators: This notification is the default message for unhandled errors. Logs refer to console output.
                         "An error occured. Check logs for details!",

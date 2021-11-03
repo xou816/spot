@@ -119,6 +119,14 @@ ninja spot-pot -C target
 ninja spot-update-po -C target
 ```
 
+### Pulling updates strings from POEditor
+
+We are now using POEditior and the wonderful (`poeditor-sync`)[https://github.com/mick88/poeditor-sync] tool.
+
+```
+poeditor pull
+```
+
 ### Regenerating sources for flatpak
 
 Using [flatpak-cargo-generator.py](https://github.com/flatpak/flatpak-builder-tools/tree/master/cargo):
@@ -128,6 +136,8 @@ ninja cargo-sources.json -C target
 ```
 
 ### Debugging
+
+Set the `RUST_LOG` env variable to the appropriate level.
 
 Debug builds (flatpak) are available from the master branch on Github (see the `spot-snaphots` action).
 
