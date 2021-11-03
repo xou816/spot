@@ -61,7 +61,7 @@ fn main() {
             sender.unbounded_send(AppAction::Start).unwrap();
         }
     });
-
+    gtk_app.set_resource_base_path(Some("/dev/alextren/Spot"));
     context.invoke_local(move || {
         gtk_app.run();
     });

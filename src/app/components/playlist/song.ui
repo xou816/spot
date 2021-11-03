@@ -25,8 +25,9 @@
           </object>
         </child>
         <child type="overlay">
-          <object class="GtkImage" id="song_icon">
-            <property name="icon-name">media-playback-start-symbolic</property>
+          <object class="GtkSpinner" id="song_icon">
+						<property name="halign">center</property>
+            <property name="valign">center</property>
             <style>
               <class name="song__icon"/>
             </style>
