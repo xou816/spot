@@ -1,6 +1,7 @@
 use crate::app::components::display_add_css_provider;
 use crate::app::models::SongModel;
 
+use crate::app::Worker;
 use gio::MenuModel;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -70,9 +71,9 @@ impl SongWidget {
         glib::Object::new(&[]).expect("Failed to create an instance of SongWidget")
     }
 
-    pub fn for_model(model: SongModel) -> Self {
+    pub fn for_model(model: SongModel, worker: Worker) -> Self {
         let _self = Self::new();
-        _self.bind(&model);
+        _self.bind(&model, worker);
         _self
     }
 
@@ -114,7 +115,7 @@ impl SongWidget {
         }
     }
 
-    pub fn bind(&self, model: &SongModel) {
+    pub fn bind(&self, model: &SongModel, worker: Worker) {
         let widget = imp::SongWidget::from_instance(self);
 
         model.bind_index(&*widget.song_index, "label");

@@ -185,6 +185,7 @@ impl Details {
         let playlist = Box::new(Playlist::new(
             widget.album_tracks_widget().clone(),
             model.clone(),
+            worker.clone(),
         ));
 
         let modal = ReleaseDetailsWindow::new();

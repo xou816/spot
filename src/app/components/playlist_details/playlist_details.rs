@@ -174,6 +174,7 @@ impl PlaylistDetails {
         let playlist = Box::new(Playlist::new(
             widget.playlist_tracks_widget().clone(),
             model.clone(),
+            worker.clone(),
         ));
 
         widget.connect_header();
