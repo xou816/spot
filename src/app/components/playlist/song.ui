@@ -25,6 +25,14 @@
           </object>
         </child>
         <child type="overlay">
+          <object class="GtkImage" id="song_cover">
+            <property name="pixel-size">30</property>
+            <style>
+              <class name="song__cover"/>
+            </style>
+          </object>
+        </child>
+        <child type="overlay">
           <object class="GtkImage" id="song_icon">
             <property name="icon-name">media-playback-start-symbolic</property>
             <style>
