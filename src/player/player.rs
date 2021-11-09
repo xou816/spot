@@ -4,7 +4,7 @@ use futures::stream::StreamExt;
 use librespot::core::authentication::Credentials;
 use librespot::core::config::SessionConfig;
 use librespot::core::keymaster;
-use librespot::core::session::Session;
+use librespot::core::session::{Session, SessionError};
 
 use librespot::protocol::authentication::AuthenticationType;
 
@@ -223,6 +223,8 @@ playlist-modify-public,\
 playlist-modify-private,\
 streaming";
 
+const KNOWN_AP_PORTS: [Option<u16>; 4] = [None, Some(80), Some(443), Some(4070)];
+
 async fn get_access_token_and_expiry_time(
     session: &Session,
 ) -> Result<(String, SystemTime), SpotifyError> {
@@ -240,15 +242,38 @@ async fn create_session(
     credentials: Credentials,
     ap_port: Option<u16>,
 ) -> Result<Session, SpotifyError> {
-    let session_config = SessionConfig {
-        ap_port,
-        ..Default::default()
-    };
-    let result = Session::connect(session_config, credentials, None).await;
-    result.map_err(|e| {
-        dbg!(e);
-        SpotifyError::LoginFailed
-    })
+    match ap_port {
+        Some(ap_port) => {
+            let session_config = SessionConfig {
+                ap_port: Some(ap_port),
+                ..Default::default()
+            };
+            let result = Session::connect(session_config, credentials, None).await;
+            result.map_err(|e| {
+                dbg!(e);
+                SpotifyError::LoginFailed
+            })
+        }
+        None => {
+            for port in KNOWN_AP_PORTS {
+                let session_config = SessionConfig {
+                    ap_port: port,
+                    ..Default::default()
+                };
+                let result = Session::connect(session_config, credentials.clone(), None).await;
+
+                match result {
+                    Ok(session) => return Ok(session),
+                    Err(SessionError::IoError(_)) => {}
+                    Err(SessionError::AuthenticationError(_)) => {
+                        return Err(SpotifyError::LoginFailed)
+                    }
+                }
+            }
+
+            Err(SpotifyError::LoginFailed)
+        }
+    }
 }
 
 async fn player_setup_delegate(
