@@ -29,10 +29,10 @@
         <property name="label">Album</property>
         <property name="justify">center</property>
         <property name="wrap">1</property>
-        <property name="wrap-mode">word-char</property>
+        <property name="wrap-mode">word</property>
         <property name="ellipsize">end</property>
         <property name="max-width-chars">1</property>
-        <property name="lines">2</property>
+        <property name="margin-top">6</property>
         <style>
           <class name="album__title"/>
         </style>
@@ -43,7 +43,8 @@
         <property name="label">Artist</property>
         <property name="justify">center</property>
         <property name="wrap">1</property>
-        <property name="wrap-mode">word-char</property>
+        <property name="wrap-mode">word</property>
+        <property name="ellipsize">end</property>
         <property name="max-width-chars">1</property>
         <style>
           <class name="album__artist"/>
