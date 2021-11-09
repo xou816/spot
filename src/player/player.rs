@@ -223,7 +223,7 @@ playlist-modify-public,\
 playlist-modify-private,\
 streaming";
 
-const KNOWN_AP_PORTS: &[u16] = &[80, 443, 4070];
+const KNOWN_AP_PORTS: [Option<u16>; 4] = [None, Some(80), Some(443), Some(4070)];
 
 async fn get_access_token_and_expiry_time(
     session: &Session,
@@ -253,13 +253,9 @@ async fn create_session(
                 dbg!(e);
                 SpotifyError::LoginFailed
             })
-        },
+        }
         None => {
-            let mut ret = None;
-
-            let mut ports: Vec<Option<u16>> = KNOWN_AP_PORTS.iter().map(|port| Some(port.to_owned())).collect();
-            ports.push(None);
-            for port in ports {
+            for port in KNOWN_AP_PORTS {
                 let session_config = SessionConfig {
                     ap_port: port,
                     ..Default::default()
@@ -267,25 +263,17 @@ async fn create_session(
                 let result = Session::connect(session_config, credentials.clone(), None).await;
 
                 match result {
-                    Ok(session) => {
-                        ret = Some(Ok(session));
-                        break
-                    },
-                    Err(SessionError::IoError(_)) => continue,
+                    Ok(session) => return Ok(session),
+                    Err(SessionError::IoError(_)) => {}
                     Err(SessionError::AuthenticationError(_)) => {
-                        ret = Some(Err(SpotifyError::LoginFailed));
-                        break
+                        return Err(SpotifyError::LoginFailed)
                     }
                 }
             }
 
-            ret.unwrap_or(Err(SpotifyError::LoginFailed))
-        },
+            Err(SpotifyError::LoginFailed)
+        }
     }
-
-
-
-
 }
 
 async fn player_setup_delegate(
