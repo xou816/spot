@@ -1,8 +1,3 @@
-label.details__album-label {
-  font-size: 20px;
-  font-weight: bold;
-}
-
 .details__more label {
   font-size: 16px;
   color: @theme_text_color;
@@ -10,11 +5,6 @@ label.details__album-label {
 
 .details .details__album-art {
   border-radius: 8px;
-}
-
-.details .details__like {
-  font-size: 18px;
-  font-weight: bold;
 }
 
 .details__more {
@@ -28,15 +18,6 @@ label.details__album-label {
 
 .details--loaded {
   opacity: 1;
-}
-
-listview.details__songs {
-  padding: 4px;
-  border-radius: 8px;
-}
-
-listview.details__songs row {
-  border-radius: 4px;
 }
 
 .info_btn {

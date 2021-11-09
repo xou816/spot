@@ -16,3 +16,7 @@ headerbar.selection-mode {
 button.tool, menubutton.tool {
   -gtk-icon-size: 25px;
 }
+
+.song__list {
+  background-color: @card_bg_color;
+}

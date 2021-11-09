@@ -2,11 +2,10 @@
 <interface>
   <requires lib="gtk" version="4.0"/>
   <template class="SongWidget" parent="GtkGrid">
-    <property name="height-request">30</property>
-    <property name="margin-start">2</property>
-    <property name="margin-end">2</property>
-    <property name="margin-top">2</property>
-    <property name="margin-bottom">2</property>
+    <property name="margin-start">6</property>
+    <property name="margin-end">6</property>
+    <property name="margin-top">6</property>
+    <property name="margin-bottom">6</property>
     <property name="column-spacing">6</property>
     <property name="row-spacing">0</property>
     <child>
@@ -103,13 +102,14 @@
         <property name="has-frame">0</property>
         <property name="hexpand">0</property>
         <property name="halign">end</property>
+				<property name="valign">center</property>
         <layout>
           <property name="row-span">2</property>
           <property name="column">4</property>
           <property name="row">0</property>
         </layout>
         <style>
-          <class name="song__menu"/>
+          <class name="circular"/>
           <class name="flat"/>
         </style>
       </object>

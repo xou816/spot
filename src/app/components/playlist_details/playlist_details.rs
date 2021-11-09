@@ -146,7 +146,7 @@ impl PlaylistDetailsWidget {
             worker.send_local_task(async move {
                 if let Some(_self) = weak_self.upgrade() {
                     let pixbuf = ImageLoader::new()
-                        .load_remote(&art_url[..], "jpg", 100, 100)
+                        .load_remote(&art_url[..], "jpg", 200, 200)
                         .await;
                     _self.widget().art.set_from_pixbuf(pixbuf.as_ref());
                     _self.set_loaded();

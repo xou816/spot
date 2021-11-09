@@ -148,7 +148,7 @@ impl AlbumDetailsWidget {
     fn set_liked(&self, is_liked: bool) {
         self.widget()
             .like_button
-            .set_label(if is_liked { "♥" } else { "♡" });
+            .set_icon_name(if is_liked { "starred-symbolic" } else { "non-starred-symbolic" });
     }
 
     fn set_loaded(&self) {

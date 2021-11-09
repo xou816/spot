@@ -4,34 +4,30 @@
   <template class="NowPlayingWidget" parent="GtkBox">
     <property name="orientation">vertical</property>
     <child>
-      <object class="GtkBox">
-        <property name="margin-start">8</property>
-        <property name="margin-end">8</property>
-        <property name="margin-top">8</property>
-        <property name="margin-bottom">8</property>
-        <child>
-          <object class="GtkLabel">
-            <property name="label" translatable="yes" comments="This is the visible name for the play queue. It appears in the sidebar as well.">Now playing</property>
-            <property name="ellipsize">end</property>
-            <property name="hexpand">1</property>
-            <property name="halign">start</property>
+    <object class="AdwClamp">
+    <property name="vexpand">1</property>
+    <property name="hexpand">1</property>
+    <property name="maximum-size">900</property>
+    <property name="margin-start">12</property>
+    <property name="margin-end">12</property>
+    <property name="margin-top">12</property>
+    <property name="margin-bottom">12</property>
+    <child>
+        <object class="GtkScrolledWindow" id="scrolled_window">
+          <property name="vexpand">1</property>
+          <child>
+            <object class="GtkListView" id="song_list">
+            <property name="valign">start</property>
+            <property name="show-separators">true</property>
             <style>
-              <class name="large-title"/>
+              <class name="card"/>
+              <class name="song__list"/>
             </style>
-          </object>
-        </child>
-      </object>
+            </object>
+          </child>
+        </object>
     </child>
-    <child>
-      <object class="GtkSeparator"/>
-    </child>
-    <child>
-      <object class="GtkScrolledWindow" id="scrolled_window">
-        <property name="vexpand">1</property>
-        <child>
-          <object class="GtkListView" id="song_list"/>
-        </child>
-      </object>
+    </object>
     </child>
     <style>
       <class name="now_playing"/>
