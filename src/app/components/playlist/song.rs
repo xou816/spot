@@ -77,7 +77,7 @@ impl SongWidget {
 
     pub fn for_model(model: SongModel, worker: Worker) -> Self {
         let _self = Self::new();
-        _self.bind(&model, worker);
+        _self.bind(&model, worker, true);
         _self
     }
 
@@ -138,14 +138,17 @@ impl SongWidget {
         }
     }
 
-    pub fn bind(&self, model: &SongModel, worker: Worker) {
+    pub fn bind(&self, model: &SongModel, worker: Worker, show_cover: bool) {
         let widget = imp::SongWidget::from_instance(self);
 
-        model.bind_index(&*widget.song_index, "label");
         model.bind_title(&*widget.song_title, "label");
         model.bind_artist(&*widget.song_artist, "label");
         model.bind_duration(&*widget.song_length, "label");
-        self.bind_art(model, worker);
+        if show_cover {
+            self.bind_art(model, worker);
+        } else {
+            model.bind_index(&*widget.song_index, "label");
+        }
 
         self.set_playing(model.get_playing());
         model.connect_playing_local(clone!(@weak self as _self => move |song| {

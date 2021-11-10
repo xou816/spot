@@ -186,6 +186,7 @@ impl Details {
             widget.album_tracks_widget().clone(),
             model.clone(),
             worker.clone(),
+            false,
         ));
 
         let modal = ReleaseDetailsWindow::new();

@@ -175,6 +175,7 @@ impl PlaylistDetails {
             widget.playlist_tracks_widget().clone(),
             model.clone(),
             worker.clone(),
+            true,
         ));
 
         widget.connect_header();

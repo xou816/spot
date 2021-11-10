@@ -86,7 +86,12 @@ impl NowPlaying {
             model.load_more();
         }));
 
-        let playlist = Playlist::new(widget.song_list_widget().clone(), model.clone(), worker);
+        let playlist = Playlist::new(
+            widget.song_list_widget().clone(),
+            model.clone(),
+            worker,
+            true,
+        );
 
         Self {
             widget,
