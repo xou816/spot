@@ -50,6 +50,11 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.2.2" date="2021-11-10">
+      <description>
+        <p>Quick fix for a startup crash, sorry for the inconvenience. Thanks @xRMG412! </p>
+      </description>
+    </release>
     <release version="0.2.1" date="2021-10-17">
       <description>
         <p>
