@@ -72,6 +72,7 @@ impl App {
         let mut components: Vec<Box<dyn EventListener>> = vec![
             App::make_window(&self.settings, builder, Rc::clone(model)),
             App::make_selection_editor(builder, Rc::clone(model), dispatcher.box_clone()),
+            App::make_selection_toolbar(builder, Rc::clone(model), dispatcher.box_clone()),
             App::make_playback(
                 builder,
                 Rc::clone(model),
@@ -170,6 +171,17 @@ impl App {
         let parent: gtk::Window = builder.object("window").unwrap();
         let model = LoginModel::new(dispatcher);
         Box::new(Login::new(parent, model))
+    }
+
+    fn make_selection_toolbar(
+        builder: &gtk::Builder,
+        app_model: Rc<AppModel>,
+        dispatcher: Box<dyn ActionDispatcher>,
+    ) -> Box<impl EventListener> {
+        Box::new(SelectionToolbar::new(
+            SelectionToolbarModel::new(app_model, dispatcher),
+            builder.object("selection_toolbar").unwrap(),
+        ))
     }
 
     fn make_playback(

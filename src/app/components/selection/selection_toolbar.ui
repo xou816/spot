@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <template class="SelectionToolbarWidget" parent="GtkBox">
+    <property name="hexpand">1</property>
+    <property name="visible">0</property>
+    <child>
+      <object class="GtkActionBar" id="action_bar">
+        <property name="hexpand">1</property>
+        <property name="revealed">1</property>
+        <child>
+          <object class="GtkBox">
+            <property name="valign">center</property>
+            <style>
+              <class name="linked"/>
+            </style>
+            <child>
+              <object class="GtkButton" id="move_up">
+                <property name="icon-name">go-up-symbolic</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="move_down">
+                <property name="icon-name">go-down-symbolic</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child type="end">
+          <object class="GtkButton" id="queue">
+            <property name="valign">center</property>
+            <property name="has-frame">0</property>
+            <child>
+              <object class="GtkBox">
+                <property name="spacing">8</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="icon-name">music-queue-symbolic</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">Add to queue</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child type="end">
+          <object class="GtkMenuButton" id="add">
+            <property name="valign">center</property>
+            <property name="has-frame">0</property>
+            <!-- <property name="icon-name">playlist2-symbolic</property> -->
+            <property name="label">Add to playlist...</property>
+            <property name="direction">up</property>
+          </object>
+        </child>
+        <child type="end">
+          <object class="GtkButton" id="remove">
+            <property name="valign">center</property>
+            <property name="has-frame">0</property>
+            <child>
+              <object class="GtkBox">
+                <property name="spacing">8</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="icon-name">app-remove-symbolic</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">Remove</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <style>
+      <class name="selection_toolbar"/>
+    </style>
+  </template>
+</interface>

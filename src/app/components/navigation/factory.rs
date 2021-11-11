@@ -38,10 +38,7 @@ impl ScreenFactory {
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        SelectionTools::new(
-            NowPlaying::new(Rc::clone(&model), self.worker.clone()),
-            model,
-        )
+        NowPlaying::new(Rc::clone(&model), self.worker.clone())
     }
 
     pub fn make_saved_tracks(&self) -> impl ListenerComponent {
@@ -49,10 +46,7 @@ impl ScreenFactory {
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        SelectionTools::new(
-            SavedTracks::new(Rc::clone(&model), self.worker.clone()),
-            model,
-        )
+        SavedTracks::new(Rc::clone(&model), self.worker.clone())
     }
 
     pub fn make_album_details(&self, id: String) -> impl ListenerComponent {
@@ -61,7 +55,7 @@ impl ScreenFactory {
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        SelectionTools::new(Details::new(Rc::clone(&model), self.worker.clone()), model)
+        Details::new(Rc::clone(&model), self.worker.clone())
     }
 
     pub fn make_search_results(&self) -> SearchResults {
@@ -76,10 +70,7 @@ impl ScreenFactory {
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        SelectionTools::new(
-            ArtistDetails::new(Rc::clone(&model), self.worker.clone()),
-            model,
-        )
+        ArtistDetails::new(Rc::clone(&model), self.worker.clone())
     }
 
     pub fn make_playlist_details(&self, id: String) -> impl ListenerComponent {
@@ -88,10 +79,7 @@ impl ScreenFactory {
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        SelectionTools::new(
-            PlaylistDetails::new(Rc::clone(&model), self.worker.clone()),
-            model,
-        )
+        PlaylistDetails::new(Rc::clone(&model), self.worker.clone())
     }
 
     pub fn make_user_details(&self, id: String) -> UserDetails {

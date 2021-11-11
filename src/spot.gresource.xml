@@ -43,5 +43,12 @@
     <file alias="components/playback_controls.ui">app/components/playback/playback_controls.ui</file>
     <file alias="components/playback_info.ui">app/components/playback/playback_info.ui</file>
     <file alias="components/playback_widget.ui">app/components/playback/playback_widget.ui</file>
+    <!-- selection -->
+    <file alias="components/selection_toolbar.ui">app/components/selection/selection_toolbar.ui</file>
+    <file alias="components/selection_toolbar.css">app/components/selection/selection_toolbar.css</file>
+  </gresource>
+  <gresource prefix="/dev/alextren/Spot/Devel/icons/scalable/actions/">
+    <file compressed="true" preprocess="xml-stripblanks" alias="music-queue-symbolic.svg">app/components/selection/icons/music-queue-symbolic.svg</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="playlist2-symbolic.svg">app/components/selection/icons/playlist2-symbolic.svg</file>
   </gresource>
 </gresources>

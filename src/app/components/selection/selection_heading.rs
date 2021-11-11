@@ -3,7 +3,7 @@ use gtk::prelude::*;
 use std::rc::Rc;
 
 use crate::app::components::EventListener;
-use crate::app::state::{SelectionContext, SelectionEvent};
+use crate::app::state::SelectionEvent;
 use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, BrowserEvent};
 
 pub struct SelectionHeadingModel {
@@ -26,12 +26,6 @@ impl SelectionHeadingModel {
 
     fn selected_count(&self) -> usize {
         self.app_model.get_state().selection.count()
-    }
-
-    fn should_change_context(&self) -> bool {
-        let state = self.app_model.get_state();
-        state.selection.context != SelectionContext::Global
-            && state.recommended_context() != state.selection.context
     }
 }
 
@@ -102,9 +96,7 @@ impl EventListener for SelectionHeading {
             AppEvent::BrowserEvent(BrowserEvent::NavigationPushed(_))
             | AppEvent::BrowserEvent(BrowserEvent::NavigationPoppedTo(_))
             | AppEvent::BrowserEvent(BrowserEvent::NavigationPopped) => {
-                if self.model.should_change_context() {
-                    self.model.set_selection_mode(false);
-                }
+                self.model.set_selection_mode(false);
             }
             _ => {}
         }

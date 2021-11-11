@@ -2,11 +2,8 @@ use gio::prelude::*;
 use gio::SimpleActionGroup;
 use std::ops::Deref;
 use std::rc::Rc;
-use std::sync::Arc;
 
-use crate::api::SpotifyApiClient;
-use crate::app::components::{labels, PlaylistModel, SelectionTool, SelectionToolsModel};
-use crate::app::components::{AddSelectionTool, SimpleSelectionTool};
+use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::*;
 use crate::app::state::{
     BrowserAction, BrowserEvent, PlaybackAction, SelectionAction, SelectionState,
@@ -170,47 +167,5 @@ impl PlaylistModel for ArtistDetailsModel {
 
     fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
         Some(Box::new(self.app_model.map_state(|s| &s.selection)))
-    }
-}
-
-impl SelectionToolsModel for ArtistDetailsModel {
-    fn dispatcher(&self) -> Box<dyn ActionDispatcher> {
-        self.dispatcher.box_clone()
-    }
-
-    fn spotify_client(&self) -> Arc<dyn SpotifyApiClient + Send + Sync> {
-        self.app_model.get_spotify()
-    }
-
-    fn tools_visible(&self, _: &SelectionState) -> Vec<SelectionTool> {
-        let mut playlists: Vec<SelectionTool> = self
-            .app_model
-            .get_state()
-            .logged_user
-            .playlists
-            .iter()
-            .map(|p| SelectionTool::Add(AddSelectionTool::AddToPlaylist(p.clone())))
-            .collect();
-        let mut tools = vec![
-            SelectionTool::Simple(SimpleSelectionTool::SelectAll),
-            SelectionTool::Add(AddSelectionTool::AddToQueue),
-        ];
-        tools.append(&mut playlists);
-        tools
-    }
-
-    fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
-        Some(Box::new(self.app_model.map_state(|s| &s.selection)))
-    }
-
-    fn handle_tool_activated(&self, selection: &SelectionState, tool: &SelectionTool) {
-        match tool {
-            SelectionTool::Simple(SimpleSelectionTool::SelectAll) => {
-                if let Some(songs) = self.tracks_ref() {
-                    self.handle_select_all_tool(selection, &songs[..]);
-                }
-            }
-            _ => self.default_handle_tool_activated(selection, tool),
-        };
     }
 }

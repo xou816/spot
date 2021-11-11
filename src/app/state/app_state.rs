@@ -79,7 +79,14 @@ impl AppState {
 
     pub fn recommended_context(&self) -> SelectionContext {
         match self.browser.current_screen() {
-            ScreenName::PlaylistDetails(_) => SelectionContext::Playlist,
+            ScreenName::PlaylistDetails(id) => {
+                let writable = self.logged_user.playlists.iter().any(|p| &p.id == id);
+                if writable {
+                    SelectionContext::EditablePlaylist(id.clone())
+                } else {
+                    SelectionContext::Playlist
+                }
+            }
             // TODO: this does not necessarily mean we're actually viewing the playqueue :(
             ScreenName::Home => SelectionContext::Queue,
             _ => SelectionContext::Global,

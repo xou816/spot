@@ -28,10 +28,11 @@ impl From<SelectionEvent> for AppEvent {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub enum SelectionContext {
     Queue,
     Playlist,
+    EditablePlaylist(String),
     Global,
 }
 

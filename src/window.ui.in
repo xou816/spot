@@ -148,8 +148,17 @@
           </object>
         </child>
         <child>
-          <object class="PlaybackWidget" id="playback">
+          <object class="GtkOverlay">
             <property name="hexpand">1</property>
+            <child>
+              <object class="PlaybackWidget" id="playback">
+                <property name="hexpand">1</property>
+              </object>
+            </child>
+            <child type="overlay">
+              <object class="SelectionToolbarWidget" id="selection_toolbar">
+              </object>
+            </child>
           </object>
         </child>
       </object>
