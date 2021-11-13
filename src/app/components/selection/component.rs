@@ -9,7 +9,7 @@ use crate::app::state::{
 };
 use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, BrowserAction};
 
-use super::selection_toolbar::{SelectionToolState, SelectionToolbarWidget};
+use super::widget::{SelectionToolState, SelectionToolbarWidget};
 
 pub struct SelectionToolbarModel {
     app_model: Rc<AppModel>,

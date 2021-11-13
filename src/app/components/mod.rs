@@ -73,6 +73,9 @@ pub use window::*;
 mod selection;
 pub use selection::*;
 
+mod headerbar;
+pub use headerbar::*;
+
 pub mod utils;
 
 pub mod labels;
@@ -80,6 +83,7 @@ pub mod labels;
 pub fn expose_widgets() {
     playback::expose_widgets();
     selection::expose_widgets();
+    headerbar::expose_widgets();
 }
 
 impl dyn ActionDispatcher {

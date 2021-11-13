@@ -91,10 +91,6 @@ impl SelectionState {
         self.selected_songs.contains_key(id)
     }
 
-    pub fn all_selected<'a>(&self, mut ids: impl Iterator<Item = &'a String>) -> bool {
-        ids.all(|id| self.is_song_selected(id))
-    }
-
     pub fn count(&self) -> usize {
         self.selected_songs.len()
     }

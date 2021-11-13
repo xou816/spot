@@ -22,69 +22,144 @@ impl ScreenFactory {
         }
     }
 
-    pub fn make_library(&self) -> Library {
+    pub fn make_library(&self) -> impl ListenerComponent {
         let model = LibraryModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        Library::new(self.worker.clone(), model)
+        let screen_model = DefaultScreenModel::new(
+            Some(gettext("Library")),
+            false,
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        );
+        StandardScreen::new(
+            Library::new(self.worker.clone(), model),
+            Rc::new(screen_model),
+        )
     }
 
-    pub fn make_saved_playlists(&self) -> SavedPlaylists {
+    pub fn make_saved_playlists(&self) -> impl ListenerComponent {
         let model =
             SavedPlaylistsModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        SavedPlaylists::new(self.worker.clone(), model)
+        let screen_model = DefaultScreenModel::new(
+            Some(gettext("Playlists")),
+            false,
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        );
+        StandardScreen::new(
+            SavedPlaylists::new(self.worker.clone(), model),
+            Rc::new(screen_model),
+        )
     }
 
     pub fn make_now_playing(&self) -> impl ListenerComponent {
+        let screen_model = DefaultScreenModel::new(
+            Some(gettext("Now playing")),
+            true,
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        );
         let model = Rc::new(NowPlayingModel::new(
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        NowPlaying::new(Rc::clone(&model), self.worker.clone())
+        StandardScreen::new(NowPlaying::new(model, self.worker.clone()), Rc::new(screen_model))
     }
 
     pub fn make_saved_tracks(&self) -> impl ListenerComponent {
+        let screen_model = DefaultScreenModel::new(
+            Some(gettext("Saved tracks")),
+            true,
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        );
         let model = Rc::new(SavedTracksModel::new(
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        SavedTracks::new(Rc::clone(&model), self.worker.clone())
+        StandardScreen::new(SavedTracks::new(model, self.worker.clone()), Rc::new(screen_model))
     }
 
     pub fn make_album_details(&self, id: String) -> impl ListenerComponent {
+        let screen_model = DefaultScreenModel::new(
+            None,
+            true,
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        );
         let model = Rc::new(DetailsModel::new(
             id,
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        Details::new(Rc::clone(&model), self.worker.clone())
+        StandardScreen::new(
+            Details::new(Rc::clone(&model), self.worker.clone()),
+            Rc::new(screen_model),
+        )
     }
 
-    pub fn make_search_results(&self) -> SearchResults {
+    pub fn make_search_results(&self) -> impl ListenerComponent {
+        let screen_model = DefaultScreenModel::new(
+            None,
+            false,
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        );
         let model =
             SearchResultsModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        SearchResults::new(model, self.worker.clone())
+        StandardScreen::new(
+            SearchResults::new(model, self.worker.clone()),
+            Rc::new(screen_model),
+        )
     }
 
     pub fn make_artist_details(&self, id: String) -> impl ListenerComponent {
+        let screen_model = DefaultScreenModel::new(
+            None,
+            true,
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        );
         let model = Rc::new(ArtistDetailsModel::new(
             id,
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        ArtistDetails::new(Rc::clone(&model), self.worker.clone())
+        StandardScreen::new(
+            ArtistDetails::new(Rc::clone(&model), self.worker.clone()),
+            Rc::new(screen_model),
+        )
     }
 
     pub fn make_playlist_details(&self, id: String) -> impl ListenerComponent {
+        let screen_model = DefaultScreenModel::new(
+            None,
+            true,
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        );
         let model = Rc::new(PlaylistDetailsModel::new(
             id,
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        PlaylistDetails::new(Rc::clone(&model), self.worker.clone())
+        StandardScreen::new(
+            PlaylistDetails::new(Rc::clone(&model), self.worker.clone()),
+            Rc::new(screen_model),
+        )
     }
 
-    pub fn make_user_details(&self, id: String) -> UserDetails {
+    pub fn make_user_details(&self, id: String) -> impl ListenerComponent {
+        let screen_model = DefaultScreenModel::new(
+            None,
+            false,
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        );
         let model =
             UserDetailsModel::new(id, Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        UserDetails::new(model, self.worker.clone())
+        StandardScreen::new(
+            UserDetails::new(model, self.worker.clone()),
+            Rc::new(screen_model),
+        )
     }
 }
