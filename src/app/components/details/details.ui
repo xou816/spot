@@ -21,13 +21,19 @@
               <object class="GtkRevealer" id="header_revealer">
                 <property name="transition-type">slide-down</property>
                 <child>
-                  <object class="GtkBox">
+                <object class="AdwSqueezer">
+								<property name="valign">center</property>
+								<property name="homogeneous">0</property>
+								<property name="transition-type">crossfade</property>
+                  <child>
+                  <object class="GtkBox" id="header">
                     <property name="valign">start</property>
                     <property name="spacing">18</property>
                     <property name="vexpand">0</property>
                     <child>
                     <object class="GtkFrame">
                     <property name="margin-top">18</property>
+										<property name="halign">center</property>
                     <style>
                         <class name="card"/>
                     </style>
@@ -117,6 +123,108 @@
                       </object>
                     </child>
                   </object>
+                  </child>
+                  <child>
+                  <object class="GtkBox" id="header_mobile">
+                    <property name="orientation">vertical</property>
+                    <property name="valign">start</property>
+                    <property name="spacing">18</property>
+                    <property name="vexpand">0</property>
+                    <child>
+                    <object class="GtkFrame">
+                    <property name="margin-top">18</property>
+										<property name="halign">center</property>
+                    <style>
+                        <class name="card"/>
+                    </style>
+                      <child>
+                        <object class="GtkOverlay">
+                          <child>
+                            <object class="GtkImage" id="album_art_mobile">
+                              <property name="width-request">200</property>
+                              <property name="height-request">200</property>
+                              <property name="icon-name">emblem-music-symbolic</property>
+                              <style>
+                                <class name="details__album-art"/>
+                              </style>
+                            </object>
+                          </child>
+                          <child type="overlay">
+                            <object class="GtkButton" id="info_button_mobile">
+                              <property name="icon-name">preferences-system-details-symbolic</property>
+                              <property name="halign">end</property>
+                              <property name="valign">end</property>
+                              <property name="margin-start">6</property>
+                              <property name="margin-end">6</property>
+                              <property name="margin-top">6</property>
+                              <property name="margin-bottom">6</property>
+                              <property name="has-frame">1</property>
+                              <style>
+                                <class name="circular"/>
+                                <class name="osd"/>
+                                <class name="info_btn"/>
+                              </style>
+                            </object>
+                          </child>
+                        </object>
+                      </child>
+                    </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="hexpand">1</property>
+                        <property name="valign">center</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkLabel" id="album_label_mobile">
+                            <property name="halign">center</property>
+                            <property name="label">Album</property>
+                            <property name="wrap">1</property>
+                            <property name="ellipsize">end</property>
+                            <property name="max-width-chars">50</property>
+                            <property name="lines">4</property>
+                            <property name="xalign">0.5</property>
+                            <style>
+                              <class name="title-1"/>
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLinkButton" id="artist_button_mobile">
+                            <property name="receives-default">1</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
+                            <property name="has-frame">0</property>
+                            <child>
+                              <object class="GtkLabel" id="artist_button_label_mobile">
+                                <property name="hexpand">1</property>
+                                <property name="vexpand">1</property>
+                                <property name="label">Artist</property>
+                                <property name="ellipsize">middle</property>
+                                <property name="xalign">0.5</property>
+                              </object>
+                            </child>
+                            <style>
+                              <class name="details__more"/>
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="like_button_mobile">
+                        <property name="receives-default">1</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <style>
+                          <class name="circular"/>
+                          <class name="details__like"/>
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                  </child>
+                </object>
                 </child>
               </object>
             </child>
