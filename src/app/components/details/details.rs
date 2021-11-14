@@ -4,6 +4,7 @@ use gtk::CompositeTemplate;
 use std::rc::Rc;
 
 use super::release_details::ReleaseDetailsWindow;
+use super::album_header::AlbumHeaderWidget;
 use super::DetailsModel;
 
 use crate::app::components::{display_add_css_provider, Component, EventListener, Playlist};
@@ -25,25 +26,27 @@ mod imp {
         pub header_revealer: TemplateChild<gtk::Revealer>,
 
         #[template_child]
-        pub album_label: TemplateChild<gtk::Label>,
+        pub header_widget: TemplateChild<AlbumHeaderWidget>,
+        //#[template_child]
+        //pub album_label: TemplateChild<gtk::Label>,
 
         #[template_child]
         pub album_tracks: TemplateChild<gtk::ListView>,
 
-        #[template_child]
-        pub album_art: TemplateChild<gtk::Image>,
+        //#[template_child]
+        //pub album_art: TemplateChild<gtk::Image>,
 
-        #[template_child]
-        pub like_button: TemplateChild<gtk::Button>,
+        //#[template_child]
+        //pub like_button: TemplateChild<gtk::Button>,
 
-        #[template_child]
-        pub info_button: TemplateChild<gtk::Button>,
+        //#[template_child]
+        //pub info_button: TemplateChild<gtk::Button>,
 
-        #[template_child]
-        pub artist_button: TemplateChild<gtk::LinkButton>,
+        //#[template_child]
+        //pub artist_button: TemplateChild<gtk::LinkButton>,
 
-        #[template_child]
-        pub artist_button_label: TemplateChild<gtk::Label>,
+        //#[template_child]
+        //pub artist_button_label: TemplateChild<gtk::Label>,
     }
 
     #[glib::object_subclass]
@@ -117,38 +120,9 @@ impl AlbumDetailsWidget {
             });
     }
 
-    fn connect_liked<F>(&self, f: F)
-    where
-        F: Fn() + 'static,
-    {
-        self.widget().like_button.connect_clicked(move |_| f());
-    }
-
-    fn connect_info<F>(&self, f: F)
-    where
-        F: Fn() + 'static,
-    {
-        self.widget().info_button.connect_clicked(move |_| f());
-    }
-
-    fn connect_artist_clicked<F>(&self, f: F)
-    where
-        F: Fn() + 'static,
-    {
-        self.widget().artist_button.connect_activate_link(move |_| {
-            f();
-            glib::signal::Inhibit(true)
-        });
-    }
 
     fn album_tracks_widget(&self) -> &gtk::ListView {
         self.widget().album_tracks.as_ref()
-    }
-
-    fn set_liked(&self, is_liked: bool) {
-        self.widget()
-            .like_button
-            .set_icon_name(if is_liked { "starred-symbolic" } else { "non-starred-symbolic" });
     }
 
     fn set_loaded(&self) {
@@ -156,15 +130,10 @@ impl AlbumDetailsWidget {
         context.add_class("details--loaded");
     }
 
-    pub fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {
-        self.widget().album_art.set_from_pixbuf(Some(art));
+    fn header_widget(&self) -> &AlbumHeaderWidget {
+        &self.widget().header_widget
     }
 
-    fn set_album_and_artist(&self, album: &str, artist: &str) {
-        let widget = self.widget();
-        widget.album_label.set_label(album);
-        widget.artist_button_label.set_label(artist);
-    }
 }
 
 pub struct Details {
@@ -172,8 +141,10 @@ pub struct Details {
     worker: Worker,
     widget: AlbumDetailsWidget,
     modal: ReleaseDetailsWindow,
+    //header: AlbumHeaderWidget,
     children: Vec<Box<dyn EventListener>>,
 }
+
 
 impl Details {
     pub fn new(model: Rc<DetailsModel>, worker: Worker) -> Self {
@@ -182,6 +153,9 @@ impl Details {
         }
 
         let widget = AlbumDetailsWidget::new();
+
+        //let header = AlbumHeaderWidget::new();
+
         let playlist = Box::new(Playlist::new(
             widget.album_tracks_widget().clone(),
             model.clone(),
@@ -189,7 +163,7 @@ impl Details {
 
         let modal = ReleaseDetailsWindow::new();
 
-        widget.connect_liked(clone!(@weak model => move || model.toggle_save_album()));
+        widget.header_widget().connect_liked(clone!(@weak model => move || model.toggle_save_album()));
 
         widget.connect_header();
 
@@ -197,7 +171,7 @@ impl Details {
             model.load_more();
         }));
 
-        widget.connect_info(clone!(@weak modal, @weak widget => move || {
+        widget.header_widget().connect_info(clone!(@weak modal, @weak widget => move || {
             let modal = modal.upcast_ref::<libadwaita::Window>();
             modal.set_modal(true);
             modal.set_transient_for(
@@ -214,14 +188,16 @@ impl Details {
             worker,
             widget,
             modal,
+            //header,
             children: vec![playlist],
         }
     }
 
+
     fn update_liked(&self) {
         if let Some(info) = self.model.get_album_info() {
             let is_liked = info.description.is_liked;
-            self.widget.set_liked(is_liked);
+            self.widget.header_widget().set_liked(is_liked);
         }
     }
 
@@ -230,10 +206,10 @@ impl Details {
             let details = &album.release_details;
             let album = &album.description;
 
-            self.widget.set_liked(album.is_liked);
-            self.widget
+            self.widget.header_widget().set_liked(album.is_liked);
+            self.widget.header_widget()
                 .set_album_and_artist(&album.title[..], &album.artists_name());
-            self.widget
+            self.widget.header_widget()
                 .connect_artist_clicked(clone!(@weak self.model as model => move || {
                     model.view_artist();
                 }));
@@ -250,16 +226,17 @@ impl Details {
 
             if let Some(art) = album.art.clone() {
                 let widget = self.widget.downgrade();
+                let header = self.widget.header_widget().downgrade();
                 let modal = self.modal.downgrade();
 
                 self.worker.send_local_task(async move {
                     let pixbuf = ImageLoader::new()
                         .load_remote(&art[..], "jpg", 200, 200)
                         .await;
-                    if let (Some(widget), Some(modal), Some(ref pixbuf)) =
-                        (widget.upgrade(), modal.upgrade(), pixbuf)
+                    if let (Some(widget), Some(modal), Some(header), Some(ref pixbuf)) =
+                        (widget.upgrade(), modal.upgrade(), header.upgrade(), pixbuf)
                     {
-                        widget.set_artwork(pixbuf);
+                        header.set_artwork(pixbuf);
                         widget.set_loaded();
                         modal.set_artwork(pixbuf);
                     }
@@ -299,4 +276,4 @@ impl EventListener for Details {
         }
         self.broadcast_event(event);
     }
-}
+} 

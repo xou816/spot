@@ -73,6 +73,7 @@ sources = files(
 './app/components/details/release_details.rs',
 './app/components/details/details.rs',
 './app/components/details/details_model.rs',
+'./app/components/details/album_header.rs',
 './app/components/details/mod.rs',
 './app/components/artist/mod.rs',
 './app/components/utils.rs',
