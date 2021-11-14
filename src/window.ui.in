@@ -156,6 +156,7 @@
                         </child>
                         <child type="overlay">
                           <object class="SelectionToolbarWidget" id="selection_toolbar">
+                            <property name="hexpand">1</property>
                           </object>
                         </child>
                       </object>
