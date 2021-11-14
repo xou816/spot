@@ -2,9 +2,8 @@
 <interface>
   <requires lib="gtk" version="4.0"/>
   <requires lib="libadwaita" version="1.0"/>
-  <template class="HeaderBarWidget" parent="GtkBox">
-    <property name="orientation">vertical</property>
-    <child type="root">
+  <template class="HeaderBarWidget" parent="AdwBin">
+    <child>
       <object class="GtkOverlay" id="overlay">
         <property name="hexpand">1</property>
         <child>
@@ -50,6 +49,12 @@
             <child type="title">
               <object class="AdwWindowTitle" id="selection_title">
                 <property name="title">No selection</property>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkButton" id="select_all">
+                <property name="valign">center</property>
+                <property name="label">Select all</property>
               </object>
             </child>
           </object>

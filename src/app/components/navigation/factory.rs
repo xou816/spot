@@ -1,6 +1,7 @@
 use std::rc::Rc;
 
 use crate::app::components::*;
+use crate::app::state::SelectionContext;
 use crate::app::{ActionDispatcher, AppModel, Worker};
 
 pub struct ScreenFactory {
@@ -26,7 +27,7 @@ impl ScreenFactory {
         let model = LibraryModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
         let screen_model = DefaultScreenModel::new(
             Some(gettext("Library")),
-            false,
+            None,
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         );
@@ -41,7 +42,7 @@ impl ScreenFactory {
             SavedPlaylistsModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
         let screen_model = DefaultScreenModel::new(
             Some(gettext("Playlists")),
-            false,
+            None,
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         );
@@ -54,7 +55,7 @@ impl ScreenFactory {
     pub fn make_now_playing(&self) -> impl ListenerComponent {
         let screen_model = DefaultScreenModel::new(
             Some(gettext("Now playing")),
-            true,
+            Some(SelectionContext::Queue),
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         );
@@ -68,7 +69,7 @@ impl ScreenFactory {
     pub fn make_saved_tracks(&self) -> impl ListenerComponent {
         let screen_model = DefaultScreenModel::new(
             Some(gettext("Saved tracks")),
-            true,
+            Some(SelectionContext::Default),
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         );
@@ -80,19 +81,18 @@ impl ScreenFactory {
     }
 
     pub fn make_album_details(&self, id: String) -> impl ListenerComponent {
-        let screen_model = DefaultScreenModel::new(
-            None,
-            true,
-            Rc::clone(&self.app_model),
-            self.dispatcher.box_clone(),
-        );
         let model = Rc::new(DetailsModel::new(
             id,
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
+        let screen_model = SimpleScreenModelWrapper::new(
+            Rc::clone(&model),
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        );
         StandardScreen::new(
-            Details::new(Rc::clone(&model), self.worker.clone()),
+            Details::new(model, self.worker.clone()),
             Rc::new(screen_model),
         )
     }
@@ -100,7 +100,7 @@ impl ScreenFactory {
     pub fn make_search_results(&self) -> impl ListenerComponent {
         let screen_model = DefaultScreenModel::new(
             None,
-            false,
+            None,
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         );
@@ -115,7 +115,7 @@ impl ScreenFactory {
     pub fn make_artist_details(&self, id: String) -> impl ListenerComponent {
         let screen_model = DefaultScreenModel::new(
             None,
-            true,
+            Some(SelectionContext::Default),
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         );
@@ -125,25 +125,24 @@ impl ScreenFactory {
             self.dispatcher.box_clone(),
         ));
         StandardScreen::new(
-            ArtistDetails::new(Rc::clone(&model), self.worker.clone()),
+            ArtistDetails::new(model, self.worker.clone()),
             Rc::new(screen_model),
         )
     }
 
     pub fn make_playlist_details(&self, id: String) -> impl ListenerComponent {
-        let screen_model = DefaultScreenModel::new(
-            None,
-            true,
-            Rc::clone(&self.app_model),
-            self.dispatcher.box_clone(),
-        );
         let model = Rc::new(PlaylistDetailsModel::new(
             id,
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
+        let screen_model = SimpleScreenModelWrapper::new(
+            Rc::clone(&model),
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        );
         StandardScreen::new(
-            PlaylistDetails::new(Rc::clone(&model), self.worker.clone()),
+            PlaylistDetails::new(model, self.worker.clone()),
             Rc::new(screen_model),
         )
     }
@@ -151,7 +150,7 @@ impl ScreenFactory {
     pub fn make_user_details(&self, id: String) -> impl ListenerComponent {
         let screen_model = DefaultScreenModel::new(
             None,
-            false,
+            None,
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         );

@@ -33,7 +33,7 @@ pub enum SelectionContext {
     Queue,
     Playlist,
     EditablePlaylist(String),
-    Global,
+    Default,
 }
 
 pub struct SelectionState {
@@ -47,7 +47,7 @@ impl Default for SelectionState {
         Self {
             selected_songs: Default::default(),
             selection_active: false,
-            context: SelectionContext::Global,
+            context: SelectionContext::Default,
         }
     }
 }

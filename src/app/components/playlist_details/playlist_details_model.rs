@@ -4,8 +4,10 @@ use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
+use crate::app::components::SimpleScreenModel;
 use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::*;
+use crate::app::state::SelectionContext;
 use crate::app::state::{
     BrowserAction, BrowserEvent, PlaybackAction, SelectionAction, SelectionState,
 };
@@ -26,6 +28,15 @@ impl PlaylistDetailsModel {
             app_model,
             dispatcher,
         }
+    }
+
+    fn state(&self) -> Ref<'_, AppState> {
+        self.app_model.get_state()
+    }
+
+    fn is_playlist_editable(&self) -> bool {
+        let state = self.app_model.get_state();
+        state.logged_user.playlists.iter().any(|p| p.id == self.id)
     }
 
     fn songs_ref(&self) -> Option<impl Deref<Target = SongList> + '_> {
@@ -89,12 +100,6 @@ impl PlaylistDetailsModel {
             self.dispatcher
                 .dispatch(AppAction::ViewUser(owner.to_owned()));
         }
-    }
-}
-
-impl PlaylistDetailsModel {
-    fn state(&self) -> Ref<'_, AppState> {
-        self.app_model.get_state()
     }
 }
 
@@ -188,12 +193,35 @@ impl PlaylistModel for PlaylistDetailsModel {
     }
 
     fn enable_selection(&self) -> bool {
-        self.dispatcher
-            .dispatch(AppAction::ChangeSelectionMode(true));
+        self.dispatcher.dispatch(AppAction::EnableSelection(
+            self.selection_context().unwrap(),
+        ));
         true
     }
 
     fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
         Some(Box::new(self.app_model.map_state(|s| &s.selection)))
+    }
+}
+
+impl SimpleScreenModel for PlaylistDetailsModel {
+    fn title(&self) -> Option<String> {
+        None
+    }
+
+    fn selection_context(&self) -> Option<SelectionContext> {
+        Some(if self.is_playlist_editable() {
+            SelectionContext::EditablePlaylist(self.id.clone())
+        } else {
+            SelectionContext::Playlist
+        })
+    }
+
+    fn select_all(&self) {
+        if let Some(songs) = self.songs_ref() {
+            let songs: Vec<SongDescription> = songs.iter().cloned().collect();
+            self.dispatcher
+                .dispatch(SelectionAction::Select(songs).into());
+        }
     }
 }

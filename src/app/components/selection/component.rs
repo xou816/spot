@@ -43,7 +43,7 @@ impl SelectionToolbarModel {
     pub fn remove_selection(&self) {
         match &self.selection().context {
             SelectionContext::Queue => self.dequeue_selection(),
-            SelectionContext::EditablePlaylist(id) => self.remove_from_playlist(&id),
+            SelectionContext::EditablePlaylist(id) => self.remove_from_playlist(id),
             _ => {}
         }
     }
@@ -114,7 +114,7 @@ impl SelectionToolbar {
     fn update_active_tools(&self) {
         let count = self.model.selected_count();
         match self.model.selection().context {
-            SelectionContext::Global => {
+            SelectionContext::Default => {
                 self.widget.set_move(SelectionToolState::Hidden);
                 self.widget
                     .set_queue(SelectionToolState::Visible(count > 0));
@@ -138,7 +138,8 @@ impl SelectionToolbar {
             }
             SelectionContext::EditablePlaylist(_) => {
                 self.widget.set_move(SelectionToolState::Hidden);
-                self.widget.set_queue(SelectionToolState::Hidden);
+                self.widget
+                    .set_queue(SelectionToolState::Visible(count > 0));
                 self.widget.set_add(SelectionToolState::Hidden);
                 self.widget
                     .set_remove(SelectionToolState::Visible(count > 0));

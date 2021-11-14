@@ -6,8 +6,10 @@ use std::rc::Rc;
 
 use crate::app::components::labels;
 use crate::app::components::PlaylistModel;
+use crate::app::components::SimpleScreenModel;
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
+use crate::app::state::SelectionContext;
 use crate::app::state::{
     BrowserAction, BrowserEvent, PlaybackAction, SelectionAction, SelectionState,
 };
@@ -26,6 +28,10 @@ impl DetailsModel {
             app_model,
             dispatcher,
         }
+    }
+
+    fn state(&self) -> Ref<'_, AppState> {
+        self.app_model.get_state()
     }
 
     fn songs_ref(&self) -> Option<impl Deref<Target = SongList> + '_> {
@@ -123,12 +129,6 @@ impl DetailsModel {
     }
 }
 
-impl DetailsModel {
-    fn state(&self) -> Ref<'_, AppState> {
-        self.app_model.get_state()
-    }
-}
-
 impl PlaylistModel for DetailsModel {
     fn select_song(&self, id: &str) {
         let song = self.songs_ref().and_then(|songs| songs.get(id).cloned());
@@ -145,7 +145,7 @@ impl PlaylistModel for DetailsModel {
 
     fn enable_selection(&self) -> bool {
         self.dispatcher
-            .dispatch(AppAction::ChangeSelectionMode(true));
+            .dispatch(AppAction::EnableSelection(SelectionContext::Default));
         true
     }
 
@@ -220,5 +220,23 @@ impl PlaylistModel for DetailsModel {
         menu.append(Some(&*labels::COPY_LINK), Some("song.copy_link"));
         menu.append(Some(&*labels::ADD_TO_QUEUE), Some("song.queue"));
         Some(menu.upcast())
+    }
+}
+
+impl SimpleScreenModel for DetailsModel {
+    fn title(&self) -> Option<String> {
+        None
+    }
+
+    fn selection_context(&self) -> Option<SelectionContext> {
+        Some(SelectionContext::Default)
+    }
+
+    fn select_all(&self) {
+        if let Some(songs) = self.songs_ref() {
+            let songs: Vec<SongDescription> = songs.iter().cloned().collect();
+            self.dispatcher
+                .dispatch(SelectionAction::Select(songs).into());
+        }
     }
 }

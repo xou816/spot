@@ -7,6 +7,7 @@ use std::rc::Rc;
 use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::SongModel;
 use crate::app::state::PlaylistChange;
+use crate::app::state::SelectionContext;
 use crate::app::state::{
     PlaybackAction, PlaybackEvent, PlaybackState, SelectionAction, SelectionState,
 };
@@ -137,7 +138,7 @@ impl PlaylistModel for NowPlayingModel {
 
     fn enable_selection(&self) -> bool {
         self.dispatcher
-            .dispatch(AppAction::ChangeSelectionMode(true));
+            .dispatch(AppAction::EnableSelection(SelectionContext::Queue));
         true
     }
 

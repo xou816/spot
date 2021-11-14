@@ -2,10 +2,11 @@ use gettextrs::{gettext, ngettext};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
+use libadwaita::subclass::prelude::BinImpl;
+
+use crate::app::components::display_add_css_provider;
 
 mod imp {
-
-    use crate::app::components::display_add_css_provider;
 
     use super::*;
 
@@ -28,6 +29,9 @@ mod imp {
         pub start_selection: TemplateChild<gtk::Button>,
 
         #[template_child]
+        pub select_all: TemplateChild<gtk::Button>,
+
+        #[template_child]
         pub cancel: TemplateChild<gtk::Button>,
 
         #[template_child]
@@ -38,8 +42,7 @@ mod imp {
     impl ObjectSubclass for HeaderBarWidget {
         const NAME: &'static str = "HeaderBarWidget";
         type Type = super::HeaderBarWidget;
-        type ParentType = gtk::Box;
-        type Interfaces = (gtk::Buildable,);
+        type ParentType = libadwaita::Bin;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
@@ -58,34 +61,18 @@ mod imp {
         }
     }
 
-    impl BuildableImpl for HeaderBarWidget {
-        fn add_child(
-            &self,
-            buildable: &Self::Type,
-            builder: &gtk::Builder,
-            child: &glib::Object,
-            type_: Option<&str>,
-        ) {
-            self.parent_add_child(buildable, builder, child, type_);
-        }
-    }
-
     impl WidgetImpl for HeaderBarWidget {}
-    impl BoxImpl for HeaderBarWidget {}
+    impl BinImpl for HeaderBarWidget {}
     impl WindowImpl for HeaderBarWidget {}
 }
 
 glib::wrapper! {
-    pub struct HeaderBarWidget(ObjectSubclass<imp::HeaderBarWidget>) @extends gtk::Widget, gtk::Box;
+    pub struct HeaderBarWidget(ObjectSubclass<imp::HeaderBarWidget>) @extends gtk::Widget, libadwaita::Bin;
 }
 
 impl HeaderBarWidget {
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create an instance of HeaderBarWidget")
-    }
-
-    pub fn add(&self, child: &gtk::Widget) {
-        self.upcast_ref::<gtk::Box>().append(child);
     }
 
     fn widget(&self) -> &imp::HeaderBarWidget {
@@ -97,6 +84,13 @@ impl HeaderBarWidget {
         F: Fn() + 'static,
     {
         self.widget().start_selection.connect_clicked(move |_| f());
+    }
+
+    pub fn connect_select_all<F>(&self, f: F)
+    where
+        F: Fn() + 'static,
+    {
+        self.widget().select_all.connect_clicked(move |_| f());
     }
 
     pub fn connect_selection_cancel<F>(&self, f: F)
@@ -119,6 +113,10 @@ impl HeaderBarWidget {
 
     pub fn set_selection_possible(&self, possible: bool) {
         self.widget().start_selection.set_visible(possible);
+    }
+
+    pub fn set_select_all_possible(&self, possible: bool) {
+        self.widget().select_all.set_visible(possible);
     }
 
     pub fn set_selection_active(&self, active: bool) {

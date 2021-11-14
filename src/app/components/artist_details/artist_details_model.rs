@@ -5,6 +5,7 @@ use std::rc::Rc;
 
 use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::*;
+use crate::app::state::SelectionContext;
 use crate::app::state::{
     BrowserAction, BrowserEvent, PlaybackAction, SelectionAction, SelectionState,
 };
@@ -161,7 +162,7 @@ impl PlaylistModel for ArtistDetailsModel {
 
     fn enable_selection(&self) -> bool {
         self.dispatcher
-            .dispatch(AppAction::ChangeSelectionMode(true));
+            .dispatch(AppAction::EnableSelection(SelectionContext::Default));
         true
     }
 

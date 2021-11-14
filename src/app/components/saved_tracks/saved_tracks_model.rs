@@ -5,6 +5,7 @@ use std::rc::Rc;
 
 use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::*;
+use crate::app::state::SelectionContext;
 use crate::app::state::{PlaybackAction, SelectionAction, SelectionState};
 use crate::app::{
     ActionDispatcher, AppAction, AppEvent, AppModel, BatchQuery, BrowserAction, BrowserEvent,
@@ -151,7 +152,7 @@ impl PlaylistModel for SavedTracksModel {
 
     fn enable_selection(&self) -> bool {
         self.dispatcher
-            .dispatch(AppAction::ChangeSelectionMode(true));
+            .dispatch(AppAction::EnableSelection(SelectionContext::Default));
         true
     }
 

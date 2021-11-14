@@ -139,7 +139,7 @@ impl SelectionToolbarWidget {
         self.widget().action_bar.set_revealed(visible);
     }
 
-    pub fn connect_playlists<F>(&self, playlists: &Vec<PlaylistSummary>, on_playlist_selected: F)
+    pub fn connect_playlists<F>(&self, playlists: &[PlaylistSummary], on_playlist_selected: F)
     where
         F: Fn(&str) + Clone + 'static,
     {
