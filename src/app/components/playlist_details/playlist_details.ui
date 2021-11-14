@@ -8,15 +8,12 @@
         <property name="vexpand">1</property>
         <property name="hexpand">1</property>
         <property name="maximum-size">900</property>
-        <property name="margin-start">12</property>
-        <property name="margin-end">12</property>
         <property name="margin-bottom">12</property>
         <child>
           <object class="GtkBox">
             <property name="orientation">vertical</property>
             <property name="vexpand">1</property>
             <property name="hexpand">1</property>
-            <property name="spacing">18</property>
             <child>
               <object class="GtkRevealer" id="header_revealer">
                 <property name="transition-type">slide-down</property>
@@ -28,6 +25,8 @@
                     <child>                    
                     <object class="GtkFrame">
 										<property name="margin-top">18</property>
+                    <property name="margin-start">12</property>
+										<property name="margin-bottom">6</property>
                     <style>
 				              <class name="card"/>
 				            </style>
@@ -42,6 +41,7 @@
                     </child>
                     <child>
                       <object class="GtkBox">
+                        <property name="margin-start">18</property>
                         <property name="valign">center</property>
                         <property name="orientation">vertical</property>
                         <child>
@@ -88,6 +88,9 @@
                 <property name="propagate-natural-width">1</property>
                 <property name="hexpand">1</property>
                 <property name="vexpand">1</property>
+                <property name="margin-start">12</property>
+								<property name="margin-end">12</property>
+                <property name="margin-top">6</property>
                 <child>
                   <object class="GtkListView" id="tracks">
                     <property name="valign">start</property>

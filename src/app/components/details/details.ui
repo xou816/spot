@@ -8,15 +8,12 @@
         <property name="vexpand">1</property>
         <property name="hexpand">1</property>
         <property name="maximum-size">900</property>
-        <property name="margin-start">12</property>
-        <property name="margin-end">12</property>
         <property name="margin-bottom">12</property>
         <child>
           <object class="GtkBox">
             <property name="orientation">vertical</property>
             <property name="vexpand">1</property>
             <property name="hexpand">1</property>
-            <property name="spacing">18</property>
             <child>
               <object class="GtkRevealer" id="header_revealer">
                 <property name="transition-type">slide-down</property>
@@ -28,11 +25,12 @@
                   <child>
                   <object class="GtkBox" id="header">
                     <property name="valign">start</property>
-                    <property name="spacing">18</property>
                     <property name="vexpand">0</property>
                     <child>
                     <object class="GtkFrame">
                     <property name="margin-top">18</property>
+										<property name="margin-start">12</property>
+										<property name="margin-bottom">6</property>
 										<property name="halign">center</property>
                     <style>
                         <class name="card"/>
@@ -73,6 +71,7 @@
                     <child>
                       <object class="GtkBox">
                         <property name="hexpand">1</property>
+												<property name="margin-start">18</property>
                         <property name="valign">center</property>
                         <property name="orientation">vertical</property>
                         <child>
@@ -116,6 +115,7 @@
                         <property name="receives-default">1</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
+												<property name="margin-end">12</property>
                         <style>
                           <class name="circular"/>
                           <class name="details__like"/>
@@ -216,6 +216,7 @@
                         <property name="receives-default">1</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
+												<property name="margin-bottom">18</property>
                         <style>
                           <class name="circular"/>
                           <class name="details__like"/>
@@ -233,6 +234,9 @@
                 <property name="hscrollbar-policy">never</property>
                 <property name="propagate-natural-width">1</property>
                 <property name="hexpand">1</property>
+								<property name="margin-start">12</property>
+								<property name="margin-end">12</property>
+								<property name="margin-top">12</property>
                 <property name="vexpand">1</property>
                 <child>
                   <object class="GtkListView" id="album_tracks">

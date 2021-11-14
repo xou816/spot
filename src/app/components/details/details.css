@@ -3,10 +3,6 @@
   color: @theme_text_color;
 }
 
-.details .details__album-art {
-  border-radius: 8px;
-}
-
 .details__more {
   padding: 0;
 }

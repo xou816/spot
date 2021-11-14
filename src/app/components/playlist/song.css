@@ -58,7 +58,6 @@
 
 row {
   transition: background-color 150ms ease;
-  margin: 1px 0;
 }
 
 .song--playing label.song__title, .song--playing label.song__index {
@@ -90,12 +89,3 @@ row:hover .song__menu--enabled, .song__menu--enabled:checked {
   filter: opacity(1);
 }
 
-/* copied from adwaita */
-
-.playlist row:hover {
-  background-color: alpha(currentColor, 0.07);
-}
-
-.playlist row:active {
-  background-color: alpha(currentColor, 0.16);
-}
