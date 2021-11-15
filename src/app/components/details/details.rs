@@ -171,6 +171,17 @@ impl Details {
             modal.show();
         }));
 
+        widget.header_mobile().connect_info(clone!(@weak modal, @weak widget => move || {
+            let modal = modal.upcast_ref::<libadwaita::Window>();
+            modal.set_modal(true);
+            modal.set_transient_for(
+                widget
+                    .root()
+                    .and_then(|r| r.downcast::<gtk::Window>().ok())
+                    .as_ref(),
+            );
+            modal.show();
+        }));
         Self {
             model,
             worker,

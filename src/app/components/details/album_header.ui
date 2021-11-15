@@ -6,7 +6,7 @@
     <property name="valign">start</property>
     <property name="vexpand">0</property>
     <child>
-    <object class="GtkFrame">
+    <object class="GtkFrame" id="album_box">
     <property name="margin-top">18</property>
     <property name="margin-start">12</property>
     <property name="margin-bottom">6</property>

@@ -16,6 +16,9 @@ mod imp {
         pub album_art: TemplateChild<gtk::Image>,
 
         #[template_child]
+        pub album_box: TemplateChild<gtk::Frame>,
+
+        #[template_child]
         pub like_button: TemplateChild<gtk::Button>,
 
         #[template_child]
@@ -112,7 +115,7 @@ impl AlbumHeaderWidget {
         widget.artist_button.set_halign(gtk::Align::Center);
         widget.like_button.set_margin_end(0);
         widget.album_info.set_margin_start(0);
-        widget.album_art.set_margin_start(0);
+        widget.album_box.set_margin_start(0);
     }
 
     pub fn hide_like(&self) {
