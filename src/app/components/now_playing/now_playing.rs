@@ -48,7 +48,6 @@ glib::wrapper! {
 
 impl NowPlayingWidget {
     fn new() -> Self {
-        display_add_css_provider(resource!("/components/now_playing.css"));
         glib::Object::new(&[]).expect("Failed to create an instance of NowPlayingWidget")
     }
 

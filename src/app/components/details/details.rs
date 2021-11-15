@@ -61,7 +61,6 @@ glib::wrapper! {
 
 impl AlbumDetailsWidget {
     fn new() -> Self {
-        display_add_css_provider(resource!("/components/details.css"));
         glib::Object::new(&[]).expect("Failed to create an instance of AlbumDetailsWidget")
     }
 
@@ -113,7 +112,7 @@ impl AlbumDetailsWidget {
 
     fn set_loaded(&self) {
         let context = self.style_context();
-        context.add_class("details--loaded");
+        context.add_class("playlist_details--loaded");
     }
 
     fn header_widget(&self) -> &AlbumHeaderWidget {

@@ -24,26 +24,14 @@ mod imp {
         #[template_child]
         pub header_revealer: TemplateChild<gtk::Revealer>,
 
-        /*#[template_child]
-        pub name_label: TemplateChild<gtk::Label>,*/
-
         #[template_child]
         pub header_widget: TemplateChild<AlbumHeaderWidget>,
 
         #[template_child]
         pub header_mobile: TemplateChild<AlbumHeaderWidget>,
 
-        /*#[template_child]
-        pub owner_button: TemplateChild<gtk::LinkButton>,*/
-
-        /*#[template_child]
-        pub owner_button_label: TemplateChild<gtk::Label>,*/
-
         #[template_child]
         pub tracks: TemplateChild<gtk::ListView>,
-
-        /*#[template_child]
-        pub art: TemplateChild<gtk::Image>,*/
     }
 
     #[glib::object_subclass]
@@ -72,7 +60,6 @@ glib::wrapper! {
 
 impl PlaylistDetailsWidget {
     fn new() -> Self {
-        display_add_css_provider(resource!("/components/playlist_details.css"));
         glib::Object::new(&[]).expect("Failed to create an instance of PlaylistDetailsWidget")
     }
 
@@ -186,9 +173,7 @@ impl PlaylistDetails {
             let art_url = info.art.as_ref();
 
             self.widget.header_widget()
-                //.set_name_and_owner(title, owner, art_url, &self.worker);
                 .set_album_and_artist(title, owner);
-                //.set_artwork(art_url)
             self.widget.header_mobile()
                 .set_album_and_artist(title, owner);
 

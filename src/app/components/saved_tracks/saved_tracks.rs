@@ -49,7 +49,6 @@ glib::wrapper! {
 
 impl SavedTracksWidget {
     fn new() -> Self {
-        display_add_css_provider(resource!("/components/saved_tracks.css"));
         glib::Object::new(&[]).expect("Failed to create an instance of SavedTracksWidget")
     }
 

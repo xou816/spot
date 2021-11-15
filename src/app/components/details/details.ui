@@ -61,7 +61,7 @@
       </object>
     </child>
     <style>
-       <class name="details"/>
+       <class name="playlist_details"/>
     </style>
   </template>
 </interface>

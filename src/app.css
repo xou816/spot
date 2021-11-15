@@ -29,3 +29,12 @@ button.tool, menubutton.tool {
 .details__more {
   padding: 0;
 }
+
+.playlist_details {
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.playlist_details--loaded {
+  opacity: 1;
+}
