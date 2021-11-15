@@ -39,7 +39,6 @@
                 <style>
                 <class name="circular"/>
                 <class name="osd"/>
-                <class name="info_btn"/>
                 </style>
             </object>
             </child>
@@ -95,7 +94,6 @@
         <property name="margin-end">12</property>
         <style>
             <class name="circular"/>
-            <class name="details__like"/>
         </style>
         </object>
     </child>

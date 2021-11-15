@@ -29,8 +29,5 @@
     </child>
     </object>
     </child>
-    <style>
-      <class name="saved_tracks"/>
-    </style>
   </template>
 </interface>
