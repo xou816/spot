@@ -1,10 +1,13 @@
+use gettextrs::gettext;
 use gio::prelude::*;
 use gio::SimpleActionGroup;
 use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
+use crate::app::components::SimpleScreenModel;
 use crate::app::components::{labels, PlaylistModel};
+use crate::app::models::SongDescription;
 use crate::app::models::SongModel;
 use crate::app::state::PlaylistChange;
 use crate::app::state::SelectionContext;
@@ -145,5 +148,25 @@ impl PlaylistModel for NowPlayingModel {
     fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
         let selection = self.app_model.map_state(|s| &s.selection);
         Some(Box::new(selection))
+    }
+}
+
+impl SimpleScreenModel for NowPlayingModel {
+    fn title(&self) -> Option<String> {
+        Some(gettext("Now playing"))
+    }
+
+    fn title_updated(&self, _: &AppEvent) -> bool {
+        false
+    }
+
+    fn selection_context(&self) -> Option<&SelectionContext> {
+        Some(&SelectionContext::Queue)
+    }
+
+    fn select_all(&self) {
+        let songs: Vec<SongDescription> = self.queue().songs().cloned().collect();
+        self.dispatcher
+            .dispatch(SelectionAction::Select(songs).into());
     }
 }

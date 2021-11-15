@@ -32,18 +32,9 @@
             <property name="valign">center</property>
             <property name="has-frame">0</property>
             <child>
-              <object class="GtkBox">
-                <property name="spacing">8</property>
-                <child>
-                  <object class="GtkImage">
-                    <property name="icon-name">music-queue-symbolic</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="label">Add to queue</property>
-                  </object>
-                </child>
+              <object class="AdwButtonContent">
+                <property name="icon-name">music-queue-symbolic</property>
+                <property name="label" translatable="yes">Add to queue</property>
               </object>
             </child>
           </object>
@@ -62,18 +53,9 @@
             <property name="valign">center</property>
             <property name="has-frame">0</property>
             <child>
-              <object class="GtkBox">
-                <property name="spacing">8</property>
-                <child>
-                  <object class="GtkImage">
-                    <property name="icon-name">app-remove-symbolic</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="label">Remove</property>
-                  </object>
-                </child>
+              <object class="AdwButtonContent">
+                <property name="icon-name">edit-delete-symbolic</property>
+                <property name="label" translatable="yes">Remove</property>
               </object>
             </child>
           </object>

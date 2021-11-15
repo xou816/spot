@@ -13,9 +13,10 @@ use super::widget::HeaderBarWidget;
 
 pub trait ScreenModel {
     fn title(&self) -> Option<String>;
+    fn title_updated(&self, event: &AppEvent) -> bool;
     fn go_back(&self);
     fn can_go_back(&self) -> bool;
-    fn can_select(&self) -> bool;
+    fn selection_context(&self) -> Option<&SelectionContext>;
     fn can_select_all(&self) -> bool;
     fn start_selection(&self);
     fn select_all(&self);
@@ -51,6 +52,10 @@ impl ScreenModel for DefaultScreenModel {
         self.title.clone()
     }
 
+    fn title_updated(&self, _: &AppEvent) -> bool {
+        false
+    }
+
     fn go_back(&self) {
         self.dispatcher
             .dispatch(BrowserAction::NavigationPop.into())
@@ -60,8 +65,8 @@ impl ScreenModel for DefaultScreenModel {
         self.app_model.get_state().browser.can_pop()
     }
 
-    fn can_select(&self) -> bool {
-        self.selection_context.is_some()
+    fn selection_context(&self) -> Option<&SelectionContext> {
+        self.selection_context.as_ref()
     }
 
     fn can_select_all(&self) -> bool {
@@ -88,7 +93,8 @@ impl ScreenModel for DefaultScreenModel {
 
 pub trait SimpleScreenModel {
     fn title(&self) -> Option<String>;
-    fn selection_context(&self) -> Option<SelectionContext>;
+    fn title_updated(&self, event: &AppEvent) -> bool;
+    fn selection_context(&self) -> Option<&SelectionContext>;
     fn select_all(&self);
 }
 
@@ -120,6 +126,10 @@ where
         self.wrapped_model.title()
     }
 
+    fn title_updated(&self, event: &AppEvent) -> bool {
+        self.wrapped_model.title_updated(event)
+    }
+
     fn go_back(&self) {
         self.dispatcher
             .dispatch(BrowserAction::NavigationPop.into())
@@ -129,8 +139,8 @@ where
         self.app_model.get_state().browser.can_pop()
     }
 
-    fn can_select(&self) -> bool {
-        self.wrapped_model.selection_context().is_some()
+    fn selection_context(&self) -> Option<&SelectionContext> {
+        self.wrapped_model.selection_context()
     }
 
     fn can_select_all(&self) -> bool {
@@ -140,7 +150,7 @@ where
     fn start_selection(&self) {
         if let Some(context) = self.wrapped_model.selection_context() {
             self.dispatcher
-                .dispatch(AppAction::EnableSelection(context));
+                .dispatch(AppAction::EnableSelection(context.clone()));
         }
     }
 
@@ -177,7 +187,7 @@ where
         widget.connect_go_back(clone!(@weak model => move || model.go_back()));
 
         widget.set_title(model.title().as_ref().map(|s| &s[..]));
-        widget.set_selection_possible(model.can_select());
+        widget.set_selection_possible(model.selection_context().is_some());
         widget.set_select_all_possible(model.can_select_all());
         widget.set_can_go_back(model.can_go_back());
 
@@ -226,7 +236,11 @@ where
             | AppEvent::BrowserEvent(BrowserEvent::NavigationPopped)
             | AppEvent::BrowserEvent(BrowserEvent::NavigationHidden(_)) => {
                 self.model.cancel_selection();
-                self.widget.set_can_go_back(self.model.can_go_back())
+                self.widget.set_can_go_back(self.model.can_go_back());
+            }
+            event if self.model.title_updated(event) => {
+                self.widget
+                    .set_title(self.model.title().as_ref().map(|s| &s[..]));
             }
             _ => {}
         }

@@ -17,6 +17,7 @@ use crate::app::{
 
 pub struct PlaylistDetailsModel {
     pub id: String,
+    _editable_selection_context: SelectionContext,
     app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>,
 }
@@ -24,7 +25,8 @@ pub struct PlaylistDetailsModel {
 impl PlaylistDetailsModel {
     pub fn new(id: String, app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
         Self {
-            id,
+            id: id.clone(),
+            _editable_selection_context: SelectionContext::EditablePlaylist(id),
             app_model,
             dispatcher,
         }
@@ -194,7 +196,7 @@ impl PlaylistModel for PlaylistDetailsModel {
 
     fn enable_selection(&self) -> bool {
         self.dispatcher.dispatch(AppAction::EnableSelection(
-            self.selection_context().unwrap(),
+            self.selection_context().unwrap().clone(),
         ));
         true
     }
@@ -209,11 +211,15 @@ impl SimpleScreenModel for PlaylistDetailsModel {
         None
     }
 
-    fn selection_context(&self) -> Option<SelectionContext> {
+    fn title_updated(&self, _: &AppEvent) -> bool {
+        false
+    }
+
+    fn selection_context(&self) -> Option<&SelectionContext> {
         Some(if self.is_playlist_editable() {
-            SelectionContext::EditablePlaylist(self.id.clone())
+            &self._editable_selection_context
         } else {
-            SelectionContext::Playlist
+            &SelectionContext::Playlist
         })
     }
 

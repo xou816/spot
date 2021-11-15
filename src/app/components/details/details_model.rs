@@ -228,8 +228,12 @@ impl SimpleScreenModel for DetailsModel {
         None
     }
 
-    fn selection_context(&self) -> Option<SelectionContext> {
-        Some(SelectionContext::Default)
+    fn title_updated(&self, _: &AppEvent) -> bool {
+        false
+    }
+
+    fn selection_context(&self) -> Option<&SelectionContext> {
+        Some(&SelectionContext::Default)
     }
 
     fn select_all(&self) {

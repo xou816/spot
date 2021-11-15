@@ -3,6 +3,7 @@ use gio::SimpleActionGroup;
 use std::ops::Deref;
 use std::rc::Rc;
 
+use crate::app::components::SimpleScreenModel;
 use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::*;
 use crate::app::state::SelectionContext;
@@ -26,7 +27,7 @@ impl ArtistDetailsModel {
         }
     }
 
-    fn tracks_ref(&self) -> Option<impl Deref<Target = Vec<SongDescription>> + '_> {
+    fn songs_ref(&self) -> Option<impl Deref<Target = Vec<SongDescription>> + '_> {
         self.app_model
             .map_state_opt(|s| Some(&s.browser.artist_state(&self.id)?.top_tracks))
     }
@@ -86,7 +87,7 @@ impl PlaylistModel for ArtistDetailsModel {
     }
 
     fn play_song_at(&self, _pos: usize, id: &str) {
-        let tracks = self.tracks_ref();
+        let tracks = self.songs_ref();
         if let Some(tracks) = tracks {
             self.dispatcher
                 .dispatch(PlaybackAction::LoadSongs(tracks.clone()).into());
@@ -100,7 +101,7 @@ impl PlaylistModel for ArtistDetailsModel {
             event,
             AppEvent::BrowserEvent(BrowserEvent::ArtistDetailsUpdated(id)) if id == &self.id
         ) {
-            let tracks = self.tracks_ref()?;
+            let tracks = self.songs_ref()?;
             Some(ListDiff::Set(tracks.iter().map(|s| s.into()).collect()))
         } else {
             None
@@ -108,7 +109,7 @@ impl PlaylistModel for ArtistDetailsModel {
     }
 
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
-        let songs = self.tracks_ref()?;
+        let songs = self.songs_ref()?;
         let song = songs.iter().find(|&song| song.id == id)?;
 
         let group = SimpleActionGroup::new();
@@ -124,7 +125,7 @@ impl PlaylistModel for ArtistDetailsModel {
     }
 
     fn menu_for(&self, id: &str) -> Option<gio::MenuModel> {
-        let songs = self.tracks_ref()?;
+        let songs = self.songs_ref()?;
         let song = songs.iter().find(|&song| song.id == id)?;
 
         let menu = gio::Menu::new();
@@ -147,7 +148,7 @@ impl PlaylistModel for ArtistDetailsModel {
 
     fn select_song(&self, id: &str) {
         let song = self
-            .tracks_ref()
+            .songs_ref()
             .and_then(|songs| songs.iter().find(|&song| song.id == id).cloned());
         if let Some(song) = song {
             self.dispatcher
@@ -168,5 +169,30 @@ impl PlaylistModel for ArtistDetailsModel {
 
     fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
         Some(Box::new(self.app_model.map_state(|s| &s.selection)))
+    }
+}
+
+impl SimpleScreenModel for ArtistDetailsModel {
+    fn title(&self) -> Option<String> {
+        Some(self.get_artist_name()?.clone())
+    }
+
+    fn title_updated(&self, event: &AppEvent) -> bool {
+        matches!(
+            event,
+            AppEvent::BrowserEvent(BrowserEvent::ArtistDetailsUpdated(_))
+        )
+    }
+
+    fn selection_context(&self) -> Option<&SelectionContext> {
+        Some(&SelectionContext::Default)
+    }
+
+    fn select_all(&self) {
+        if let Some(songs) = self.songs_ref() {
+            let songs: Vec<SongDescription> = songs.iter().cloned().collect();
+            self.dispatcher
+                .dispatch(SelectionAction::Select(songs).into());
+        }
     }
 }

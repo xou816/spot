@@ -53,16 +53,15 @@ impl ScreenFactory {
     }
 
     pub fn make_now_playing(&self) -> impl ListenerComponent {
-        let screen_model = DefaultScreenModel::new(
-            Some(gettext("Now playing")),
-            Some(SelectionContext::Queue),
-            Rc::clone(&self.app_model),
-            self.dispatcher.box_clone(),
-        );
         let model = Rc::new(NowPlayingModel::new(
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
+        let screen_model = SimpleScreenModelWrapper::new(
+            Rc::clone(&model),
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        );
         StandardScreen::new(NowPlaying::new(model, self.worker.clone()), Rc::new(screen_model))
     }
 
@@ -113,17 +112,16 @@ impl ScreenFactory {
     }
 
     pub fn make_artist_details(&self, id: String) -> impl ListenerComponent {
-        let screen_model = DefaultScreenModel::new(
-            None,
-            Some(SelectionContext::Default),
-            Rc::clone(&self.app_model),
-            self.dispatcher.box_clone(),
-        );
         let model = Rc::new(ArtistDetailsModel::new(
             id,
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
+        let screen_model = SimpleScreenModelWrapper::new(
+            Rc::clone(&model),
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        );
         StandardScreen::new(
             ArtistDetails::new(model, self.worker.clone()),
             Rc::new(screen_model),

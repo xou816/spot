@@ -50,7 +50,7 @@
     <file alias="components/headerbar.ui">app/components/headerbar/headerbar.ui</file>
     <file alias="components/headerbar.css">app/components/headerbar/headerbar.css</file>
   </gresource>
-  <gresource prefix="/dev/alextren/Spot/Devel/icons/scalable/actions/">
+  <gresource prefix="/dev/alextren/Spot/icons/scalable/actions/">
     <file compressed="true" preprocess="xml-stripblanks" alias="music-queue-symbolic.svg">app/components/selection/icons/music-queue-symbolic.svg</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="playlist2-symbolic.svg">app/components/selection/icons/playlist2-symbolic.svg</file>
   </gresource>

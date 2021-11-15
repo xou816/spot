@@ -14,6 +14,9 @@ mod imp {
     #[template(resource = "/dev/alextren/Spot/components/headerbar.ui")]
     pub struct HeaderBarWidget {
         #[template_child]
+        pub main_header: TemplateChild<libadwaita::HeaderBar>,
+
+        #[template_child]
         pub selection_header: TemplateChild<libadwaita::HeaderBar>,
 
         #[template_child]
@@ -121,12 +124,14 @@ impl HeaderBarWidget {
 
     pub fn set_selection_active(&self, active: bool) {
         if active {
-            self.widget().selection_header.show();
-        } else {
-            self.widget().selection_header.hide();
             self.widget()
                 .selection_title
                 .set_title(&gettext("No song selected"));
+            self.widget().selection_title.show();
+            self.widget().selection_header.show();
+        } else {
+            self.widget().selection_title.hide();
+            self.widget().selection_header.hide();
         }
     }
 
@@ -140,9 +145,13 @@ impl HeaderBarWidget {
     }
 
     pub fn set_title(&self, title: Option<&str>) {
+        let context = self.widget().main_header.style_context();
         self.widget().title.set_visible(title.is_some());
         if let Some(title) = title {
             self.widget().title.set_title(title);
+            context.remove_class("headerbar--translucent");
+        } else {
+            context.add_class("headerbar--translucent");
         }
     }
 }

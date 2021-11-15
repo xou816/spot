@@ -7,7 +7,7 @@
       <object class="GtkOverlay" id="overlay">
         <property name="hexpand">1</property>
         <child>
-          <object class="AdwHeaderBar">
+          <object class="AdwHeaderBar" id="main_header">
             <property name="show-end-title-buttons">1</property>
             <child>
               <object class="GtkButton" id="go_back">
@@ -26,8 +26,7 @@
             </child>
             <child type="end">
               <object class="GtkButton" id="start_selection">
-                <property name="receives-default">1</property>
-                <property name="label">Select...</property>
+                <property name="icon-name">object-select-symbolic</property>
               </object>
             </child>
           </object>
