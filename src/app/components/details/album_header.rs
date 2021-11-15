@@ -22,6 +22,9 @@ mod imp {
         pub info_button: TemplateChild<gtk::Button>,
 
         #[template_child]
+        pub album_info: TemplateChild<gtk::Box>,
+
+        #[template_child]
         pub artist_button: TemplateChild<gtk::LinkButton>,
 
         #[template_child]
@@ -103,4 +106,16 @@ impl AlbumHeaderWidget {
         widget.artist_button_label.set_label(artist);
     }
 
+    pub fn set_centered(&self) {
+        let widget = self.widget();
+        widget.album_label.set_halign(gtk::Align::Center);
+        widget.artist_button.set_halign(gtk::Align::Center);
+        widget.like_button.set_margin_end(0);
+        widget.album_info.set_margin_start(0);
+        widget.album_art.set_margin_start(0);
+    }
+
+    pub fn hide_like(&self) {
+        self.widget().like_button.set_visible(false);
+    }
 }

@@ -28,6 +28,7 @@
                   <child>
                     <object class="AlbumHeaderWidget" id="header_mobile">
                       <property name="orientation">vertical</property>
+											<property name="spacing">12</property>
                     </object>
                   </child>
                 </object>
@@ -59,9 +60,9 @@
         </child>
       </object>
     </child>
-    <!-- <style> -->
-    <!--   <class name="details"/> -->
-    <!-- </style> -->
+    <style>
+       <class name="details"/>
+    </style>
   </template>
 </interface>
 

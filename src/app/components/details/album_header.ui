@@ -48,7 +48,7 @@
     </object>
     </child>
     <child>
-        <object class="GtkBox">
+        <object class="GtkBox" id="album_info">
         <property name="hexpand">1</property>
         <property name="margin-start">18</property>
         <property name="valign">center</property>

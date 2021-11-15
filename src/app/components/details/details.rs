@@ -27,26 +27,12 @@ mod imp {
 
         #[template_child]
         pub header_widget: TemplateChild<AlbumHeaderWidget>,
-        //#[template_child]
-        //pub album_label: TemplateChild<gtk::Label>,
+
+        #[template_child]
+        pub header_mobile: TemplateChild<AlbumHeaderWidget>,
 
         #[template_child]
         pub album_tracks: TemplateChild<gtk::ListView>,
-
-        //#[template_child]
-        //pub album_art: TemplateChild<gtk::Image>,
-
-        //#[template_child]
-        //pub like_button: TemplateChild<gtk::Button>,
-
-        //#[template_child]
-        //pub info_button: TemplateChild<gtk::Button>,
-
-        //#[template_child]
-        //pub artist_button: TemplateChild<gtk::LinkButton>,
-
-        //#[template_child]
-        //pub artist_button_label: TemplateChild<gtk::Label>,
     }
 
     #[glib::object_subclass]
@@ -134,6 +120,9 @@ impl AlbumDetailsWidget {
         &self.widget().header_widget
     }
 
+    fn header_mobile(&self) -> &AlbumHeaderWidget {
+        &self.widget().header_mobile
+    }
 }
 
 pub struct Details {
@@ -141,7 +130,6 @@ pub struct Details {
     worker: Worker,
     widget: AlbumDetailsWidget,
     modal: ReleaseDetailsWindow,
-    //header: AlbumHeaderWidget,
     children: Vec<Box<dyn EventListener>>,
 }
 
@@ -154,8 +142,6 @@ impl Details {
 
         let widget = AlbumDetailsWidget::new();
 
-        //let header = AlbumHeaderWidget::new();
-
         let playlist = Box::new(Playlist::new(
             widget.album_tracks_widget().clone(),
             model.clone(),
@@ -164,7 +150,9 @@ impl Details {
         let modal = ReleaseDetailsWindow::new();
 
         widget.header_widget().connect_liked(clone!(@weak model => move || model.toggle_save_album()));
+        widget.header_mobile().connect_liked(clone!(@weak model => move || model.toggle_save_album()));
 
+        widget.header_mobile().set_centered();
         widget.connect_header();
 
         widget.connect_bottom_edge(clone!(@weak model => move || {
@@ -188,7 +176,6 @@ impl Details {
             worker,
             widget,
             modal,
-            //header,
             children: vec![playlist],
         }
     }
@@ -198,6 +185,7 @@ impl Details {
         if let Some(info) = self.model.get_album_info() {
             let is_liked = info.description.is_liked;
             self.widget.header_widget().set_liked(is_liked);
+            self.widget.header_mobile().set_liked(is_liked);
         }
     }
 
@@ -207,9 +195,18 @@ impl Details {
             let album = &album.description;
 
             self.widget.header_widget().set_liked(album.is_liked);
+            self.widget.header_mobile().set_liked(album.is_liked);
+
             self.widget.header_widget()
                 .set_album_and_artist(&album.title[..], &album.artists_name());
+            self.widget.header_mobile()
+                .set_album_and_artist(&album.title[..], &album.artists_name());
+
             self.widget.header_widget()
+                .connect_artist_clicked(clone!(@weak self.model as model => move || {
+                    model.view_artist();
+                }));
+            self.widget.header_mobile()
                 .connect_artist_clicked(clone!(@weak self.model as model => move || {
                     model.view_artist();
                 }));
@@ -227,16 +224,18 @@ impl Details {
             if let Some(art) = album.art.clone() {
                 let widget = self.widget.downgrade();
                 let header = self.widget.header_widget().downgrade();
+                let header_mobile = self.widget.header_mobile().downgrade();
                 let modal = self.modal.downgrade();
 
                 self.worker.send_local_task(async move {
                     let pixbuf = ImageLoader::new()
                         .load_remote(&art[..], "jpg", 200, 200)
                         .await;
-                    if let (Some(widget), Some(modal), Some(header), Some(ref pixbuf)) =
-                        (widget.upgrade(), modal.upgrade(), header.upgrade(), pixbuf)
+                    if let (Some(widget), Some(modal), Some(header), Some(header_mobile),Some(ref pixbuf)) =
+                        (widget.upgrade(), modal.upgrade(), header.upgrade(), header_mobile.upgrade(),pixbuf)
                     {
                         header.set_artwork(pixbuf);
+                        header_mobile.set_artwork(pixbuf);
                         widget.set_loaded();
                         modal.set_artwork(pixbuf);
                     }
