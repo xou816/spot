@@ -118,7 +118,8 @@ impl AlbumHeaderWidget {
         widget.album_box.set_margin_start(0);
     }
 
-    pub fn hide_like(&self) {
+    pub fn hide_actions(&self) {
         self.widget().like_button.set_visible(false);
+        self.widget().info_button.set_visible(false);
     }
 }
