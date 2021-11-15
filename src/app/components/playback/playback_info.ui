@@ -37,5 +37,8 @@
                 </child>
             </object>
         </child>
+        <style>
+		    <class name="body"/>
+		</style>
     </template>
 </interface>
