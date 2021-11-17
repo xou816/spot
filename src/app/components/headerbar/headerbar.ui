@@ -33,7 +33,7 @@
         </child>
         <child type="overlay">
           <object class="AdwHeaderBar" id="selection_header">
-            <property name="show-end-title-buttons">1</property>
+            <property name="show-end-title-buttons">0</property>
             <style>
               <class name="selection-mode"/>
             </style>

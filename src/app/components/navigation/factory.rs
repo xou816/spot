@@ -62,7 +62,10 @@ impl ScreenFactory {
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         );
-        StandardScreen::new(NowPlaying::new(model, self.worker.clone()), Rc::new(screen_model))
+        StandardScreen::new(
+            NowPlaying::new(model, self.worker.clone()),
+            Rc::new(screen_model),
+        )
     }
 
     pub fn make_saved_tracks(&self) -> impl ListenerComponent {
@@ -76,7 +79,10 @@ impl ScreenFactory {
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        StandardScreen::new(SavedTracks::new(model, self.worker.clone()), Rc::new(screen_model))
+        StandardScreen::new(
+            SavedTracks::new(model, self.worker.clone()),
+            Rc::new(screen_model),
+        )
     }
 
     pub fn make_album_details(&self, id: String) -> impl ListenerComponent {
