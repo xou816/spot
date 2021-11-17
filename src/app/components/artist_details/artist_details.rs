@@ -132,7 +132,7 @@ impl ArtistDetails {
 
         if let Some(store) = model.get_list_store() {
             widget.bind_artist_releases(
-                worker,
+                worker.clone(),
                 &*store,
                 clone!(@weak model => move |id| {
                     model.open_album(id);
@@ -143,6 +143,8 @@ impl ArtistDetails {
         let playlist = Box::new(Playlist::new(
             widget.top_tracks_widget().clone(),
             Rc::clone(&model),
+            worker,
+            true,
         ));
 
         Self {

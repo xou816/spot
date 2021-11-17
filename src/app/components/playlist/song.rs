@@ -1,6 +1,8 @@
 use crate::app::components::display_add_css_provider;
+use crate::app::loader::ImageLoader;
 use crate::app::models::SongModel;
 
+use crate::app::Worker;
 use gio::MenuModel;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -32,6 +34,9 @@ mod imp {
 
         #[template_child]
         pub menu_btn: TemplateChild<gtk::MenuButton>,
+
+        #[template_child]
+        pub song_cover: TemplateChild<gtk::Image>,
     }
 
     #[glib::object_subclass]
@@ -70,9 +75,9 @@ impl SongWidget {
         glib::Object::new(&[]).expect("Failed to create an instance of SongWidget")
     }
 
-    pub fn for_model(model: SongModel) -> Self {
+    pub fn for_model(model: SongModel, worker: Worker) -> Self {
         let _self = Self::new();
-        _self.bind(&model);
+        _self.bind(&model, worker, true);
         _self
     }
 
@@ -114,13 +119,36 @@ impl SongWidget {
         }
     }
 
-    pub fn bind(&self, model: &SongModel) {
+    fn set_image(&self, pixbuf: Option<&gdk_pixbuf::Pixbuf>) {
+        imp::SongWidget::from_instance(self)
+            .song_cover
+            .set_from_pixbuf(pixbuf);
+    }
+
+    pub fn bind_art(&self, model: &SongModel, worker: Worker) {
+        if let Some(url) = model.cover_url() {
+            let _self = self.downgrade();
+            worker.send_local_task(async move {
+                if let Some(_self) = _self.upgrade() {
+                    let loader = ImageLoader::new();
+                    let result = loader.load_remote(&url, "jpg", 100, 100).await;
+                    _self.set_image(result.as_ref());
+                }
+            });
+        }
+    }
+
+    pub fn bind(&self, model: &SongModel, worker: Worker, show_cover: bool) {
         let widget = imp::SongWidget::from_instance(self);
 
-        model.bind_index(&*widget.song_index, "label");
         model.bind_title(&*widget.song_title, "label");
         model.bind_artist(&*widget.song_artist, "label");
         model.bind_duration(&*widget.song_length, "label");
+        if show_cover {
+            self.bind_art(model, worker);
+        } else {
+            model.bind_index(&*widget.song_index, "label");
+        }
 
         self.set_playing(model.get_playing());
         model.connect_playing_local(clone!(@weak self as _self => move |song| {
