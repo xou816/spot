@@ -3,10 +3,14 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: POEditor.com\n"
+"X-Generator: Poedit 3.0\n"
 "Project-Id-Version: Spot\n"
 "Language: id\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: Kukuh Syafaat <kukuhsyafaat@gnome.org>\n"
+"Language-Team: \n"
 
 #. translators: This is part of a larger label that reads "<Album> by <Artist>"
 #: src/app/components/details/release_details.rs:101
@@ -183,29 +187,23 @@ msgstr "Artis"
 
 #: src/app/components/navigation/home.rs:47
 msgid "Saved tracks"
-msgstr ""
+msgstr "Trek yang disimpan"
 
-#: 
 msgctxt "A title that is shown when the user has not saved any albums."
 msgid "You have no saved albums."
-msgstr ""
+msgstr "Anda tidak memiliki album yang disimpan."
 
-#: 
 msgctxt "A description of what happens when the user has saved albums."
 msgid "Your library will be shown here."
-msgstr ""
+msgstr "Pustaka Anda akan ditampilkan di sini."
 
-#: 
 msgctxt "A title that is shown when the user has not saved any playlists."
 msgid "You have no saved playlists."
-msgstr ""
+msgstr "Anda tidak memiliki daftar putar yang disimpan."
 
-#: 
 msgctxt "A description of what happens when the user has saved playlists."
 msgid "Your playlists will be shown here."
-msgstr ""
+msgstr "Daftar putar Anda akan ditampilkan di sini."
 
-#: 
 msgid "Caps Lock is enabled!"
-msgstr ""
-
+msgstr "Caps Lock diaktifkan!"
