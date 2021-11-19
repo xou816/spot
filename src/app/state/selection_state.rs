@@ -28,11 +28,12 @@ impl From<SelectionEvent> for AppEvent {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub enum SelectionContext {
     Queue,
     Playlist,
-    Global,
+    EditablePlaylist(String),
+    Default,
 }
 
 pub struct SelectionState {
@@ -46,7 +47,7 @@ impl Default for SelectionState {
         Self {
             selected_songs: Default::default(),
             selection_active: false,
-            context: SelectionContext::Global,
+            context: SelectionContext::Default,
         }
     }
 }
@@ -88,10 +89,6 @@ impl SelectionState {
 
     pub fn is_song_selected(&self, id: &str) -> bool {
         self.selected_songs.contains_key(id)
-    }
-
-    pub fn all_selected<'a>(&self, mut ids: impl Iterator<Item = &'a String>) -> bool {
-        ids.all(|id| self.is_song_selected(id))
     }
 
     pub fn count(&self) -> usize {

@@ -13,6 +13,8 @@ use crate::app::{AppEvent, BrowserEvent};
 
 mod imp {
 
+    use libadwaita::subclass::prelude::BinImpl;
+
     use super::*;
 
     #[derive(Debug, Default, CompositeTemplate)]
@@ -50,7 +52,7 @@ mod imp {
     impl ObjectSubclass for AlbumDetailsWidget {
         const NAME: &'static str = "AlbumDetailsWidget";
         type Type = super::AlbumDetailsWidget;
-        type ParentType = gtk::Box;
+        type ParentType = libadwaita::Bin;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
@@ -63,11 +65,11 @@ mod imp {
 
     impl ObjectImpl for AlbumDetailsWidget {}
     impl WidgetImpl for AlbumDetailsWidget {}
-    impl BoxImpl for AlbumDetailsWidget {}
+    impl BinImpl for AlbumDetailsWidget {}
 }
 
 glib::wrapper! {
-    pub struct AlbumDetailsWidget(ObjectSubclass<imp::AlbumDetailsWidget>) @extends gtk::Widget, gtk::Box;
+    pub struct AlbumDetailsWidget(ObjectSubclass<imp::AlbumDetailsWidget>) @extends gtk::Widget, libadwaita::Bin;
 }
 
 impl AlbumDetailsWidget {

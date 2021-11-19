@@ -10,6 +10,7 @@ use gettextrs::*;
 use gio::prelude::*;
 use gio::SimpleAction;
 use gtk::prelude::*;
+use libadwaita::ColorScheme;
 
 mod api;
 mod app;
@@ -36,8 +37,10 @@ fn main() {
     expose_widgets();
     let builder = gtk::Builder::from_resource("/dev/alextren/Spot/window.ui");
     let window: libadwaita::ApplicationWindow = builder.object("window").unwrap();
+
     if cfg!(debug_assertions) {
         window.style_context().add_class("devel");
+        gtk_app.set_resource_base_path(Some("/dev/alextren/Spot"));
     }
 
     let context = glib::MainContext::default();
@@ -81,11 +84,11 @@ fn startup(settings: &settings::SpotSettings) {
         .expect("Could not load resources");
     gio::resources_register(&res);
 
-    if settings.prefers_dark_theme {
-        manager.set_color_scheme(libadwaita::ColorScheme::PreferDark);
+    manager.set_color_scheme(if settings.prefers_dark_theme {
+        ColorScheme::PreferDark
     } else {
-        manager.set_color_scheme(libadwaita::ColorScheme::PreferLight);
-    }
+        ColorScheme::PreferLight
+    });
 
     let provider = gtk::CssProvider::new();
     provider.load_from_resource("/dev/alextren/Spot/app.css");

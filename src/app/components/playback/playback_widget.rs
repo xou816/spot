@@ -191,6 +191,11 @@ impl PlaybackWidget {
         widget.controls_mobile.set_shuffled(shuffled);
     }
 
+    pub fn set_seekbar_visible(&self, visible: bool) {
+        let widget = imp::PlaybackWidget::from_instance(self);
+        widget.seek_bar.set_visible(visible);
+    }
+
     pub fn connect_play_pause<F>(&self, f: F)
     where
         F: Fn() + Clone + 'static,
