@@ -85,7 +85,7 @@ impl App {
                 dispatcher.box_clone(),
                 worker.clone(),
             ),
-            App::make_search_bar(builder, dispatcher.box_clone()),
+            App::make_search_button(builder, dispatcher.box_clone()),
             App::make_user_menu(builder, Rc::clone(model), dispatcher.box_clone()),
             App::make_notification(builder, dispatcher),
         ];
@@ -116,13 +116,7 @@ impl App {
         app_model: Rc<AppModel>,
     ) -> Box<impl EventListener> {
         let window: libadwaita::ApplicationWindow = builder.object("window").unwrap();
-        let search_bar: gtk::SearchBar = builder.object("search_bar").unwrap();
-        Box::new(MainWindow::new(
-            settings.window.clone(),
-            app_model,
-            window,
-            search_bar,
-        ))
+        Box::new(MainWindow::new(settings.window.clone(), app_model, window))
     }
 
     fn make_navigation(
@@ -178,20 +172,13 @@ impl App {
         ))
     }
 
-    fn make_search_bar(
+    fn make_search_button(
         builder: &gtk::Builder,
         dispatcher: Box<dyn ActionDispatcher>,
-    ) -> Box<SearchBar> {
-        let search_button: gtk::ToggleButton = builder.object("search_button").unwrap();
-        let search_entry: gtk::SearchEntry = builder.object("search_entry").unwrap();
-        let search_bar: gtk::SearchBar = builder.object("search_bar").unwrap();
+    ) -> Box<SearchButton> {
+        let search_button: gtk::Button = builder.object("search_button").unwrap();
         let model = SearchBarModel(dispatcher);
-        Box::new(SearchBar::new(
-            model,
-            search_button,
-            search_bar,
-            search_entry,
-        ))
+        Box::new(SearchButton::new(model, search_button))
     }
 
     fn make_user_menu(

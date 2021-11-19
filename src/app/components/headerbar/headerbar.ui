@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <requires lib="gtk" version="4.0"/>
-  <requires lib="libadwaita" version="1.0"/>
+  <requires lib="gtk" version="4.0" />
+  <requires lib="libadwaita" version="1.0" />
   <template class="HeaderBarWidget" parent="AdwBin">
-    <child>
+    <child type="root">
       <object class="GtkOverlay" id="overlay">
         <property name="hexpand">1</property>
         <child>
@@ -35,7 +35,7 @@
           <object class="AdwHeaderBar" id="selection_header">
             <property name="show-end-title-buttons">0</property>
             <style>
-              <class name="selection-mode"/>
+              <class name="selection-mode" />
             </style>
             <child>
               <object class="GtkButton" id="cancel">

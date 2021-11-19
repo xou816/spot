@@ -46,6 +46,11 @@ impl AppAction {
     pub fn ViewUser(id: String) -> Self {
         BrowserAction::NavigationPush(ScreenName::User(id)).into()
     }
+
+    #[allow(non_snake_case)]
+    pub fn ViewSearch() -> Self {
+        BrowserAction::NavigationPush(ScreenName::Search).into()
+    }
 }
 
 #[derive(Clone, Debug)]

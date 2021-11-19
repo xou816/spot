@@ -46,6 +46,7 @@ mod imp {
         const NAME: &'static str = "HeaderBarWidget";
         type Type = super::HeaderBarWidget;
         type ParentType = libadwaita::Bin;
+        type Interfaces = (gtk::Buildable,);
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
@@ -61,6 +62,23 @@ mod imp {
             self.parent_constructed(obj);
             self.selection_header.set_visible(false);
             display_add_css_provider(resource!("/components/headerbar.css"));
+        }
+    }
+
+    impl BuildableImpl for HeaderBarWidget {
+        fn add_child(
+            &self,
+            buildable: &Self::Type,
+            builder: &gtk::Builder,
+            child: &glib::Object,
+            type_: Option<&str>,
+        ) {
+            if Some("root") == type_ {
+                self.parent_add_child(buildable, builder, child, type_);
+            } else {
+                self.main_header
+                    .set_title_widget(child.downcast_ref::<gtk::Widget>());
+            }
         }
     }
 
