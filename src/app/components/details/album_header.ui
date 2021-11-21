@@ -80,7 +80,7 @@
                 </object>
             </child>
             <style>
-                <class name="details__more"/>
+                <class name="title-4"/>
             </style>
             </object>
         </child>

@@ -1,3 +1,4 @@
+use crate::app::components::display_add_css_provider;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{glib, CompositeTemplate};
@@ -45,6 +46,7 @@ mod imp {
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
+            display_add_css_provider(resource!("/components/album_header.css"));
             obj.init_template();
         }
     }
@@ -58,9 +60,7 @@ glib::wrapper! {
     pub struct AlbumHeaderWidget(ObjectSubclass<imp::AlbumHeaderWidget>) @extends gtk::Widget, gtk::Box;
 }
 
-
 impl AlbumHeaderWidget {
-
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create an instance of AlbumHeaderWidget")
     }
@@ -94,9 +94,11 @@ impl AlbumHeaderWidget {
     }
 
     pub fn set_liked(&self, is_liked: bool) {
-        self.widget()
-            .like_button
-            .set_icon_name(if is_liked { "starred-symbolic" } else { "non-starred-symbolic" });
+        self.widget().like_button.set_icon_name(if is_liked {
+            "starred-symbolic"
+        } else {
+            "non-starred-symbolic"
+        });
     }
 
     pub fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {

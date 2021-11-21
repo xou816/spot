@@ -3,7 +3,7 @@ use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use std::rc::Rc;
 
-use crate::app::components::{display_add_css_provider, Component, EventListener, Playlist};
+use crate::app::components::{Component, EventListener, Playlist};
 use crate::app::{state::PlaybackEvent, AppEvent, Worker};
 
 use super::NowPlayingModel;

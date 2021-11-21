@@ -6,7 +6,7 @@ use std::rc::Rc;
 use super::PlaylistDetailsModel;
 use crate::app::components::AlbumHeaderWidget;
 
-use crate::app::components::{display_add_css_provider, Component, EventListener, Playlist};
+use crate::app::components::{Component, EventListener, Playlist};
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
 use crate::app::{AppEvent, BrowserEvent};
@@ -148,13 +148,17 @@ impl PlaylistDetails {
             model.load_more_tracks();
         }));
 
-        widget.header_widget().connect_artist_clicked(clone!(@weak model => move || {
-            model.view_owner();
-        }));
+        widget
+            .header_widget()
+            .connect_artist_clicked(clone!(@weak model => move || {
+                model.view_owner();
+            }));
 
-        widget.header_mobile().connect_artist_clicked(clone!(@weak model => move || {
-            model.view_owner();
-        }));
+        widget
+            .header_mobile()
+            .connect_artist_clicked(clone!(@weak model => move || {
+                model.view_owner();
+            }));
 
         widget.header_widget().hide_actions();
         widget.header_mobile().hide_actions();
@@ -174,9 +178,11 @@ impl PlaylistDetails {
             let owner = &info.owner.display_name[..];
             let art_url = info.art.as_ref();
 
-            self.widget.header_widget()
+            self.widget
+                .header_widget()
                 .set_album_and_artist(title, owner);
-            self.widget.header_mobile()
+            self.widget
+                .header_mobile()
                 .set_album_and_artist(title, owner);
 
             if let Some(art_url) = art_url.cloned() {
@@ -188,16 +194,19 @@ impl PlaylistDetails {
                     let pixbuf = ImageLoader::new()
                         .load_remote(&art_url[..], "jpg", 200, 200)
                         .await;
-                    if let (Some(widget), Some(header), Some(header_mobile), Some(ref pixbuf)) =
-                        (widget.upgrade(), header.upgrade(), header_mobile.upgrade(),pixbuf)
-                    {
+                    if let (Some(widget), Some(header), Some(header_mobile), Some(ref pixbuf)) = (
+                        widget.upgrade(),
+                        header.upgrade(),
+                        header_mobile.upgrade(),
+                        pixbuf,
+                    ) {
                         header.set_artwork(pixbuf);
                         header_mobile.set_artwork(pixbuf);
                         widget.set_loaded();
                     }
                 });
             } else {
-               self.widget.set_loaded();
+                self.widget.set_loaded();
             }
         }
     }

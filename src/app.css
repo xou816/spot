@@ -21,15 +21,6 @@ button.tool, menubutton.tool {
   background-color: @card_bg_color;
 }
 
-.details__more label {
-  font-size: 16px;
-  color: @theme_text_color;
-}
-
-.details__more {
-  padding: 0;
-}
-
 .playlist_details {
   transition: opacity 0.3s ease;
   opacity: 0;
