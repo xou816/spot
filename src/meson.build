@@ -95,8 +95,6 @@ sources = files(
 './app/components/saved_tracks/saved_tracks.rs',
 './app/components/saved_tracks/saved_tracks_model.rs',
 './app/components/saved_tracks/mod.rs',
-'./app/components/search/search_bar.rs',
-'./app/components/search/search_bar_model.rs',
 './app/components/search/search_model.rs',
 './app/components/search/mod.rs',
 './app/components/search/search.rs',

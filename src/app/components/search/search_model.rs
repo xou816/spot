@@ -18,7 +18,17 @@ impl SearchResultsModel {
         }
     }
 
-    pub fn get_query(&self) -> Option<impl Deref<Target = String> + '_> {
+    pub fn go_back(&self) {
+        self.dispatcher
+            .dispatch(BrowserAction::NavigationPop.into());
+    }
+
+    pub fn search(&self, query: String) {
+        self.dispatcher
+            .dispatch(BrowserAction::Search(query).into());
+    }
+
+    fn get_query(&self) -> Option<impl Deref<Target = String> + '_> {
         self.app_model
             .map_state_opt(|s| Some(&s.browser.search_state()?.query))
     }
@@ -31,7 +41,7 @@ impl SearchResultsModel {
                 .call_spotify_and_dispatch(move || async move {
                     api.search(&query, 0, 5)
                         .await
-                        .map(|albums| BrowserAction::SetSearchResults(Box::new(albums)).into())
+                        .map(|results| BrowserAction::SetSearchResults(Box::new(results)).into())
                 });
         }
     }

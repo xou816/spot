@@ -1,4 +1,3 @@
-use gettextrs::*;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
@@ -19,7 +18,16 @@ mod imp {
     #[template(resource = "/dev/alextren/Spot/components/search.ui")]
     pub struct SearchResultsWidget {
         #[template_child]
-        pub results_label: TemplateChild<gtk::Label>,
+        pub go_back: TemplateChild<gtk::Button>,
+
+        #[template_child]
+        pub search_entry: TemplateChild<gtk::SearchEntry>,
+
+        #[template_child]
+        pub status_page: TemplateChild<libadwaita::StatusPage>,
+
+        #[template_child]
+        pub search_results: TemplateChild<gtk::Widget>,
 
         #[template_child]
         pub albums_results: TemplateChild<gtk::FlowBox>,
@@ -57,11 +65,39 @@ impl SearchResultsWidget {
         glib::Object::new(&[]).expect("Failed to create an instance of SearchResultsWidget")
     }
 
+    fn widget(&self) -> &imp::SearchResultsWidget {
+        imp::SearchResultsWidget::from_instance(self)
+    }
+
+    pub fn connect_go_back<F>(&self, f: F)
+    where
+        F: Fn() + 'static,
+    {
+        self.widget().go_back.connect_clicked(move |_| f());
+    }
+
+    pub fn connect_search_updated<F>(&self, f: F)
+    where
+        F: Fn(String) + 'static,
+    {
+        self.widget()
+            .search_entry
+            .connect_changed(clone!(@weak self as _self => move |s| {
+                let query = s.text();
+                let query = query.as_str();
+                _self.widget().status_page.set_visible(query.is_empty());
+                _self.widget().search_results.set_visible(!query.is_empty());
+                if !query.is_empty() {
+                    f(query.to_string());
+                }
+            }));
+    }
+
     fn bind_albums_results<F>(&self, worker: Worker, store: &gio::ListStore, on_album_pressed: F)
     where
         F: Fn(&String) + Clone + 'static,
     {
-        imp::SearchResultsWidget::from_instance(self)
+        self.widget()
             .albums_results
             .bind_model(Some(store), move |item| {
                 wrap_flowbox_item(item, |album_model| {
@@ -81,7 +117,7 @@ impl SearchResultsWidget {
     where
         F: Fn(&String) + Clone + 'static,
     {
-        imp::SearchResultsWidget::from_instance(self)
+        self.widget()
             .artist_results
             .bind_model(Some(store), move |item| {
                 wrap_flowbox_item(item, |artist_model| {
@@ -95,14 +131,6 @@ impl SearchResultsWidget {
                     artist
                 })
             });
-    }
-
-    fn set_search_query(&self, query: &str) {
-        // translators: This text is part of a larger text that says "Search results for <search term>".
-        let formatted = format!("{} « {} »", gettext("Search results for"), query);
-        imp::SearchResultsWidget::from_instance(self)
-            .results_label
-            .set_label(&formatted[..]);
     }
 }
 
@@ -121,6 +149,14 @@ impl SearchResults {
 
         let album_results_model = gio::ListStore::new(AlbumModel::static_type());
         let artist_results_model = gio::ListStore::new(ArtistModel::static_type());
+
+        widget.connect_go_back(clone!(@weak model => move || {
+            model.go_back();
+        }));
+
+        widget.connect_search_updated(clone!(@weak model => move |q| {
+            model.search(q);
+        }));
 
         widget.bind_albums_results(
             worker.clone(),
@@ -176,10 +212,6 @@ impl SearchResults {
             600,
             clone!(@weak self.model as model => move || model.fetch_results()),
         );
-
-        if let Some(query) = self.model.get_query() {
-            self.widget.set_search_query(&*query);
-        }
     }
 }
 

@@ -22,7 +22,6 @@ impl MainWindow {
         initial_window_geometry: WindowGeometry,
         app_model: Rc<AppModel>,
         window: libadwaita::ApplicationWindow,
-        search_bar: gtk::SearchBar,
     ) -> Self {
         window.connect_close_request(
             clone!(@weak app_model => @default-return gtk::Inhibit(false), move |window| {
@@ -35,21 +34,6 @@ impl MainWindow {
                 }
             }),
         );
-
-        let window_controller = gtk::EventControllerKey::new();
-        window.add_controller(&window_controller);
-        window_controller.set_propagation_phase(gtk::PropagationPhase::Bubble);
-        window_controller.connect_key_pressed(clone!(@weak search_bar, @weak window => @default-return gtk::Inhibit(false), move |controller, _, _, _| {
-            let search_triggered = controller.forward(&search_bar) || search_bar.is_search_mode();
-            if search_triggered {
-                search_bar.set_search_mode(true);
-                gtk::Inhibit(true)
-            } else if let Some(child) = window.first_child().as_ref() {
-                gtk::Inhibit(controller.forward(child))
-            } else {
-                gtk::Inhibit(false)
-            }
-        }));
 
         window.connect_default_height_notify(Self::save_window_geometry);
         window.connect_default_width_notify(Self::save_window_geometry);
