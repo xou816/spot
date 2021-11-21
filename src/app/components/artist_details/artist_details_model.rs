@@ -2,12 +2,11 @@ use gio::prelude::*;
 use gio::SimpleActionGroup;
 use std::ops::Deref;
 use std::rc::Rc;
-use std::sync::Arc;
 
-use crate::api::SpotifyApiClient;
-use crate::app::components::{labels, PlaylistModel, SelectionTool, SelectionToolsModel};
-use crate::app::components::{AddSelectionTool, SimpleSelectionTool};
+use crate::app::components::SimpleScreenModel;
+use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::*;
+use crate::app::state::SelectionContext;
 use crate::app::state::{
     BrowserAction, BrowserEvent, PlaybackAction, SelectionAction, SelectionState,
 };
@@ -28,7 +27,7 @@ impl ArtistDetailsModel {
         }
     }
 
-    fn tracks_ref(&self) -> Option<impl Deref<Target = Vec<SongDescription>> + '_> {
+    fn songs_ref(&self) -> Option<impl Deref<Target = Vec<SongDescription>> + '_> {
         self.app_model
             .map_state_opt(|s| Some(&s.browser.artist_state(&self.id)?.top_tracks))
     }
@@ -88,7 +87,7 @@ impl PlaylistModel for ArtistDetailsModel {
     }
 
     fn play_song_at(&self, _pos: usize, id: &str) {
-        let tracks = self.tracks_ref();
+        let tracks = self.songs_ref();
         if let Some(tracks) = tracks {
             self.dispatcher
                 .dispatch(PlaybackAction::LoadSongs(tracks.clone()).into());
@@ -102,7 +101,7 @@ impl PlaylistModel for ArtistDetailsModel {
             event,
             AppEvent::BrowserEvent(BrowserEvent::ArtistDetailsUpdated(id)) if id == &self.id
         ) {
-            let tracks = self.tracks_ref()?;
+            let tracks = self.songs_ref()?;
             Some(ListDiff::Set(tracks.iter().map(|s| s.into()).collect()))
         } else {
             None
@@ -110,7 +109,7 @@ impl PlaylistModel for ArtistDetailsModel {
     }
 
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
-        let songs = self.tracks_ref()?;
+        let songs = self.songs_ref()?;
         let song = songs.iter().find(|&song| song.id == id)?;
 
         let group = SimpleActionGroup::new();
@@ -126,7 +125,7 @@ impl PlaylistModel for ArtistDetailsModel {
     }
 
     fn menu_for(&self, id: &str) -> Option<gio::MenuModel> {
-        let songs = self.tracks_ref()?;
+        let songs = self.songs_ref()?;
         let song = songs.iter().find(|&song| song.id == id)?;
 
         let menu = gio::Menu::new();
@@ -149,7 +148,7 @@ impl PlaylistModel for ArtistDetailsModel {
 
     fn select_song(&self, id: &str) {
         let song = self
-            .tracks_ref()
+            .songs_ref()
             .and_then(|songs| songs.iter().find(|&song| song.id == id).cloned());
         if let Some(song) = song {
             self.dispatcher
@@ -164,7 +163,7 @@ impl PlaylistModel for ArtistDetailsModel {
 
     fn enable_selection(&self) -> bool {
         self.dispatcher
-            .dispatch(AppAction::ChangeSelectionMode(true));
+            .dispatch(AppAction::EnableSelection(SelectionContext::Default));
         true
     }
 
@@ -173,44 +172,27 @@ impl PlaylistModel for ArtistDetailsModel {
     }
 }
 
-impl SelectionToolsModel for ArtistDetailsModel {
-    fn dispatcher(&self) -> Box<dyn ActionDispatcher> {
-        self.dispatcher.box_clone()
+impl SimpleScreenModel for ArtistDetailsModel {
+    fn title(&self) -> Option<String> {
+        Some(self.get_artist_name()?.clone())
     }
 
-    fn spotify_client(&self) -> Arc<dyn SpotifyApiClient + Send + Sync> {
-        self.app_model.get_spotify()
+    fn title_updated(&self, event: &AppEvent) -> bool {
+        matches!(
+            event,
+            AppEvent::BrowserEvent(BrowserEvent::ArtistDetailsUpdated(_))
+        )
     }
 
-    fn tools_visible(&self, _: &SelectionState) -> Vec<SelectionTool> {
-        let mut playlists: Vec<SelectionTool> = self
-            .app_model
-            .get_state()
-            .logged_user
-            .playlists
-            .iter()
-            .map(|p| SelectionTool::Add(AddSelectionTool::AddToPlaylist(p.clone())))
-            .collect();
-        let mut tools = vec![
-            SelectionTool::Simple(SimpleSelectionTool::SelectAll),
-            SelectionTool::Add(AddSelectionTool::AddToQueue),
-        ];
-        tools.append(&mut playlists);
-        tools
+    fn selection_context(&self) -> Option<&SelectionContext> {
+        Some(&SelectionContext::Default)
     }
 
-    fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
-        Some(Box::new(self.app_model.map_state(|s| &s.selection)))
-    }
-
-    fn handle_tool_activated(&self, selection: &SelectionState, tool: &SelectionTool) {
-        match tool {
-            SelectionTool::Simple(SimpleSelectionTool::SelectAll) => {
-                if let Some(songs) = self.tracks_ref() {
-                    self.handle_select_all_tool(selection, &songs[..]);
-                }
-            }
-            _ => self.default_handle_tool_activated(selection, tool),
-        };
+    fn select_all(&self) {
+        if let Some(songs) = self.songs_ref() {
+            let songs: Vec<SongDescription> = songs.iter().cloned().collect();
+            self.dispatcher
+                .dispatch(SelectionAction::Select(songs).into());
+        }
     }
 }

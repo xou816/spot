@@ -8,6 +8,7 @@ use std::iter::Iterator;
 
 #[derive(Clone, Debug)]
 pub enum BrowserAction {
+    SetNavigationHidden(bool),
     SetLibraryContent(Vec<AlbumDescription>),
     AppendLibraryContent(Vec<AlbumDescription>),
     SetPlaylistsContent(Vec<PlaylistDescription>),
@@ -51,6 +52,7 @@ impl BrowserAction {
 
 #[derive(Eq, PartialEq, Clone, Debug)]
 pub enum BrowserEvent {
+    NavigationHidden(bool),
     LibraryUpdated,
     SavedPlaylistsUpdated,
     AlbumDetailsLoaded(String),
@@ -206,6 +208,7 @@ where
 }
 
 pub struct BrowserState {
+    navigation_hidden: bool,
     navigation: NavStack<BrowserScreen>,
 }
 
@@ -230,6 +233,7 @@ macro_rules! extract_state_full {
 impl BrowserState {
     pub fn new() -> Self {
         Self {
+            navigation_hidden: false,
             navigation: NavStack::new(BrowserScreen::Home(Default::default())),
         }
     }
@@ -243,7 +247,7 @@ impl BrowserState {
     }
 
     pub fn can_pop(&self) -> bool {
-        self.navigation.can_pop()
+        self.navigation.can_pop() || self.navigation_hidden
     }
 
     pub fn count(&self) -> usize {
@@ -300,6 +304,10 @@ impl UpdatableState for BrowserState {
         let can_pop = self.navigation.can_pop();
 
         match action {
+            BrowserAction::SetNavigationHidden(navigation_hidden) => {
+                self.navigation_hidden = navigation_hidden;
+                vec![BrowserEvent::NavigationHidden(navigation_hidden)]
+            }
             BrowserAction::Search(_) => {
                 let mut events = self.push_if_needed(ScreenName::Search);
 
@@ -315,6 +323,10 @@ impl UpdatableState for BrowserState {
             BrowserAction::NavigationPop if can_pop => {
                 self.navigation.pop();
                 vec![BrowserEvent::NavigationPopped]
+            }
+            BrowserAction::NavigationPop if self.navigation_hidden => {
+                self.navigation_hidden = false;
+                vec![BrowserEvent::NavigationHidden(false)]
             }
             _ => {
                 let mut events: Vec<Self::Event> = vec![];

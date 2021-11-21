@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use crate::app::components::EventListener;
 use crate::app::models::SongDescription;
-use crate::app::state::{PlaybackAction, PlaybackEvent, RepeatMode, ScreenName};
+use crate::app::state::{PlaybackAction, PlaybackEvent, RepeatMode, ScreenName, SelectionEvent};
 use crate::app::{
     ActionDispatcher, AppAction, AppEvent, AppModel, AppState, BrowserAction, Worker,
 };
@@ -152,6 +152,9 @@ impl EventListener for PlaybackControl {
             AppEvent::PlaybackEvent(PlaybackEvent::SeekSynced(pos))
             | AppEvent::PlaybackEvent(PlaybackEvent::TrackSeeked(pos)) => {
                 self.sync_seek(*pos);
+            }
+            AppEvent::SelectionEvent(SelectionEvent::SelectionModeChanged(active)) => {
+                self.widget.set_seekbar_visible(!active);
             }
             _ => {}
         }

@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 use crate::app::components::{display_add_css_provider, Component, EventListener, Playlist};
 use crate::app::state::LoginEvent;
-use crate::app::AppEvent;
+use crate::app::{AppEvent, Worker};
 
 use super::SavedTracksModel;
 
@@ -79,14 +79,19 @@ pub struct SavedTracks {
 }
 
 impl SavedTracks {
-    pub fn new(model: Rc<SavedTracksModel>) -> Self {
+    pub fn new(model: Rc<SavedTracksModel>, worker: Worker) -> Self {
         let widget = SavedTracksWidget::new();
 
         widget.connect_bottom_edge(clone!(@weak model => move || {
             model.load_more();
         }));
 
-        let playlist = Playlist::new(widget.song_list_widget().clone(), model.clone());
+        let playlist = Playlist::new(
+            widget.song_list_widget().clone(),
+            model.clone(),
+            worker,
+            true,
+        );
 
         Self {
             widget,

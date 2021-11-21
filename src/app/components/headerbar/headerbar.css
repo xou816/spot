@@ -1,0 +1,5 @@
+.headerbar--translucent, .headerbar--translucent windowhandle {
+    background: transparent;
+    border-bottom: none;
+    box-shadow: none;
+}

@@ -2,16 +2,15 @@ use gio::prelude::*;
 use gio::SimpleActionGroup;
 use std::ops::Deref;
 use std::rc::Rc;
-use std::sync::Arc;
 
-use crate::app::components::{labels, PlaylistModel, SelectionTool, SelectionToolsModel};
+use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::*;
-use crate::app::state::{PlaybackAction, SelectionAction, SelectionContext, SelectionState};
+use crate::app::state::SelectionContext;
+use crate::app::state::{PlaybackAction, SelectionAction, SelectionState};
 use crate::app::{
     ActionDispatcher, AppAction, AppEvent, AppModel, BatchQuery, BrowserAction, BrowserEvent,
     ListDiff, SongsSource,
 };
-use crate::{api::SpotifyApiClient, app::components::SimpleSelectionTool};
 
 pub struct SavedTracksModel {
     app_model: Rc<AppModel>,
@@ -153,49 +152,12 @@ impl PlaylistModel for SavedTracksModel {
 
     fn enable_selection(&self) -> bool {
         self.dispatcher
-            .dispatch(AppAction::ChangeSelectionMode(true));
+            .dispatch(AppAction::EnableSelection(SelectionContext::Default));
         true
     }
 
     fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
-        let selection = self
-            .app_model
-            .map_state_opt(|s| Some(&s.selection))
-            .filter(|s| s.context == SelectionContext::Queue)?;
+        let selection = self.app_model.map_state(|s| &s.selection);
         Some(Box::new(selection))
-    }
-}
-
-impl SelectionToolsModel for SavedTracksModel {
-    fn dispatcher(&self) -> Box<dyn ActionDispatcher> {
-        self.dispatcher.box_clone()
-    }
-
-    fn spotify_client(&self) -> Arc<dyn SpotifyApiClient + Send + Sync> {
-        self.app_model.get_spotify()
-    }
-
-    fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
-        let selection = self
-            .app_model
-            .map_state_opt(|s| Some(&s.selection))
-            .filter(|s| s.context == SelectionContext::Queue)?;
-        Some(Box::new(selection))
-    }
-
-    fn tools_visible(&self, _: &SelectionState) -> Vec<SelectionTool> {
-        vec![SelectionTool::Simple(SimpleSelectionTool::SelectAll)]
-    }
-
-    fn handle_tool_activated(&self, selection: &SelectionState, tool: &SelectionTool) {
-        match tool {
-            SelectionTool::Simple(SimpleSelectionTool::SelectAll) => {
-                if let Some(songs) = self.songs() {
-                    let vec = songs.iter().collect::<Vec<&SongDescription>>();
-                    self.handle_select_all_tool_borrowed(selection, &vec[..]);
-                }
-            }
-            _ => self.default_handle_tool_activated(selection, tool),
-        };
     }
 }

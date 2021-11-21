@@ -1,12 +1,22 @@
 msgid ""
 msgstr ""
+"Project-Id-Version: Spot\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-11-17 08:20-0500\n"
+"Language: fi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: POEditor.com\n"
-"Project-Id-Version: Spot\n"
-"Language: fi\n"
+"X-Generator: Poedit 3.0\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+
+#. translators: This notification is the default message for unhandled errors. Logs refer to console output.
+#: src/app/batch_loader.rs:91 src/app/components/mod.rs:108
+msgid "An error occured. Check logs for details!"
+msgstr "Tapahti virhe. Katso lisätiedot lokista!"
 
 #. translators: This is part of a larger label that reads "<Album> by <Artist>"
 #: src/app/components/details/release_details.rs:101
@@ -69,14 +79,9 @@ msgid "Add to {}"
 msgstr "Lisää kohteeseen {}"
 
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
-#: src/app/components/login/login_model.rs:52
+#: src/app/components/login/login_model.rs:56
 msgid "Could not save password. Make sure the session keyring is unlocked."
 msgstr "Salasanaa ei voitu tallentaa. Varmista että avainnippua ei ole lukittu."
-
-#. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/components/mod.rs:108
-msgid "An error occured. Check logs for details!"
-msgstr "Tapahti virhe. Katso lisätiedot lokista!"
 
 #. translators: This is a sidebar entry to browse to saved albums.
 #: src/app/components/navigation/home.rs:36
@@ -88,11 +93,26 @@ msgstr "Kirjasto"
 msgid "Playlists"
 msgstr "Soittolistat"
 
+#. translators: This is a sidebar entry to browse to saved tracks.
+#. This is the visible name for the list of liked songs. It appears in the sidebar as well.
+#: src/app/components/navigation/home.rs:48
+#: src/app/components/saved_tracks/saved_tracks.ui:14
+msgid "Saved tracks"
+msgstr "Tallennetut kappaleet"
+
 #. This is the visible name for the play queue. It appears in the sidebar as well.
-#: src/app/components/navigation/home.rs:52
+#: src/app/components/navigation/home.rs:53
 #: src/app/components/now_playing/now_playing.ui:14
 msgid "Now playing"
 msgstr "Nyt toistetaan"
+
+#: src/app/components/playback/playback_controls.rs:64
+msgid "Pause"
+msgstr "Keskeytä"
+
+#: src/app/components/playback/playback_controls.rs:66
+msgid "Play"
+msgstr "Toista"
 
 #. translators: Short text displayed instead of a song title when nothing plays
 #. Short text displayed instead of a song title when nothing plays
@@ -137,6 +157,16 @@ msgstr "Kirjaudu ulos"
 msgid "Connection restored"
 msgstr "Yhteys palautunut"
 
+#. A title that is shown when the user has not saved any playlists.
+#: src/app/components/saved_playlists/saved_playlists.ui:26
+msgid "You have no saved playlists."
+msgstr "Ei tallennettuja soittolistoja."
+
+#. A description of what happens when the user has saved playlists.
+#: src/app/components/saved_playlists/saved_playlists.ui:27
+msgid "Your playlists will be shown here."
+msgstr "Soittolistasi näytetään täällä."
+
 #. Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify.
 #: src/app/components/artist_details/artist_details.ui:40
 msgid "Top tracks"
@@ -146,6 +176,16 @@ msgstr "Suosituimmat kappaleet"
 #: src/app/components/artist_details/artist_details.ui:71
 msgid "Releases"
 msgstr "Julkaisut"
+
+#. This is the title of a section of the search results
+#: src/app/components/search/search.ui:66
+msgid "Albums"
+msgstr "Albumit"
+
+#. This is the title of a section of the search results
+#: src/app/components/search/search.ui:99
+msgid "Artists"
+msgstr "Esittäjät"
 
 #. Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).
 #: src/app/components/login/login.ui:45
@@ -162,51 +202,43 @@ msgstr "Käyttäjätunnus"
 msgid "Password"
 msgstr "Salasana"
 
-#. This error is shown when authentication fails.
+#. This information is shown when Caps Lock is enabled.
 #: src/app/components/login/login.ui:95
+msgid "Caps Lock is enabled!"
+msgstr "Caps Lock on päällä!"
+
+#. This error is shown when authentication fails.
+#: src/app/components/login/login.ui:126
 msgid "Authentication failed!"
 msgstr "Tunnistautuminen epäonnistui!"
 
 #. Log in button label
-#: src/app/components/login/login.ui:110
+#: src/app/components/login/login.ui:141
 msgid "Log in"
 msgstr "Kirjaudu sisään"
 
-#. This is the title of a section of the search results
-#: src/app/components/search/search.ui:66
-msgid "Albums"
-msgstr "Albumit"
+#: src/app/components/playback/playback_controls.ui:17
+msgid "Shuffle"
+msgstr "Sekoita"
 
-#. This is the title of a section of the search results
-#: src/app/components/search/search.ui:99
-msgid "Artists"
-msgstr "Esittäjät"
+#: src/app/components/playback/playback_controls.ui:27
+msgid "Previous"
+msgstr "Edellinen"
 
-#: src/app/components/navigation/home.rs:47
-msgid "Saved tracks"
-msgstr ""
+#: src/app/components/playback/playback_controls.ui:50
+msgid "Next"
+msgstr "Seuraava"
 
-#: 
-msgctxt "A title that is shown when the user has not saved any albums."
+#: src/app/components/playback/playback_controls.ui:60
+msgid "Repeat"
+msgstr "Kertaa"
+
+#. A title that is shown when the user has not saved any albums.
+#: src/app/components/library/library.ui:26
 msgid "You have no saved albums."
-msgstr ""
+msgstr "Ei tallennettuja albumeja."
 
-#: 
-msgctxt "A description of what happens when the user has saved albums."
+#. A description of what happens when the user has saved albums.
+#: src/app/components/library/library.ui:27
 msgid "Your library will be shown here."
-msgstr ""
-
-#: 
-msgctxt "A title that is shown when the user has not saved any playlists."
-msgid "You have no saved playlists."
-msgstr ""
-
-#: 
-msgctxt "A description of what happens when the user has saved playlists."
-msgid "Your playlists will be shown here."
-msgstr ""
-
-#: 
-msgid "Caps Lock is enabled!"
-msgstr ""
-
+msgstr "Kirjastosi näytetään täällä."

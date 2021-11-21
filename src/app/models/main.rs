@@ -42,6 +42,7 @@ impl From<&SongDescription> for SongModel {
             &song.title,
             &song.artists_name(),
             &format_duration(song.duration.into()),
+            &song.art,
         )
     }
 }

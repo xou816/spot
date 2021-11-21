@@ -2,7 +2,7 @@
 <interface>
   <requires lib="gtk" version="4.0"/>
   <requires lib="libadwaita" version="1.0"/>
-  <template class="AlbumDetailsWidget" parent="GtkBox">
+  <template class="AlbumDetailsWidget" parent="AdwBin">
     <child>
       <object class="AdwClamp">
         <property name="vexpand">1</property>

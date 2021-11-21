@@ -3,15 +3,13 @@ use gio::SimpleActionGroup;
 use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
-use std::sync::Arc;
 
-use crate::api::SpotifyApiClient;
+use crate::app::components::labels;
 use crate::app::components::PlaylistModel;
-use crate::app::components::{
-    labels, AddSelectionTool, SelectionTool, SelectionToolsModel, SimpleSelectionTool,
-};
+use crate::app::components::SimpleScreenModel;
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
+use crate::app::state::SelectionContext;
 use crate::app::state::{
     BrowserAction, BrowserEvent, PlaybackAction, SelectionAction, SelectionState,
 };
@@ -30,6 +28,10 @@ impl DetailsModel {
             app_model,
             dispatcher,
         }
+    }
+
+    fn state(&self) -> Ref<'_, AppState> {
+        self.app_model.get_state()
     }
 
     fn songs_ref(&self) -> Option<impl Deref<Target = SongList> + '_> {
@@ -127,12 +129,6 @@ impl DetailsModel {
     }
 }
 
-impl DetailsModel {
-    fn state(&self) -> Ref<'_, AppState> {
-        self.app_model.get_state()
-    }
-}
-
 impl PlaylistModel for DetailsModel {
     fn select_song(&self, id: &str) {
         let song = self.songs_ref().and_then(|songs| songs.get(id).cloned());
@@ -149,7 +145,7 @@ impl PlaylistModel for DetailsModel {
 
     fn enable_selection(&self) -> bool {
         self.dispatcher
-            .dispatch(AppAction::ChangeSelectionMode(true));
+            .dispatch(AppAction::EnableSelection(SelectionContext::Default));
         true
     }
 
@@ -227,45 +223,24 @@ impl PlaylistModel for DetailsModel {
     }
 }
 
-impl SelectionToolsModel for DetailsModel {
-    fn dispatcher(&self) -> Box<dyn ActionDispatcher> {
-        self.dispatcher.box_clone()
+impl SimpleScreenModel for DetailsModel {
+    fn title(&self) -> Option<String> {
+        None
     }
 
-    fn spotify_client(&self) -> Arc<dyn SpotifyApiClient + Send + Sync> {
-        self.app_model.get_spotify()
+    fn title_updated(&self, _: &AppEvent) -> bool {
+        false
     }
 
-    fn tools_visible(&self, _: &SelectionState) -> Vec<SelectionTool> {
-        let mut playlists: Vec<SelectionTool> = self
-            .app_model
-            .get_state()
-            .logged_user
-            .playlists
-            .iter()
-            .map(|p| SelectionTool::Add(AddSelectionTool::AddToPlaylist(p.clone())))
-            .collect();
-        let mut tools = vec![
-            SelectionTool::Simple(SimpleSelectionTool::SelectAll),
-            SelectionTool::Add(AddSelectionTool::AddToQueue),
-        ];
-        tools.append(&mut playlists);
-        tools
+    fn selection_context(&self) -> Option<&SelectionContext> {
+        Some(&SelectionContext::Default)
     }
 
-    fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
-        Some(Box::new(self.app_model.map_state(|s| &s.selection)))
-    }
-
-    fn handle_tool_activated(&self, selection: &SelectionState, tool: &SelectionTool) {
-        match tool {
-            SelectionTool::Simple(SimpleSelectionTool::SelectAll) => {
-                if let Some(songs) = self.songs_ref() {
-                    let vec = songs.iter().collect::<Vec<&SongDescription>>();
-                    self.handle_select_all_tool_borrowed(selection, &vec[..]);
-                }
-            }
-            _ => self.default_handle_tool_activated(selection, tool),
-        };
+    fn select_all(&self) {
+        if let Some(songs) = self.songs_ref() {
+            let songs: Vec<SongDescription> = songs.iter().cloned().collect();
+            self.dispatcher
+                .dispatch(SelectionAction::Select(songs).into());
+        }
     }
 }

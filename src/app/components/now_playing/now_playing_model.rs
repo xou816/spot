@@ -1,19 +1,20 @@
+use gettextrs::gettext;
 use gio::prelude::*;
 use gio::SimpleActionGroup;
 use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
-use std::sync::Arc;
 
-use crate::app::components::{labels, PlaylistModel, SelectionTool, SelectionToolsModel};
+use crate::app::components::SimpleScreenModel;
+use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::SongDescription;
 use crate::app::models::SongModel;
 use crate::app::state::PlaylistChange;
+use crate::app::state::SelectionContext;
 use crate::app::state::{
-    PlaybackAction, PlaybackEvent, PlaybackState, SelectionAction, SelectionContext, SelectionState,
+    PlaybackAction, PlaybackEvent, PlaybackState, SelectionAction, SelectionState,
 };
 use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState, ListDiff};
-use crate::{api::SpotifyApiClient, app::components::SimpleSelectionTool};
 
 pub struct NowPlayingModel {
     app_model: Rc<AppModel>,
@@ -140,62 +141,32 @@ impl PlaylistModel for NowPlayingModel {
 
     fn enable_selection(&self) -> bool {
         self.dispatcher
-            .dispatch(AppAction::ChangeSelectionMode(true));
+            .dispatch(AppAction::EnableSelection(SelectionContext::Queue));
         true
     }
 
     fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
-        let selection = self
-            .app_model
-            .map_state_opt(|s| Some(&s.selection))
-            .filter(|s| s.context == SelectionContext::Queue)?;
+        let selection = self.app_model.map_state(|s| &s.selection);
         Some(Box::new(selection))
     }
 }
 
-impl SelectionToolsModel for NowPlayingModel {
-    fn dispatcher(&self) -> Box<dyn ActionDispatcher> {
-        self.dispatcher.box_clone()
+impl SimpleScreenModel for NowPlayingModel {
+    fn title(&self) -> Option<String> {
+        Some(gettext("Now playing"))
     }
 
-    fn spotify_client(&self) -> Arc<dyn SpotifyApiClient + Send + Sync> {
-        self.app_model.get_spotify()
+    fn title_updated(&self, _: &AppEvent) -> bool {
+        false
     }
 
-    fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
-        let selection = self
-            .app_model
-            .map_state_opt(|s| Some(&s.selection))
-            .filter(|s| s.context == SelectionContext::Queue)?;
-        Some(Box::new(selection))
+    fn selection_context(&self) -> Option<&SelectionContext> {
+        Some(&SelectionContext::Queue)
     }
 
-    fn tools_visible(&self, _: &SelectionState) -> Vec<SelectionTool> {
-        vec![
-            SelectionTool::Simple(SimpleSelectionTool::SelectAll),
-            SelectionTool::Simple(SimpleSelectionTool::MoveDown),
-            SelectionTool::Simple(SimpleSelectionTool::MoveUp),
-            SelectionTool::Simple(SimpleSelectionTool::Remove),
-        ]
-    }
-
-    fn handle_tool_activated(&self, selection: &SelectionState, tool: &SelectionTool) {
-        match tool {
-            SelectionTool::Simple(SimpleSelectionTool::SelectAll) => {
-                let queue = self.queue();
-                let songs = queue.songs().collect::<Vec<&SongDescription>>();
-                self.handle_select_all_tool_borrowed(selection, &songs);
-            }
-            SelectionTool::Simple(SimpleSelectionTool::Remove) => {
-                self.dispatcher().dispatch(AppAction::DequeueSelection);
-            }
-            SelectionTool::Simple(SimpleSelectionTool::MoveDown) => {
-                self.dispatcher().dispatch(AppAction::MoveDownSelection);
-            }
-            SelectionTool::Simple(SimpleSelectionTool::MoveUp) => {
-                self.dispatcher().dispatch(AppAction::MoveUpSelection);
-            }
-            _ => self.default_handle_tool_activated(selection, tool),
-        };
+    fn select_all(&self) {
+        let songs: Vec<SongDescription> = self.queue().songs().cloned().collect();
+        self.dispatcher
+            .dispatch(SelectionAction::Select(songs).into());
     }
 }

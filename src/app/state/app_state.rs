@@ -22,7 +22,8 @@ pub enum AppAction {
     DequeueSelection,
     MoveUpSelection,
     MoveDownSelection,
-    ChangeSelectionMode(bool),
+    EnableSelection(SelectionContext),
+    CancelSelection,
 }
 
 impl AppAction {
@@ -77,15 +78,6 @@ impl AppState {
         }
     }
 
-    pub fn recommended_context(&self) -> SelectionContext {
-        match self.browser.current_screen() {
-            ScreenName::PlaylistDetails(_) => SelectionContext::Playlist,
-            // TODO: this does not necessarily mean we're actually viewing the playqueue :(
-            ScreenName::Home => SelectionContext::Queue,
-            _ => SelectionContext::Global,
-        }
-    }
-
     pub fn update_state(&mut self, message: AppAction) -> Vec<AppEvent> {
         match message {
             AppAction::Start => vec![AppEvent::Started],
@@ -136,13 +128,15 @@ impl AppState {
                     })
                     .unwrap_or_else(Vec::new)
             }
-            AppAction::ChangeSelectionMode(active) => {
-                let context = if active {
-                    Some(self.recommended_context())
+            AppAction::EnableSelection(context) => {
+                if let Some(active) = self.selection.set_mode(Some(context)) {
+                    vec![SelectionEvent::SelectionModeChanged(active).into()]
                 } else {
-                    None
-                };
-                if let Some(active) = self.selection.set_mode(context) {
+                    vec![]
+                }
+            }
+            AppAction::CancelSelection => {
+                if let Some(active) = self.selection.set_mode(None) {
                     vec![SelectionEvent::SelectionModeChanged(active).into()]
                 } else {
                     vec![]

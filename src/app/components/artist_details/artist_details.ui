@@ -16,20 +16,6 @@
             <property name="orientation">vertical</property>
             <property name="spacing">16</property>
             <child>
-              <object class="GtkLabel" id="artist_name">
-                <property name="halign">start</property>
-                <property name="margin-start">8</property>
-                <property name="margin-end">8</property>
-                <property name="label">Artist</property>
-                <property name="wrap">1</property>
-                <property name="xalign">0</property>
-                <style>
-                  <class name="artist_details--name"/>
-                  <class name="large-title"/>
-                </style>
-              </object>
-            </child>
-            <child>
               <object class="GtkBox">
                 <property name="orientation">vertical</property>
                 <child>

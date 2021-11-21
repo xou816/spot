@@ -5,6 +5,7 @@
     "options": {
         "env": {
             "RUST_BACKTRACE": "1",
+            "RUST_LOG": "info",
             //"https_proxy": "localhost:8080"
         }
     },
