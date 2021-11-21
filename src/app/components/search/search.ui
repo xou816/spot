@@ -111,8 +111,8 @@
         </child>
         <child type="overlay">
           <object class="AdwStatusPage" id="status_page">
-            <property name="title" translatable="yes" comments="A title that is shown when the user has not saved any albums.">Search Spotify.</property>
-            <property name="description" translatable="yes" comments="A description of what happens when the user has saved albums.">Type to search.</property>
+            <property name="title" translatable="yes" comments="Title for the empty search page (initial state).">Search Spotify.</property>
+            <property name="description" translatable="yes" comments="Subtitle for the empty search page (initial state).">Type to search.</property>
             <property name="icon-name">system-search-symbolic</property>
             <property name="visible">1</property>
           </object>
