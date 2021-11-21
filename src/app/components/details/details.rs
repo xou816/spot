@@ -102,8 +102,16 @@ impl AlbumDetailsWidget {
             }),
         );
 
-        let widget = self.widget();
-        widget.scrolled_window.add_controller(&scroll_controller);
+        let swipe_controller = gtk::GestureSwipe::new();
+        swipe_controller.set_propagation_phase(gtk::PropagationPhase::Capture);
+        swipe_controller.connect_swipe(clone!(@weak self as _self => move |_, _, dy| {
+            _self.set_header_visible(dy >= 0f64);
+        }));
+
+        self.widget()
+            .scrolled_window
+            .add_controller(&scroll_controller);
+        self.add_controller(&swipe_controller);
     }
 
     fn connect_bottom_edge<F>(&self, f: F)
