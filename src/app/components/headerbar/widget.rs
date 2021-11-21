@@ -4,8 +4,6 @@ use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use libadwaita::subclass::prelude::BinImpl;
 
-use crate::app::components::display_add_css_provider;
-
 mod imp {
 
     use super::*;
@@ -56,14 +54,7 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for HeaderBarWidget {
-        fn constructed(&self, obj: &Self::Type) {
-            self.parent_constructed(obj);
-            self.selection_header.set_visible(false);
-            display_add_css_provider(resource!("/components/headerbar.css"));
-        }
-    }
-
+    impl ObjectImpl for HeaderBarWidget {}
     impl WidgetImpl for HeaderBarWidget {}
     impl BinImpl for HeaderBarWidget {}
     impl WindowImpl for HeaderBarWidget {}
@@ -149,9 +140,9 @@ impl HeaderBarWidget {
         self.widget().title.set_visible(title.is_some());
         if let Some(title) = title {
             self.widget().title.set_title(title);
-            context.remove_class("headerbar--translucent");
+            context.remove_class("flat");
         } else {
-            context.add_class("headerbar--translucent");
+            context.add_class("flat");
         }
     }
 }
