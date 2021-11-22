@@ -1,0 +1,9 @@
+.title-4 label {
+  font-size: 16px;
+  color: @theme_text_color;
+}
+
+.title-4 {
+  padding: 0;
+}
+
