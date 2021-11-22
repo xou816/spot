@@ -19,16 +19,16 @@
                 <property name="transition-type">slide-down</property>
                 <child>
                 <object class="AdwSqueezer">
-								<property name="valign">center</property>
-								<property name="homogeneous">0</property>
-								<property name="transition-type">crossfade</property>
+                <property name="valign">center</property>
+                <property name="homogeneous">0</property>
+                <property name="transition-type">crossfade</property>
                   <child>
                    <object class="AlbumHeaderWidget" id="header_widget"/>
                   </child>
                   <child>
                     <object class="AlbumHeaderWidget" id="header_mobile">
                       <property name="orientation">vertical</property>
-											<property name="spacing">12</property>
+                      <property name="spacing">12</property>
                     </object>
                   </child>
                 </object>

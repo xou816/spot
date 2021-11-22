@@ -22,6 +22,7 @@
 								<property name="valign">center</property>
 								<property name="homogeneous">0</property>
 								<property name="transition-type">crossfade</property>
+								<property name="switch-threshold-policy">natural</property>
                   <child>
                    <object class="AlbumHeaderWidget" id="header_widget"/>
                   </child>

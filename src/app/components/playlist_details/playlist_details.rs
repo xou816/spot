@@ -192,7 +192,7 @@ impl PlaylistDetails {
 
                 self.worker.send_local_task(async move {
                     let pixbuf = ImageLoader::new()
-                        .load_remote(&art_url[..], "jpg", 200, 200)
+                        .load_remote(&art_url[..], "jpg", 320, 320)
                         .await;
                     if let (Some(widget), Some(header), Some(header_mobile), Some(ref pixbuf)) = (
                         widget.upgrade(),

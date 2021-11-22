@@ -252,7 +252,7 @@ impl Details {
 
                 self.worker.send_local_task(async move {
                     let pixbuf = ImageLoader::new()
-                        .load_remote(&art[..], "jpg", 200, 200)
+                        .load_remote(&art[..], "jpg", 320, 320)
                         .await;
                     if let (
                         Some(widget),
