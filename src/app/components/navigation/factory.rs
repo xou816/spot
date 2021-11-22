@@ -103,18 +103,9 @@ impl ScreenFactory {
     }
 
     pub fn make_search_results(&self) -> impl ListenerComponent {
-        let screen_model = DefaultScreenModel::new(
-            None,
-            None,
-            Rc::clone(&self.app_model),
-            self.dispatcher.box_clone(),
-        );
         let model =
             SearchResultsModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        StandardScreen::new(
-            SearchResults::new(model, self.worker.clone()),
-            Rc::new(screen_model),
-        )
+        SearchResults::new(model, self.worker.clone())
     }
 
     pub fn make_artist_details(&self, id: String) -> impl ListenerComponent {

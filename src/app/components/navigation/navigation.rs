@@ -87,6 +87,7 @@ impl Navigation {
 
         let widget = component.get_root_widget();
 
+        self.leaflet.navigate(NavigationDirection::Forward);
         self.navigation_stack
             .add_named(widget, Some(name.identifier().as_ref()));
         self.children.push(component);

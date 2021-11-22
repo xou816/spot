@@ -3,6 +3,7 @@
 .notification {
   opacity: 0;
   transition: opacity 0.3s ease;
+  border-radius: 6px;
 }
 
 .notification--shown {
@@ -15,6 +16,7 @@ headerbar.selection-mode {
 
 button.tool, menubutton.tool {
   -gtk-icon-size: 25px;
+
 }
 
 .song__list {
@@ -29,3 +31,4 @@ button.tool, menubutton.tool {
 .playlist_details--loaded {
   opacity: 1;
 }
+
