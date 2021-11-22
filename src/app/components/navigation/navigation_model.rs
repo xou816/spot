@@ -16,11 +16,6 @@ impl NavigationModel {
         }
     }
 
-    pub fn go_back(&self) {
-        self.dispatcher
-            .dispatch(BrowserAction::NavigationPop.into())
-    }
-
     pub fn go_home(&self) {
         self.dispatcher
             .dispatch(BrowserAction::NavigationPopTo(ScreenName::Home).into())
@@ -30,8 +25,9 @@ impl NavigationModel {
         self.app_model.map_state(|s| s.browser.current_screen())
     }
 
-    pub fn can_go_back(&self) -> bool {
-        self.app_model.get_state().browser.can_pop()
+    pub fn set_nav_hidden(&self, hidden: bool) {
+        self.dispatcher
+            .dispatch(BrowserAction::SetNavigationHidden(hidden).into());
     }
 
     pub fn children_count(&self) -> usize {

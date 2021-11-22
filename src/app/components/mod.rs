@@ -73,9 +73,18 @@ pub use window::*;
 mod selection;
 pub use selection::*;
 
+mod headerbar;
+pub use headerbar::*;
+
 pub mod utils;
 
 pub mod labels;
+
+pub fn expose_widgets() {
+    playback::expose_widgets();
+    selection::expose_widgets();
+    headerbar::expose_widgets();
+}
 
 impl dyn ActionDispatcher {
     fn call_spotify_and_dispatch<F, C>(&self, call: C)
@@ -102,7 +111,7 @@ impl dyn ActionDispatcher {
                     retried
                 }
                 Err(err) => {
-                    println!("Error: {:?}", err);
+                    error!("Error: {:?}", err);
                     vec![AppAction::ShowNotification(gettext(
                         // translators: This notification is the default message for unhandled errors. Logs refer to console output.
                         "An error occured. Check logs for details!",

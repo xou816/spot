@@ -71,7 +71,7 @@ impl App {
 
         let mut components: Vec<Box<dyn EventListener>> = vec![
             App::make_window(&self.settings, builder, Rc::clone(model)),
-            App::make_selection_editor(builder, Rc::clone(model), dispatcher.box_clone()),
+            App::make_selection_toolbar(builder, Rc::clone(model), dispatcher.box_clone()),
             App::make_playback(
                 builder,
                 Rc::clone(model),
@@ -85,7 +85,7 @@ impl App {
                 dispatcher.box_clone(),
                 worker.clone(),
             ),
-            App::make_search_bar(builder, dispatcher.box_clone()),
+            App::make_search_button(builder, dispatcher.box_clone()),
             App::make_user_menu(builder, Rc::clone(model), dispatcher.box_clone()),
             App::make_notification(builder, dispatcher),
         ];
@@ -116,30 +116,7 @@ impl App {
         app_model: Rc<AppModel>,
     ) -> Box<impl EventListener> {
         let window: libadwaita::ApplicationWindow = builder.object("window").unwrap();
-        let search_bar: gtk::SearchBar = builder.object("search_bar").unwrap();
-        Box::new(MainWindow::new(
-            settings.window.clone(),
-            app_model,
-            window,
-            search_bar,
-        ))
-    }
-
-    fn make_selection_editor(
-        builder: &gtk::Builder,
-        app_model: Rc<AppModel>,
-        dispatcher: Box<dyn ActionDispatcher>,
-    ) -> Box<impl EventListener> {
-        let headerbar: libadwaita::HeaderBar = builder.object("header_bar").unwrap();
-        let selection_toggle: gtk::ToggleButton = builder.object("selection_toggle").unwrap();
-        let selection_label: gtk::Label = builder.object("selection_label").unwrap();
-        let model = SelectionHeadingModel::new(app_model, dispatcher);
-        Box::new(SelectionHeading::new(
-            model,
-            headerbar,
-            selection_toggle,
-            selection_label,
-        ))
+        Box::new(MainWindow::new(settings.window.clone(), app_model, window))
     }
 
     fn make_navigation(
@@ -148,7 +125,6 @@ impl App {
         dispatcher: Box<dyn ActionDispatcher>,
         worker: Worker,
     ) -> Box<Navigation> {
-        let back_btn: gtk::Button = builder.object("nav_back").unwrap();
         let leaflet: libadwaita::Leaflet = builder.object("leaflet").unwrap();
         let navigation_stack: gtk::Stack = builder.object("navigation_stack").unwrap();
         let home_stack_sidebar: gtk::StackSidebar = builder.object("home_stack_sidebar").unwrap();
@@ -159,7 +135,6 @@ impl App {
         Box::new(Navigation::new(
             model,
             leaflet,
-            back_btn,
             navigation_stack,
             home_stack_sidebar,
             screen_factory,
@@ -170,6 +145,17 @@ impl App {
         let parent: gtk::Window = builder.object("window").unwrap();
         let model = LoginModel::new(dispatcher);
         Box::new(Login::new(parent, model))
+    }
+
+    fn make_selection_toolbar(
+        builder: &gtk::Builder,
+        app_model: Rc<AppModel>,
+        dispatcher: Box<dyn ActionDispatcher>,
+    ) -> Box<impl EventListener> {
+        Box::new(SelectionToolbar::new(
+            SelectionToolbarModel::new(app_model, dispatcher),
+            builder.object("selection_toolbar").unwrap(),
+        ))
     }
 
     fn make_playback(
@@ -186,20 +172,13 @@ impl App {
         ))
     }
 
-    fn make_search_bar(
+    fn make_search_button(
         builder: &gtk::Builder,
         dispatcher: Box<dyn ActionDispatcher>,
-    ) -> Box<SearchBar> {
-        let search_button: gtk::ToggleButton = builder.object("search_button").unwrap();
-        let search_entry: gtk::SearchEntry = builder.object("search_entry").unwrap();
-        let search_bar: gtk::SearchBar = builder.object("search_bar").unwrap();
+    ) -> Box<SearchButton> {
+        let search_button: gtk::Button = builder.object("search_button").unwrap();
         let model = SearchBarModel(dispatcher);
-        Box::new(SearchBar::new(
-            model,
-            search_button,
-            search_bar,
-            search_entry,
-        ))
+        Box::new(SearchButton::new(model, search_button))
     }
 
     fn make_user_menu(

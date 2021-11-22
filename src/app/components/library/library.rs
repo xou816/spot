@@ -90,7 +90,8 @@ impl LibraryWidget {
             },
         );
     }
-    pub fn get_status_page(&self) -> &libadwaita::StatusPage {
+
+    pub fn status_page(&self) -> &libadwaita::StatusPage {
         &imp::LibraryWidget::from_instance(self).status_page
     }
 }
@@ -139,7 +140,7 @@ impl EventListener for Library {
             }
             AppEvent::BrowserEvent(BrowserEvent::LibraryUpdated) => {
                 self.widget
-                    .get_status_page()
+                    .status_page()
                     .set_visible(!self.model.has_albums());
             }
             _ => {}

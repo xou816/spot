@@ -22,7 +22,8 @@ pub enum AppAction {
     DequeueSelection,
     MoveUpSelection,
     MoveDownSelection,
-    ChangeSelectionMode(bool),
+    EnableSelection(SelectionContext),
+    CancelSelection,
 }
 
 impl AppAction {
@@ -44,6 +45,11 @@ impl AppAction {
     #[allow(non_snake_case)]
     pub fn ViewUser(id: String) -> Self {
         BrowserAction::NavigationPush(ScreenName::User(id)).into()
+    }
+
+    #[allow(non_snake_case)]
+    pub fn ViewSearch() -> Self {
+        BrowserAction::NavigationPush(ScreenName::Search).into()
     }
 }
 
@@ -74,15 +80,6 @@ impl AppState {
             browser: BrowserState::new(),
             selection: Default::default(),
             logged_user: Default::default(),
-        }
-    }
-
-    pub fn recommended_context(&self) -> SelectionContext {
-        match self.browser.current_screen() {
-            ScreenName::PlaylistDetails(_) => SelectionContext::Playlist,
-            // TODO: this does not necessarily mean we're actually viewing the playqueue :(
-            ScreenName::Home => SelectionContext::Queue,
-            _ => SelectionContext::Global,
         }
     }
 
@@ -136,13 +133,15 @@ impl AppState {
                     })
                     .unwrap_or_else(Vec::new)
             }
-            AppAction::ChangeSelectionMode(active) => {
-                let context = if active {
-                    Some(self.recommended_context())
+            AppAction::EnableSelection(context) => {
+                if let Some(active) = self.selection.set_mode(Some(context)) {
+                    vec![SelectionEvent::SelectionModeChanged(active).into()]
                 } else {
-                    None
-                };
-                if let Some(active) = self.selection.set_mode(context) {
+                    vec![]
+                }
+            }
+            AppAction::CancelSelection => {
+                if let Some(active) = self.selection.set_mode(None) {
                     vec![SelectionEvent::SelectionModeChanged(active).into()]
                 } else {
                     vec![]

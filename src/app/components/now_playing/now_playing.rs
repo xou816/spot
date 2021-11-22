@@ -4,7 +4,7 @@ use gtk::CompositeTemplate;
 use std::rc::Rc;
 
 use crate::app::components::{display_add_css_provider, Component, EventListener, Playlist};
-use crate::app::{state::PlaybackEvent, AppEvent};
+use crate::app::{state::PlaybackEvent, AppEvent, Worker};
 
 use super::NowPlayingModel;
 
@@ -79,14 +79,19 @@ pub struct NowPlaying {
 }
 
 impl NowPlaying {
-    pub fn new(model: Rc<NowPlayingModel>) -> Self {
+    pub fn new(model: Rc<NowPlayingModel>, worker: Worker) -> Self {
         let widget = NowPlayingWidget::new();
 
         widget.connect_bottom_edge(clone!(@weak model => move || {
             model.load_more();
         }));
 
-        let playlist = Playlist::new(widget.song_list_widget().clone(), model.clone());
+        let playlist = Playlist::new(
+            widget.song_list_widget().clone(),
+            model.clone(),
+            worker,
+            true,
+        );
 
         Self {
             widget,

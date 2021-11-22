@@ -1,4 +1,3 @@
-use gtk::prelude::*;
 use libadwaita::NavigationDirection;
 use std::rc::Rc;
 
@@ -13,7 +12,6 @@ pub struct Navigation {
     leaflet: libadwaita::Leaflet,
     navigation_stack: gtk::Stack,
     home_stack_sidebar: gtk::StackSidebar,
-    back_button: gtk::Button,
     screen_factory: ScreenFactory,
     children: Vec<Box<dyn ListenerComponent>>,
 }
@@ -22,23 +20,26 @@ impl Navigation {
     pub fn new(
         model: NavigationModel,
         leaflet: libadwaita::Leaflet,
-        back_button: gtk::Button,
         navigation_stack: gtk::Stack,
         home_stack_sidebar: gtk::StackSidebar,
         screen_factory: ScreenFactory,
     ) -> Self {
         let model = Rc::new(model);
 
-        Self::connect_back_button(&back_button, &leaflet, &model);
-
-        leaflet.connect_folded_notify(clone!(@weak back_button, @weak model => move |leaflet| {
-            Self::update_back_button(&back_button, leaflet, &model);
-        }));
+        leaflet.connect_folded_notify(
+            clone!(@weak model => move |leaflet| {
+                let is_main = leaflet.visible_child_name().map(|s| s.as_str() == "main").unwrap_or(false);
+                let folded = leaflet.is_folded();
+                model.set_nav_hidden(folded && is_main);
+            })
+        );
 
         leaflet.connect_visible_child_name_notify(
-            clone!(@weak back_button, @weak model => move |leaflet| {
-                Self::update_back_button(&back_button, leaflet, &model);
-            }),
+            clone!(@weak model => move |leaflet| {
+                let is_main = leaflet.visible_child_name().map(|s| s.as_str() == "main").unwrap_or(false);
+                let folded = leaflet.is_folded();
+                model.set_nav_hidden(folded && is_main);
+            })
         );
 
         Self {
@@ -46,43 +47,9 @@ impl Navigation {
             leaflet,
             navigation_stack,
             home_stack_sidebar,
-            back_button,
             screen_factory,
             children: vec![],
         }
-    }
-
-    fn update_back_button(
-        back_button: &gtk::Button,
-        leaflet: &libadwaita::Leaflet,
-        model: &Rc<NavigationModel>,
-    ) {
-        let is_main = leaflet
-            .visible_child_name()
-            .map(|s| s.as_str() == "main")
-            .unwrap_or(false);
-        back_button.set_sensitive(leaflet.is_folded() && is_main || model.can_go_back());
-    }
-
-    fn connect_back_button(
-        back_button: &gtk::Button,
-        leaflet: &libadwaita::Leaflet,
-        model: &Rc<NavigationModel>,
-    ) {
-        back_button.connect_clicked(clone!(@weak leaflet, @weak model => move |_| {
-            let is_main = leaflet.visible_child_name().map(|s| s.as_str() == "main").unwrap_or(false);
-            let folded = leaflet.is_folded();
-            let can_go_back = model.can_go_back();
-            match (folded && is_main, can_go_back) {
-                (_, true) => {
-                    model.go_back();
-                }
-                (true, false) => {
-                    leaflet.navigate(NavigationDirection::Back);
-                }
-                (false, false) => {}
-            }
-        }));
     }
 
     fn make_home(&self) -> Box<dyn ListenerComponent> {
@@ -96,6 +63,10 @@ impl Navigation {
         );
 
         Box::new(home)
+    }
+
+    fn show_navigation(&self) {
+        self.leaflet.navigate(NavigationDirection::Back);
     }
 
     fn push_screen(&mut self, name: &ScreenName) {
@@ -116,6 +87,7 @@ impl Navigation {
 
         let widget = component.get_root_widget();
 
+        self.leaflet.navigate(NavigationDirection::Forward);
         self.navigation_stack
             .add_named(widget, Some(name.identifier().as_ref()));
         self.children.push(component);
@@ -144,10 +116,6 @@ impl Navigation {
             self.navigation_stack.remove(widget.get_root_widget());
         }
     }
-
-    fn do_update_back_button(&self) {
-        Self::update_back_button(&self.back_button, &self.leaflet, &self.model);
-    }
 }
 
 impl EventListener for Navigation {
@@ -155,19 +123,18 @@ impl EventListener for Navigation {
         match event {
             AppEvent::Started => {
                 self.push_screen(&ScreenName::Home);
-                self.do_update_back_button();
             }
             AppEvent::BrowserEvent(BrowserEvent::NavigationPushed(name)) => {
                 self.push_screen(name);
-                self.do_update_back_button();
+            }
+            AppEvent::BrowserEvent(BrowserEvent::NavigationHidden(false)) => {
+                self.show_navigation();
             }
             AppEvent::BrowserEvent(BrowserEvent::NavigationPopped) => {
                 self.pop();
-                self.do_update_back_button();
             }
             AppEvent::BrowserEvent(BrowserEvent::NavigationPoppedTo(name)) => {
                 self.pop_to(name);
-                self.do_update_back_button();
             }
             _ => {}
         };
