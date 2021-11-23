@@ -79,7 +79,7 @@ msgstr "Добавить к {}"
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:56
 msgid "Could not save password. Make sure the session keyring is unlocked."
-msgstr "Не удалось сохранить пароль. Проверьте, разблокирована ли GNOME Keyring/KDE wallet."
+msgstr "Не удалось сохранить пароль. Убедитесь, что связка ключей сеанса разблокирована."
 
 #. translators: This is a sidebar entry to browse to saved albums.
 #: src/app/components/navigation/home.rs:36
