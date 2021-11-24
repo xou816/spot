@@ -19,7 +19,7 @@ msgstr "Произошла ошибка. Смотрите подробности
 #. translators: This is part of a larger label that reads "<Album> by <Artist>"
 #: src/app/components/details/release_details.rs:101
 msgid "by"
-msgstr "в"
+msgstr "в исполнении"
 
 #. translators: This refers to a music label
 #: src/app/components/details/release_details.rs:108
@@ -54,7 +54,7 @@ msgstr "Посмотреть альбом"
 #. translators: This is part of a contextual menu attached to a single track; the full text is "More from <artist>".
 #: src/app/components/labels.rs:8
 msgid "More from"
-msgstr "Больше из"
+msgstr "Больше от"
 
 #. translators: This is part of a contextual menu attached to a single track; the intent is to copy the link (public URL) to a specific track.
 #: src/app/components/labels.rs:11
@@ -117,7 +117,7 @@ msgstr "Воспроизведение"
 #: src/app/components/playback/playback_info.rs:58
 #: src/app/components/playback/playback_info.ui:32
 msgid "No song playing"
-msgstr "Композиция сейчас не воспроизводится"
+msgstr "Песня сейчас не воспроизводится"
 
 #. translators: This text is part of a larger text that says "Search results for <search term>".
 #: src/app/components/search/search.rs:102
