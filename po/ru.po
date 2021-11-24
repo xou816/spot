@@ -131,7 +131,7 @@ msgstr "Композиция не выбрана"
 
 #. translators: This is part of a larger text that says "<n> songs selected" when in selection mode. This text should be as short as possible.
 #: src/app/components/selection/selection_heading.rs:87
-msgid "song selected"
+msgid "{} song selected"
 msgid_plural "{} songs selected"
 msgstr[0] "{} композиций выбрано"
 msgstr[1] "{} композиция выбрана"
