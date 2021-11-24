@@ -112,7 +112,7 @@ impl PlaybackWidget {
             style_context.add_class(class);
             widget.seek_bar.set_range(0.0, duration);
             widget.seek_bar.set_value(0.0);
-            widget.track_position.set_text("0:00");
+            widget.track_position.set_text("0∶00");
             widget
                 .track_duration
                 .set_text(&format!(" / {}", format_duration(duration)));
