@@ -1,5 +1,0 @@
-api_token: 7ac85acabcb7842c23f5d4060485f25e # read only token
-projects:
-- format: po
-  id: 469205
-  terms_path: '{language_code}.po'
