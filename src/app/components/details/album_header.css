@@ -7,3 +7,16 @@
   padding: 0;
 }
 
+.album__header .like__button {
+  margin-right: 12px;
+}
+
+.album__header .vertical {
+  margin-left: 18px;
+}
+
+.album__header .card {
+  margin-top: 18px;
+  margin-left: 12px;
+  margin-bottom: 6px;
+}

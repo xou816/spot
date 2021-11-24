@@ -23,12 +23,19 @@
                 <property name="homogeneous">0</property>
                 <property name="transition-type">crossfade</property>
                   <child>
-                   <object class="AlbumHeaderWidget" id="header_widget"/>
+                   <object class="AlbumHeaderWidget" id="header_widget">
+										<style>
+											<class name="album__header"/>
+										</style>
+									</object>
                   </child>
                   <child>
                     <object class="AlbumHeaderWidget" id="header_mobile">
                       <property name="orientation">vertical</property>
                       <property name="spacing">12</property>
+											<style>
+												<class name="header__mobile"/>
+											</style>
                     </object>
                   </child>
                 </object>
@@ -49,7 +56,6 @@
 										<property name="show-separators">true</property>
                     <property name="valign">start</property>
                     <style>
-                      <class name="song__list"/>
                       <class name="card"/>
                     </style>
                   </object>

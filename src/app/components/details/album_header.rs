@@ -115,9 +115,6 @@ impl AlbumHeaderWidget {
         let widget = self.widget();
         widget.album_label.set_halign(gtk::Align::Center);
         widget.artist_button.set_halign(gtk::Align::Center);
-        widget.like_button.set_margin_end(0);
-        widget.album_info.set_margin_start(0);
-        widget.album_box.set_margin_start(0);
     }
 
     pub fn hide_actions(&self) {
