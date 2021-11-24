@@ -128,7 +128,7 @@ msgstr "Воспроизведение"
 #: src/app/components/playback/playback_info.rs:58
 #: src/app/components/playback/playback_info.ui:32
 msgid "No song playing"
-msgstr "Ничего не воспроизводится"
+msgstr "Ничего не играет"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:56
