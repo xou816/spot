@@ -136,6 +136,7 @@ msgid_plural "songs selected"
 msgstr[0] "композиций выбрано"
 msgstr[1] "композиция выбрана"
 msgstr[2] "композиции выбраны"
+msgstr[3] ""
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:56
