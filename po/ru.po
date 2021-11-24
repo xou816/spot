@@ -117,7 +117,7 @@ msgstr "Воспроизведение"
 #: src/app/components/playback/playback_info.rs:58
 #: src/app/components/playback/playback_info.ui:32
 msgid "No song playing"
-msgstr "Песня сейчас не играет"
+msgstr "Ничего не воспроизводится"
 
 #. translators: This text is part of a larger text that says "Search results for <search term>".
 #: src/app/components/search/search.rs:102
