@@ -25,3 +25,12 @@ pub fn add_to_playlist_label(playlist: &str) -> String {
     }
     gettext!("Add to {}", playlist)
 }
+
+pub fn n_songs_selected_label(n: usize) -> String {
+    // this is just to fool xgettext, it doesn't like macros (or rust for that matter) :(
+    if cfg!(debug_assertions) {
+        // translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
+        ngettext("{} song selected", "{} songs selected", n as u32);
+    }
+    ngettext!("{} song selected", "{} songs selected", n as u32, n)
+}

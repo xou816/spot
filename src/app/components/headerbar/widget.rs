@@ -1,8 +1,9 @@
-use gettextrs::{gettext, ngettext};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use libadwaita::subclass::prelude::BinImpl;
+
+use crate::app::components::labels;
 
 mod imp {
 
@@ -117,7 +118,7 @@ impl HeaderBarWidget {
         if active {
             self.widget()
                 .selection_title
-                .set_title(&gettext("No song selected"));
+                .set_title(&labels::n_songs_selected_label(0));
             self.widget().selection_title.show();
             self.widget().selection_header.show();
         } else {
@@ -127,12 +128,9 @@ impl HeaderBarWidget {
     }
 
     pub fn set_selection_count(&self, count: usize) {
-        self.widget().selection_title.set_title(&format!(
-            "{} {}",
-            count,
-            // translators: This is part of a larger text that says "<n> songs selected" when in selection mode. This text should be as short as possible.
-            ngettext("song selected", "songs selected", count as u32),
-        ));
+        self.widget()
+            .selection_title
+            .set_title(&labels::n_songs_selected_label(count));
     }
 
     pub fn set_title(&self, title: Option<&str>) {
