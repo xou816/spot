@@ -24,7 +24,7 @@ msgstr "к"
 #. translators: This refers to a music label
 #: src/app/components/details/release_details.rs:108
 msgid "Label:"
-msgstr "Ярлык:"
+msgstr "Лейбл:"
 
 #. translators: This refers to a release date
 #: src/app/components/details/release_details.rs:115
@@ -84,7 +84,7 @@ msgstr "Не удалось сохранить пароль. Убедитесь,
 #. translators: This is a sidebar entry to browse to saved albums.
 #: src/app/components/navigation/home.rs:36
 msgid "Library"
-msgstr "Библиотека"
+msgstr "Фонотека"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
 #: src/app/components/navigation/home.rs:42
@@ -133,8 +133,11 @@ msgstr "Песня не выбрана"
 #: src/app/components/selection/selection_heading.rs:87
 msgid "song selected"
 msgid_plural "songs selected"
-msgstr[0] "Выбранная песня"
-msgstr[1] "выбранные песни"
+msgstr[0] "песня выбрана"
+msgstr[1] "песни выбраны"
+msgstr[2] "песня была выбрана"
+msgstr[3] "песни были выбраны"
+msgstr[4] "песен было выбрано"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:56
@@ -239,4 +242,4 @@ msgstr "У вас нет сохраненных альбомов."
 #. A description of what happens when the user has saved albums.
 #: src/app/components/library/library.ui:27
 msgid "Your library will be shown here."
-msgstr "Здесь будет показана ваша библиотека."
+msgstr "Здесь будет показана ваша фонотека."
