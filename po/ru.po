@@ -14,7 +14,7 @@ msgstr ""
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
 #: src/app/batch_loader.rs:91 src/app/components/mod.rs:117
 msgid "An error occured. Check logs for details!"
-msgstr "Ошибка появилась. Посмотрите в логи за подробностями!"
+msgstr "Произошла ошибка. Смотрите подробности в логах!"
 
 #. translators: This is part of a larger label that reads "<Album> by <Artist>"
 #: src/app/components/details/release_details.rs:101
