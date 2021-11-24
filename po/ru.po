@@ -127,7 +127,7 @@ msgstr "Результаты поиска для"
 #. This text appears when entering selection mode. It should be as short as possible.
 #: src/app/components/selection/selection_heading.rs:73 src/window.ui.in:51
 msgid "No song selected"
-msgstr "КомпозиЦия не выбрана"
+msgstr "Композиция не выбрана"
 
 #. translators: This is part of a larger text that says "<n> songs selected" when in selection mode. This text should be as short as possible.
 #: src/app/components/selection/selection_heading.rs:87
