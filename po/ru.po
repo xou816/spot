@@ -19,7 +19,7 @@ msgstr "Произошла ошибка. Смотрите подробности
 #. translators: This is part of a larger label that reads "<Album> by <Artist>"
 #: src/app/components/details/release_details.rs:101
 msgid "by"
-msgstr "к"
+msgstr "в"
 
 #. translators: This refers to a music label
 #: src/app/components/details/release_details.rs:108
@@ -54,7 +54,7 @@ msgstr "Посмотреть альбом"
 #. translators: This is part of a contextual menu attached to a single track; the full text is "More from <artist>".
 #: src/app/components/labels.rs:8
 msgid "More from"
-msgstr "Больше от"
+msgstr "Больше из"
 
 #. translators: This is part of a contextual menu attached to a single track; the intent is to copy the link (public URL) to a specific track.
 #: src/app/components/labels.rs:11
@@ -74,7 +74,7 @@ msgstr "Удалить из очереди"
 #. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
 #: src/app/components/labels.rs:24
 msgid "Add to {}"
-msgstr "Добавить к {}"
+msgstr "Добавить в {}"
 
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:56
@@ -117,7 +117,7 @@ msgstr "Воспроизведение"
 #: src/app/components/playback/playback_info.rs:58
 #: src/app/components/playback/playback_info.ui:32
 msgid "No song playing"
-msgstr "Песня сейчас не воспроизводится"
+msgstr "Композиция сейчас не воспроизводится"
 
 #. translators: This text is part of a larger text that says "Search results for <search term>".
 #: src/app/components/search/search.rs:102
@@ -127,17 +127,15 @@ msgstr "Результаты поиска для"
 #. This text appears when entering selection mode. It should be as short as possible.
 #: src/app/components/selection/selection_heading.rs:73 src/window.ui.in:51
 msgid "No song selected"
-msgstr "Песня не выбрана"
+msgstr "КомпозиЦия не выбрана"
 
 #. translators: This is part of a larger text that says "<n> songs selected" when in selection mode. This text should be as short as possible.
 #: src/app/components/selection/selection_heading.rs:87
 msgid "song selected"
 msgid_plural "songs selected"
-msgstr[0] "песня выбрана"
-msgstr[1] "песни выбраны"
-msgstr[2] "песня была выбрана"
-msgstr[3] "песни были выбраны"
-msgstr[4] "песен было выбрано"
+msgstr[0] "композиций выбрано"
+msgstr[1] "композиция выбрана"
+msgstr[2] "композиции выбраны"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:56
@@ -186,7 +184,7 @@ msgstr "Альбомы"
 #. This is the title of a section of the search results
 #: src/app/components/search/search.ui:99
 msgid "Artists"
-msgstr "Артисты"
+msgstr "Исполнители"
 
 #. Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).
 #: src/app/components/login/login.ui:45
