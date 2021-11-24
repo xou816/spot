@@ -29,7 +29,7 @@ msgstr "Лейбл:"
 #. translators: This refers to a release date
 #: src/app/components/details/release_details.rs:115
 msgid "Released:"
-msgstr "Выпуск:"
+msgstr "Выпущен:"
 
 #. translators: This refers to a number of tracks
 #: src/app/components/details/release_details.rs:122
