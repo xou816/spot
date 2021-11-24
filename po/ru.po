@@ -34,7 +34,7 @@ msgstr "Выпущен:"
 #. translators: This refers to a number of tracks
 #: src/app/components/details/release_details.rs:122
 msgid "Tracks:"
-msgstr "Треки"
+msgstr "Треки:"
 
 #. translators: This refers to the duration of eg. an album
 #: src/app/components/details/release_details.rs:129
