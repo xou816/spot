@@ -19,34 +19,33 @@ msgstr "Ошибка появилась. Посмотрите в логи за �
 #. translators: This is part of a larger label that reads "<Album> by <Artist>"
 #: src/app/components/details/release_details.rs:101
 msgid "by"
-msgstr ""
+msgstr "в исполнении"
 
 #. translators: This refers to a music label
 #: src/app/components/details/release_details.rs:108
 msgid "Label:"
-msgstr ""
+msgstr "Лейбл:"
 
 #. translators: This refers to a release date
 #: src/app/components/details/release_details.rs:115
 #, fuzzy
 msgid "Released:"
-msgstr "Релизы"
+msgstr "Выпуски:"
 
 #. translators: This refers to a number of tracks
 #: src/app/components/details/release_details.rs:122
-#, fuzzy
 msgid "Tracks:"
-msgstr "Топ треков"
+msgstr "Треки"
 
 #. translators: This refers to the duration of eg. an album
 #: src/app/components/details/release_details.rs:129
 msgid "Duration:"
-msgstr ""
+msgstr "Продолжительность:"
 
 #. translators: Self explanatory
 #: src/app/components/details/release_details.rs:136
 msgid "Copyright:"
-msgstr ""
+msgstr "Авторское право:"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
 #: src/app/components/labels.rs:5
@@ -77,28 +76,27 @@ msgstr "Удалить из очереди"
 #. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
 #: src/app/components/labels.rs:24
 msgid "Add to {}"
-msgstr ""
+msgstr "Добавить в {}"
 
 #. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
 #: src/app/components/labels.rs:33
 msgid "{} song selected"
 msgid_plural "{} songs selected"
-msgstr[0] "{} песня выбрана"
-msgstr[1] "{} песни выбраны"
-msgstr[2] "{} песни были выбраны"
+msgstr[0] "{} композиций выбрано"
+msgstr[1] "{} композиция выбрана"
+msgstr[2] "{} композиции выбраны"
 msgstr[3] ""
 
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:56
 msgid "Could not save password. Make sure the session keyring is unlocked."
-msgstr ""
-"Не удалось сохранить пароль. Проверьте, GNOME Keyring/KDE wallet открыта."
+msgstr "Не удалось сохранить пароль. Убедитесь, что связка ключей сеанса разблокирована."
 
 #. translators: This is a sidebar entry to browse to saved albums.
 #: src/app/components/navigation/factory.rs:29
 #: src/app/components/navigation/home.rs:36
 msgid "Library"
-msgstr "Библиотека"
+msgstr "Фонотека"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
 #: src/app/components/navigation/factory.rs:44
@@ -110,7 +108,7 @@ msgstr "Плейлисты"
 #: src/app/components/navigation/factory.rs:73
 #: src/app/components/navigation/home.rs:48
 msgid "Saved tracks"
-msgstr ""
+msgstr "Сохраненные треки"
 
 #: src/app/components/navigation/home.rs:53
 #: src/app/components/now_playing/now_playing_model.rs:156
@@ -119,23 +117,23 @@ msgstr "Сейчас играет"
 
 #: src/app/components/playback/playback_controls.rs:64
 msgid "Pause"
-msgstr ""
+msgstr "Пауза"
 
 #: src/app/components/playback/playback_controls.rs:66
 msgid "Play"
-msgstr ""
+msgstr "Воспроизведение"
 
 #. translators: Short text displayed instead of a song title when nothing plays
 #. Short text displayed instead of a song title when nothing plays
 #: src/app/components/playback/playback_info.rs:58
 #: src/app/components/playback/playback_info.ui:32
 msgid "No song playing"
-msgstr "Песня сейчас не играет"
+msgstr "Ничего не играет"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:56
 msgid "About"
-msgstr "Об"
+msgstr "О программе"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:58
@@ -154,12 +152,12 @@ msgstr "Подключение восстановлено"
 #. A title that is shown when the user has not saved any playlists.
 #: src/app/components/saved_playlists/saved_playlists.ui:26
 msgid "You have no saved playlists."
-msgstr ""
+msgstr "У вас нет сохраненных плейлистов."
 
 #. A description of what happens when the user has saved playlists.
 #: src/app/components/saved_playlists/saved_playlists.ui:27
 msgid "Your playlists will be shown here."
-msgstr ""
+msgstr "Здесь будут показаны ваши плейлисты."
 
 #. Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify.
 #: src/app/components/artist_details/artist_details.ui:26
@@ -169,7 +167,7 @@ msgstr "Топ треков"
 #. Title of the sections that contains all releases from an artist (both singles and albums).
 #: src/app/components/artist_details/artist_details.ui:57
 msgid "Releases"
-msgstr "Релизы"
+msgstr "Выпуски"
 
 #. This is the title of a section of the search results
 #: src/app/components/search/search.ui:70
@@ -179,21 +177,21 @@ msgstr "Альбомы"
 #. This is the title of a section of the search results
 #: src/app/components/search/search.ui:103
 msgid "Artists"
-msgstr "Артисты"
+msgstr "Исполнители"
 
 #. Title for the empty search page (initial state).
 #: src/app/components/search/search.ui:114
 msgid "Search Spotify."
-msgstr ""
+msgstr "Поиск в Spotify."
 
 #. Subtitle for the empty search page (initial state).
 #: src/app/components/search/search.ui:115
 msgid "Type to search."
-msgstr ""
+msgstr "Введите для поиска."
 
 #: src/app/components/selection/selection_toolbar.ui:58
 msgid "Remove"
-msgstr ""
+msgstr "Удалить"
 
 #. Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).
 #: src/app/components/login/login.ui:45
@@ -213,7 +211,7 @@ msgstr "Пароль"
 #. This information is shown when Caps Lock is enabled.
 #: src/app/components/login/login.ui:95
 msgid "Caps Lock is enabled!"
-msgstr ""
+msgstr "Caps Lock включен!"
 
 #. This error is shown when authentication fails.
 #: src/app/components/login/login.ui:126
@@ -227,26 +225,26 @@ msgstr "Войти"
 
 #: src/app/components/playback/playback_controls.ui:17
 msgid "Shuffle"
-msgstr ""
+msgstr "Перемешать"
 
 #: src/app/components/playback/playback_controls.ui:27
 msgid "Previous"
-msgstr ""
+msgstr "Предыдущий"
 
 #: src/app/components/playback/playback_controls.ui:50
 msgid "Next"
-msgstr ""
+msgstr "Следующий"
 
 #: src/app/components/playback/playback_controls.ui:60
 msgid "Repeat"
-msgstr ""
+msgstr "Повторить"
 
 #. A title that is shown when the user has not saved any albums.
 #: src/app/components/library/library.ui:26
 msgid "You have no saved albums."
-msgstr ""
+msgstr "У вас нет сохраненных альбомов."
 
 #. A description of what happens when the user has saved albums.
 #: src/app/components/library/library.ui:27
 msgid "Your library will be shown here."
-msgstr ""
+msgstr "Здесь будет показана ваша фонотека."
