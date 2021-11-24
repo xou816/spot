@@ -113,7 +113,7 @@ msgstr "Сохраненные треки"
 #: src/app/components/navigation/home.rs:53
 #: src/app/components/now_playing/now_playing_model.rs:156
 msgid "Now playing"
-msgstr "Сейчас играет"
+msgstr "Воспроизводится сейчас"
 
 #: src/app/components/playback/playback_controls.rs:64
 msgid "Pause"
@@ -128,7 +128,7 @@ msgstr "Воспроизведение"
 #: src/app/components/playback/playback_info.rs:58
 #: src/app/components/playback/playback_info.ui:32
 msgid "No song playing"
-msgstr "Ничего не играет"
+msgstr "Ничего не воспроизводится"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:56
