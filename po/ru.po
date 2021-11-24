@@ -81,9 +81,9 @@ msgstr "Добавить в {}"
 #: src/app/components/labels.rs:33
 msgid "{count} song selected"
 msgid_plural "{count} songs selected"
-msgstr[0] "{count} композиций выбрано"
-msgstr[1] "{count} композиция выбрана"
-msgstr[2] "{count} композиции выбраны"
+msgstr[0] "{count} композиция выбрана"
+msgstr[1] "{count} композиции выбраны"
+msgstr[2] "{count} композиций выбрано"
 msgstr[3] ""
 
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
