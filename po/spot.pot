@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-24 11:24-0500\n"
+"POT-Creation-Date: 2021-11-24 12:06-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -193,6 +193,11 @@ msgstr ""
 msgid "Type to search."
 msgstr ""
 
+#. <property name="icon-name">playlist2-symbolic</property>
+#: src/app/components/selection/selection_toolbar.ui:47
+msgid "Add to playlist..."
+msgstr ""
+
 #: src/app/components/selection/selection_toolbar.ui:58
 msgid "Remove"
 msgstr ""
@@ -225,6 +230,16 @@ msgstr ""
 #. Log in button label
 #: src/app/components/login/login.ui:141
 msgid "Log in"
+msgstr ""
+
+#. Button label. Exits selection mode.
+#: src/app/components/headerbar/headerbar.ui:46
+msgid "Cancel"
+msgstr ""
+
+#. Button label. Selects all visible songs.
+#: src/app/components/headerbar/headerbar.ui:57
+msgid "Select all"
 msgstr ""
 
 #: src/app/components/playback/playback_controls.ui:17

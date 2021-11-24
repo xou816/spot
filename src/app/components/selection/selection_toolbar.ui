@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <requires lib="gtk" version="4.0"/>
-  <requires lib="libadwaita" version="1.0"/>
+  <requires lib="gtk" version="4.0" />
+  <requires lib="libadwaita" version="1.0" />
   <template class="SelectionToolbarWidget" parent="GtkBox">
     <property name="hexpand">1</property>
     <property name="visible">0</property>
@@ -13,7 +13,7 @@
           <object class="GtkBox">
             <property name="valign">center</property>
             <style>
-              <class name="linked"/>
+              <class name="linked" />
             </style>
             <child>
               <object class="GtkButton" id="move_up">
@@ -44,7 +44,7 @@
             <property name="valign">center</property>
             <property name="has-frame">0</property>
             <!-- <property name="icon-name">playlist2-symbolic</property> -->
-            <property name="label">Add to playlist...</property>
+            <property name="label" translatable="yes">Add to playlist...</property>
             <property name="direction">up</property>
           </object>
         </child>
@@ -63,7 +63,7 @@
       </object>
     </child>
     <style>
-      <class name="selection_toolbar"/>
+      <class name="selection_toolbar" />
     </style>
   </template>
 </interface>

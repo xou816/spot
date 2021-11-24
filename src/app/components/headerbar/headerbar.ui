@@ -43,18 +43,18 @@
                 <property name="receives-default">1</property>
                 <property name="halign">start</property>
                 <property name="valign">center</property>
-                <property name="label">Cancel</property>
+                <property name="label" translatable="yes" comments="Button label. Exits selection mode.">Cancel</property>
               </object>
             </child>
             <child type="title">
               <object class="AdwWindowTitle" id="selection_title">
-                <property name="title">No selection</property>
+                <property name="title"></property>
               </object>
             </child>
             <child type="end">
               <object class="GtkButton" id="select_all">
                 <property name="valign">center</property>
-                <property name="label">Select all</property>
+                <property name="label" translatable="yes" comments="Button label. Selects all visible songs.">Select all</property>
               </object>
             </child>
           </object>
