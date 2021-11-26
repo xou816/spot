@@ -1,7 +1,6 @@
 use crate::app::components::display_add_css_provider;
 use crate::app::loader::ImageLoader;
 use crate::app::models::SongModel;
-
 use crate::app::Worker;
 use gio::MenuModel;
 use glib::subclass::InitializingObject;

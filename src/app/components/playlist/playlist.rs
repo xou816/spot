@@ -93,6 +93,7 @@ where
         listview.set_factory(Some(&factory));
         listview.set_single_click_activate(true);
         listview.set_model(Some(&selection_model));
+        Self::set_paused(&listview, model.is_paused());
         Self::set_selection_active(&listview, model.is_selection_enabled());
 
         factory.connect_setup(|_, item| {
@@ -182,6 +183,16 @@ where
         let class_name = "playlist--selectable";
         let context = listview.style_context();
         if active {
+            context.add_class(class_name);
+        } else {
+            context.remove_class(class_name);
+        }
+    }
+
+    fn set_paused(listview: &gtk::ListView, paused: bool) {
+        let class_name = "playlist--paused";
+        let context = listview.style_context();
+        if paused {
             context.add_class(class_name);
         } else {
             context.remove_class(class_name);
