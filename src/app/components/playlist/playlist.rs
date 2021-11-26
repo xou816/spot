@@ -7,7 +7,7 @@ use crate::app::components::utils::AnimatorDefault;
 use crate::app::components::{Component, EventListener, SongWidget};
 use crate::app::models::SongModel;
 use crate::app::{
-    state::{PlaybackEvent, SelectionEvent, SelectionState},
+    state::{PlaybackEvent, PlaybackState, SelectionEvent, SelectionState},
     AppEvent, ListDiff, ListStore, Worker,
 };
 
@@ -50,6 +50,16 @@ pub trait PlaylistModel {
             .map(|s| s.is_selection_enabled())
             .unwrap_or(false)
     }
+
+    fn playback_state(&self) -> Option<Box<dyn Deref<Target = PlaybackState> + '_>> {
+        None
+    }
+
+    fn is_song_playing(&self) -> bool {
+        self.playback_state()
+            .map(|s| s.is_playing())
+            .unwrap_or(false)
+    }
 }
 
 pub struct Playlist<Model> {
@@ -78,6 +88,7 @@ where
         listview.style_context().add_class("playlist");
         listview.set_single_click_activate(true);
         listview.set_model(Some(&selection_model));
+        Self::set_paused(&listview, !model.is_song_playing());
         Self::set_selection_active(&listview, model.is_selection_enabled());
 
         factory.connect_setup(|_, item| {
@@ -195,6 +206,15 @@ where
             context.remove_class("playlist--selectable");
         }
     }
+
+    fn set_paused(listview: &gtk::ListView, paused: bool) {
+        let context = listview.style_context();
+        if paused {
+            context.add_class("playlist--paused");
+        } else {
+            context.remove_class("playlist--paused");
+        }
+    }
 }
 
 impl SongModel {
@@ -214,6 +234,14 @@ where
         } else {
             match event {
                 AppEvent::SelectionEvent(SelectionEvent::SelectionChanged) => {
+                    self.update_list();
+                }
+                AppEvent::PlaybackEvent(PlaybackEvent::PlaybackPaused) => {
+                    Self::set_paused(&self.listview, true);
+                    self.update_list();
+                }
+                AppEvent::PlaybackEvent(PlaybackEvent::PlaybackResumed) => {
+                    Self::set_paused(&self.listview, false);
                     self.update_list();
                 }
                 AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
