@@ -1,5 +1,5 @@
 @define-color accent_bg_color @green_5;
-
+@define-color accent_color @green_3
 .notification {
   opacity: 0;
   transition: opacity 0.3s ease;
