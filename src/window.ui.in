@@ -46,7 +46,6 @@
         <child>
           <object class="AdwLeaflet" id="leaflet">
             <property name="vexpand">1</property>
-            <property name="visible-child">main</property>
             <child>
               <object class="AdwLeafletPage">
                 <property name="navigatable">0</property>
@@ -157,6 +156,7 @@
                 </property>
               </object>
             </child>
+            <property name="visible-child">main</property>
           </object>
         </child>
       </object>
