@@ -2,8 +2,8 @@ use gettextrs::gettext;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
-use libadwaita::subclass::prelude::*;
 use libadwaita::prelude::PreferencesGroupExt;
+use libadwaita::subclass::prelude::*;
 
 mod imp {
 
@@ -92,29 +92,14 @@ impl ReleaseDetailsWindow {
             artist
         ));
 
-        widget.label.set_text(&format!(
-            "{}",
-            label
-        ));
+        widget.label.set_text(&format!("{}", label));
 
-        widget.release.set_text(&format!(
-            "{}",
-            release_date
-        ));
+        widget.release.set_text(&format!("{}", release_date));
 
-        widget.tracks.set_text(&format!(
-            "{}",
-            track_count
-        ));
+        widget.tracks.set_text(&format!("{}", track_count));
 
-        widget.duration.set_text(&format!(
-            "{}",
-            duration
-        ));
+        widget.duration.set_text(&format!("{}", duration));
 
-        widget.copyright.set_text(&format!(
-            "{}",
-            copyright
-        ));
+        widget.copyright.set_text(&format!("{}", copyright));
     }
 }

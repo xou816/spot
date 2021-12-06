@@ -253,12 +253,7 @@ impl Details {
                     let pixbuf = ImageLoader::new()
                         .load_remote(&art[..], "jpg", 320, 320)
                         .await;
-                    if let (
-                        Some(widget),
-                        Some(header),
-                        Some(header_mobile),
-                        Some(ref pixbuf),
-                    ) = (
+                    if let (Some(widget), Some(header), Some(header_mobile), Some(ref pixbuf)) = (
                         widget.upgrade(),
                         header.upgrade(),
                         header_mobile.upgrade(),

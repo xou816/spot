@@ -3,7 +3,7 @@
   <requires lib="gtk" version="4.0"/>
   <requires lib="libadwaita" version="1.0"/>
   <template class="ReleaseDetailsWindow" parent="AdwPreferencesWindow">
-    <property name="modal">0</property>
+    <property name="modal">1</property>
 		<property name="title"></property>
     <property name="hide-on-close">1</property>
 		<property name="search-enabled">0</property>
