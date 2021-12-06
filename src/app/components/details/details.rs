@@ -248,7 +248,6 @@ impl Details {
                 let widget = self.widget.downgrade();
                 let header = self.widget.header_widget().downgrade();
                 let header_mobile = self.widget.header_mobile().downgrade();
-                let modal = self.modal.downgrade();
 
                 self.worker.send_local_task(async move {
                     let pixbuf = ImageLoader::new()
@@ -256,13 +255,11 @@ impl Details {
                         .await;
                     if let (
                         Some(widget),
-                        Some(modal),
                         Some(header),
                         Some(header_mobile),
                         Some(ref pixbuf),
                     ) = (
                         widget.upgrade(),
-                        modal.upgrade(),
                         header.upgrade(),
                         header_mobile.upgrade(),
                         pixbuf,
@@ -270,7 +267,6 @@ impl Details {
                         header.set_artwork(pixbuf);
                         header_mobile.set_artwork(pixbuf);
                         widget.set_loaded();
-                        modal.set_artwork(pixbuf);
                     }
                 });
             } else {
