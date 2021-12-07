@@ -1,6 +1,6 @@
 .song__index {
   transition: opacity 150ms ease;
-  font-size: 12px;
+  font-size: 0.75rem;
   margin: 4px 12px;
   padding: 0;
   opacity: 1;
@@ -42,11 +42,11 @@ row {
 }
 
 .song label.song__artist {
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .song label.song__duration {
-  font-size: 14px;
+  font-size: 0.875rem;
   color: @insensitive_fg_color;
 }
 
