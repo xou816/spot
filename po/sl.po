@@ -41,7 +41,7 @@ msgstr "Avtorska pravica:"
 #. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
 #: src/app/components/labels.rs:5
 msgid "View album"
-msgstr "Poglej album"
+msgstr "Oglej si album"
 
 #. translators: This is part of a contextual menu attached to a single track; the full text is "More from <artist>".
 #: src/app/components/labels.rs:8
@@ -67,17 +67,17 @@ msgstr "Odstrani iz vrste"
 #. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
 #: src/app/components/labels.rs:24
 msgid "Add to {}"
-msgstr "Dodaj v {}"
+msgstr "Dodaj na {}"
 
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:56
 msgid "Could not save password. Make sure the session keyring is unlocked."
-msgstr "Gesla ni bilo mogoče shraniti. Preverite, da je session keyring odklenjen."
+msgstr "Gesla ni bilo mogoče shraniti. Preveri, da je session keyring odklenjen."
 
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
 #: src/app/batch_loader.rs:91 src/app/components/mod.rs:117
 msgid "An error occured. Check logs for details!"
-msgstr "Napaka! Poglejte v dnevnik od programa za podrobnosti."
+msgstr "Napaka! Poglej v dnevnik od programa za podrobnosti."
 
 #. translators: This is a sidebar entry to browse to saved albums.
 #: src/app/components/navigation/factory.rs:29
@@ -188,53 +188,53 @@ msgstr "Predvajaj"
 
 #: src/app/components/playback/playback_controls.ui:17
 msgid "Shuffle"
-msgstr "Naključno"
+msgstr "Naključno predvajanje"
 
 #: src/app/components/playback/playback_controls.ui:27
 msgid "Previous"
-msgstr "Prejšna"
+msgstr "Prejšna skladba"
 
 #: src/app/components/playback/playback_controls.ui:50
 msgid "Next"
-msgstr "Naslednja"
+msgstr "Naslednja skladba"
 
 #: src/app/components/playback/playback_controls.ui:60
 msgid "Repeat"
-msgstr "Ponovi"
+msgstr "Ponavljajoče predvajanje"
 
 #. A title that is shown when the user has not saved any playlists.
 #: src/app/components/saved_playlists/saved_playlists.ui:26
 msgid "You have no saved playlists."
-msgstr "Nimate shranjenih seznamov predvajanja."
+msgstr "Nimaš shranjenih seznamov predvajanja."
 
 #. A description of what happens when the user has saved playlists.
 #: src/app/components/saved_playlists/saved_playlists.ui:27
 msgid "Your playlists will be shown here."
-msgstr "Vaši seznami predvajanja bodo prikazani tukaj."
+msgstr "Tvoji seznami predvajanja bodo prikazani tukaj."
 
 #. A title that is shown when the user has not saved any albums.
 #: src/app/components/library/library.ui:26
 msgid "You have no saved albums."
-msgstr "Ni shranjenih albumov."
+msgstr "Nimaš shranjenih albumov."
 
 #. A description of what happens when the user has saved albums.
 #: src/app/components/library/library.ui:27
 msgid "Your library will be shown here."
-msgstr "Vaša knjižnica bo prikazana tukaj."
+msgstr "Tvoja zbirka bo prikazana tukaj."
 
 #. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
 #: src/app/components/labels.rs:33
 msgid "{} song selected"
 msgid_plural "{} songs selected"
-msgstr[0] "{} skladba izbrana"
-msgstr[1] "{} skladbi izbrani"
-msgstr[2] "{} skladbe izbrane"
-msgstr[3] "{} skladbe izbrane"
+msgstr[0] "{} izbrana skladba"
+msgstr[1] "{} izbrani skladbi"
+msgstr[2] "{} izbrane skladbe"
+msgstr[3] "{} izbranih skladb"
 
 #. Title for the empty search page (initial state).
 #: src/app/components/search/search.ui:114
 msgid "Search Spotify."
-msgstr "Poišči Spotify."
+msgstr "Razišči Spotify."
 
 #. Subtitle for the empty search page (initial state).
 #: src/app/components/search/search.ui:115
@@ -248,7 +248,7 @@ msgstr "Odstrani"
 #. <property name="icon-name">playlist2-symbolic</property>
 #: src/app/components/selection/selection_toolbar.ui:47
 msgid "Add to playlist..."
-msgstr "Dodajte na seznam predvajanja..."
+msgstr "Dodaj na seznam predvajanja..."
 
 #. Button label. Exits selection mode.
 #: src/app/components/headerbar/headerbar.ui:46
