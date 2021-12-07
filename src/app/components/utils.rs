@@ -145,8 +145,8 @@ pub fn format_duration(duration: f64) -> String {
     let minutes = seconds.div_euclid(60).rem_euclid(60);
     let seconds = seconds.rem_euclid(60);
     if hours > 0 {
-        format!("{}:{:02}:{:02}", hours, minutes, seconds)
+        format!("{}∶{:02}∶{:02}", hours, minutes, seconds)
     } else {
-        format!("{}:{:02}", minutes, seconds)
+        format!("{}∶{:02}", minutes, seconds)
     }
 }

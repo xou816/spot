@@ -2,19 +2,19 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-17 08:20-0500\n"
+"POT-Creation-Date: 2021-11-24 11:24-0500\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
 "Language: ca\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"PO-Revision-Date: \n"
-"Last-Translator: \n"
-"Language-Team: \n"
 
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/batch_loader.rs:91 src/app/components/mod.rs:108
+#: src/app/batch_loader.rs:91 src/app/components/mod.rs:117
 msgid "An error occured. Check logs for details!"
 msgstr "Ha ocorregut un error. Comprova els registres per més detalls!"
 
@@ -65,6 +65,7 @@ msgstr "Copia l'enllaç"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry adds a track at the end of the play queue.
 #: src/app/components/labels.rs:14
+#: src/app/components/selection/selection_toolbar.ui:37
 msgid "Add to queue"
 msgstr "Afegeix a la cua"
 
@@ -78,6 +79,13 @@ msgstr "Suprimeix de la cua"
 msgid "Add to {}"
 msgstr "Afegeix a {}"
 
+#. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
+#: src/app/components/labels.rs:33
+msgid "{} song selected"
+msgid_plural "{} songs selected"
+msgstr[0] "{} cançó seleccionada"
+msgstr[1] "{} cançons seleccionades"
+
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:56
 msgid "Could not save password. Make sure the session keyring is unlocked."
@@ -86,25 +94,25 @@ msgstr ""
 "sessió està desbloquejat."
 
 #. translators: This is a sidebar entry to browse to saved albums.
+#: src/app/components/navigation/factory.rs:29
 #: src/app/components/navigation/home.rs:36
 msgid "Library"
 msgstr "Biblioteca"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
+#: src/app/components/navigation/factory.rs:44
 #: src/app/components/navigation/home.rs:42
 msgid "Playlists"
 msgstr "Llistes de reproducció"
 
 #. translators: This is a sidebar entry to browse to saved tracks.
-#. This is the visible name for the list of liked songs. It appears in the sidebar as well.
+#: src/app/components/navigation/factory.rs:73
 #: src/app/components/navigation/home.rs:48
-#: src/app/components/saved_tracks/saved_tracks.ui:14
 msgid "Saved tracks"
 msgstr "Pistes desades"
 
-#. This is the visible name for the play queue. It appears in the sidebar as well.
 #: src/app/components/navigation/home.rs:53
-#: src/app/components/now_playing/now_playing.ui:14
+#: src/app/components/now_playing/now_playing_model.rs:156
 msgid "Now playing"
 msgstr "S'està reproduïnt"
 
@@ -122,23 +130,6 @@ msgstr "Reprodueix"
 #: src/app/components/playback/playback_info.ui:32
 msgid "No song playing"
 msgstr "Cap cançó en reproducció"
-
-#. translators: This text is part of a larger text that says "Search results for <search term>".
-#: src/app/components/search/search.rs:102
-msgid "Search results for"
-msgstr "Cerca resultats per"
-
-#. This text appears when entering selection mode. It should be as short as possible.
-#: src/app/components/selection/selection_heading.rs:73 src/window.ui.in:51
-msgid "No song selected"
-msgstr "Cap cançó seleccionada"
-
-#. translators: This is part of a larger text that says "<n> songs selected" when in selection mode. This text should be as short as possible.
-#: src/app/components/selection/selection_heading.rs:87
-msgid "song selected"
-msgid_plural "songs selected"
-msgstr[0] "cançó seleccionada"
-msgstr[1] "cançons seleccionades"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:56
@@ -170,24 +161,38 @@ msgid "Your playlists will be shown here."
 msgstr "Les vostres llistes de reproducció es mostraran aquí."
 
 #. Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify.
-#: src/app/components/artist_details/artist_details.ui:40
+#: src/app/components/artist_details/artist_details.ui:26
 msgid "Top tracks"
 msgstr "Millors pistes"
 
 #. Title of the sections that contains all releases from an artist (both singles and albums).
-#: src/app/components/artist_details/artist_details.ui:71
+#: src/app/components/artist_details/artist_details.ui:57
 msgid "Releases"
 msgstr "Llançaments"
 
 #. This is the title of a section of the search results
-#: src/app/components/search/search.ui:66
+#: src/app/components/search/search.ui:70
 msgid "Albums"
 msgstr "Àlbums"
 
 #. This is the title of a section of the search results
-#: src/app/components/search/search.ui:99
+#: src/app/components/search/search.ui:103
 msgid "Artists"
 msgstr "Artistes"
+
+#. Title for the empty search page (initial state).
+#: src/app/components/search/search.ui:114
+msgid "Search Spotify."
+msgstr ""
+
+#. Subtitle for the empty search page (initial state).
+#: src/app/components/search/search.ui:115
+msgid "Type to search."
+msgstr ""
+
+#: src/app/components/selection/selection_toolbar.ui:58
+msgid "Remove"
+msgstr ""
 
 #. Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).
 #: src/app/components/login/login.ui:45
