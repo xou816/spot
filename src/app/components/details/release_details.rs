@@ -2,7 +2,6 @@ use gettextrs::gettext;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
-use libadwaita::prelude::PreferencesGroupExt;
 use libadwaita::subclass::prelude::*;
 
 mod imp {
@@ -13,7 +12,7 @@ mod imp {
     #[template(resource = "/dev/alextren/Spot/components/release_details.ui")]
     pub struct ReleaseDetailsWindow {
         #[template_child]
-        pub album_artist: TemplateChild<libadwaita::PreferencesGroup>,
+        pub album_artist: TemplateChild<libadwaita::WindowTitle>,
 
         #[template_child]
         pub label: TemplateChild<gtk::Label>,
@@ -35,7 +34,7 @@ mod imp {
     impl ObjectSubclass for ReleaseDetailsWindow {
         const NAME: &'static str = "ReleaseDetailsWindow";
         type Type = super::ReleaseDetailsWindow;
-        type ParentType = libadwaita::PreferencesWindow;
+        type ParentType = libadwaita::Window;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
@@ -54,7 +53,6 @@ mod imp {
 
     impl WidgetImpl for ReleaseDetailsWindow {}
     impl AdwWindowImpl for ReleaseDetailsWindow {}
-    impl PreferencesWindowImpl for ReleaseDetailsWindow {}
     impl WindowImpl for ReleaseDetailsWindow {}
 }
 
