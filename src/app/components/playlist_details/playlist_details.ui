@@ -53,13 +53,7 @@
                 <property name="margin-end">12</property>
                 <property name="margin-top">12</property>
                 <child>
-                  <object class="GtkListView" id="tracks">
-                    <property name="valign">start</property>
-                    <style>
-                      <class name="card" />
-                    </style>
-                    <property name="show-separators">true</property>
-                  </object>
+                  <object class="GtkListView" id="tracks" />
                 </child>
               </object>
             </child>

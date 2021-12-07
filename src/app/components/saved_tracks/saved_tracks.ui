@@ -16,13 +16,7 @@
           <object class="GtkScrolledWindow" id="scrolled_window">
             <property name="vexpand">1</property>
             <child>
-              <object class="GtkListView" id="song_list">
-                <property name="valign">start</property>
-                <property name="show-separators">true</property>
-                <style>
-                  <class name="card" />
-                </style>
-              </object>
+              <object class="GtkListView" id="song_list" />
             </child>
           </object>
         </child>
