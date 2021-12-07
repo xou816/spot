@@ -426,6 +426,7 @@ mod tests {
             id: "".to_owned(),
             title: "".to_owned(),
             artists: vec![],
+            release_date: Some("1970-01-01".to_owned()),
             art: Some("".to_owned()),
             songs: SongList::new_sized(100),
             is_liked: false,

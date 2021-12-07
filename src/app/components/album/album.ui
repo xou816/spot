@@ -51,6 +51,18 @@
         </style>
       </object>
     </child>
+    <child>
+      <object class="GtkLabel" id="year_label">
+        <property name="label">Year</property>
+        <property name="justify">center</property>
+        <property name="wrap">1</property>
+        <property name="wrap-mode">word-char</property>
+        <property name="max-width-chars">1</property>
+        <style>
+          <class name="album__year"/>
+        </style>
+      </object>
+    </child>
     <style>
       <class name="album"/>
     </style>

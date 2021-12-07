@@ -46,6 +46,9 @@ mod imp {
 
         #[template_child]
         pub artist_button_label: TemplateChild<gtk::Label>,
+
+        #[template_child]
+        pub year_label: TemplateChild<gtk::Label>,
     }
 
     #[glib::object_subclass]
@@ -170,10 +173,11 @@ impl AlbumDetailsWidget {
         self.widget().album_art.set_from_pixbuf(Some(art));
     }
 
-    fn set_album_and_artist(&self, album: &str, artist: &str) {
+    fn set_album_and_artist_and_year(&self, album: &str, artist: &str, year: u32) {
         let widget = self.widget();
         widget.album_label.set_label(album);
         widget.artist_button_label.set_label(artist);
+        widget.year_label.set_label(&year.to_string());
     }
 }
 
@@ -243,8 +247,11 @@ impl Details {
             let album = &album.description;
 
             self.widget.set_liked(album.is_liked);
-            self.widget
-                .set_album_and_artist(&album.title[..], &album.artists_name());
+            self.widget.set_album_and_artist_and_year(
+                &album.title[..],
+                &album.artists_name(),
+                album.year(),
+            );
             self.widget
                 .connect_artist_clicked(clone!(@weak self.model as model => move || {
                     model.view_artist();
@@ -254,7 +261,7 @@ impl Details {
                 &album.title,
                 &album.artists_name(),
                 &details.label,
-                &details.release_date,
+                album.release_date.as_ref().unwrap(),
                 album.songs.len(),
                 &album.formatted_time(),
                 &details.copyright_text,

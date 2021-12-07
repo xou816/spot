@@ -35,6 +35,10 @@ leaflet.folded .album .album__cover {
   font-size: 14px;
 }
 
+.album label.album__year {
+  font-size: 14px;
+}
+
 .album__cover image {
   border-radius: 4px;
   transition: all 100ms ease;

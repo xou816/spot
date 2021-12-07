@@ -98,6 +98,20 @@
                             </style>
                           </object>
                         </child>
+                        <child>
+                          <object class="GtkLabel" id="year_label">
+                            <property name="halign">start</property>
+                            <property name="label">Year</property>
+                            <property name="wrap">1</property>
+                            <property name="ellipsize">end</property>
+                            <property name="max-width-chars">50</property>
+                            <property name="lines">1</property>
+                            <property name="xalign">0</property>
+                            <style>
+                              <class name="details__year-label"/>
+                            </style>
+                          </object>
+                        </child>
                       </object>
                     </child>
                     <child>

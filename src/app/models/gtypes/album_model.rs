@@ -10,14 +10,25 @@ glib::wrapper! {
 // Constructor for new instances. This simply calls glib::Object::new() with
 // initial values for our two properties and then returns the new instance
 impl AlbumModel {
-    pub fn new(artist: &str, album: &str, cover: &Option<String>, uri: &str) -> AlbumModel {
+    pub fn new(
+        artist: &str,
+        album: &str,
+        year: u32,
+        cover: &Option<String>,
+        uri: &str,
+    ) -> AlbumModel {
         glib::Object::new::<AlbumModel>(&[
             ("artist", &artist),
             ("album", &album),
+            ("year", &year),
             ("cover", cover),
             ("uri", &uri),
         ])
         .expect("Failed to create")
+    }
+
+    pub fn year(&self) -> u32 {
+        self.property("year").unwrap().get::<u32>().unwrap()
     }
 
     pub fn cover_url(&self) -> Option<String> {
@@ -45,9 +56,10 @@ mod imp {
 
     // Static array for defining the properties of the new type.
     lazy_static! {
-        static ref PROPERTIES: [glib::ParamSpec; 4] = [
+        static ref PROPERTIES: [glib::ParamSpec; 5] = [
             glib::ParamSpec::new_string("artist", "Artist", "", None, glib::ParamFlags::READWRITE),
             glib::ParamSpec::new_string("album", "Album", "", None, glib::ParamFlags::READWRITE),
+            glib::ParamSpec::new_uint("year", "Year", "", 0, 9999, 0, glib::ParamFlags::READWRITE),
             glib::ParamSpec::new_string("cover", "Cover", "", None, glib::ParamFlags::READWRITE),
             glib::ParamSpec::new_string("uri", "URI", "", None, glib::ParamFlags::READWRITE),
         ];
@@ -59,6 +71,7 @@ mod imp {
     pub struct AlbumModel {
         album: RefCell<Option<String>>,
         artist: RefCell<Option<String>>,
+        year: RefCell<u32>,
         cover: RefCell<Option<String>>,
         uri: RefCell<Option<String>>,
     }
@@ -85,6 +98,7 @@ mod imp {
             Self {
                 album: RefCell::new(None),
                 artist: RefCell::new(None),
+                year: RefCell::new(0),
                 cover: RefCell::new(None),
                 uri: RefCell::new(None),
             }
@@ -119,6 +133,12 @@ mod imp {
                         .expect("type conformity checked by `Object::set_property`");
                     self.artist.replace(artist);
                 }
+                "year" => {
+                    let year = value
+                        .get()
+                        .expect("type conformity checked by `Object::set_property`");
+                    self.year.replace(year);
+                }
                 "cover" => {
                     let cover = value
                         .get()
@@ -141,6 +161,7 @@ mod imp {
             match pspec.name() {
                 "album" => self.album.borrow().to_value(),
                 "artist" => self.artist.borrow().to_value(),
+                "year" => self.year.borrow().to_value(),
                 "cover" => self.cover.borrow().to_value(),
                 "uri" => self.uri.borrow().to_value(),
                 _ => unimplemented!(),
