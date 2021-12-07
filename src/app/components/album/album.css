@@ -27,12 +27,12 @@ leaflet.folded .album .album__cover {
 }
 
 .album label.album__title {
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: bold;
 }
 
 .album label.album__artist {
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .album__cover image {
