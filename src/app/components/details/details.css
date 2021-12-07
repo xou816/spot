@@ -1,10 +1,10 @@
 label.details__album-label {
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: bold;
 }
 
 .details__more label {
-  font-size: 16px;
+  font-size: 1rem;
   color: @theme_text_color;
 }
 
@@ -13,7 +13,7 @@ label.details__album-label {
 }
 
 .details .details__like {
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: bold;
 }
 
