@@ -52,7 +52,13 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for AlbumDetailsWidget {}
+    impl ObjectImpl for AlbumDetailsWidget {
+        fn constructed(&self, obj: &Self::Type) {
+            self.parent_constructed(obj);
+            self.header_mobile.set_centered();
+        }
+    }
+
     impl WidgetImpl for AlbumDetailsWidget {}
     impl BinImpl for AlbumDetailsWidget {}
 }
@@ -113,15 +119,52 @@ impl AlbumDetailsWidget {
 
     fn set_loaded(&self) {
         let context = self.style_context();
-        context.add_class("playlist_details--loaded");
+        context.add_class("container--loaded");
     }
 
-    fn header_widget(&self) -> &AlbumHeaderWidget {
-        &self.widget().header_widget
+    fn connect_liked<F>(&self, f: F)
+    where
+        F: Fn() + Clone + 'static,
+    {
+        self.widget().header_widget.connect_liked(f.clone());
+        self.widget().header_mobile.connect_liked(f);
     }
 
-    fn header_mobile(&self) -> &AlbumHeaderWidget {
-        &self.widget().header_mobile
+    fn connect_info<F>(&self, f: F)
+    where
+        F: Fn() + Clone + 'static,
+    {
+        self.widget().header_widget.connect_info(f.clone());
+        self.widget().header_mobile.connect_info(f);
+    }
+
+    fn set_liked(&self, is_liked: bool) {
+        self.widget().header_widget.set_liked(is_liked);
+        self.widget().header_mobile.set_liked(is_liked);
+    }
+
+    fn set_album_and_artist(&self, album: &str, artist: &str) {
+        self.widget()
+            .header_widget
+            .set_album_and_artist(album, artist);
+        self.widget()
+            .header_mobile
+            .set_album_and_artist(album, artist);
+    }
+
+    fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {
+        self.widget().header_widget.set_artwork(art);
+        self.widget().header_mobile.set_artwork(art);
+    }
+
+    fn connect_artist_clicked<F>(&self, f: F)
+    where
+        F: Fn() + Clone + 'static,
+    {
+        self.widget()
+            .header_widget
+            .connect_artist_clicked(f.clone());
+        self.widget().header_mobile.connect_artist_clicked(f);
     }
 }
 
@@ -150,47 +193,26 @@ impl Details {
 
         let modal = ReleaseDetailsWindow::new();
 
-        widget
-            .header_widget()
-            .connect_liked(clone!(@weak model => move || model.toggle_save_album()));
-        widget
-            .header_mobile()
-            .connect_liked(clone!(@weak model => move || model.toggle_save_album()));
+        widget.connect_liked(clone!(@weak model => move || model.toggle_save_album()));
 
-        widget.header_mobile().set_centered();
         widget.connect_header();
 
         widget.connect_bottom_edge(clone!(@weak model => move || {
             model.load_more();
         }));
 
-        widget
-            .header_widget()
-            .connect_info(clone!(@weak modal, @weak widget => move || {
-                let modal = modal.upcast_ref::<libadwaita::Window>();
-                modal.set_modal(true);
-                modal.set_transient_for(
-                    widget
-                        .root()
-                        .and_then(|r| r.downcast::<gtk::Window>().ok())
-                        .as_ref(),
-                );
-                modal.show();
-            }));
+        widget.connect_info(clone!(@weak modal, @weak widget => move || {
+            let modal = modal.upcast_ref::<libadwaita::Window>();
+            modal.set_modal(true);
+            modal.set_transient_for(
+                widget
+                    .root()
+                    .and_then(|r| r.downcast::<gtk::Window>().ok())
+                    .as_ref(),
+            );
+            modal.show();
+        }));
 
-        widget
-            .header_mobile()
-            .connect_info(clone!(@weak modal, @weak widget => move || {
-                let modal = modal.upcast_ref::<libadwaita::Window>();
-                modal.set_modal(true);
-                modal.set_transient_for(
-                    widget
-                        .root()
-                        .and_then(|r| r.downcast::<gtk::Window>().ok())
-                        .as_ref(),
-                );
-                modal.show();
-            }));
         Self {
             model,
             worker,
@@ -203,8 +225,8 @@ impl Details {
     fn update_liked(&self) {
         if let Some(info) = self.model.get_album_info() {
             let is_liked = info.description.is_liked;
-            self.widget.header_widget().set_liked(is_liked);
-            self.widget.header_mobile().set_liked(is_liked);
+            self.widget.set_liked(is_liked);
+            self.widget.set_liked(is_liked);
         }
     }
 
@@ -213,25 +235,14 @@ impl Details {
             let details = &album.release_details;
             let album = &album.description;
 
-            self.widget.header_widget().set_liked(album.is_liked);
-            self.widget.header_mobile().set_liked(album.is_liked);
+            self.widget.set_liked(album.is_liked);
+            self.widget.set_liked(album.is_liked);
 
             self.widget
-                .header_widget()
-                .set_album_and_artist(&album.title[..], &album.artists_name());
-            self.widget
-                .header_mobile()
                 .set_album_and_artist(&album.title[..], &album.artists_name());
 
-            self.widget.header_widget().connect_artist_clicked(
-                clone!(@weak self.model as model => move || {
-                    model.view_artist();
-                }),
-            );
-            self.widget.header_mobile().connect_artist_clicked(
-                clone!(@weak self.model as model => move || {
-                    model.view_artist();
-                }),
+            self.widget.connect_artist_clicked(
+                clone!(@weak self.model as model => move || model.view_artist()),
             );
 
             self.modal.set_details(
@@ -246,21 +257,13 @@ impl Details {
 
             if let Some(art) = album.art.clone() {
                 let widget = self.widget.downgrade();
-                let header = self.widget.header_widget().downgrade();
-                let header_mobile = self.widget.header_mobile().downgrade();
 
                 self.worker.send_local_task(async move {
                     let pixbuf = ImageLoader::new()
                         .load_remote(&art[..], "jpg", 320, 320)
                         .await;
-                    if let (Some(widget), Some(header), Some(header_mobile), Some(ref pixbuf)) = (
-                        widget.upgrade(),
-                        header.upgrade(),
-                        header_mobile.upgrade(),
-                        pixbuf,
-                    ) {
-                        header.set_artwork(pixbuf);
-                        header_mobile.set_artwork(pixbuf);
+                    if let (Some(widget), Some(ref pixbuf)) = (widget.upgrade(), pixbuf) {
+                        widget.set_artwork(pixbuf);
                         widget.set_loaded();
                     }
                 });

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <requires lib="gtk" version="4.0"/>
-  <requires lib="libadwaita" version="1.0"/>
+  <requires lib="gtk" version="4.0" />
+  <requires lib="libadwaita" version="1.0" />
   <template class="AlbumDetailsWidget" parent="AdwBin">
     <child>
       <object class="AdwClamp">
@@ -18,27 +18,27 @@
               <object class="GtkRevealer" id="header_revealer">
                 <property name="transition-type">slide-down</property>
                 <child>
-                <object class="AdwSqueezer">
-                <property name="valign">center</property>
-                <property name="homogeneous">0</property>
-                <property name="transition-type">crossfade</property>
-                  <child>
-                   <object class="AlbumHeaderWidget" id="header_widget">
-										<style>
-											<class name="album__header"/>
-										</style>
-									</object>
-                  </child>
-                  <child>
-                    <object class="AlbumHeaderWidget" id="header_mobile">
-                      <property name="orientation">vertical</property>
-                      <property name="spacing">12</property>
-											<style>
-												<class name="header__mobile"/>
-											</style>
-                    </object>
-                  </child>
-                </object>
+                  <object class="AdwSqueezer">
+                    <property name="valign">center</property>
+                    <property name="homogeneous">0</property>
+                    <property name="transition-type">crossfade</property>
+                    <child>
+                      <object class="AlbumHeaderWidget" id="header_widget">
+                        <style>
+                          <class name="album__header" />
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AlbumHeaderWidget" id="header_mobile">
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">12</property>
+                        <style>
+                          <class name="header__mobile" />
+                        </style>
+                      </object>
+                    </child>
+                  </object>
                 </child>
               </object>
             </child>
@@ -47,16 +47,16 @@
                 <property name="hscrollbar-policy">never</property>
                 <property name="propagate-natural-width">1</property>
                 <property name="hexpand">1</property>
-								<property name="margin-start">12</property>
-								<property name="margin-end">12</property>
-								<property name="margin-top">12</property>
+                <property name="margin-start">12</property>
+                <property name="margin-end">12</property>
+                <property name="margin-top">12</property>
                 <property name="vexpand">1</property>
                 <child>
                   <object class="GtkListView" id="album_tracks">
-										<property name="show-separators">true</property>
+                    <property name="show-separators">true</property>
                     <property name="valign">start</property>
                     <style>
-                      <class name="card"/>
+                      <class name="card" />
                     </style>
                   </object>
                 </child>
@@ -67,8 +67,7 @@
       </object>
     </child>
     <style>
-       <class name="playlist_details"/>
+      <class name="container" />
     </style>
   </template>
 </interface>
-

@@ -92,14 +92,10 @@ impl ReleaseDetailsWindow {
             artist
         ));
 
-        widget.label.set_text(&format!("{}", label));
-
-        widget.release.set_text(&format!("{}", release_date));
-
-        widget.tracks.set_text(&format!("{}", track_count));
-
-        widget.duration.set_text(&format!("{}", duration));
-
-        widget.copyright.set_text(&format!("{}", copyright));
+        widget.label.set_text(label);
+        widget.release.set_text(release_date);
+        widget.tracks.set_text(&track_count.to_string());
+        widget.duration.set_text(duration);
+        widget.copyright.set_text(copyright);
     }
 }

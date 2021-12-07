@@ -49,7 +49,15 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for PlaylistDetailsWidget {}
+    impl ObjectImpl for PlaylistDetailsWidget {
+        fn constructed(&self, obj: &Self::Type) {
+            self.parent_constructed(obj);
+            self.header_mobile.set_centered();
+            self.header_mobile.hide_actions();
+            self.header_widget.hide_actions();
+        }
+    }
+
     impl WidgetImpl for PlaylistDetailsWidget {}
     impl BoxImpl for PlaylistDetailsWidget {}
 }
@@ -110,15 +118,31 @@ impl PlaylistDetailsWidget {
 
     fn set_loaded(&self) {
         let context = self.style_context();
-        context.add_class("playlist_details--loaded");
+        context.add_class("container--loaded");
     }
 
-    fn header_widget(&self) -> &AlbumHeaderWidget {
-        &self.widget().header_widget
+    fn set_album_and_artist(&self, album: &str, artist: &str) {
+        self.widget()
+            .header_widget
+            .set_album_and_artist(album, artist);
+        self.widget()
+            .header_mobile
+            .set_album_and_artist(album, artist);
     }
 
-    fn header_mobile(&self) -> &AlbumHeaderWidget {
-        &self.widget().header_mobile
+    fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {
+        self.widget().header_widget.set_artwork(art);
+        self.widget().header_mobile.set_artwork(art);
+    }
+
+    fn connect_artist_clicked<F>(&self, f: F)
+    where
+        F: Fn() + Clone + 'static,
+    {
+        self.widget()
+            .header_widget
+            .connect_artist_clicked(f.clone());
+        self.widget().header_mobile.connect_artist_clicked(f);
     }
 }
 
@@ -148,21 +172,9 @@ impl PlaylistDetails {
             model.load_more_tracks();
         }));
 
-        widget
-            .header_widget()
-            .connect_artist_clicked(clone!(@weak model => move || {
-                model.view_owner();
-            }));
-
-        widget
-            .header_mobile()
-            .connect_artist_clicked(clone!(@weak model => move || {
-                model.view_owner();
-            }));
-
-        widget.header_widget().hide_actions();
-        widget.header_mobile().hide_actions();
-        widget.header_mobile().set_centered();
+        widget.connect_artist_clicked(clone!(@weak model => move || {
+            model.view_owner();
+        }));
 
         Self {
             model,
@@ -178,30 +190,16 @@ impl PlaylistDetails {
             let owner = &info.owner.display_name[..];
             let art_url = info.art.as_ref();
 
-            self.widget
-                .header_widget()
-                .set_album_and_artist(title, owner);
-            self.widget
-                .header_mobile()
-                .set_album_and_artist(title, owner);
+            self.widget.set_album_and_artist(title, owner);
 
             if let Some(art_url) = art_url.cloned() {
                 let widget = self.widget.downgrade();
-                let header = self.widget.header_widget().downgrade();
-                let header_mobile = self.widget.header_mobile().downgrade();
-
                 self.worker.send_local_task(async move {
                     let pixbuf = ImageLoader::new()
                         .load_remote(&art_url[..], "jpg", 320, 320)
                         .await;
-                    if let (Some(widget), Some(header), Some(header_mobile), Some(ref pixbuf)) = (
-                        widget.upgrade(),
-                        header.upgrade(),
-                        header_mobile.upgrade(),
-                        pixbuf,
-                    ) {
-                        header.set_artwork(pixbuf);
-                        header_mobile.set_artwork(pixbuf);
+                    if let (Some(widget), Some(ref pixbuf)) = (widget.upgrade(), pixbuf) {
+                        widget.set_artwork(pixbuf);
                         widget.set_loaded();
                     }
                 });

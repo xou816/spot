@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <requires lib="gtk" version="4.0"/>
-  <requires lib="libadwaita" version="1.0"/>
+  <requires lib="gtk" version="4.0" />
+  <requires lib="libadwaita" version="1.0" />
   <template class="ReleaseDetailsWindow" parent="AdwPreferencesWindow">
     <property name="modal">1</property>
-		<property name="title"></property>
+    <property name="title"></property>
     <property name="hide-on-close">1</property>
-		<property name="search-enabled">0</property>
-		<property name="default-width">360</property>
-		<property name="default-height">400</property>
+    <property name="search-enabled">0</property>
+    <property name="default-width">360</property>
+    <property name="default-height">400</property>
     <child>
       <object class="AdwPreferencesPage">
         <child>
           <object class="AdwPreferencesGroup" id="album_artist">
-          <property name="title" translatable="yes">Album by Artist</property>
+            <property name="title" translatable="yes">Album by Artist</property>
             <child>
               <object class="AdwActionRow">
                 <property name="title" translatable="yes">Label</property>

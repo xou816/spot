@@ -18,12 +18,11 @@ headerbar.selection-mode {
   background-color: @card_bg_color;
 }
 
-.playlist_details {
+.container {
   transition: opacity 0.3s ease;
   opacity: 0;
 }
 
-.playlist_details--loaded {
+.container--loaded {
   opacity: 1;
 }
-

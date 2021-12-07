@@ -1,12 +1,3 @@
-.album {
-  opacity: 0;
-  transition: opacity 300ms ease;
-}
-
-.album--loaded {
-  opacity: 1;
-}
-
 /* large style */
 
 leaflet.unfolded .album .album__cover {
