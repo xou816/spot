@@ -1,10 +1,10 @@
 .playlist_details label.playlist_details__name {
-  font-size: 1.25rem;
+  font-size: 1.45rem;
   font-weight: bold;
 }
 
 .playlist_details__owner label {
-  font-size: 1rem;
+  font-size: 1.15rem;
   color: @theme_text_color;
 }
 
