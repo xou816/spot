@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <requires lib="gtk" version="4.0"/>
+  <requires lib="gtk" version="4.0" />
   <template class="ArtistDetailsWidget" parent="GtkBox">
     <child>
       <object class="GtkScrolledWindow" id="scrolled_window">
@@ -25,15 +25,13 @@
                     <property name="margin-end">8</property>
                     <property name="label" translatable="yes" comments="Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify.">Top tracks</property>
                     <style>
-                      <class name="title-4"/>
+                      <class name="title-4" />
                     </style>
                   </object>
                 </child>
                 <child>
                   <object class="GtkListView" id="top_tracks">
-                    <style>
-                      <class name="artist__top-tracks"/>
-                    </style>
+                    <property name="margin-top">12</property>
                   </object>
                 </child>
               </object>
@@ -64,7 +62,7 @@
       </object>
     </child>
     <style>
-      <class name="artist"/>
+      <class name="artist" />
     </style>
   </template>
 </interface>

@@ -3,7 +3,7 @@ use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use std::rc::Rc;
 
-use crate::app::components::{display_add_css_provider, Component, EventListener, Playlist};
+use crate::app::components::{Component, EventListener, Playlist};
 use crate::app::state::LoginEvent;
 use crate::app::{AppEvent, Worker};
 
@@ -49,7 +49,6 @@ glib::wrapper! {
 
 impl SavedTracksWidget {
     fn new() -> Self {
-        display_add_css_provider(resource!("/components/saved_tracks.css"));
         glib::Object::new(&[]).expect("Failed to create an instance of SavedTracksWidget")
     }
 

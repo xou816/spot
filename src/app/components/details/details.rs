@@ -3,10 +3,11 @@ use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use std::rc::Rc;
 
+use super::album_header::AlbumHeaderWidget;
 use super::release_details::ReleaseDetailsWindow;
 use super::DetailsModel;
 
-use crate::app::components::{display_add_css_provider, Component, EventListener, Playlist};
+use crate::app::components::{Component, EventListener, Playlist};
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
 use crate::app::{AppEvent, BrowserEvent};
@@ -27,25 +28,13 @@ mod imp {
         pub header_revealer: TemplateChild<gtk::Revealer>,
 
         #[template_child]
-        pub album_label: TemplateChild<gtk::Label>,
+        pub header_widget: TemplateChild<AlbumHeaderWidget>,
+
+        #[template_child]
+        pub header_mobile: TemplateChild<AlbumHeaderWidget>,
 
         #[template_child]
         pub album_tracks: TemplateChild<gtk::ListView>,
-
-        #[template_child]
-        pub album_art: TemplateChild<gtk::Image>,
-
-        #[template_child]
-        pub like_button: TemplateChild<gtk::Button>,
-
-        #[template_child]
-        pub info_button: TemplateChild<gtk::Button>,
-
-        #[template_child]
-        pub artist_button: TemplateChild<gtk::LinkButton>,
-
-        #[template_child]
-        pub artist_button_label: TemplateChild<gtk::Label>,
     }
 
     #[glib::object_subclass]
@@ -63,7 +52,13 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for AlbumDetailsWidget {}
+    impl ObjectImpl for AlbumDetailsWidget {
+        fn constructed(&self, obj: &Self::Type) {
+            self.parent_constructed(obj);
+            self.header_mobile.set_centered();
+        }
+    }
+
     impl WidgetImpl for AlbumDetailsWidget {}
     impl BinImpl for AlbumDetailsWidget {}
 }
@@ -74,7 +69,6 @@ glib::wrapper! {
 
 impl AlbumDetailsWidget {
     fn new() -> Self {
-        display_add_css_provider(resource!("/components/details.css"));
         glib::Object::new(&[]).expect("Failed to create an instance of AlbumDetailsWidget")
     }
 
@@ -127,53 +121,58 @@ impl AlbumDetailsWidget {
             });
     }
 
-    fn connect_liked<F>(&self, f: F)
-    where
-        F: Fn() + 'static,
-    {
-        self.widget().like_button.connect_clicked(move |_| f());
-    }
-
-    fn connect_info<F>(&self, f: F)
-    where
-        F: Fn() + 'static,
-    {
-        self.widget().info_button.connect_clicked(move |_| f());
-    }
-
-    fn connect_artist_clicked<F>(&self, f: F)
-    where
-        F: Fn() + 'static,
-    {
-        self.widget().artist_button.connect_activate_link(move |_| {
-            f();
-            glib::signal::Inhibit(true)
-        });
-    }
-
     fn album_tracks_widget(&self) -> &gtk::ListView {
         self.widget().album_tracks.as_ref()
     }
 
-    fn set_liked(&self, is_liked: bool) {
-        self.widget()
-            .like_button
-            .set_label(if is_liked { "♥" } else { "♡" });
-    }
-
     fn set_loaded(&self) {
         let context = self.style_context();
-        context.add_class("details--loaded");
+        context.add_class("container--loaded");
     }
 
-    pub fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {
-        self.widget().album_art.set_from_pixbuf(Some(art));
+    fn connect_liked<F>(&self, f: F)
+    where
+        F: Fn() + Clone + 'static,
+    {
+        self.widget().header_widget.connect_liked(f.clone());
+        self.widget().header_mobile.connect_liked(f);
+    }
+
+    fn connect_info<F>(&self, f: F)
+    where
+        F: Fn() + Clone + 'static,
+    {
+        self.widget().header_widget.connect_info(f.clone());
+        self.widget().header_mobile.connect_info(f);
+    }
+
+    fn set_liked(&self, is_liked: bool) {
+        self.widget().header_widget.set_liked(is_liked);
+        self.widget().header_mobile.set_liked(is_liked);
     }
 
     fn set_album_and_artist(&self, album: &str, artist: &str) {
-        let widget = self.widget();
-        widget.album_label.set_label(album);
-        widget.artist_button_label.set_label(artist);
+        self.widget()
+            .header_widget
+            .set_album_and_artist(album, artist);
+        self.widget()
+            .header_mobile
+            .set_album_and_artist(album, artist);
+    }
+
+    fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {
+        self.widget().header_widget.set_artwork(art);
+        self.widget().header_mobile.set_artwork(art);
+    }
+
+    fn connect_artist_clicked<F>(&self, f: F)
+    where
+        F: Fn() + Clone + 'static,
+    {
+        self.widget()
+            .header_widget
+            .connect_artist_clicked(f.clone());
+        self.widget().header_mobile.connect_artist_clicked(f);
     }
 }
 
@@ -192,6 +191,7 @@ impl Details {
         }
 
         let widget = AlbumDetailsWidget::new();
+
         let playlist = Box::new(Playlist::new(
             widget.album_tracks_widget().clone(),
             model.clone(),
@@ -234,6 +234,7 @@ impl Details {
         if let Some(info) = self.model.get_album_info() {
             let is_liked = info.description.is_liked;
             self.widget.set_liked(is_liked);
+            self.widget.set_liked(is_liked);
         }
     }
 
@@ -243,12 +244,14 @@ impl Details {
             let album = &album.description;
 
             self.widget.set_liked(album.is_liked);
+            self.widget.set_liked(album.is_liked);
+
             self.widget
                 .set_album_and_artist(&album.title[..], &album.artists_name());
-            self.widget
-                .connect_artist_clicked(clone!(@weak self.model as model => move || {
-                    model.view_artist();
-                }));
+
+            self.widget.connect_artist_clicked(
+                clone!(@weak self.model as model => move || model.view_artist()),
+            );
 
             self.modal.set_details(
                 &album.title,
@@ -262,18 +265,14 @@ impl Details {
 
             if let Some(art) = album.art.clone() {
                 let widget = self.widget.downgrade();
-                let modal = self.modal.downgrade();
 
                 self.worker.send_local_task(async move {
                     let pixbuf = ImageLoader::new()
-                        .load_remote(&art[..], "jpg", 200, 200)
+                        .load_remote(&art[..], "jpg", 320, 320)
                         .await;
-                    if let (Some(widget), Some(modal), Some(ref pixbuf)) =
-                        (widget.upgrade(), modal.upgrade(), pixbuf)
-                    {
+                    if let (Some(widget), Some(ref pixbuf)) = (widget.upgrade(), pixbuf) {
                         widget.set_artwork(pixbuf);
                         widget.set_loaded();
-                        modal.set_artwork(pixbuf);
                     }
                 });
             } else {

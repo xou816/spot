@@ -1,18 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <requires lib="gtk" version="4.0"/>
+  <requires lib="gtk" version="4.0" />
   <template class="NowPlayingWidget" parent="GtkBox">
     <property name="orientation">vertical</property>
     <child>
-      <object class="GtkScrolledWindow" id="scrolled_window">
+      <object class="AdwClamp">
         <property name="vexpand">1</property>
+        <property name="hexpand">1</property>
+        <property name="maximum-size">900</property>
+        <property name="margin-start">12</property>
+        <property name="margin-end">12</property>
+        <property name="margin-top">12</property>
+        <property name="margin-bottom">12</property>
         <child>
-          <object class="GtkListView" id="song_list"/>
+          <object class="GtkScrolledWindow" id="scrolled_window">
+            <property name="vexpand">1</property>
+            <child>
+              <object class="GtkListView" id="song_list" />
+            </child>
+          </object>
         </child>
       </object>
     </child>
-    <style>
-      <class name="now_playing"/>
-    </style>
   </template>
 </interface>
