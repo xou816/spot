@@ -173,11 +173,13 @@ impl AlbumDetailsWidget {
         self.widget().album_art.set_from_pixbuf(Some(art));
     }
 
-    fn set_album_and_artist_and_year(&self, album: &str, artist: &str, year: u32) {
+    fn set_album_and_artist_and_year(&self, album: &str, artist: &str, year: Option<u32>) {
         let widget = self.widget();
         widget.album_label.set_label(album);
         widget.artist_button_label.set_label(artist);
-        widget.year_label.set_label(&year.to_string());
+        if let Some(year) = year {
+            widget.year_label.set_label(&year.to_string());
+        }
     }
 }
 

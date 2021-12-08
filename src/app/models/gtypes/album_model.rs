@@ -13,10 +13,11 @@ impl AlbumModel {
     pub fn new(
         artist: &str,
         album: &str,
-        year: u32,
+        year: Option<u32>,
         cover: &Option<String>,
         uri: &str,
     ) -> AlbumModel {
+        let year = year.unwrap_or(0);
         glib::Object::new::<AlbumModel>(&[
             ("artist", &artist),
             ("album", &album),
@@ -27,8 +28,11 @@ impl AlbumModel {
         .expect("Failed to create")
     }
 
-    pub fn year(&self) -> u32 {
-        self.property("year").unwrap().get::<u32>().unwrap()
+    pub fn year(&self) -> Option<u32> {
+        match self.property("year").unwrap().get::<u32>().unwrap() {
+            0 => None,
+            year => Some(year),
+        }
     }
 
     pub fn cover_url(&self) -> Option<String> {
@@ -71,7 +75,7 @@ mod imp {
     pub struct AlbumModel {
         album: RefCell<Option<String>>,
         artist: RefCell<Option<String>>,
-        year: RefCell<u32>,
+        year: RefCell<Option<u32>>,
         cover: RefCell<Option<String>>,
         uri: RefCell<Option<String>>,
     }
@@ -98,7 +102,7 @@ mod imp {
             Self {
                 album: RefCell::new(None),
                 artist: RefCell::new(None),
-                year: RefCell::new(0),
+                year: RefCell::new(None),
                 cover: RefCell::new(None),
                 uri: RefCell::new(None),
             }
@@ -137,7 +141,10 @@ mod imp {
                     let year = value
                         .get()
                         .expect("type conformity checked by `Object::set_property`");
-                    self.year.replace(year);
+                    match year {
+                        0 => self.year.replace(None),
+                        y => self.year.replace(Some(y)),
+                    };
                 }
                 "cover" => {
                     let cover = value
@@ -161,7 +168,7 @@ mod imp {
             match pspec.name() {
                 "album" => self.album.borrow().to_value(),
                 "artist" => self.artist.borrow().to_value(),
-                "year" => self.year.borrow().to_value(),
+                "year" => self.year.borrow().unwrap_or(0).to_value(),
                 "cover" => self.cover.borrow().to_value(),
                 "uri" => self.uri.borrow().to_value(),
                 _ => unimplemented!(),

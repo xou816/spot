@@ -105,13 +105,16 @@ impl AlbumWidget {
             .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
             .build();
 
-        if album_model.year() == 0 {
-            widget.year_label.hide();
-        } else {
-            album_model
-                .bind_property("year", &*widget.year_label, "label")
-                .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
-                .build();
+        match album_model.year() {
+            Some(_) => {
+                album_model
+                    .bind_property("year", &*widget.year_label, "label")
+                    .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                    .build();
+            }
+            None => {
+                widget.year_label.hide();
+            }
         }
     }
 

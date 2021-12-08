@@ -30,7 +30,7 @@ impl From<&PlaylistDescription> for AlbumModel {
             &playlist.owner.display_name,
             &playlist.title,
             // Playlists do not have their released date since they are expected to be updated anytime.
-            0,
+            None,
             &playlist.art,
             &playlist.id,
         )
@@ -109,10 +109,10 @@ impl AlbumDescription {
         let duration: u32 = self.songs.iter().map(|song| song.duration).sum();
         format_duration(duration.into())
     }
-    pub fn year(&self) -> u32 {
+    pub fn year(&self) -> Option<u32> {
         match self.release_date {
-            Some(ref date) => u32::from_str(date.split('-').next().unwrap()).unwrap(),
-            None => 0,
+            Some(ref date) => Some(u32::from_str(date.split('-').next().unwrap()).unwrap()),
+            None => None,
         }
     }
 }
