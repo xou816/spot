@@ -36,7 +36,7 @@ leaflet.folded .album .album__cover {
 }
 
 .album label.album__year {
-  font-size: 14px;
+  font-size: 1rem;
 }
 
 .album__cover image {
