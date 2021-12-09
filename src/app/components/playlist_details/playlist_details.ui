@@ -1,76 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <requires lib="gtk" version="4.0"/>
-  <requires lib="libadwaita" version="1.0"/>
+  <requires lib="gtk" version="4.0" />
+  <requires lib="libadwaita" version="1.0" />
   <template class="PlaylistDetailsWidget" parent="GtkBox">
     <child>
       <object class="AdwClamp">
         <property name="vexpand">1</property>
         <property name="hexpand">1</property>
         <property name="maximum-size">900</property>
-        <property name="margin-start">8</property>
-        <property name="margin-end">8</property>
-        <property name="margin-top">8</property>
-        <property name="margin-bottom">8</property>
+        <property name="margin-bottom">12</property>
         <child>
           <object class="GtkBox">
             <property name="orientation">vertical</property>
             <property name="vexpand">1</property>
             <property name="hexpand">1</property>
-            <property name="spacing">8</property>
             <child>
               <object class="GtkRevealer" id="header_revealer">
                 <property name="transition-type">slide-down</property>
                 <child>
-                  <object class="GtkBox">
-                    <property name="valign">start</property>
-                    <property name="spacing">16</property>
-                    <property name="vexpand">0</property>
+                  <object class="AdwSqueezer">
+                    <property name="valign">center</property>
+                    <property name="homogeneous">0</property>
+                    <property name="transition-type">crossfade</property>
+                    <property name="switch-threshold-policy">natural</property>
                     <child>
-                      <object class="GtkImage" id="art">
-                        <property name="width-request">100</property>
-                        <property name="height-request">100</property>
-                        <property name="icon-name">emblem-music-symbolic</property>
+                      <object class="AlbumHeaderWidget" id="header_widget">
                         <style>
-                          <class name="playlist_details__art"/>
+                          <class name="album__header" />
                         </style>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkBox">
-                        <property name="valign">center</property>
+                      <object class="AlbumHeaderWidget" id="header_mobile">
                         <property name="orientation">vertical</property>
-                        <child>
-                          <object class="GtkLabel" id="name_label">
-                            <property name="halign">start</property>
-                            <property name="label">Playlist</property>
-                            <property name="wrap">1</property>
-                            <property name="xalign">0</property>
-                            <style>
-                              <class name="playlist_details__name"/>
-                            </style>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkLinkButton" id="owner_button">
-                            <property name="receives-default">1</property>
-                            <property name="halign">start</property>
-                            <property name="valign">center</property>
-                            <property name="has-frame">0</property>
-                            <child>
-                              <object class="GtkLabel" id="owner_button_label">
-                                <property name="hexpand">1</property>
-                                <property name="vexpand">1</property>
-                                <property name="label">Owner</property>
-                                <property name="ellipsize">middle</property>
-                                <property name="xalign">0</property>
-                              </object>
-                            </child>
-                            <style>
-                              <class name="playlist_details__owner"/>
-                            </style>
-                          </object>
-                        </child>
+                        <property name="spacing">12</property>
+                        <style>
+                          <class name="header__mobile" />
+                        </style>
                       </object>
                     </child>
                   </object>
@@ -83,13 +49,11 @@
                 <property name="propagate-natural-width">1</property>
                 <property name="hexpand">1</property>
                 <property name="vexpand">1</property>
+                <property name="margin-start">12</property>
+                <property name="margin-end">12</property>
+                <property name="margin-top">12</property>
                 <child>
-                  <object class="GtkListView" id="tracks">
-                    <property name="valign">start</property>
-                    <style>
-                      <class name="playlist_details__songs"/>
-                    </style>
-                  </object>
+                  <object class="GtkListView" id="tracks" />
                 </child>
               </object>
             </child>
@@ -98,7 +62,7 @@
       </object>
     </child>
     <style>
-      <class name="playlist_details"/>
+      <class name="container" />
     </style>
   </template>
 </interface>

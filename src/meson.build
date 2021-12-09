@@ -114,6 +114,7 @@ sources = files(
 './app/components/selection/mod.rs',
 './app/components/mod.rs',
 './app/components/details/release_details.rs',
+'./app/components/details/album_header.rs',
 './app/components/details/mod.rs',
 './app/components/details/details.rs',
 './app/components/details/details_model.rs',

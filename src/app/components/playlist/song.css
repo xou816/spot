@@ -1,6 +1,6 @@
 .song__index {
   transition: opacity 150ms ease;
-  font-size: 12px;
+  font-size: 0.85rem;
   margin: 4px 12px;
   padding: 0;
   opacity: 1;
@@ -25,12 +25,11 @@
 }
 
 .song__title {
-  font-size: 16px;
+  font-size: 1.15rem;
 }
 
 row {
   transition: background-color 150ms ease;
-  margin: 1px 0;
 }
 
 .song--playing label.song__title, .song--playing label.song__index {
@@ -38,11 +37,11 @@ row {
 }
 
 .song label.song__artist {
-  font-size: 12px;
+  font-size: 0.85rem;
 }
 
 .song label.song__duration {
-  font-size: 14px;
+  font-size: 1rem;
   color: @insensitive_fg_color;
 }
 
@@ -60,16 +59,6 @@ row:hover .song__menu--enabled, .song__menu--enabled:checked {
 
 .song check {
   filter: opacity(1);
-}
-
-/* copied from adwaita */
-
-.playlist row:hover {
-  background-color: alpha(currentColor, 0.07);
-}
-
-.playlist row:active {
-  background-color: alpha(currentColor, 0.16);
 }
 
 /* playback indicator */

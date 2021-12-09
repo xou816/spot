@@ -84,8 +84,13 @@ where
         let selection_model = gtk::NoSelection::new(Some(list_model.unsafe_store()));
         let factory = gtk::SignalListItemFactory::new();
 
+        let style_context = listview.style_context();
+        style_context.add_class("playlist");
+        style_context.add_class("card");
+        listview.set_show_separators(true);
+        listview.set_valign(gtk::Align::Start);
+
         listview.set_factory(Some(&factory));
-        listview.style_context().add_class("playlist");
         listview.set_single_click_activate(true);
         listview.set_model(Some(&selection_model));
         Self::set_paused(&listview, !model.is_song_playing());

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-21 16:54-0500\n"
+"POT-Creation-Date: 2021-11-24 12:06-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -53,17 +53,6 @@ msgstr ""
 msgid "Copyright:"
 msgstr ""
 
-#: src/app/components/headerbar/widget.rs:147
-msgid "No song selected"
-msgstr ""
-
-#. translators: This is part of a larger text that says "<n> songs selected" when in selection mode. This text should be as short as possible.
-#: src/app/components/headerbar/widget.rs:161
-msgid "song selected"
-msgid_plural "songs selected"
-msgstr[0] ""
-msgstr[1] ""
-
 #. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
 #: src/app/components/labels.rs:5
 msgid "View album"
@@ -94,6 +83,13 @@ msgstr ""
 #: src/app/components/labels.rs:24
 msgid "Add to {}"
 msgstr ""
+
+#. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
+#: src/app/components/labels.rs:33
+msgid "{} song selected"
+msgid_plural "{} songs selected"
+msgstr[0] ""
+msgstr[1] ""
 
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:56
@@ -197,6 +193,11 @@ msgstr ""
 msgid "Type to search."
 msgstr ""
 
+#. <property name="icon-name">playlist2-symbolic</property>
+#: src/app/components/selection/selection_toolbar.ui:47
+msgid "Add to playlist..."
+msgstr ""
+
 #: src/app/components/selection/selection_toolbar.ui:58
 msgid "Remove"
 msgstr ""
@@ -229,6 +230,16 @@ msgstr ""
 #. Log in button label
 #: src/app/components/login/login.ui:141
 msgid "Log in"
+msgstr ""
+
+#. Button label. Exits selection mode.
+#: src/app/components/headerbar/headerbar.ui:46
+msgid "Cancel"
+msgstr ""
+
+#. Button label. Selects all visible songs.
+#: src/app/components/headerbar/headerbar.ui:57
+msgid "Select all"
 msgstr ""
 
 #: src/app/components/playback/playback_controls.ui:17

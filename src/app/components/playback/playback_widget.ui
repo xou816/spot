@@ -66,16 +66,22 @@
                 <child>
                   <object class="GtkLabel" id="track_position">
                     <property name="sensitive">0</property>
-                    <property name="label">0:00</property>
+                    <property name="label">0∶00</property>
                     <property name="halign">end</property>
                     <property name="hexpand">1</property>
+										<style>
+											<class name="numeric"/>
+										</style>
                   </object>
                 </child>
                 <child>
                   <object class="GtkLabel" id="track_duration">
                     <property name="sensitive">0</property>
-                    <property name="label"> / 0:00</property>
+                    <property name="label"> / 0∶00</property>
                     <property name="halign">end</property>
+										<style>
+											<class name="numeric"/>
+										</style>
                   </object>
                 </child>
               </object>

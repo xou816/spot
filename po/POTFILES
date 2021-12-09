@@ -1,7 +1,6 @@
 # grep gettext src/**/*.rs | cut -d: -f1 | uniq
 src/app/batch_loader.rs
 src/app/components/details/release_details.rs
-src/app/components/headerbar/widget.rs
 src/app/components/labels.rs
 src/app/components/login/login_model.rs
 src/app/components/mod.rs
