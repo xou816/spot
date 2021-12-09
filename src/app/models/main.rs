@@ -110,10 +110,10 @@ impl AlbumDescription {
         format_duration(duration.into())
     }
     pub fn year(&self) -> Option<u32> {
-        match self.release_date {
-            Some(ref date) => Some(u32::from_str(date.split('-').next().unwrap()).unwrap()),
-            None => None,
-        }
+        self.release_date
+            .as_ref()
+            .and_then(|date| date.split('-').next())
+            .and_then(|y| u32::from_str(y).ok())
     }
 }
 
