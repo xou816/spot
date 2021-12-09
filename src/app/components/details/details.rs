@@ -245,8 +245,11 @@ impl Details {
 
             self.widget.set_liked(album.is_liked);
 
-            self.widget
-                .set_album_and_artist_and_year(&album.title[..], &album.artists_name(), album.year());
+            self.widget.set_album_and_artist_and_year(
+                &album.title[..],
+                &album.artists_name(),
+                album.year(),
+            );
 
             self.widget.connect_artist_clicked(
                 clone!(@weak self.model as model => move || model.view_artist()),
