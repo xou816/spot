@@ -15,6 +15,15 @@ headerbar.selection-mode {
   background-color: @theme_selected_bg_color;
 }
 
-button.tool, menubutton.tool {
-  -gtk-icon-size: 25px;
+.playlist {
+  background-color: @card_bg_color;
+}
+
+.container {
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.container--loaded {
+  opacity: 1;
 }

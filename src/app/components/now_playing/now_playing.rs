@@ -3,7 +3,7 @@ use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use std::rc::Rc;
 
-use crate::app::components::{display_add_css_provider, Component, EventListener, Playlist};
+use crate::app::components::{Component, EventListener, Playlist};
 use crate::app::{state::PlaybackEvent, AppEvent, Worker};
 
 use super::NowPlayingModel;
@@ -48,7 +48,6 @@ glib::wrapper! {
 
 impl NowPlayingWidget {
     fn new() -> Self {
-        display_add_css_provider(resource!("/components/now_playing.css"));
         glib::Object::new(&[]).expect("Failed to create an instance of NowPlayingWidget")
     }
 

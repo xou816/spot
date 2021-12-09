@@ -4,8 +4,9 @@ use gtk::CompositeTemplate;
 use std::rc::Rc;
 
 use super::PlaylistDetailsModel;
+use crate::app::components::AlbumHeaderWidget;
 
-use crate::app::components::{display_add_css_provider, Component, EventListener, Playlist};
+use crate::app::components::{Component, EventListener, Playlist};
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
 use crate::app::{AppEvent, BrowserEvent};
@@ -24,19 +25,13 @@ mod imp {
         pub header_revealer: TemplateChild<gtk::Revealer>,
 
         #[template_child]
-        pub name_label: TemplateChild<gtk::Label>,
+        pub header_widget: TemplateChild<AlbumHeaderWidget>,
 
         #[template_child]
-        pub owner_button: TemplateChild<gtk::LinkButton>,
-
-        #[template_child]
-        pub owner_button_label: TemplateChild<gtk::Label>,
+        pub header_mobile: TemplateChild<AlbumHeaderWidget>,
 
         #[template_child]
         pub tracks: TemplateChild<gtk::ListView>,
-
-        #[template_child]
-        pub art: TemplateChild<gtk::Image>,
     }
 
     #[glib::object_subclass]
@@ -54,7 +49,15 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for PlaylistDetailsWidget {}
+    impl ObjectImpl for PlaylistDetailsWidget {
+        fn constructed(&self, obj: &Self::Type) {
+            self.parent_constructed(obj);
+            self.header_mobile.set_centered();
+            self.header_mobile.hide_actions();
+            self.header_widget.hide_actions();
+        }
+    }
+
     impl WidgetImpl for PlaylistDetailsWidget {}
     impl BoxImpl for PlaylistDetailsWidget {}
 }
@@ -65,7 +68,6 @@ glib::wrapper! {
 
 impl PlaylistDetailsWidget {
     fn new() -> Self {
-        display_add_css_provider(resource!("/components/playlist_details.css"));
         glib::Object::new(&[]).expect("Failed to create an instance of PlaylistDetailsWidget")
     }
 
@@ -75,16 +77,6 @@ impl PlaylistDetailsWidget {
 
     fn playlist_tracks_widget(&self) -> &gtk::ListView {
         self.widget().tracks.as_ref()
-    }
-
-    fn connect_owner_clicked<F>(&self, f: F)
-    where
-        F: Fn() + 'static,
-    {
-        self.widget().owner_button.connect_activate_link(move |_| {
-            f();
-            glib::signal::Inhibit(true)
-        });
     }
 
     fn connect_bottom_edge<F>(&self, f: F)
@@ -126,35 +118,31 @@ impl PlaylistDetailsWidget {
 
     fn set_loaded(&self) {
         let context = self.style_context();
-        context.add_class("playlist_details--loaded");
+        context.add_class("container--loaded");
     }
 
-    fn set_name_and_owner(
-        &self,
-        name: &str,
-        owner: &str,
-        art_url: Option<&String>,
-        worker: &Worker,
-    ) {
-        let widget = self.widget();
+    fn set_album_and_artist(&self, album: &str, artist: &str) {
+        self.widget()
+            .header_widget
+            .set_album_and_artist_and_year(album, artist, None);
+        self.widget()
+            .header_mobile
+            .set_album_and_artist_and_year(album, artist, None);
+    }
 
-        widget.name_label.set_label(name);
-        widget.owner_button_label.set_label(owner);
+    fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {
+        self.widget().header_widget.set_artwork(art);
+        self.widget().header_mobile.set_artwork(art);
+    }
 
-        let weak_self = self.downgrade();
-        if let Some(art_url) = art_url.cloned() {
-            worker.send_local_task(async move {
-                if let Some(_self) = weak_self.upgrade() {
-                    let pixbuf = ImageLoader::new()
-                        .load_remote(&art_url[..], "jpg", 100, 100)
-                        .await;
-                    _self.widget().art.set_from_pixbuf(pixbuf.as_ref());
-                    _self.set_loaded();
-                }
-            });
-        } else {
-            self.set_loaded();
-        }
+    fn connect_artist_clicked<F>(&self, f: F)
+    where
+        F: Fn() + Clone + 'static,
+    {
+        self.widget()
+            .header_widget
+            .connect_artist_clicked(f.clone());
+        self.widget().header_mobile.connect_artist_clicked(f);
     }
 }
 
@@ -184,7 +172,7 @@ impl PlaylistDetails {
             model.load_more_tracks();
         }));
 
-        widget.connect_owner_clicked(clone!(@weak model => move || {
+        widget.connect_artist_clicked(clone!(@weak model => move || {
             model.view_owner();
         }));
 
@@ -202,8 +190,22 @@ impl PlaylistDetails {
             let owner = &info.owner.display_name[..];
             let art_url = info.art.as_ref();
 
-            self.widget
-                .set_name_and_owner(title, owner, art_url, &self.worker);
+            self.widget.set_album_and_artist(title, owner);
+
+            if let Some(art_url) = art_url.cloned() {
+                let widget = self.widget.downgrade();
+                self.worker.send_local_task(async move {
+                    let pixbuf = ImageLoader::new()
+                        .load_remote(&art_url[..], "jpg", 320, 320)
+                        .await;
+                    if let (Some(widget), Some(ref pixbuf)) = (widget.upgrade(), pixbuf) {
+                        widget.set_artwork(pixbuf);
+                        widget.set_loaded();
+                    }
+                });
+            } else {
+                self.widget.set_loaded();
+            }
         }
     }
 }

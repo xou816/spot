@@ -68,7 +68,7 @@ impl AlbumWidget {
 
     fn set_loaded(&self) {
         let context = self.style_context();
-        context.add_class("album--loaded");
+        context.add_class("container--loaded");
     }
 
     fn set_image(&self, pixbuf: Option<&gdk_pixbuf::Pixbuf>) {
