@@ -21,6 +21,9 @@ mod imp {
         pub artist_label: TemplateChild<gtk::Label>,
 
         #[template_child]
+        pub year_label: TemplateChild<gtk::Label>,
+
+        #[template_child]
         pub cover_btn: TemplateChild<gtk::Button>,
 
         #[template_child]
@@ -101,6 +104,18 @@ impl AlbumWidget {
             .bind_property("artist", &*widget.artist_label, "label")
             .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
             .build();
+
+        match album_model.year() {
+            Some(_) => {
+                album_model
+                    .bind_property("year", &*widget.year_label, "label")
+                    .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                    .build();
+            }
+            None => {
+                widget.year_label.hide();
+            }
+        }
     }
 
     pub fn connect_album_pressed<F: Fn(&Self) + 'static>(&self, f: F) {

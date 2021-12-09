@@ -198,6 +198,7 @@ pub struct Album {
     pub id: String,
     pub tracks: Option<Page<AlbumTrackItem>>,
     pub artists: Vec<Artist>,
+    pub release_date: Option<String>,
     pub name: String,
     pub images: Vec<Image>,
 }
@@ -205,7 +206,6 @@ pub struct Album {
 #[derive(Deserialize, Debug, Clone)]
 pub struct AlbumInfo {
     pub label: String,
-    pub release_date: String,
     pub copyrights: Vec<Copyright>,
 }
 
@@ -458,6 +458,7 @@ impl From<Album> for AlbumDescription {
             id: album.id,
             title: album.name,
             artists,
+            release_date: album.release_date,
             art,
             songs,
             is_liked: false,
@@ -466,13 +467,7 @@ impl From<Album> for AlbumDescription {
 }
 
 impl From<AlbumInfo> for AlbumReleaseDetails {
-    fn from(
-        AlbumInfo {
-            label,
-            release_date,
-            copyrights,
-        }: AlbumInfo,
-    ) -> Self {
+    fn from(AlbumInfo { label, copyrights }: AlbumInfo) -> Self {
         let copyright_text = copyrights
             .iter()
             .map(|c| format!("[{}] {}", c.type_, c.text))
@@ -481,7 +476,6 @@ impl From<AlbumInfo> for AlbumReleaseDetails {
 
         Self {
             label,
-            release_date,
             copyright_text,
         }
     }

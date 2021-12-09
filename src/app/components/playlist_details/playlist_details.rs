@@ -124,10 +124,10 @@ impl PlaylistDetailsWidget {
     fn set_album_and_artist(&self, album: &str, artist: &str) {
         self.widget()
             .header_widget
-            .set_album_and_artist(album, artist);
+            .set_album_and_artist_and_year(album, artist, None);
         self.widget()
             .header_mobile
-            .set_album_and_artist(album, artist);
+            .set_album_and_artist_and_year(album, artist, None);
     }
 
     fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {

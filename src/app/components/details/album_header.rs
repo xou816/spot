@@ -33,6 +33,9 @@ mod imp {
 
         #[template_child]
         pub artist_button_label: TemplateChild<gtk::Label>,
+
+        #[template_child]
+        pub year_label: TemplateChild<gtk::Label>,
     }
 
     #[glib::object_subclass]
@@ -105,10 +108,14 @@ impl AlbumHeaderWidget {
         self.widget().album_art.set_from_pixbuf(Some(art));
     }
 
-    pub fn set_album_and_artist(&self, album: &str, artist: &str) {
+    pub fn set_album_and_artist_and_year(&self, album: &str, artist: &str, year: Option<u32>) {
         let widget = self.widget();
         widget.album_label.set_label(album);
         widget.artist_button_label.set_label(artist);
+        match year {
+            Some(year) => widget.year_label.set_label(&year.to_string()),
+            None => widget.year_label.hide(),
+        }
     }
 
     pub fn set_centered(&self) {

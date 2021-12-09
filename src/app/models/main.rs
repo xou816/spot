@@ -1,4 +1,5 @@
 use std::convert::From;
+use std::str::FromStr;
 
 use super::core::{Batch, SongList};
 use super::gtypes::*;
@@ -7,7 +8,13 @@ use crate::app::components::utils::format_duration;
 
 impl From<&AlbumDescription> for AlbumModel {
     fn from(album: &AlbumDescription) -> Self {
-        AlbumModel::new(&album.artists_name(), &album.title, &album.art, &album.id)
+        AlbumModel::new(
+            &album.artists_name(),
+            &album.title,
+            album.year(),
+            &album.art,
+            &album.id,
+        )
     }
 }
 
@@ -22,6 +29,8 @@ impl From<&PlaylistDescription> for AlbumModel {
         AlbumModel::new(
             &playlist.owner.display_name,
             &playlist.title,
+            // Playlists do not have their released date since they are expected to be updated anytime.
+            None,
             &playlist.art,
             &playlist.id,
         )
@@ -82,6 +91,7 @@ pub struct AlbumDescription {
     pub id: String,
     pub title: String,
     pub artists: Vec<ArtistRef>,
+    pub release_date: Option<String>,
     pub art: Option<String>,
     pub songs: SongList,
     pub is_liked: bool,
@@ -99,6 +109,12 @@ impl AlbumDescription {
         let duration: u32 = self.songs.iter().map(|song| song.duration).sum();
         format_duration(duration.into())
     }
+    pub fn year(&self) -> Option<u32> {
+        self.release_date
+            .as_ref()
+            .and_then(|date| date.split('-').next())
+            .and_then(|y| u32::from_str(y).ok())
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -110,7 +126,6 @@ pub struct AlbumFullDescription {
 #[derive(Clone, Debug)]
 pub struct AlbumReleaseDetails {
     pub label: String,
-    pub release_date: String,
     pub copyright_text: String,
 }
 

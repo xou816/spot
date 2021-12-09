@@ -151,13 +151,13 @@ impl AlbumDetailsWidget {
         self.widget().header_mobile.set_liked(is_liked);
     }
 
-    fn set_album_and_artist(&self, album: &str, artist: &str) {
+    fn set_album_and_artist_and_year(&self, album: &str, artist: &str, year: Option<u32>) {
         self.widget()
             .header_widget
-            .set_album_and_artist(album, artist);
+            .set_album_and_artist_and_year(album, artist, year);
         self.widget()
             .header_mobile
-            .set_album_and_artist(album, artist);
+            .set_album_and_artist_and_year(album, artist, year);
     }
 
     fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {
@@ -244,10 +244,12 @@ impl Details {
             let album = &album.description;
 
             self.widget.set_liked(album.is_liked);
-            self.widget.set_liked(album.is_liked);
 
-            self.widget
-                .set_album_and_artist(&album.title[..], &album.artists_name());
+            self.widget.set_album_and_artist_and_year(
+                &album.title[..],
+                &album.artists_name(),
+                album.year(),
+            );
 
             self.widget.connect_artist_clicked(
                 clone!(@weak self.model as model => move || model.view_artist()),
@@ -257,7 +259,7 @@ impl Details {
                 &album.title,
                 &album.artists_name(),
                 &details.label,
-                &details.release_date,
+                album.release_date.as_ref().unwrap(),
                 album.songs.len(),
                 &album.formatted_time(),
                 &details.copyright_text,
