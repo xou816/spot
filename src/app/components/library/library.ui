@@ -12,10 +12,10 @@
           <object class="GtkOverlay" id="overlay">
             <child>
               <object class="GtkFlowBox" id="flowbox">
-                <property name="margin-start">8</property>
-                <property name="margin-end">8</property>
-                <property name="margin-top">8</property>
-                <property name="margin-bottom">8</property>
+                <property name="margin-start">6</property>
+                <property name="margin-end">6</property>
+                <property name="margin-top">6</property>
+                <property name="margin-bottom">6</property>
                 <property name="min-children-per-line">1</property>
                 <property name="selection-mode">none</property>
                 <property name="activate-on-single-click">0</property>

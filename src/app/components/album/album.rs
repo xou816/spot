@@ -6,6 +6,8 @@ use crate::app::models::AlbumModel;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
+use libadwaita::subclass::prelude::BinImpl;
+
 
 mod imp {
 
@@ -34,7 +36,7 @@ mod imp {
     impl ObjectSubclass for AlbumWidget {
         const NAME: &'static str = "AlbumWidget";
         type Type = super::AlbumWidget;
-        type ParentType = gtk::Box;
+        type ParentType = libadwaita::Bin;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
@@ -47,11 +49,11 @@ mod imp {
 
     impl ObjectImpl for AlbumWidget {}
     impl WidgetImpl for AlbumWidget {}
-    impl BoxImpl for AlbumWidget {}
+    impl BinImpl for AlbumWidget {}
 }
 
 glib::wrapper! {
-    pub struct AlbumWidget(ObjectSubclass<imp::AlbumWidget>) @extends gtk::Widget, gtk::Box;
+    pub struct AlbumWidget(ObjectSubclass<imp::AlbumWidget>) @extends gtk::Widget, libadwaita::Bin;
 }
 
 impl AlbumWidget {
