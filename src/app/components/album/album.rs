@@ -8,7 +8,6 @@ use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use libadwaita::subclass::prelude::BinImpl;
 
-
 mod imp {
 
     use super::*;
