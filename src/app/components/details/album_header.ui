@@ -5,6 +5,10 @@
   <template class="AlbumHeaderWidget" parent="GtkBox">
     <property name="valign">start</property>
     <property name="vexpand">0</property>
+    <property name="margin-start">6</property>
+    <property name="margin-end">6</property>
+    <property name="margin-top">6</property>
+    <property name="margin-bottom">6</property>
     <child>
       <object class="GtkFrame" id="album_box">
         <property name="halign">center</property>

@@ -122,6 +122,7 @@ impl AlbumHeaderWidget {
         let widget = self.widget();
         widget.album_label.set_halign(gtk::Align::Center);
         widget.artist_button.set_halign(gtk::Align::Center);
+        widget.year_label.set_halign(gtk::Align::Center);
     }
 
     pub fn hide_actions(&self) {

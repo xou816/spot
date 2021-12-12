@@ -29,6 +29,7 @@
             <property name="valign">start</property>
             <property name="selection-mode">none</property>
             <property name="show-separators">1</property>
+            <property name="overflow">hidden</property>
             <style>
               <class name="card" />
             </style>

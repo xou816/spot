@@ -61,7 +61,6 @@ row:hover .song__menu--enabled, .song__menu--enabled:checked {
   opacity: 1;
 }
 
-.song check {
-  filter: opacity(1);
+.song--playing .song__cover, .playlist--selectable .song__cover {
+  opacity: 0.2
 }
-
