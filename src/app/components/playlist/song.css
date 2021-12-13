@@ -6,6 +6,10 @@
   opacity: 1;
 }
 
+.song--cover .song__index {
+  opacity: 0;
+}
+
 .song__icon, .song__checkbox {
   transition: opacity 150ms ease;
   opacity: 0;
@@ -62,5 +66,5 @@ row:hover .song__menu--enabled, .song__menu--enabled:checked {
 }
 
 .song--playing .song__cover, .playlist--selectable .song__cover {
-  opacity: 0.2
+  opacity: 0.2;
 }

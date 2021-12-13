@@ -47,7 +47,7 @@ impl From<&SongDescription> for SongModel {
     fn from(song: &SongDescription) -> Self {
         SongModel::new(
             &song.id,
-            song.track_number,
+            song.track_number.unwrap_or(1),
             &song.title,
             &song.artists_name(),
             &format_duration(song.duration.into()),
@@ -147,7 +147,7 @@ pub struct PlaylistSummary {
 #[derive(Clone, Debug)]
 pub struct SongDescription {
     pub id: String,
-    pub track_number: u32,
+    pub track_number: Option<u32>,
     pub uri: String,
     pub title: String,
     pub artists: Vec<ArtistRef>,
