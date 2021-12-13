@@ -1,268 +1,264 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the spot package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: spot\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-24 12:06-0500\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
-
-#. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/batch_loader.rs:91 src/app/components/mod.rs:117
-msgid "An error occured. Check logs for details!"
-msgstr ""
+"X-Generator: POEditor.com\n"
+"Project-Id-Version: Spot\n"
+"Language: ar\n"
+"Plural-Forms: nplurals=6; plural= n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
 
 #. translators: This is part of a larger label that reads "<Album> by <Artist>"
 #: src/app/components/details/release_details.rs:101
 msgid "by"
-msgstr ""
+msgstr "بواسطة"
 
 #. translators: This refers to a music label
 #: src/app/components/details/release_details.rs:108
 msgid "Label:"
-msgstr ""
+msgstr "الناشر:"
 
 #. translators: This refers to a release date
 #: src/app/components/details/release_details.rs:115
 msgid "Released:"
-msgstr ""
+msgstr "أطلقت:"
 
 #. translators: This refers to a number of tracks
 #: src/app/components/details/release_details.rs:122
 msgid "Tracks:"
-msgstr ""
+msgstr "الأغاني:"
 
 #. translators: This refers to the duration of eg. an album
 #: src/app/components/details/release_details.rs:129
 msgid "Duration:"
-msgstr ""
+msgstr "المدة:"
 
 #. translators: Self explanatory
 #: src/app/components/details/release_details.rs:136
 msgid "Copyright:"
-msgstr ""
+msgstr "حقوق النشر:"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
 #: src/app/components/labels.rs:5
 msgid "View album"
-msgstr ""
+msgstr "شاهد ألبوم"
 
 #. translators: This is part of a contextual menu attached to a single track; the full text is "More from <artist>".
 #: src/app/components/labels.rs:8
 msgid "More from"
-msgstr ""
+msgstr "المزيد من"
 
 #. translators: This is part of a contextual menu attached to a single track; the intent is to copy the link (public URL) to a specific track.
 #: src/app/components/labels.rs:11
 msgid "Copy link"
-msgstr ""
+msgstr "نسخ الرابط"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry adds a track at the end of the play queue.
 #: src/app/components/labels.rs:14
 #: src/app/components/selection/selection_toolbar.ui:37
 msgid "Add to queue"
-msgstr ""
+msgstr "أضف إلى الصف"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry removes a track from the play queue.
 #: src/app/components/labels.rs:17
 msgid "Remove from queue"
-msgstr ""
+msgstr "أحدف من الصف"
 
 #. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
 #: src/app/components/labels.rs:24
 msgid "Add to {}"
-msgstr ""
-
-#. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
-#: src/app/components/labels.rs:33
-msgid "{} song selected"
-msgid_plural "{} songs selected"
-msgstr[0] ""
-msgstr[1] ""
+msgstr "أضف إلى {}"
 
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:56
 msgid "Could not save password. Make sure the session keyring is unlocked."
-msgstr ""
+msgstr "لايمكن حفظ كلمة المرور. تحقق من أن ال Session Keyring مفتوح."
+
+#. translators: This notification is the default message for unhandled errors. Logs refer to console output.
+#: src/app/batch_loader.rs:91 src/app/components/mod.rs:117
+msgid "An error occured. Check logs for details!"
+msgstr "حدث خطأ. تحقق من الlog لمزيد التفاصيل!"
 
 #. translators: This is a sidebar entry to browse to saved albums.
 #: src/app/components/navigation/factory.rs:29
 #: src/app/components/navigation/home.rs:36
 msgid "Library"
-msgstr ""
+msgstr "مكتبة"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
 #: src/app/components/navigation/factory.rs:44
 #: src/app/components/navigation/home.rs:42
 msgid "Playlists"
-msgstr ""
+msgstr "قائمة أغاني"
 
-#. translators: This is a sidebar entry to browse to saved tracks.
-#: src/app/components/navigation/factory.rs:73
-#: src/app/components/navigation/home.rs:48
-msgid "Saved tracks"
-msgstr ""
-
+#. This is the visible name for the play queue. It appears in the sidebar as well.
 #: src/app/components/navigation/home.rs:53
 #: src/app/components/now_playing/now_playing_model.rs:156
 msgid "Now playing"
-msgstr ""
-
-#: src/app/components/playback/playback_controls.rs:64
-msgid "Pause"
-msgstr ""
-
-#: src/app/components/playback/playback_controls.rs:66
-msgid "Play"
-msgstr ""
+msgstr "يشتغل الأن"
 
 #. translators: Short text displayed instead of a song title when nothing plays
 #. Short text displayed instead of a song title when nothing plays
 #: src/app/components/playback/playback_info.rs:58
 #: src/app/components/playback/playback_info.ui:32
 msgid "No song playing"
-msgstr ""
+msgstr "لا توجد أغنية طور التشغيل"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:56
 msgid "About"
-msgstr ""
+msgstr "عن"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:58
 msgid "Quit"
-msgstr ""
+msgstr "غادر"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:63
 msgid "Log out"
-msgstr ""
+msgstr "تسجيل الخروج"
 
 #: src/app/state/login_state.rs:117
 msgid "Connection restored"
-msgstr ""
-
-#. A title that is shown when the user has not saved any playlists.
-#: src/app/components/saved_playlists/saved_playlists.ui:26
-msgid "You have no saved playlists."
-msgstr ""
-
-#. A description of what happens when the user has saved playlists.
-#: src/app/components/saved_playlists/saved_playlists.ui:27
-msgid "Your playlists will be shown here."
-msgstr ""
+msgstr "إعادة الاتصال"
 
 #. Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify.
 #: src/app/components/artist_details/artist_details.ui:26
 msgid "Top tracks"
-msgstr ""
+msgstr "أفضل الأغاني"
 
 #. Title of the sections that contains all releases from an artist (both singles and albums).
 #: src/app/components/artist_details/artist_details.ui:57
 msgid "Releases"
-msgstr ""
-
-#. This is the title of a section of the search results
-#: src/app/components/search/search.ui:70
-msgid "Albums"
-msgstr ""
-
-#. This is the title of a section of the search results
-#: src/app/components/search/search.ui:103
-msgid "Artists"
-msgstr ""
-
-#. Title for the empty search page (initial state).
-#: src/app/components/search/search.ui:114
-msgid "Search Spotify."
-msgstr ""
-
-#. Subtitle for the empty search page (initial state).
-#: src/app/components/search/search.ui:115
-msgid "Type to search."
-msgstr ""
-
-#. <property name="icon-name">playlist2-symbolic</property>
-#: src/app/components/selection/selection_toolbar.ui:47
-msgid "Add to playlist..."
-msgstr ""
-
-#: src/app/components/selection/selection_toolbar.ui:58
-msgid "Remove"
-msgstr ""
+msgstr "أصدارات"
 
 #. Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).
 #: src/app/components/login/login.ui:45
 msgid "Login to Spotify Premium"
-msgstr ""
+msgstr "قم بتسجيل الدخول إلى Spotify Premium"
 
 #. Placeholder for the username field
 #: src/app/components/login/login.ui:64
 msgid "Username"
-msgstr ""
+msgstr "أسم المستخدم"
 
 #. Placeholder for the password field
 #: src/app/components/login/login.ui:72
 msgid "Password"
-msgstr ""
-
-#. This information is shown when Caps Lock is enabled.
-#: src/app/components/login/login.ui:95
-msgid "Caps Lock is enabled!"
-msgstr ""
+msgstr "كلمة السر"
 
 #. This error is shown when authentication fails.
 #: src/app/components/login/login.ui:126
 msgid "Authentication failed!"
-msgstr ""
+msgstr "فشل عملىة التحقق!"
 
 #. Log in button label
 #: src/app/components/login/login.ui:141
 msgid "Log in"
-msgstr ""
+msgstr "تسجيل دخول"
 
-#. Button label. Exits selection mode.
-#: src/app/components/headerbar/headerbar.ui:46
-msgid "Cancel"
-msgstr ""
+#. This is the title of a section of the search results
+#: src/app/components/search/search.ui:70
+msgid "Albums"
+msgstr "ألبومات"
 
-#. Button label. Selects all visible songs.
-#: src/app/components/headerbar/headerbar.ui:57
-msgid "Select all"
-msgstr ""
+#. This is the title of a section of the search results
+#: src/app/components/search/search.ui:103
+msgid "Artists"
+msgstr "الفنانين"
+
+#: src/app/components/navigation/factory.rs:73
+#: src/app/components/navigation/home.rs:48
+msgid "Saved tracks"
+msgstr "أغاني محفوظة"
+
+#. This information is shown when Caps Lock is enabled.
+#: src/app/components/login/login.ui:95
+msgid "Caps Lock is enabled!"
+msgstr "Caps Lock مفعل"
+
+#: src/app/components/playback/playback_controls.rs:64
+msgid "Pause"
+msgstr "أوقف"
+
+#: src/app/components/playback/playback_controls.rs:66
+msgid "Play"
+msgstr "شغل"
 
 #: src/app/components/playback/playback_controls.ui:17
 msgid "Shuffle"
-msgstr ""
+msgstr "عشوائي"
 
 #: src/app/components/playback/playback_controls.ui:27
 msgid "Previous"
-msgstr ""
+msgstr "سابق"
 
 #: src/app/components/playback/playback_controls.ui:50
 msgid "Next"
-msgstr ""
+msgstr "التالي"
 
 #: src/app/components/playback/playback_controls.ui:60
 msgid "Repeat"
-msgstr ""
+msgstr "كرر"
+
+#. A title that is shown when the user has not saved any playlists.
+#: src/app/components/saved_playlists/saved_playlists.ui:26
+msgid "You have no saved playlists."
+msgstr "ليس لديك قوائم تشغيل محفوظة."
+
+#. A description of what happens when the user has saved playlists.
+#: src/app/components/saved_playlists/saved_playlists.ui:27
+msgid "Your playlists will be shown here."
+msgstr "قائمات التشغيل خاصتك ستظهر هنا."
 
 #. A title that is shown when the user has not saved any albums.
 #: src/app/components/library/library.ui:26
 msgid "You have no saved albums."
-msgstr ""
+msgstr "ليس لديك ألبومات مسجلة."
 
 #. A description of what happens when the user has saved albums.
 #: src/app/components/library/library.ui:27
 msgid "Your library will be shown here."
-msgstr ""
+msgstr "المكتبة خاصتك ستظهر هنا."
+
+#. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
+#: src/app/components/labels.rs:33
+msgid "{} song selected"
+msgid_plural "{} songs selected"
+msgstr[0] "{} تم تحديد صفر أغنية"
+msgstr[1] "{} تم تحديد أغنية واحدة"
+msgstr[2] "{} تم تحديد أغنيتان"
+msgstr[3] "{} تم تحديد بعض الأغاني"
+msgstr[4] "{} تم تحديد عديد الأغاني"
+msgstr[5] "{} الأغاني الأخرى المحددة"
+
+#. Title for the empty search page (initial state).
+#: src/app/components/search/search.ui:114
+msgid "Search Spotify."
+msgstr "أبحث في Spotify."
+
+#. Subtitle for the empty search page (initial state).
+#: src/app/components/search/search.ui:115
+msgid "Type to search."
+msgstr "أكتب للبجث."
+
+#: src/app/components/selection/selection_toolbar.ui:58
+msgid "Remove"
+msgstr "أحدف"
+
+#. <property name="icon-name">playlist2-symbolic</property>
+#: src/app/components/selection/selection_toolbar.ui:47
+msgid "Add to playlist..."
+msgstr "أضف إلى قائمة التشغيل..."
+
+#. Button label. Exits selection mode.
+#: src/app/components/headerbar/headerbar.ui:46
+msgid "Cancel"
+msgstr "ألغاء"
+
+#. Button label. Selects all visible songs.
+#: src/app/components/headerbar/headerbar.ui:57
+msgid "Select all"
+msgstr "اختر الكل"
+

@@ -1,19 +1,12 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Spot\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-24 11:24-0500\n"
-"Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: POEditor.com\n"
+"Project-Id-Version: Spot\n"
+"Language: nl\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
-#. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/batch_loader.rs:91 src/app/components/mod.rs:117
-msgid "An error occured. Check logs for details!"
-msgstr "Er is een fout opgetreden - bekijk het logboek!"
 
 #. translators: This is part of a larger label that reads "<Album> by <Artist>"
 #: src/app/components/details/release_details.rs:101
@@ -76,19 +69,15 @@ msgstr "Verwijderen uit wachtrij"
 msgid "Add to {}"
 msgstr "Toevoegen aan {}"
 
-#. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
-#: src/app/components/labels.rs:33
-msgid "{} song selected"
-msgid_plural "{} songs selected"
-msgstr[0] "{} nummer geselecteerd"
-msgstr[1] "{} nummers geselecteerd"
-
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:56
 msgid "Could not save password. Make sure the session keyring is unlocked."
-msgstr ""
-"Het wachtwoord kan niet worden opgeslagen - zorg dat de sessiesleutelhanger "
-"ontgrendeld is."
+msgstr "Het wachtwoord kan niet worden opgeslagen - zorg dat de sessiesleutelhanger ontgrendeld is."
+
+#. translators: This notification is the default message for unhandled errors. Logs refer to console output.
+#: src/app/batch_loader.rs:91 src/app/components/mod.rs:117
+msgid "An error occured. Check logs for details!"
+msgstr "Er is een fout opgetreden - bekijk het logboek!"
 
 #. translators: This is a sidebar entry to browse to saved albums.
 #: src/app/components/navigation/factory.rs:29
@@ -102,24 +91,11 @@ msgstr "Verzameling"
 msgid "Playlists"
 msgstr "Afspeellijsten"
 
-#. translators: This is a sidebar entry to browse to saved tracks.
-#: src/app/components/navigation/factory.rs:73
-#: src/app/components/navigation/home.rs:48
-msgid "Saved tracks"
-msgstr "Opgeslagen nummers"
-
+#. This is the visible name for the play queue. It appears in the sidebar as well.
 #: src/app/components/navigation/home.rs:53
 #: src/app/components/now_playing/now_playing_model.rs:156
 msgid "Now playing"
 msgstr "Je luistert naar"
-
-#: src/app/components/playback/playback_controls.rs:64
-msgid "Pause"
-msgstr "Pauzeren"
-
-#: src/app/components/playback/playback_controls.rs:66
-msgid "Play"
-msgstr "Afspelen"
 
 #. translators: Short text displayed instead of a song title when nothing plays
 #. Short text displayed instead of a song title when nothing plays
@@ -147,16 +123,6 @@ msgstr "Uitloggen"
 msgid "Connection restored"
 msgstr "De verbinding is hersteld"
 
-#. A title that is shown when the user has not saved any playlists.
-#: src/app/components/saved_playlists/saved_playlists.ui:26
-msgid "You have no saved playlists."
-msgstr "Je hebt nog geen opgeslagen afspeellijsten."
-
-#. A description of what happens when the user has saved playlists.
-#: src/app/components/saved_playlists/saved_playlists.ui:27
-msgid "Your playlists will be shown here."
-msgstr "Je afspeellijsten worden hier getoond."
-
 #. Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify.
 #: src/app/components/artist_details/artist_details.ui:26
 msgid "Top tracks"
@@ -166,30 +132,6 @@ msgstr "Topnummers"
 #: src/app/components/artist_details/artist_details.ui:57
 msgid "Releases"
 msgstr "Uitgaven"
-
-#. This is the title of a section of the search results
-#: src/app/components/search/search.ui:70
-msgid "Albums"
-msgstr "Albums"
-
-#. This is the title of a section of the search results
-#: src/app/components/search/search.ui:103
-msgid "Artists"
-msgstr "Artiesten"
-
-#. Title for the empty search page (initial state).
-#: src/app/components/search/search.ui:114
-msgid "Search Spotify."
-msgstr ""
-
-#. Subtitle for the empty search page (initial state).
-#: src/app/components/search/search.ui:115
-msgid "Type to search."
-msgstr ""
-
-#: src/app/components/selection/selection_toolbar.ui:58
-msgid "Remove"
-msgstr ""
 
 #. Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).
 #: src/app/components/login/login.ui:45
@@ -206,11 +148,6 @@ msgstr "Gebruikersnaam"
 msgid "Password"
 msgstr "Wachtwoord"
 
-#. This information is shown when Caps Lock is enabled.
-#: src/app/components/login/login.ui:95
-msgid "Caps Lock is enabled!"
-msgstr "Caps Lock is ingeschakeld!"
-
 #. This error is shown when authentication fails.
 #: src/app/components/login/login.ui:126
 msgid "Authentication failed!"
@@ -220,6 +157,34 @@ msgstr "Het inloggen is mislukt."
 #: src/app/components/login/login.ui:141
 msgid "Log in"
 msgstr "Inloggen"
+
+#. This is the title of a section of the search results
+#: src/app/components/search/search.ui:70
+msgid "Albums"
+msgstr "Albums"
+
+#. This is the title of a section of the search results
+#: src/app/components/search/search.ui:103
+msgid "Artists"
+msgstr "Artiesten"
+
+#: src/app/components/navigation/factory.rs:73
+#: src/app/components/navigation/home.rs:48
+msgid "Saved tracks"
+msgstr "Opgeslagen nummers"
+
+#. This information is shown when Caps Lock is enabled.
+#: src/app/components/login/login.ui:95
+msgid "Caps Lock is enabled!"
+msgstr "Caps Lock is ingeschakeld!"
+
+#: src/app/components/playback/playback_controls.rs:64
+msgid "Pause"
+msgstr "Pauzeren"
+
+#: src/app/components/playback/playback_controls.rs:66
+msgid "Play"
+msgstr "Afspelen"
 
 #: src/app/components/playback/playback_controls.ui:17
 msgid "Shuffle"
@@ -237,6 +202,16 @@ msgstr "Volgende"
 msgid "Repeat"
 msgstr "Herhalen"
 
+#. A title that is shown when the user has not saved any playlists.
+#: src/app/components/saved_playlists/saved_playlists.ui:26
+msgid "You have no saved playlists."
+msgstr "Je hebt nog geen opgeslagen afspeellijsten."
+
+#. A description of what happens when the user has saved playlists.
+#: src/app/components/saved_playlists/saved_playlists.ui:27
+msgid "Your playlists will be shown here."
+msgstr "Je afspeellijsten worden hier getoond."
+
 #. A title that is shown when the user has not saved any albums.
 #: src/app/components/library/library.ui:26
 msgid "You have no saved albums."
@@ -246,3 +221,40 @@ msgstr "Je hebt nog geen opgeslagen albums."
 #: src/app/components/library/library.ui:27
 msgid "Your library will be shown here."
 msgstr "Je verzameling wordt hier getoond."
+
+#. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
+#: src/app/components/labels.rs:33
+msgid "{} song selected"
+msgid_plural "{} songs selected"
+msgstr[0] "{} nummer geselecteerd"
+msgstr[1] "{} nummers geselecteerd"
+
+#. Title for the empty search page (initial state).
+#: src/app/components/search/search.ui:114
+msgid "Search Spotify."
+msgstr "Doorzoek Spotify."
+
+#. Subtitle for the empty search page (initial state).
+#: src/app/components/search/search.ui:115
+msgid "Type to search."
+msgstr "Typ om te zoeken"
+
+#: src/app/components/selection/selection_toolbar.ui:58
+msgid "Remove"
+msgstr "Verwijderen"
+
+#. <property name="icon-name">playlist2-symbolic</property>
+#: src/app/components/selection/selection_toolbar.ui:47
+msgid "Add to playlist..."
+msgstr "Toevoegen aan afspeellijst…"
+
+#. Button label. Exits selection mode.
+#: src/app/components/headerbar/headerbar.ui:46
+msgid "Cancel"
+msgstr "Annuleren"
+
+#. Button label. Selects all visible songs.
+#: src/app/components/headerbar/headerbar.ui:57
+msgid "Select all"
+msgstr "Alles selecteren"
+

@@ -1,19 +1,12 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Spot\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-24 11:24-0500\n"
-"Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: POEditor.com\n"
+"Project-Id-Version: Spot\n"
+"Language: cs\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-
-#. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/batch_loader.rs:91 src/app/components/mod.rs:117
-msgid "An error occured. Check logs for details!"
-msgstr "Došlo k chybě. Podrobnosti najdete v protokolu."
 
 #. translators: This is part of a larger label that reads "<Album> by <Artist>"
 #: src/app/components/details/release_details.rs:101
@@ -76,19 +69,15 @@ msgstr "Odebrat z fronty"
 msgid "Add to {}"
 msgstr "Přidat do {}"
 
-#. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
-#: src/app/components/labels.rs:33
-msgid "{} song selected"
-msgid_plural "{} songs selected"
-msgstr[0] "{} skladba vybrána"
-msgstr[1] "{} skladby vybrány"
-msgstr[2] "{} skladeb vybráno"
-
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:56
 msgid "Could not save password. Make sure the session keyring is unlocked."
-msgstr ""
-"Heslo nelze uložit. Zkontrolujte, že je klíčenka (session keyring) odemčená."
+msgstr "Heslo nelze uložit. Zkontrolujte, že je klíčenka (session keyring) odemčená."
+
+#. translators: This notification is the default message for unhandled errors. Logs refer to console output.
+#: src/app/batch_loader.rs:91 src/app/components/mod.rs:117
+msgid "An error occured. Check logs for details!"
+msgstr "Došlo k chybě. Podrobnosti najdete v protokolu."
 
 #. translators: This is a sidebar entry to browse to saved albums.
 #: src/app/components/navigation/factory.rs:29
@@ -102,24 +91,11 @@ msgstr "Knihovna"
 msgid "Playlists"
 msgstr "Playlisty"
 
-#. translators: This is a sidebar entry to browse to saved tracks.
-#: src/app/components/navigation/factory.rs:73
-#: src/app/components/navigation/home.rs:48
-msgid "Saved tracks"
-msgstr "Uložené skladby"
-
+#. This is the visible name for the play queue. It appears in the sidebar as well.
 #: src/app/components/navigation/home.rs:53
 #: src/app/components/now_playing/now_playing_model.rs:156
 msgid "Now playing"
 msgstr "Právě hraje"
-
-#: src/app/components/playback/playback_controls.rs:64
-msgid "Pause"
-msgstr "Pozastavit"
-
-#: src/app/components/playback/playback_controls.rs:66
-msgid "Play"
-msgstr "Přehrát"
 
 #. translators: Short text displayed instead of a song title when nothing plays
 #. Short text displayed instead of a song title when nothing plays
@@ -147,16 +123,6 @@ msgstr "Odhlásit se"
 msgid "Connection restored"
 msgstr "Připojení obnoveno"
 
-#. A title that is shown when the user has not saved any playlists.
-#: src/app/components/saved_playlists/saved_playlists.ui:26
-msgid "You have no saved playlists."
-msgstr "Nemáte žádné uložené playlisty."
-
-#. A description of what happens when the user has saved playlists.
-#: src/app/components/saved_playlists/saved_playlists.ui:27
-msgid "Your playlists will be shown here."
-msgstr "Tady budou zobrazeny vaše playlisty."
-
 #. Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify.
 #: src/app/components/artist_details/artist_details.ui:26
 msgid "Top tracks"
@@ -166,30 +132,6 @@ msgstr "Populární"
 #: src/app/components/artist_details/artist_details.ui:57
 msgid "Releases"
 msgstr "Diskografie"
-
-#. This is the title of a section of the search results
-#: src/app/components/search/search.ui:70
-msgid "Albums"
-msgstr "Alba"
-
-#. This is the title of a section of the search results
-#: src/app/components/search/search.ui:103
-msgid "Artists"
-msgstr "Umělci"
-
-#. Title for the empty search page (initial state).
-#: src/app/components/search/search.ui:114
-msgid "Search Spotify."
-msgstr ""
-
-#. Subtitle for the empty search page (initial state).
-#: src/app/components/search/search.ui:115
-msgid "Type to search."
-msgstr ""
-
-#: src/app/components/selection/selection_toolbar.ui:58
-msgid "Remove"
-msgstr ""
 
 #. Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).
 #: src/app/components/login/login.ui:45
@@ -206,11 +148,6 @@ msgstr "Uživatelské jméno"
 msgid "Password"
 msgstr "Heslo"
 
-#. This information is shown when Caps Lock is enabled.
-#: src/app/components/login/login.ui:95
-msgid "Caps Lock is enabled!"
-msgstr "Máte zapnutý Caps Lock!"
-
 #. This error is shown when authentication fails.
 #: src/app/components/login/login.ui:126
 msgid "Authentication failed!"
@@ -220,6 +157,37 @@ msgstr "Chyba autentizace!"
 #: src/app/components/login/login.ui:141
 msgid "Log in"
 msgstr "Přihlásit se"
+
+#. This is the title of a section of the search results
+#: src/app/components/search/search.ui:70
+msgid "Albums"
+msgstr "Alba"
+
+#. This is the title of a section of the search results
+#: src/app/components/search/search.ui:103
+msgid "Artists"
+msgstr "Umělci"
+
+#. Where is this text displayed?
+#. I see it is supposed to be in `src/app/components/navigation/home.rs:47`, but that does not seem to be the case: https://github.com/xou816/spot/blob/1b96cd07129f27c7f3f3a2e66299c44a52e489d4/src/app/components/navigation/home.rs
+#. Maybe it is something that has not been commited yet (2021-10-02T10:42:52+02:00), but @xou816 has it locally and has generated pot / po files from it in https://github.com/xou816/spot/commit/86414c03d207cdf4e2c1cbddd47c7ca5629d1303
+#: src/app/components/navigation/factory.rs:73
+#: src/app/components/navigation/home.rs:48
+msgid "Saved tracks"
+msgstr "Uložené skladby"
+
+#. This information is shown when Caps Lock is enabled.
+#: src/app/components/login/login.ui:95
+msgid "Caps Lock is enabled!"
+msgstr "Máte zapnutý Caps Lock!"
+
+#: src/app/components/playback/playback_controls.rs:64
+msgid "Pause"
+msgstr "Pozastavit"
+
+#: src/app/components/playback/playback_controls.rs:66
+msgid "Play"
+msgstr "Přehrát"
 
 #: src/app/components/playback/playback_controls.ui:17
 msgid "Shuffle"
@@ -237,6 +205,16 @@ msgstr "Následující"
 msgid "Repeat"
 msgstr "Opakovat"
 
+#. A title that is shown when the user has not saved any playlists.
+#: src/app/components/saved_playlists/saved_playlists.ui:26
+msgid "You have no saved playlists."
+msgstr "Nemáte žádné uložené playlisty."
+
+#. A description of what happens when the user has saved playlists.
+#: src/app/components/saved_playlists/saved_playlists.ui:27
+msgid "Your playlists will be shown here."
+msgstr "Tady budou zobrazeny vaše playlisty."
+
 #. A title that is shown when the user has not saved any albums.
 #: src/app/components/library/library.ui:26
 msgid "You have no saved albums."
@@ -246,3 +224,41 @@ msgstr "Nemáte žádná uložená alba."
 #: src/app/components/library/library.ui:27
 msgid "Your library will be shown here."
 msgstr "Tady bude zobrazena vaše knihovna."
+
+#. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
+#: src/app/components/labels.rs:33
+msgid "{} song selected"
+msgid_plural "{} songs selected"
+msgstr[0] "{} skladba vybrána"
+msgstr[1] "{} skladby vybrány"
+msgstr[2] "{} skladeb vybráno"
+
+#. Title for the empty search page (initial state).
+#: src/app/components/search/search.ui:114
+msgid "Search Spotify."
+msgstr "Hledat na Spotify."
+
+#. Subtitle for the empty search page (initial state).
+#: src/app/components/search/search.ui:115
+msgid "Type to search."
+msgstr "Zadejte a vyhledejte."
+
+#: src/app/components/selection/selection_toolbar.ui:58
+msgid "Remove"
+msgstr "Odstranit"
+
+#. <property name="icon-name">playlist2-symbolic</property>
+#: src/app/components/selection/selection_toolbar.ui:47
+msgid "Add to playlist..."
+msgstr "Přidat do playlistu..."
+
+#. Button label. Exits selection mode.
+#: src/app/components/headerbar/headerbar.ui:46
+msgid "Cancel"
+msgstr "Zrušit"
+
+#. Button label. Selects all visible songs.
+#: src/app/components/headerbar/headerbar.ui:57
+msgid "Select all"
+msgstr "Vybrat vše"
+

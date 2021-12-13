@@ -1,20 +1,12 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Spot\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-24 11:24-0500\n"
-"Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: POEditor.com\n"
-"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
-"|| n%100>=20) ? 1 : 2);\n"
-
-#. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/batch_loader.rs:91 src/app/components/mod.rs:117
-msgid "An error occured. Check logs for details!"
-msgstr "Wystąpił błąd. Sprawdź logi po więcej informacji!"
+"Project-Id-Version: Spot\n"
+"Language: pl\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #. translators: This is part of a larger label that reads "<Album> by <Artist>"
 #: src/app/components/details/release_details.rs:101
@@ -77,21 +69,15 @@ msgstr "Usuń z kolejki"
 msgid "Add to {}"
 msgstr "Dodaj do"
 
-#. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
-#: src/app/components/labels.rs:33
-msgid "{} song selected"
-msgid_plural "{} songs selected"
-msgstr[0] "{} wybrana piosenka"
-msgstr[1] "{} wybrane piosenki"
-msgstr[2] "{} wybranych piosenek"
-msgstr[3] ""
-
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:56
 msgid "Could not save password. Make sure the session keyring is unlocked."
-msgstr ""
-"Nie można zapisać hasła. Upewnij się że narzędzie zarządzające kluczami jest "
-"odblokowane."
+msgstr "Nie można zapisać hasła. Upewnij się że narzędzie zarządzające kluczami jest odblokowane."
+
+#. translators: This notification is the default message for unhandled errors. Logs refer to console output.
+#: src/app/batch_loader.rs:91 src/app/components/mod.rs:117
+msgid "An error occured. Check logs for details!"
+msgstr "Wystąpił błąd. Sprawdź logi po więcej informacji!"
 
 #. translators: This is a sidebar entry to browse to saved albums.
 #: src/app/components/navigation/factory.rs:29
@@ -105,24 +91,11 @@ msgstr "Biblioteka"
 msgid "Playlists"
 msgstr "Playlisty"
 
-#. translators: This is a sidebar entry to browse to saved tracks.
-#: src/app/components/navigation/factory.rs:73
-#: src/app/components/navigation/home.rs:48
-msgid "Saved tracks"
-msgstr "Zachowane piosenki"
-
+#. This is the visible name for the play queue. It appears in the sidebar as well.
 #: src/app/components/navigation/home.rs:53
 #: src/app/components/now_playing/now_playing_model.rs:156
 msgid "Now playing"
 msgstr "Aktualnie odtwarzane"
-
-#: src/app/components/playback/playback_controls.rs:64
-msgid "Pause"
-msgstr ""
-
-#: src/app/components/playback/playback_controls.rs:66
-msgid "Play"
-msgstr ""
 
 #. translators: Short text displayed instead of a song title when nothing plays
 #. Short text displayed instead of a song title when nothing plays
@@ -150,16 +123,6 @@ msgstr "Wyloguj się"
 msgid "Connection restored"
 msgstr "Odzyskano połączenie"
 
-#. A title that is shown when the user has not saved any playlists.
-#: src/app/components/saved_playlists/saved_playlists.ui:26
-msgid "You have no saved playlists."
-msgstr "Nie masz zapisanych playlist."
-
-#. A description of what happens when the user has saved playlists.
-#: src/app/components/saved_playlists/saved_playlists.ui:27
-msgid "Your playlists will be shown here."
-msgstr "Twoje playlisty będą tu pokazane."
-
 #. Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify.
 #: src/app/components/artist_details/artist_details.ui:26
 msgid "Top tracks"
@@ -169,30 +132,6 @@ msgstr "Najlepsze piosenki"
 #: src/app/components/artist_details/artist_details.ui:57
 msgid "Releases"
 msgstr "Premiery"
-
-#. This is the title of a section of the search results
-#: src/app/components/search/search.ui:70
-msgid "Albums"
-msgstr "Albumy"
-
-#. This is the title of a section of the search results
-#: src/app/components/search/search.ui:103
-msgid "Artists"
-msgstr "Artyści"
-
-#. Title for the empty search page (initial state).
-#: src/app/components/search/search.ui:114
-msgid "Search Spotify."
-msgstr ""
-
-#. Subtitle for the empty search page (initial state).
-#: src/app/components/search/search.ui:115
-msgid "Type to search."
-msgstr ""
-
-#: src/app/components/selection/selection_toolbar.ui:58
-msgid "Remove"
-msgstr ""
 
 #. Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).
 #: src/app/components/login/login.ui:45
@@ -209,11 +148,6 @@ msgstr "Nazwa użytkownika"
 msgid "Password"
 msgstr "Hasło"
 
-#. This information is shown when Caps Lock is enabled.
-#: src/app/components/login/login.ui:95
-msgid "Caps Lock is enabled!"
-msgstr "Caps Lock jest włączony!"
-
 #. This error is shown when authentication fails.
 #: src/app/components/login/login.ui:126
 msgid "Authentication failed!"
@@ -223,6 +157,34 @@ msgstr "Błąd autoryzacji!"
 #: src/app/components/login/login.ui:141
 msgid "Log in"
 msgstr "Zaloguj"
+
+#. This is the title of a section of the search results
+#: src/app/components/search/search.ui:70
+msgid "Albums"
+msgstr "Albumy"
+
+#. This is the title of a section of the search results
+#: src/app/components/search/search.ui:103
+msgid "Artists"
+msgstr "Artyści"
+
+#: src/app/components/navigation/factory.rs:73
+#: src/app/components/navigation/home.rs:48
+msgid "Saved tracks"
+msgstr "Zachowane piosenki"
+
+#. This information is shown when Caps Lock is enabled.
+#: src/app/components/login/login.ui:95
+msgid "Caps Lock is enabled!"
+msgstr "Caps Lock jest włączony!"
+
+#: src/app/components/playback/playback_controls.rs:64
+msgid "Pause"
+msgstr ""
+
+#: src/app/components/playback/playback_controls.rs:66
+msgid "Play"
+msgstr ""
 
 #: src/app/components/playback/playback_controls.ui:17
 msgid "Shuffle"
@@ -240,6 +202,16 @@ msgstr ""
 msgid "Repeat"
 msgstr ""
 
+#. A title that is shown when the user has not saved any playlists.
+#: src/app/components/saved_playlists/saved_playlists.ui:26
+msgid "You have no saved playlists."
+msgstr "Nie masz zapisanych playlist."
+
+#. A description of what happens when the user has saved playlists.
+#: src/app/components/saved_playlists/saved_playlists.ui:27
+msgid "Your playlists will be shown here."
+msgstr "Twoje playlisty będą tu pokazane."
+
 #. A title that is shown when the user has not saved any albums.
 #: src/app/components/library/library.ui:26
 msgid "You have no saved albums."
@@ -249,3 +221,42 @@ msgstr "Nie masz zapisanych albumów."
 #: src/app/components/library/library.ui:27
 msgid "Your library will be shown here."
 msgstr "Twoja biblioteka będzie tu pokazana."
+
+#. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
+#: src/app/components/labels.rs:33
+msgid "{} song selected"
+msgid_plural "{} songs selected"
+msgstr[0] "{} wybrana piosenka"
+msgstr[1] "{} wybrane piosenki"
+msgstr[2] "{} wybranych piosenek"
+msgstr[3] ""
+
+#. Title for the empty search page (initial state).
+#: src/app/components/search/search.ui:114
+msgid "Search Spotify."
+msgstr ""
+
+#. Subtitle for the empty search page (initial state).
+#: src/app/components/search/search.ui:115
+msgid "Type to search."
+msgstr ""
+
+#: src/app/components/selection/selection_toolbar.ui:58
+msgid "Remove"
+msgstr ""
+
+#. <property name="icon-name">playlist2-symbolic</property>
+#: src/app/components/selection/selection_toolbar.ui:47
+msgid "Add to playlist..."
+msgstr ""
+
+#. Button label. Exits selection mode.
+#: src/app/components/headerbar/headerbar.ui:46
+msgid "Cancel"
+msgstr ""
+
+#. Button label. Selects all visible songs.
+#: src/app/components/headerbar/headerbar.ui:57
+msgid "Select all"
+msgstr ""
+
