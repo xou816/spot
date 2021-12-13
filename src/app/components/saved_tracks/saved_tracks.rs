@@ -3,11 +3,11 @@ use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use std::rc::Rc;
 
+use super::SavedTracksModel;
 use crate::app::components::{Component, EventListener, Playlist};
 use crate::app::state::LoginEvent;
 use crate::app::{AppEvent, Worker};
 use libadwaita::subclass::prelude::BinImpl;
-use super::SavedTracksModel;
 
 mod imp {
 

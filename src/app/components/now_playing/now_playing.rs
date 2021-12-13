@@ -3,10 +3,10 @@ use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use std::rc::Rc;
 
+use super::NowPlayingModel;
 use crate::app::components::{Component, EventListener, Playlist};
 use crate::app::{state::PlaybackEvent, AppEvent, Worker};
 use libadwaita::subclass::prelude::BinImpl;
-use super::NowPlayingModel;
 
 mod imp {
 
