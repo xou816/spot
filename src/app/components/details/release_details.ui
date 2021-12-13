@@ -79,6 +79,7 @@
                 <child type="suffix">
                   <object class="GtkLabel" id="copyright">
                     <property name="label">Copyright</property>
+                    <property name="ellipsize">middle</property>
                   </object>
                 </child>
               </object>
