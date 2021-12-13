@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-12-13 09:18-0500\n"
+"POT-Creation-Date: 2021-12-13 09:46-0500\n"
 "Language: nb\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -14,11 +14,6 @@ msgstr ""
 #: src/app/batch_loader.rs:91 src/app/components/mod.rs:117
 msgid "An error occured. Check logs for details!"
 msgstr "En feil oppstod. Sjekk logger for detaljer!"
-
-#. translators: This is part of a larger label that reads "<Album> by <Artist>"
-#: src/app/components/details/release_details.rs:89
-msgid "by"
-msgstr "av"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
 #: src/app/components/labels.rs:5
@@ -57,6 +52,11 @@ msgstr[1] "{} sanger valgt"
 #: src/app/components/labels.rs:39
 msgid "More from {}"
 msgstr "Mer fra {}"
+
+#. translators: This is part of a larger label that reads "<Album> by <Artist>"
+#: src/app/components/labels.rs:48
+msgid "{} by {}"
+msgstr ""
 
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:56
@@ -260,3 +260,6 @@ msgstr "Du har ingen lagrede album."
 #: src/app/components/library/library.ui:27
 msgid "Your library will be shown here."
 msgstr "Biblioteket ditt vises her."
+
+#~ msgid "by"
+#~ msgstr "av"

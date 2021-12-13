@@ -1,8 +1,9 @@
-use gettextrs::gettext;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use libadwaita::subclass::prelude::*;
+
+use crate::app::components::labels;
 
 mod imp {
 
@@ -82,13 +83,9 @@ impl ReleaseDetailsWindow {
     ) {
         let widget = self.widget();
 
-        widget.album_artist.set_title(&format!(
-            "{} {} {}",
-            album,
-            // translators: This is part of a larger label that reads "<Album> by <Artist>"
-            gettext("by"),
-            artist
-        ));
+        widget
+            .album_artist
+            .set_title(&labels::album_by_artist_label(album, artist));
 
         widget.label.set_text(label);
         widget.release.set_text(release_date);

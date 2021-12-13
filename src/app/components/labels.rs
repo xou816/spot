@@ -40,3 +40,16 @@ pub fn more_from_label(artist: &str) -> String {
     }
     gettext!("More from {}", glib::markup_escape_text(artist))
 }
+
+pub fn album_by_artist_label(album: &str, artist: &str) -> String {
+    // this is just to fool xgettext, it doesn't like macros (or rust for that matter) :(
+    if cfg!(debug_assertions) {
+        // translators: This is part of a larger label that reads "<Album> by <Artist>"
+        gettext("{} by {}");
+    }
+    gettext!(
+        "{} by {}",
+        glib::markup_escape_text(album),
+        glib::markup_escape_text(artist)
+    )
+}
