@@ -1574,9 +1574,9 @@ dependencies = [
 
 [[package]]
 name = "libadwaita"
-version = "0.1.0-alpha-6"
+version = "0.1.0-beta-1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8d01ba5036df1c3e09be88b4b8e0906af977bb7ec28d5faec81a1de94bc775c"
+checksum = "cef1e2d4b5490caff8a1d44648f68721ab917f765a7fa1d0226fcdac42d86552"
 dependencies = [
  "gdk-pixbuf",
  "gdk4",
@@ -1591,19 +1591,17 @@ dependencies = [
 
 [[package]]
 name = "libadwaita-sys"
-version = "0.1.0-alpha-6"
+version = "0.1.0-beta-1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3127d83c55f64c466925b9d1e27a964187f193e94c7c8820ad6b29d6e5f487d8"
+checksum = "7a165d8c96824753ec072b70a9149790efa3d5abb07e130cda7eb04ef2006d4c"
 dependencies = [
- "gdk-pixbuf-sys",
  "gdk4-sys",
  "gio-sys",
  "glib-sys",
  "gobject-sys",
  "gtk4-sys",
  "libc",
- "pango-sys",
- "system-deps 4.0.0",
+ "system-deps 3.1.1",
 ]
 
 [[package]]
@@ -3151,19 +3149,6 @@ dependencies = [
  "strum",
  "strum_macros",
  "thiserror",
- "toml",
- "version-compare",
-]
-
-[[package]]
-name = "system-deps"
-version = "4.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c1889ab44c2a423ba9ba4d64cd04989b25c0280ca7ade813f05368418722a04"
-dependencies = [
- "cfg-expr 0.9.0",
- "heck",
- "pkg-config",
  "toml",
  "version-compare",
 ]
