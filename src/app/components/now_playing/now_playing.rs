@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 use crate::app::components::{Component, EventListener, Playlist};
 use crate::app::{state::PlaybackEvent, AppEvent, Worker};
-
+use libadwaita::subclass::prelude::BinImpl;
 use super::NowPlayingModel;
 
 mod imp {
@@ -26,7 +26,7 @@ mod imp {
     impl ObjectSubclass for NowPlayingWidget {
         const NAME: &'static str = "NowPlayingWidget";
         type Type = super::NowPlayingWidget;
-        type ParentType = gtk::Box;
+        type ParentType = libadwaita::Bin;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
@@ -39,11 +39,11 @@ mod imp {
 
     impl ObjectImpl for NowPlayingWidget {}
     impl WidgetImpl for NowPlayingWidget {}
-    impl BoxImpl for NowPlayingWidget {}
+    impl BinImpl for NowPlayingWidget {}
 }
 
 glib::wrapper! {
-    pub struct NowPlayingWidget(ObjectSubclass<imp::NowPlayingWidget>) @extends gtk::Widget, gtk::Box;
+    pub struct NowPlayingWidget(ObjectSubclass<imp::NowPlayingWidget>) @extends gtk::Widget, libadwaita::Bin;
 }
 
 impl NowPlayingWidget {

@@ -62,5 +62,35 @@ row:hover .song__menu--enabled, .song__menu--enabled:checked {
 }
 
 .song--playing .song__cover, .playlist--selectable .song__cover {
-  opacity: 0.2
+  opacity: 0.2;
 }
+
+.playlist {
+ background: transparent;
+}
+
+.playlist row {
+ background: @card_bg_color;
+ margin-left:12px;
+ margin-right:12px;
+ box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0.03), 0px 1px 3px 0px rgba(0, 0, 0, 0.07), 0px 2px 6px 0px rgba(0, 0, 0, 0.03);
+}
+
+.playlist row:hover {
+background-image: image(alpha(currentColor,0.03));
+}
+.playlist row:active {
+background-image: image(alpha(currentColor,0.08));
+}
+
+.playlist row:first-child {
+ margin-top: 12px;
+ border-radius: 12px 12px 0 0;
+}
+
+.playlist row:last-child {
+ margin-bottom: 12px;
+ border-bottom-color:rgba(0, 0, 0, 0);
+ border-radius: 0 0 12px 12px;
+}
+

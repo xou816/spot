@@ -139,8 +139,10 @@ impl HeaderBarWidget {
         if let Some(title) = title {
             self.widget().title.set_title(title);
             context.remove_class("flat");
+            context.remove_class("details");
         } else {
             context.add_class("flat");
+            context.add_class("details");
         }
     }
 }

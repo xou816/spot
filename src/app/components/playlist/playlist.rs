@@ -76,7 +76,6 @@ where
 
         let style_context = listview.style_context();
         style_context.add_class("playlist");
-        style_context.add_class("card");
         listview.set_show_separators(true);
         listview.set_valign(gtk::Align::Start);
 
