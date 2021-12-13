@@ -96,6 +96,7 @@ impl<T> Page<T> {
     pub fn limit(&self) -> usize {
         self.limit
             .or_else(|| Some(self.items.as_ref()?.len()))
+            .filter(|limit| *limit > 0)
             .unwrap_or(50)
     }
 
