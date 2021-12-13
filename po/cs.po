@@ -56,9 +56,8 @@ msgstr[2] "{} skladeb vybráno"
 
 #. translators: This is part of a contextual menu attached to a single track; the full text is "More from <artist>".
 #: src/app/components/labels.rs:39
-#, fuzzy
 msgid "More from {}"
-msgstr "Více od"
+msgstr "Více od {}"
 
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:56
@@ -173,24 +172,24 @@ msgid "Remove"
 msgstr "Odstranit"
 
 #: src/app/components/details/release_details.ui:38
-msgid "Label:"
-msgstr "Vydavatelství:"
+msgid "Label"
+msgstr "Vydavatelství"
 
 #: src/app/components/details/release_details.ui:48
-msgid "Released:"
-msgstr "Vydáno:"
+msgid "Released"
+msgstr "Vydáno"
 
 #: src/app/components/details/release_details.ui:58
-msgid "Tracks:"
-msgstr "Počet skladeb:"
+msgid "Tracks"
+msgstr "Počet skladeb"
 
 #: src/app/components/details/release_details.ui:68
-msgid "Duration:"
-msgstr "Délka:"
+msgid "Duration"
+msgstr "Délka"
 
 #: src/app/components/details/release_details.ui:78
-msgid "Copyright:"
-msgstr "Copyright:"
+msgid "Copyright"
+msgstr "Copyright"
 
 #. Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).
 #: src/app/components/login/login.ui:45

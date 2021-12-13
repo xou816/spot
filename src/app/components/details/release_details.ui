@@ -35,7 +35,7 @@
             </style>
             <child>
               <object class="AdwActionRow">
-                <property name="title" translatable="yes">Label:</property>
+                <property name="title" translatable="yes" comments="This refers to a music label">Label</property>
                 <child type="suffix">
                   <object class="GtkLabel" id="label">
                     <property name="label">Label</property>
@@ -45,7 +45,7 @@
             </child>
             <child>
               <object class="AdwActionRow">
-                <property name="title" translatable="yes">Released:</property>
+                <property name="title" translatable="yes" comments="This refers to a release date">Released</property>
                 <child type="suffix">
                   <object class="GtkLabel" id="release">
                     <property name="label">Released</property>
@@ -55,7 +55,7 @@
             </child>
             <child>
               <object class="AdwActionRow">
-                <property name="title" translatable="yes">Tracks:</property>
+                <property name="title" translatable="yes" comments="This refers to a number of tracks">Tracks</property>
                 <child type="suffix">
                   <object class="GtkLabel" id="tracks">
                     <property name="label">Tracks</property>
@@ -65,7 +65,7 @@
             </child>
             <child>
               <object class="AdwActionRow">
-                <property name="title" translatable="yes">Duration:</property>
+                <property name="title" translatable="yes" comments="This refers to the duration of a release">Duration</property>
                 <child type="suffix">
                   <object class="GtkLabel" id="duration">
                     <property name="label">Duration</property>
@@ -75,7 +75,7 @@
             </child>
             <child>
               <object class="AdwActionRow">
-                <property name="title" translatable="yes">Copyright:</property>
+                <property name="title" translatable="yes">Copyright</property>
                 <child type="suffix">
                   <object class="GtkLabel" id="copyright">
                     <property name="label">Copyright</property>

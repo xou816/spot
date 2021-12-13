@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-12-13 09:11-0500\n"
+"POT-Creation-Date: 2021-12-13 09:18-0500\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -174,24 +174,28 @@ msgstr ""
 msgid "Remove"
 msgstr ""
 
+#. This refers to a music label
 #: src/app/components/details/release_details.ui:38
-msgid "Label:"
+msgid "Label"
 msgstr "Wydawca"
 
+#. This refers to a release date
 #: src/app/components/details/release_details.ui:48
-msgid "Released:"
+msgid "Released"
 msgstr "Premiery"
 
+#. This refers to a number of tracks
 #: src/app/components/details/release_details.ui:58
-msgid "Tracks:"
+msgid "Tracks"
 msgstr "Najlepsze piosenki"
 
+#. This refers to the duration of a release
 #: src/app/components/details/release_details.ui:68
-msgid "Duration:"
+msgid "Duration"
 msgstr "Długość"
 
 #: src/app/components/details/release_details.ui:78
-msgid "Copyright:"
+msgid "Copyright"
 msgstr "Prawa autorskie"
 
 #. Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).
