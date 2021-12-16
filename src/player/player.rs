@@ -6,10 +6,12 @@ use librespot::core::config::SessionConfig;
 use librespot::core::keymaster;
 use librespot::core::session::{Session, SessionError};
 
+use librespot::playback::mixer::softmixer::SoftMixer;
+use librespot::playback::mixer::{AudioFilter, Mixer};
 use librespot::protocol::authentication::AuthenticationType;
 
 use librespot::playback::audio_backend;
-use librespot::playback::config::{AudioFormat, Bitrate, PlayerConfig};
+use librespot::playback::config::{AudioFormat, Bitrate, PlayerConfig, VolumeCtrl};
 use librespot::playback::player::{Player, PlayerEvent, PlayerEventChannel};
 
 use std::cell::RefCell;
@@ -75,6 +77,7 @@ impl Default for SpotifyPlayerSettings {
 pub struct SpotifyPlayer {
     settings: SpotifyPlayerSettings,
     player: RefCell<Option<Player>>,
+    mixer: RefCell<Option<Box<dyn Mixer>>>,
     session: RefCell<Option<Session>>,
     delegate: Rc<dyn SpotifyPlayerDelegate>,
 }
@@ -83,6 +86,7 @@ impl SpotifyPlayer {
     pub fn new(settings: SpotifyPlayerSettings, delegate: Rc<dyn SpotifyPlayerDelegate>) -> Self {
         Self {
             settings,
+            mixer: RefCell::new(None),
             player: RefCell::new(None),
             session: RefCell::new(None),
             delegate,
@@ -93,6 +97,12 @@ impl SpotifyPlayer {
         let mut player = self.player.borrow_mut();
         let mut session = self.session.borrow_mut();
         match action {
+            Command::PlayerVolume(volume) => {
+                if let Some(mixer) = self.mixer.borrow_mut().as_mut() {
+                    mixer.set_volume((VolumeCtrl::MAX_VOLUME as f64 * volume) as u16);
+                }
+                Ok(())
+            }
             Command::PlayerResume => {
                 let player = player.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
                 player.play();
@@ -182,7 +192,12 @@ impl SpotifyPlayer {
         };
         info!("bitrate: {:?}", &player_config.bitrate);
 
-        Player::new(player_config, session, None, move || match backend {
+        let filter = self
+            .mixer
+            .borrow_mut()
+            .get_or_insert_with(|| Box::new(SoftMixer::open(Default::default())))
+            .get_audio_filter();
+        Player::new(player_config, session, filter, move || match backend {
             AudioBackend::PulseAudio => {
                 info!("using pulseaudio");
                 let backend = audio_backend::find(Some("pulseaudio".to_string())).unwrap();
@@ -287,6 +302,9 @@ async fn player_setup_delegate(
             }
             PlayerEvent::Playing { position_ms, .. } => {
                 delegate.notify_playback_state(position_ms);
+            }
+            PlayerEvent::VolumeSet { volume } => {
+                debug!("Volume set: {:?}", volume);
             }
             _ => {}
         }

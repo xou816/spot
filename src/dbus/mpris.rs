@@ -9,7 +9,7 @@ use zbus::ObjectServer;
 use zvariant::ObjectPath;
 
 use super::types::*;
-use crate::app::state::RepeatMode;
+use crate::app::state::{PlaybackEvent, RepeatMode};
 use crate::app::{state::PlaybackAction, AppAction};
 
 #[derive(Clone)]
@@ -298,7 +298,7 @@ impl SpotMprisPlayer {
     }
 
     #[dbus_interface(property)]
-    pub fn set_rate(&self, value: f64) {}
+    pub fn set_rate(&self, value: f64) { }
 
     #[dbus_interface(property)]
     pub fn shuffle(&self) -> bool {
@@ -314,9 +314,14 @@ impl SpotMprisPlayer {
 
     #[dbus_interface(property)]
     pub fn volume(&self) -> f64 {
-        0f64
+        self.state.volume()
     }
 
     #[dbus_interface(property)]
-    pub fn set_volume(&self, value: f64) {}
+    pub fn set_volume(&self, value: f64) -> Result<()> {
+        self.state.set_volume(value);
+        self.sender
+            .unbounded_send(PlaybackAction::SetVolume(value).into())
+            .map_err(|_| zbus::fdo::Error::Failed("Could not send action".to_string()))
+    }
 }

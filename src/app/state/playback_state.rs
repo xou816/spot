@@ -8,6 +8,7 @@ const RANGE_SIZE: usize = 25;
 pub struct PlaybackState {
     index: LazyRandomIndex,
     songs: SongList,
+    volume: f64,
     position: Option<usize>,
     next_position: Option<usize>,
     source: Option<SongsSource>,
@@ -217,6 +218,7 @@ impl Default for PlaybackState {
         Self {
             index: LazyRandomIndex::default(),
             songs: SongList::new_sized(2 * RANGE_SIZE),
+            volume: 1.0,
             position: None,
             next_position: None,
             source: None,
@@ -241,6 +243,7 @@ pub enum PlaybackAction {
     Load(String),
     LoadSongs(Vec<SongDescription>),
     LoadPagedSongs(SongsSource, SongBatch),
+    SetVolume(f64),
     Next,
     Previous,
     Queue(Vec<SongDescription>),
@@ -269,6 +272,7 @@ pub enum PlaybackEvent {
     RepeatModeChanged(RepeatMode),
     TrackSeeked(u32),
     SeekSynced(u32),
+    VolumeSet(f64),
     TrackChanged(String),
     ShuffleChanged,
     PlaylistChanged(PlaylistChange),
@@ -415,6 +419,7 @@ impl UpdatableState for PlaybackState {
             }
             PlaybackAction::Seek(pos) => vec![PlaybackEvent::TrackSeeked(pos)],
             PlaybackAction::SyncSeek(pos) => vec![PlaybackEvent::SeekSynced(pos)],
+            PlaybackAction::SetVolume(volume) => vec![PlaybackEvent::VolumeSet(volume)],
             _ => vec![],
         }
     }

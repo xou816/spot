@@ -147,6 +147,7 @@ impl From<TrackMetadata> for Value<'_> {
 struct MprisState {
     status: PlaybackStatus,
     loop_status: LoopStatus,
+    volume: f64,
     shuffled: bool,
     position: PositionMicros,
     metadata: Option<TrackMetadata>,
@@ -167,7 +168,20 @@ impl SharedMprisState {
             metadata: None,
             has_prev: false,
             has_next: false,
+            volume: 0f64,
         })))
+    }
+
+    pub fn volume(&self) -> f64 {
+        self.0.lock()
+            .map(|s| s.volume)
+            .map_err(|e| error!("Failed to get volume: {:?}", e))
+            .unwrap_or(0.5f64)
+    }
+    pub fn set_volume(&self, volume: f64) {
+        if let Ok(mut state) = self.0.lock() {
+            (*state).volume = volume;
+        }
     }
 
     pub fn status(&self) -> PlaybackStatus {
