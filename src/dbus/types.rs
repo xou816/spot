@@ -173,7 +173,8 @@ impl SharedMprisState {
     }
 
     pub fn volume(&self) -> f64 {
-        self.0.lock()
+        self.0
+            .lock()
             .map(|s| s.volume)
             .map_err(|e| error!("Failed to get volume: {:?}", e))
             .unwrap_or(0.5f64)

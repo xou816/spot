@@ -298,7 +298,7 @@ impl SpotMprisPlayer {
     }
 
     #[dbus_interface(property)]
-    pub fn set_rate(&self, value: f64) { }
+    pub fn set_rate(&self, value: f64) {}
 
     #[dbus_interface(property)]
     pub fn shuffle(&self) -> bool {
