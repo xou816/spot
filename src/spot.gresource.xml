@@ -50,5 +50,6 @@
   <gresource prefix="/dev/alextren/Spot/icons/scalable/actions/">
     <file compressed="true" preprocess="xml-stripblanks" alias="music-queue-symbolic.svg">app/components/selection/icons/music-queue-symbolic.svg</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="playlist2-symbolic.svg">app/components/selection/icons/playlist2-symbolic.svg</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="library-music-symbolic.svg">app/components/sidebar_listbox/icons/library-music-symbolic.svg</file>
   </gresource>
 </gresources>
