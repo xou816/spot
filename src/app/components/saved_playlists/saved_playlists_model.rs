@@ -23,6 +23,10 @@ impl SavedPlaylistsModel {
         self.app_model.map_state_opt(|s| s.browser.home_state())
     }
 
+    pub fn get_playlists(&self) -> ListStore<AlbumModel> {
+        self.state().unwrap().playlists.clone()
+    }
+
     pub fn get_list_store(&self) -> Option<impl Deref<Target = ListStore<AlbumModel>> + '_> {
         Some(Ref::map(self.state()?, |s| &s.playlists))
     }
@@ -66,5 +70,9 @@ impl SavedPlaylistsModel {
 
     pub fn open_playlist(&self, id: String) {
         self.dispatcher.dispatch(AppAction::ViewPlaylist(id));
+    }
+
+    pub fn box_clone(&self) -> SavedPlaylistsModel {
+        SavedPlaylistsModel::new(self.app_model.clone(), self.dispatcher.box_clone())
     }
 }

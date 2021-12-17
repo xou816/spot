@@ -11,7 +11,8 @@ pub struct Navigation {
     model: Rc<NavigationModel>,
     leaflet: libadwaita::Leaflet,
     navigation_stack: gtk::Stack,
-    home_stack_sidebar: gtk::StackSidebar,
+    home_listbox: gtk::ListBox,
+    home_list_store: gio::ListStore,
     screen_factory: ScreenFactory,
     children: Vec<Box<dyn ListenerComponent>>,
 }
@@ -21,7 +22,8 @@ impl Navigation {
         model: NavigationModel,
         leaflet: libadwaita::Leaflet,
         navigation_stack: gtk::Stack,
-        home_stack_sidebar: gtk::StackSidebar,
+        home_listbox: gtk::ListBox,
+        home_list_store: gio::ListStore,
         screen_factory: ScreenFactory,
     ) -> Self {
         let model = Rc::new(model);
@@ -46,14 +48,19 @@ impl Navigation {
             model,
             leaflet,
             navigation_stack,
-            home_stack_sidebar,
+            home_listbox,
+            home_list_store,
             screen_factory,
             children: vec![],
         }
     }
 
     fn make_home(&self) -> Box<dyn ListenerComponent> {
-        let home = HomePane::new(self.home_stack_sidebar.clone(), &self.screen_factory);
+        let home = HomePane::new(
+            self.home_listbox.clone(),
+            &self.screen_factory,
+            self.home_list_store.clone(),
+        );
 
         home.connect_navigated(
             clone!(@weak self.model as model, @weak self.leaflet as leaflet => move || {
