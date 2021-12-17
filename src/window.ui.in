@@ -77,9 +77,14 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkStackSidebar" id="home_stack_sidebar">
-                        <property name="width-request">200</property>
-                        <property name="vexpand">1</property>
+                      <object class="GtkScrolledWindow">
+                        <property name="hscrollbar-policy">never</property>
+                        <property name="child">
+                          <object class="GtkListBox" id="home_listbox">
+                            <property name="width-request">200</property>
+                            <property name="vexpand">1</property>
+                          </object>
+                        </property>
                       </object>
                     </child>
                   </object>
