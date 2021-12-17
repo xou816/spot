@@ -14,7 +14,7 @@ msgstr ""
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
 #: src/app/batch_loader.rs:91 src/app/components/mod.rs:117
 msgid "An error occured. Check logs for details!"
-msgstr "Ошибка появилась. Посмотрите в логи за подробностями!"
+msgstr "Произошла ошибка. Смотрите подробности в логах!"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
 #: src/app/components/labels.rs:5
@@ -48,7 +48,7 @@ msgid "{} song selected"
 msgid_plural "{} songs selected"
 msgstr[0] "{} песня выбрана"
 msgstr[1] "{} песни выбраны"
-msgstr[2] "{} песни были выбраны"
+msgstr[2] "{} песен выбрано"
 msgstr[3] ""
 
 #. translators: This is part of a contextual menu attached to a single track; the full text is "More from <artist>".
@@ -59,13 +59,13 @@ msgstr "Больше от {}"
 #. translators: This is part of a larger label that reads "<Album> by <Artist>"
 #: src/app/components/labels.rs:48
 msgid "{} by {}"
-msgstr ""
+msgstr "{} в исполнении {}"
 
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:56
 msgid "Could not save password. Make sure the session keyring is unlocked."
 msgstr ""
-"Не удалось сохранить пароль. Проверьте, GNOME Keyring/KDE wallet открыта."
+"Не удалось сохранить пароль. Убедитесь, что связка ключей сеанса разблокирована."
 
 #. translators: This is a sidebar entry to browse to saved albums.
 #: src/app/components/navigation/factory.rs:29
@@ -167,7 +167,7 @@ msgstr "Введите для поиска."
 #. <property name="icon-name">playlist2-symbolic</property>
 #: src/app/components/selection/selection_toolbar.ui:47
 msgid "Add to playlist..."
-msgstr ""
+msgstr "Добавить в плейлист..."
 
 #: src/app/components/selection/selection_toolbar.ui:58
 msgid "Remove"
@@ -230,12 +230,12 @@ msgstr "Войти"
 #. Button label. Exits selection mode.
 #: src/app/components/headerbar/headerbar.ui:46
 msgid "Cancel"
-msgstr ""
+msgstr "Отмена"
 
 #. Button label. Selects all visible songs.
 #: src/app/components/headerbar/headerbar.ui:57
 msgid "Select all"
-msgstr ""
+msgstr "Выбрать все"
 
 #: src/app/components/playback/playback_controls.ui:17
 msgid "Shuffle"
