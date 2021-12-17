@@ -108,7 +108,7 @@ msgstr "Песня сейчас не играет"
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:56
 msgid "About"
-msgstr "Об"
+msgstr "О Spot"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:58
