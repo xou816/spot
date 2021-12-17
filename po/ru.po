@@ -186,7 +186,7 @@ msgstr "Релизы"
 #. This refers to a number of tracks
 #: src/app/components/details/release_details.ui:58
 msgid "Tracks"
-msgstr "Топ треков"
+msgstr "Треки"
 
 #. This refers to the duration of a release
 #: src/app/components/details/release_details.ui:68
