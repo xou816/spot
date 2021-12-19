@@ -303,9 +303,6 @@ async fn player_setup_delegate(
             PlayerEvent::Playing { position_ms, .. } => {
                 delegate.notify_playback_state(position_ms);
             }
-            PlayerEvent::VolumeSet { volume } => {
-                debug!("Volume set: {:?}", volume);
-            }
             _ => {}
         }
     }
