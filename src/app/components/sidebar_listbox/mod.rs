@@ -15,7 +15,7 @@ pub fn build_sidebar_listbox(builder: &gtk::Builder, list_store: &gio::ListStore
         let label = gtk::Label::new(Option::from(
             item.property("title").unwrap().get::<&str>().unwrap(),
         ));
-        let gtk_box = gtk::Box::new(gtk::Orientation::Horizontal, 10);
+        let gtk_box = gtk::Box::new(gtk::Orientation::Horizontal, 12);
         let row = SideBarRow::new(item.property("id").unwrap().get::<&str>().unwrap());
         if item.property("grayedout").unwrap().get::<bool>().unwrap() {
             gtk_box.append(&label);
@@ -38,5 +38,7 @@ pub fn build_sidebar_listbox(builder: &gtk::Builder, list_store: &gio::ListStore
         }
         row.upcast::<gtk::Widget>()
     });
+    listbox.add_css_class("navigation-sidebar");
+    listbox.add_css_class("listbox_sidebar");
     listbox
 }
