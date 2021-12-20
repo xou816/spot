@@ -37,7 +37,7 @@ package = "futures"
 version = "0.3.18"
 
 [dependencies.serde]
-version = "^1.0.130"
+version = "^1.0.132"
 features = ["derive"]
 
 [dependencies.serde_json]
