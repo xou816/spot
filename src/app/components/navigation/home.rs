@@ -111,7 +111,7 @@ impl HomePane {
             SAVED_PLAYLISTS,
             // translators: This is a sidebar entry to browse to saved playlists.
             &gettext("All Playlists"),
-            "playlist2-symbolic",
+            "view-app-grid-symbolic",
             false,
         );
 
