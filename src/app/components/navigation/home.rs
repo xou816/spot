@@ -11,6 +11,7 @@ const SAVED_TRACKS: &str = "saved_tracks";
 const NOW_PLAYING: &str = "now_playing";
 const SAVED_PLAYLISTS: &str = "saved_playlists";
 const NUM_FIXED_ENTRIES: u32 = 4;
+const NUM_PLAYLISTS: usize = 20;
 
 fn add_to_stack_and_listbox(
     stack: &gtk::Stack,
@@ -153,7 +154,11 @@ impl EventListener for HomePane {
             }
             AppEvent::BrowserEvent(BrowserEvent::SavedPlaylistsUpdated) => {
                 let mut vec = Vec::new();
-                for playlist_item in self.saved_playlists_model.get_playlists().iter() {
+                let playlists = self.saved_playlists_model.get_playlists();
+                for (i, playlist_item) in playlists.iter().enumerate() {
+                    if i == NUM_PLAYLISTS {
+                        break;
+                    }
                     vec.push(make_playlist_item(playlist_item).upcast());
                 }
                 self.list_store.splice(
