@@ -12,10 +12,13 @@ pub fn build_sidebar_listbox(builder: &gtk::Builder, list_store: &gio::ListStore
     display_add_css_provider(resource!("/sidebar_listbox/sidebar.css"));
     let listbox: gtk::ListBox = builder.object("home_listbox").unwrap();
     listbox.bind_model(Some(list_store), move |item| {
-        let label = gtk::Label::new(Option::from(
-            item.property("title").unwrap().get::<&str>().unwrap(),
-        ));
+        let title_value = item.property("title").unwrap();
+        let title = Option::from(title_value.get::<&str>().unwrap());
+        let label = gtk::Label::new(title);
+        label.set_ellipsize(gtk::pango::EllipsizeMode::End);
+        label.set_max_width_chars(20);
         let gtk_box = gtk::Box::new(gtk::Orientation::Horizontal, 12);
+        gtk_box.set_tooltip_text(title);
         let row = SideBarRow::new(item.property("id").unwrap().get::<&str>().unwrap());
         if item.property("grayedout").unwrap().get::<bool>().unwrap() {
             gtk_box.append(&label);
