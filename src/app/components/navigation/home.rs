@@ -10,7 +10,7 @@ const LIBRARY: &str = "library";
 const SAVED_TRACKS: &str = "saved_tracks";
 const NOW_PLAYING: &str = "now_playing";
 const SAVED_PLAYLISTS: &str = "saved_playlists";
-const NUM_FIXED_ENTRIES: u32 = 4;
+const NUM_FIXED_ENTRIES: u32 = 5;
 const NUM_PLAYLISTS: usize = 20;
 
 fn add_to_stack_and_listbox(
@@ -104,6 +104,16 @@ impl HomePane {
             "",
             true,
         ));
+        add_to_stack_and_listbox(
+            &stack,
+            &list_store,
+            saved_playlists.get_root_widget(),
+            SAVED_PLAYLISTS,
+            // translators: This is a sidebar entry to browse to saved playlists.
+            &gettext("All Playlists"),
+            "playlist2-symbolic",
+            false,
+        );
 
         Self {
             stack,
