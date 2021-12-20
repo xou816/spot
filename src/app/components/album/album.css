@@ -3,6 +3,7 @@
 leaflet.unfolded .album .card {
   min-width: 200px;
   min-height: 200px;
+  border-radius: 6px;
 }
 
 leaflet.unfolded .album {
@@ -10,6 +11,9 @@ leaflet.unfolded .album {
   margin-bottom: 6px;
 }
 
+leaflet.unfolded .album button {
+ border-radius: 12px;
+}
 /* small style */
 
 leaflet.folded .album .card {
@@ -23,4 +27,8 @@ leaflet.folded .album .card {
 leaflet.unfolded .album {
   margin-top: 0px;
   margin-bottom: 0px;
+}
+
+leaflet.folded .album button {
+ border-radius: 6px;
 }
