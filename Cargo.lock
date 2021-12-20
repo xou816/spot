@@ -2831,7 +2831,7 @@ dependencies = [
  "zbus 1.8.0",
  "zbus_macros 1.8.0",
  "zvariant",
- "zvariant_derive",
+ "zvariant_derive 2.10.0",
 ]
 
 [[package]]
@@ -3050,7 +3050,7 @@ dependencies = [
  "tokio",
  "zbus 2.0.0-beta.3",
  "zvariant",
- "zvariant_derive",
+ "zvariant_derive 3.0.0",
 ]
 
 [[package]]
@@ -3717,7 +3717,7 @@ dependencies = [
  "libc",
  "serde",
  "static_assertions",
- "zvariant_derive",
+ "zvariant_derive 2.10.0",
 ]
 
 [[package]]
@@ -3725,6 +3725,18 @@ name = "zvariant_derive"
 version = "2.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e4ca5e22593eb4212382d60d26350065bf2a02c34b85bc850474a74b589a3de9"
+dependencies = [
+ "proc-macro-crate 1.0.0",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "zvariant_derive"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "28fce5afb8d639bff79b1e8cdb258a3ca22d458f4603b23d794b4cb4e878c990"
 dependencies = [
  "proc-macro-crate 1.0.0",
  "proc-macro2",
