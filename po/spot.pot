@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-24 12:06-0500\n"
+"POT-Creation-Date: 2021-12-13 09:46-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,73 +23,48 @@ msgstr ""
 msgid "An error occured. Check logs for details!"
 msgstr ""
 
-#. translators: This is part of a larger label that reads "<Album> by <Artist>"
-#: src/app/components/details/release_details.rs:101
-msgid "by"
-msgstr ""
-
-#. translators: This refers to a music label
-#: src/app/components/details/release_details.rs:108
-msgid "Label:"
-msgstr ""
-
-#. translators: This refers to a release date
-#: src/app/components/details/release_details.rs:115
-msgid "Released:"
-msgstr ""
-
-#. translators: This refers to a number of tracks
-#: src/app/components/details/release_details.rs:122
-msgid "Tracks:"
-msgstr ""
-
-#. translators: This refers to the duration of eg. an album
-#: src/app/components/details/release_details.rs:129
-msgid "Duration:"
-msgstr ""
-
-#. translators: Self explanatory
-#: src/app/components/details/release_details.rs:136
-msgid "Copyright:"
-msgstr ""
-
 #. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
 #: src/app/components/labels.rs:5
 msgid "View album"
 msgstr ""
 
-#. translators: This is part of a contextual menu attached to a single track; the full text is "More from <artist>".
-#: src/app/components/labels.rs:8
-msgid "More from"
-msgstr ""
-
 #. translators: This is part of a contextual menu attached to a single track; the intent is to copy the link (public URL) to a specific track.
-#: src/app/components/labels.rs:11
+#: src/app/components/labels.rs:8
 msgid "Copy link"
 msgstr ""
 
 #. translators: This is part of a contextual menu attached to a single track; this entry adds a track at the end of the play queue.
-#: src/app/components/labels.rs:14
+#: src/app/components/labels.rs:11
 #: src/app/components/selection/selection_toolbar.ui:37
 msgid "Add to queue"
 msgstr ""
 
 #. translators: This is part of a contextual menu attached to a single track; this entry removes a track from the play queue.
-#: src/app/components/labels.rs:17
+#: src/app/components/labels.rs:14
 msgid "Remove from queue"
 msgstr ""
 
 #. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
-#: src/app/components/labels.rs:24
+#: src/app/components/labels.rs:21
 msgid "Add to {}"
 msgstr ""
 
-#. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
-#: src/app/components/labels.rs:33
+#. translators: This shows up when in selection mode. This text should be as short as possible.
+#: src/app/components/labels.rs:30
 msgid "{} song selected"
 msgid_plural "{} songs selected"
 msgstr[0] ""
 msgstr[1] ""
+
+#. translators: This is part of a contextual menu attached to a single track; the full text is "More from <artist>".
+#: src/app/components/labels.rs:39
+msgid "More from {}"
+msgstr ""
+
+#. translators: This is part of a larger label that reads "<Album> by <Artist>"
+#: src/app/components/labels.rs:48
+msgid "{} by {}"
+msgstr ""
 
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:56
@@ -115,7 +90,7 @@ msgid "Saved tracks"
 msgstr ""
 
 #: src/app/components/navigation/home.rs:53
-#: src/app/components/now_playing/now_playing_model.rs:156
+#: src/app/components/now_playing/now_playing_model.rs:152
 msgid "Now playing"
 msgstr ""
 
@@ -169,7 +144,7 @@ msgid "Top tracks"
 msgstr ""
 
 #. Title of the sections that contains all releases from an artist (both singles and albums).
-#: src/app/components/artist_details/artist_details.ui:57
+#: src/app/components/artist_details/artist_details.ui:55
 msgid "Releases"
 msgstr ""
 
@@ -200,6 +175,30 @@ msgstr ""
 
 #: src/app/components/selection/selection_toolbar.ui:58
 msgid "Remove"
+msgstr ""
+
+#. This refers to a music label
+#: src/app/components/details/release_details.ui:38
+msgid "Label"
+msgstr ""
+
+#. This refers to a release date
+#: src/app/components/details/release_details.ui:48
+msgid "Released"
+msgstr ""
+
+#. This refers to a number of tracks
+#: src/app/components/details/release_details.ui:58
+msgid "Tracks"
+msgstr ""
+
+#. This refers to the duration of a release
+#: src/app/components/details/release_details.ui:68
+msgid "Duration"
+msgstr ""
+
+#: src/app/components/details/release_details.ui:78
+msgid "Copyright"
 msgstr ""
 
 #. Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).

@@ -96,6 +96,7 @@ impl<T> Page<T> {
     pub fn limit(&self) -> usize {
         self.limit
             .or_else(|| Some(self.items.as_ref()?.len()))
+            .filter(|limit| *limit > 0)
             .unwrap_or(50)
     }
 
@@ -311,23 +312,13 @@ impl TryFrom<PlaylistTrack> for TrackItem {
     type Error = ();
 
     fn try_from(PlaylistTrack { is_local, track }: PlaylistTrack) -> Result<Self, Self::Error> {
-        track
-            .ok_or(())?
-            .get()
-            .filter(|_| !is_local)
-            .map(|mut track| {
-                std::mem::take(&mut track.track.track_number);
-                track
-            })
-            .ok_or(())
+        track.ok_or(())?.get().filter(|_| !is_local).ok_or(())
     }
 }
 
 impl From<SavedTrack> for TrackItem {
     fn from(track: SavedTrack) -> Self {
-        let mut track = track.track;
-        std::mem::take(&mut track.track.track_number);
-        track
+        track.track
     }
 }
 
@@ -368,8 +359,7 @@ where
         };
         let songs = page
             .into_iter()
-            .enumerate()
-            .filter_map(|(i, t)| {
+            .filter_map(|t| {
                 let TrackItem { track, album } = t.try_into().ok()?;
                 let AlbumTrackItem {
                     artists,
@@ -379,7 +369,6 @@ where
                     duration_ms,
                     track_number,
                 } = track;
-                let track_number = track_number.unwrap_or_else(|| batch.offset + i + 1) as u32;
                 let artists = artists
                     .into_iter()
                     .map(|a| ArtistRef {
@@ -402,7 +391,7 @@ where
 
                 Some(SongDescription {
                     id,
-                    track_number,
+                    track_number: track_number.map(|u| u as u32),
                     uri,
                     title: name,
                     artists,

@@ -75,6 +75,10 @@ impl SongWidget {
         glib::Object::new(&[]).expect("Failed to create an instance of SongWidget")
     }
 
+    fn widget(&self) -> &imp::SongWidget {
+        imp::SongWidget::from_instance(self)
+    }
+
     pub fn for_model(model: SongModel, worker: Worker) -> Self {
         let _self = Self::new();
         _self.bind(&model, worker, true);
@@ -87,7 +91,7 @@ impl SongWidget {
 
     pub fn set_menu(&self, menu: Option<&MenuModel>) {
         if menu.is_some() {
-            let widget = imp::SongWidget::from_instance(self);
+            let widget = self.widget();
             widget.menu_btn.set_menu_model(menu);
             widget
                 .menu_btn
@@ -110,9 +114,12 @@ impl SongWidget {
         imp::SongWidget::from_instance(self)
             .song_checkbox
             .set_active(is_selected);
-        let song_class = "song-selected";
+    }
+
+    fn set_show_cover(&self, show_cover: bool) {
+        let song_class = "song--cover";
         let context = self.style_context();
-        if is_selected {
+        if show_cover {
             context.add_class(song_class);
         } else {
             context.remove_class(song_class);
@@ -120,12 +127,10 @@ impl SongWidget {
     }
 
     fn set_image(&self, pixbuf: Option<&gdk_pixbuf::Pixbuf>) {
-        imp::SongWidget::from_instance(self)
-            .song_cover
-            .set_from_pixbuf(pixbuf);
+        self.widget().song_cover.set_from_pixbuf(pixbuf);
     }
 
-    pub fn bind_art(&self, model: &SongModel, worker: Worker) {
+    pub fn set_art(&self, model: &SongModel, worker: Worker) {
         if let Some(url) = model.cover_url() {
             let _self = self.downgrade();
             worker.send_local_task(async move {
@@ -139,13 +144,15 @@ impl SongWidget {
     }
 
     pub fn bind(&self, model: &SongModel, worker: Worker, show_cover: bool) {
-        let widget = imp::SongWidget::from_instance(self);
+        let widget = self.widget();
 
         model.bind_title(&*widget.song_title, "label");
         model.bind_artist(&*widget.song_artist, "label");
         model.bind_duration(&*widget.song_length, "label");
+
+        self.set_show_cover(show_cover);
         if show_cover {
-            self.bind_art(model, worker);
+            self.set_art(model, worker);
         } else {
             model.bind_index(&*widget.song_index, "label");
         }

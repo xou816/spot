@@ -132,11 +132,7 @@ impl PlaylistModel for ArtistDetailsModel {
         menu.append(Some(&*labels::VIEW_ALBUM), Some("song.view_album"));
         for artist in song.artists.iter().filter(|a| self.id != a.id) {
             menu.append(
-                Some(&format!(
-                    "{} {}",
-                    *labels::MORE_FROM,
-                    glib::markup_escape_text(&artist.name)
-                )),
+                Some(&labels::more_from_label(&artist.name)),
                 Some(&format!("song.view_artist_{}", artist.id)),
             );
         }

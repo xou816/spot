@@ -334,7 +334,7 @@ mod tests {
             },
             duration: 1000,
             art: None,
-            track_number: 0,
+            track_number: None,
         }
     }
 

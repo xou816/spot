@@ -6,6 +6,10 @@
   opacity: 1;
 }
 
+.song--cover .song__index {
+  opacity: 0;
+}
+
 .song__icon, .song__checkbox {
   transition: opacity 150ms ease;
   opacity: 0;
@@ -93,4 +97,3 @@ background-image: image(alpha(currentColor,0.08));
  border-bottom-color:rgba(0, 0, 0, 0);
  border-radius: 0 0 12px 12px;
 }
-
