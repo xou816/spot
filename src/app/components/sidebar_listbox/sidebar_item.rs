@@ -11,6 +11,34 @@ impl SideBarItem {
         ])
         .expect("Failed to create")
     }
+
+    pub(crate) fn id(&self) -> String {
+        self.property("id")
+            .unwrap()
+            .get::<&str>()
+            .unwrap()
+            .to_string()
+    }
+
+    pub(crate) fn title(&self) -> String {
+        self.property("title")
+            .unwrap()
+            .get::<&str>()
+            .unwrap()
+            .to_string()
+    }
+
+    pub(crate) fn iconname(&self) -> String {
+        self.property("iconname")
+            .unwrap()
+            .get::<&str>()
+            .unwrap()
+            .to_string()
+    }
+
+    pub(crate) fn grayedout(&self) -> bool {
+        self.property("grayedout").unwrap().get::<bool>().unwrap()
+    }
 }
 
 mod imp {

@@ -11,16 +11,17 @@ pub use sidebar_item::*;
 pub fn build_sidebar_listbox(builder: &gtk::Builder, list_store: &gio::ListStore) -> ListBox {
     display_add_css_provider(resource!("/sidebar_listbox/sidebar.css"));
     let listbox: gtk::ListBox = builder.object("home_listbox").unwrap();
-    listbox.bind_model(Some(list_store), move |item| {
-        let title_value = item.property("title").unwrap();
-        let title = Option::from(title_value.get::<&str>().unwrap());
-        let label = gtk::Label::new(title);
+    listbox.bind_model(Some(list_store), move |obj| {
+        let item = obj.clone().downcast::<sidebar_item::SideBarItem>().unwrap();
+        let t = item.title();
+        let title = Option::from(t.as_str());
+        let label = gtk::Label::new(Option::from(title));
         label.set_ellipsize(gtk::pango::EllipsizeMode::End);
         label.set_max_width_chars(20);
         let gtk_box = gtk::Box::new(gtk::Orientation::Horizontal, 12);
         gtk_box.set_tooltip_text(title);
-        let row = SideBarRow::new(item.property("id").unwrap().get::<&str>().unwrap());
-        if item.property("grayedout").unwrap().get::<bool>().unwrap() {
+        let row = SideBarRow::new(item.id().as_str());
+        if item.grayedout() {
             gtk_box.append(&label);
             row.set_child(Option::from(&gtk_box));
             row.set_activatable(false);
@@ -31,9 +32,7 @@ pub fn build_sidebar_listbox(builder: &gtk::Builder, list_store: &gio::ListStore
         } else {
             let icon = gtk::Image::new();
             icon.add_css_class("item_sidebar");
-            icon.set_icon_name(Option::from(
-                item.property("iconname").unwrap().get::<&str>().unwrap(),
-            ));
+            icon.set_icon_name(Option::from(item.iconname().as_str()));
             gtk_box.append(&icon);
             gtk_box.append(&label);
 
