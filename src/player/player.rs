@@ -133,6 +133,7 @@ impl SpotifyPlayer {
                 Ok(())
             }
             Command::PasswordLogin { username, password } => {
+                info!("handling PasswordLogin...");
                 let credentials = Credentials::with_password(username, password.clone());
                 let new_session = create_session(credentials, self.settings.ap_port).await?;
                 let (token, token_expiry_time) =
@@ -154,6 +155,7 @@ impl SpotifyPlayer {
                 Ok(())
             }
             Command::TokenLogin { username, token } => {
+                info!("handling TokenLogin...");
                 let credentials = Credentials {
                     username,
                     auth_type: AuthenticationType::AUTHENTICATION_SPOTIFY_TOKEN,

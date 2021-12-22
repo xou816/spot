@@ -2,9 +2,9 @@ name: spot-snapshots
 
 on:
   push:
-    branches: [master, gtk4/main]
+    branches: [master, investigate-token]
   pull_request:
-    branches: [master, gtk4/main]
+    branches: [master]
   workflow_dispatch:
 
 jobs:
@@ -21,4 +21,4 @@ jobs:
         bundle: "spot.flatpak"
         manifest-path: "dev.alextren.Spot.snapshots.json"
         cache-key: flatpak-builder-${{ github.sha }}
-        run-tests: true
+        run-tests: false
