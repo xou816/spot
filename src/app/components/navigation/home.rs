@@ -135,6 +135,22 @@ impl HomePane {
                 }
             }));
     }
+
+    fn update_playlists_in_sidebar(&mut self) {
+        let mut vec = Vec::new();
+        let playlists = self.saved_playlists_model.get_playlists();
+        for (i, playlist_item) in playlists.iter().enumerate() {
+            if i == NUM_PLAYLISTS {
+                break;
+            }
+            vec.push(make_playlist_item(playlist_item).upcast());
+        }
+        self.list_store.splice(
+            NUM_FIXED_ENTRIES,
+            self.list_store.n_items() - NUM_FIXED_ENTRIES,
+            vec.as_slice(),
+        );
+    }
 }
 
 impl Component for HomePane {
@@ -154,19 +170,7 @@ impl EventListener for HomePane {
                 self.stack.set_visible_child_name("now_playing");
             }
             AppEvent::BrowserEvent(BrowserEvent::SavedPlaylistsUpdated) => {
-                let mut vec = Vec::new();
-                let playlists = self.saved_playlists_model.get_playlists();
-                for (i, playlist_item) in playlists.iter().enumerate() {
-                    if i == NUM_PLAYLISTS {
-                        break;
-                    }
-                    vec.push(make_playlist_item(playlist_item).upcast());
-                }
-                self.list_store.splice(
-                    NUM_FIXED_ENTRIES,
-                    self.list_store.n_items() - NUM_FIXED_ENTRIES,
-                    vec.as_slice(),
-                );
+                self.update_playlists_in_sidebar();
             }
             _ => {}
         }
