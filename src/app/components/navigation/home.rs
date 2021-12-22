@@ -27,23 +27,14 @@ fn add_to_stack_and_listbox(
 }
 
 fn make_playlist_item(playlist_item: AlbumModel) -> SideBarItem {
-    let title_temp = playlist_item
-        .property("album")
-        .expect("Could not get playlist name.");
-    let mut title = title_temp
-        .get::<&str>()
-        .expect("Could not get playlist name.");
-    let fallback_title = &gettext("Unnamed playlist");
+    let mut title = playlist_item.album_title().unwrap();
     if title.is_empty() {
-        title = fallback_title;
+        title = gettext("Unnamed playlist");
     }
 
-    let uri = playlist_item
-        .property("uri")
-        .expect("Could not get playlist uri.");
-    let id = uri.get::<&str>().expect("Could not get playlist uri.");
+    let id = playlist_item.uri().unwrap();
 
-    SideBarItem::new(id, title, "playlist2-symbolic", false)
+    SideBarItem::new(id.as_str(), &title, "playlist2-symbolic", false)
 }
 
 pub struct HomePane {
