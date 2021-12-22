@@ -121,7 +121,7 @@ impl HomePane {
     }
 
     pub fn connect_navigated<F: Fn() + 'static>(&self, f: F) {
-        let model = self.saved_playlists_model.box_clone();
+        let model = self.saved_playlists_model.clone();
         self.listbox
             .connect_row_activated(clone!(@weak self.stack as stack => move |_, row| {
                 let n = row.property("id").expect("Could not get id of ListBoxRow.");

@@ -72,7 +72,7 @@ impl SavedPlaylistsModel {
         self.dispatcher.dispatch(AppAction::ViewPlaylist(id));
     }
 
-    pub fn box_clone(&self) -> SavedPlaylistsModel {
+    pub fn clone(&self) -> SavedPlaylistsModel {
         SavedPlaylistsModel::new(self.app_model.clone(), self.dispatcher.box_clone())
     }
 }
