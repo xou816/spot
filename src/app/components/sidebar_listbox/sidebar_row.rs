@@ -1,9 +1,31 @@
+use crate::app::components::display_add_css_provider;
+use crate::app::components::sidebar_listbox::sidebar_icon_widget::SideBarItemWidgetIcon;
+use crate::app::components::sidebar_listbox::SideBarItem;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
 impl SideBarRow {
-    pub fn new(id: &str) -> SideBarRow {
-        glib::Object::new::<SideBarRow>(&[("id", &id)]).expect("Failed to create")
+    pub fn new(item: &SideBarItem) -> SideBarRow {
+        display_add_css_provider(resource!("/sidebar_listbox/sidebar.css"));
+        let id = item.id();
+        let t = item.title();
+        let row =
+            glib::Object::new::<SideBarRow>(&[("id", &id.as_str())]).expect("Failed to create");
+        if item.grayedout() {
+            let label = gtk::Label::new(Option::from(t.as_str()));
+            let gtk_box = gtk::Box::new(gtk::Orientation::Horizontal, 12);
+            gtk_box.append(&label);
+            row.set_child(Option::from(&gtk_box));
+            row.set_activatable(false);
+            row.set_selectable(false);
+            row.set_sensitive(false);
+            label.add_css_class("caption-heading");
+            label.add_css_class("item_sidebar");
+        } else {
+            let widget = SideBarItemWidgetIcon::new(t.as_str(), Some(item.iconname().as_str()));
+            row.set_child(Option::from(&widget));
+        }
+        row
     }
 }
 
