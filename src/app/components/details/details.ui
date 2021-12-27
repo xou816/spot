@@ -43,7 +43,7 @@
                 </object>
               </child>
               <style>
-                <class name="header_clamp"/>
+                <class name="details"/>
               </style>
             </object>
           </child>
