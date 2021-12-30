@@ -1,7 +1,7 @@
 use gettextrs::*;
 use gtk::prelude::*;
 
-use crate::app::components::sidebar_listbox::SideBarItem;
+use crate::app::components::sidebar_listbox::{SideBarItem, SideBarRow};
 use crate::app::components::{Component, EventListener, SavedPlaylistsModel, ScreenFactory};
 use crate::app::models::AlbumModel;
 use crate::app::{AppEvent, BrowserEvent};
@@ -124,14 +124,13 @@ impl HomePane {
         let model = self.saved_playlists_model.clone();
         self.listbox
             .connect_row_activated(clone!(@weak self.stack as stack => move |_, row| {
-                let n = row.property("id").expect("Could not get id of ListBoxRow.");
-                let name = n.get::<&str>().expect("Could not get id of ListBoxRow.");
-                match name {
+                let id = row.downcast_ref::<SideBarRow>().unwrap().id();
+                match id.as_str() {
                     LIBRARY | SAVED_TRACKS | NOW_PLAYING | SAVED_PLAYLISTS => {
-                        stack.set_visible_child_name(name);
+                        stack.set_visible_child_name(&id);
                         f();
                     },
-                    _ => model.open_playlist(name.to_string()),
+                    _ => model.open_playlist(id),
                 }
             }));
     }

@@ -27,6 +27,14 @@ impl SideBarRow {
         }
         row
     }
+
+    pub fn id(&self) -> String {
+        self.property("id")
+            .unwrap()
+            .get::<&str>()
+            .unwrap()
+            .to_string()
+    }
 }
 
 mod imp {

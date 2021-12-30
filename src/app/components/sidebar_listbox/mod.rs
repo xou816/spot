@@ -2,12 +2,11 @@ mod sidebar_icon_widget;
 mod sidebar_item;
 mod sidebar_row;
 
-use crate::app::components::sidebar_listbox::sidebar_row::SideBarRow;
-
 use crate::app::components::display_add_css_provider;
 use gtk::prelude::*;
 use gtk::ListBox;
 pub use sidebar_item::*;
+pub use sidebar_row::*;
 
 pub fn build_sidebar_listbox(builder: &gtk::Builder, list_store: &gio::ListStore) -> ListBox {
     display_add_css_provider(resource!("/sidebar_listbox/sidebar.css"));
