@@ -12,7 +12,7 @@ pub fn build_sidebar_listbox(builder: &gtk::Builder, list_store: &gio::ListStore
     display_add_css_provider(resource!("/sidebar_listbox/sidebar.css"));
     let listbox: gtk::ListBox = builder.object("home_listbox").unwrap();
     listbox.bind_model(Some(list_store), move |obj| {
-        let item = obj.clone().downcast::<sidebar_item::SideBarItem>().unwrap();
+        let item = obj.downcast_ref::<sidebar_item::SideBarItem>().unwrap();
         let row = SideBarRow::new(&item);
         row.upcast::<gtk::Widget>()
     });
