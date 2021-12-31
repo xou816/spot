@@ -8,7 +8,6 @@ const RANGE_SIZE: usize = 25;
 pub struct PlaybackState {
     index: LazyRandomIndex,
     songs: SongList,
-    volume: f64,
     position: Option<usize>,
     next_position: Option<usize>,
     source: Option<SongsSource>,
@@ -218,7 +217,6 @@ impl Default for PlaybackState {
         Self {
             index: LazyRandomIndex::default(),
             songs: SongList::new_sized(2 * RANGE_SIZE),
-            volume: 1.0,
             position: None,
             next_position: None,
             source: None,

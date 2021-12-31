@@ -7,7 +7,7 @@ use librespot::core::keymaster;
 use librespot::core::session::{Session, SessionError};
 
 use librespot::playback::mixer::softmixer::SoftMixer;
-use librespot::playback::mixer::{AudioFilter, Mixer};
+use librespot::playback::mixer::{Mixer, MixerConfig};
 use librespot::protocol::authentication::AuthenticationType;
 
 use librespot::playback::audio_backend;
@@ -97,7 +97,7 @@ impl SpotifyPlayer {
         let mut player = self.player.borrow_mut();
         let mut session = self.session.borrow_mut();
         match action {
-            Command::PlayerVolume(volume) => {
+            Command::PlayerSetVolume(volume) => {
                 if let Some(mixer) = self.mixer.borrow_mut().as_mut() {
                     mixer.set_volume((VolumeCtrl::MAX_VOLUME as f64 * volume) as u16);
                 }
@@ -195,7 +195,17 @@ impl SpotifyPlayer {
         let filter = self
             .mixer
             .borrow_mut()
-            .get_or_insert_with(|| Box::new(SoftMixer::open(Default::default())))
+            .get_or_insert_with(|| {
+                let mix = Box::new(SoftMixer::open(MixerConfig {
+                    // This value feels reasonable to me. Feel free to change it
+                  volume_ctrl: VolumeCtrl::Log(VolumeCtrl::DEFAULT_DB_RANGE/2.0),
+                    ..Default::default()
+                }));
+                // TODO: Should read volume from somewhere instead of hard coding.
+                // Sets volume to 100%
+                mix.set_volume(VolumeCtrl::MAX_VOLUME);
+                mix
+            })
             .get_audio_filter();
         Player::new(player_config, session, filter, move || match backend {
             AudioBackend::PulseAudio => {

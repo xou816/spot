@@ -9,7 +9,7 @@ use zbus::ObjectServer;
 use zvariant::ObjectPath;
 
 use super::types::*;
-use crate::app::state::{PlaybackEvent, RepeatMode};
+use crate::app::state::RepeatMode;
 use crate::app::{state::PlaybackAction, AppAction};
 
 #[derive(Clone)]
@@ -319,7 +319,9 @@ impl SpotMprisPlayer {
 
     #[dbus_interface(property)]
     pub fn set_volume(&self, value: f64) -> Result<()> {
-        self.state.set_volume(value);
+        // As per spec, if new volume less than 0 round to 0
+        // also, we don't support volume higher than 100% at the moment.
+        let volume = value.clamp(0.0, 1.0);
         self.sender
             .unbounded_send(PlaybackAction::SetVolume(value).into())
             .map_err(|_| zbus::fdo::Error::Failed("Could not send action".to_string()))

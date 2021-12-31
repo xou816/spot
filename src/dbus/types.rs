@@ -179,6 +179,7 @@ impl SharedMprisState {
             .map_err(|e| error!("Failed to get volume: {:?}", e))
             .unwrap_or(1.0f64)
     }
+
     pub fn set_volume(&self, volume: f64) {
         if let Ok(mut state) = self.0.lock() {
             (*state).volume = volume;

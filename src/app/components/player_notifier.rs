@@ -30,7 +30,7 @@ impl EventListener for PlayerNotifier {
             AppEvent::PlaybackEvent(PlaybackEvent::PlaybackResumed) => Some(Command::PlayerResume),
             AppEvent::PlaybackEvent(PlaybackEvent::PlaybackStopped) => Some(Command::PlayerStop),
             AppEvent::PlaybackEvent(PlaybackEvent::VolumeSet(volume)) => {
-                Some(Command::PlayerVolume(*volume))
+                Some(Command::PlayerSetVolume(*volume))
             }
             AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(id)) => {
                 SpotifyId::from_base62(id).ok().map(Command::PlayerLoad)
