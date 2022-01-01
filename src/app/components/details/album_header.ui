@@ -32,6 +32,7 @@
                 <property name="margin-end">6</property>
                 <property name="margin-top">6</property>
                 <property name="margin-bottom">6</property>
+                <property name="tooltip-text">Album Info</property>
                 <style>
                   <class name="circular" />
                   <class name="osd" />
@@ -47,6 +48,7 @@
         <property name="hexpand">1</property>
         <property name="valign">center</property>
         <property name="orientation">vertical</property>
+				<property name="spacing">6</property>
         <child>
           <object class="GtkLabel" id="album_label">
             <property name="xalign">0</property>
@@ -76,7 +78,7 @@
               </object>
             </child>
             <style>
-              <class name="title-3" />
+              <class name="title-4" />
             </style>
           </object>
         </child>
@@ -91,7 +93,7 @@
             <property name="lines">1</property>
             <property name="sensitive">0</property>
             <style>
-              <class name="title-4" />
+              <class name="body"/>
             </style>
           </object>
         </child>
@@ -102,6 +104,7 @@
         <property name="receives-default">1</property>
         <property name="halign">center</property>
         <property name="valign">center</property>
+        <property name="tooltip-text">Add to Library</property>
         <style>
           <class name="circular" />
           <class name="like__button" />

@@ -18,6 +18,7 @@
         <child>
           <object class="GtkLabel" id="song_index">
             <property name="label">1</property>
+            <property name="sensitive">0</property>
             <style>
               <class name="song__index"/>
               <class name="numeric"/>
@@ -35,6 +36,8 @@
         <child type="overlay">
           <object class="GtkImage" id="song_icon">
             <property name="icon-name">media-playback-start-symbolic</property>
+            <property name="halign">center</property>
+            <property name="valign">center</property>
             <style>
               <class name="song__icon"/>
             </style>
@@ -65,7 +68,7 @@
           <property name="row">0</property>
         </layout>
         <style>
-          <class name="song__title"/>
+          <class name="title"/>
         </style>
       </object>
     </child>
@@ -82,7 +85,7 @@
           <property name="row">1</property>
         </layout>
         <style>
-          <class name="song__artist"/>
+          <class name="subtitle"/>
         </style>
       </object>
     </child>
@@ -90,7 +93,8 @@
       <object class="GtkLabel" id="song_length">
         <property name="sensitive">0</property>
         <property name="label">0∶00</property>
-        <property name="max-width-chars">35</property>
+				<property name="justify">right</property>
+        <property name="max-width-chars">7</property>
         <property name="xalign">1</property>
         <property name="hexpand">0</property>
         <layout>
@@ -99,7 +103,6 @@
           <property name="row">0</property>
         </layout>
         <style>
-          <class name="song__duration"/>
           <class name="numeric"/>
         </style>
       </object>
@@ -113,6 +116,7 @@
         <property name="hexpand">0</property>
         <property name="halign">end</property>
 				<property name="valign">center</property>
+        <property name="tooltip-text">Menu</property>
         <layout>
           <property name="row-span">2</property>
           <property name="column">4</property>

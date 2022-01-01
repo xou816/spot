@@ -1,64 +1,41 @@
-.song__index {
+.playlist .song__index {
   transition: opacity 150ms ease;
-  font-size: 0.85rem;
-  margin: 4px 12px;
+  margin: 6px 12px;
   padding: 0;
   opacity: 1;
 }
 
+/* Hide indices when song covers are displayed */
 .song--cover .song__index {
   opacity: 0;
 }
 
+/* Hide song icon and checkbox */
 .song__icon, .song__checkbox {
   transition: opacity 150ms ease;
   opacity: 0;
 }
 
-.song--playing .song__index {
+/* Hide song index and album cover on playing song/in selection mode */
+
+.song--playing .song__index,
+.playlist--selectable .song__index,
+.song--playing .song__cover,
+.playlist--selectable .song__cover,
+.playlist--selectable .song__icon {
   opacity: 0;
 }
 
-.song--playing .song__icon {
-  opacity: 1;
-}
 
-.playlist--selectable .song__index, .playlist--selectable .song__icon {
-  opacity: 0;
-}
-
-.playlist--selectable .song__checkbox, .playlist--selectable .song__checkbox check {
+.song--playing .song__icon,
+.playlist--selectable .song__checkbox,
+.playlist--selectable .song__checkbox check {
   opacity: 1;
   filter: none;
 }
 
-.song__title {
-  font-size: 1.15rem;
-}
-
 row {
   transition: background-color 150ms ease;
-}
-
-.song--playing label.song__title, .song--playing label.song__index {
-  font-weight: bold;
-}
-
-.song label.song__artist {
-  font-size: 0.85rem;
-}
-
-.song label.song__duration {
-  font-size: 1rem;
-  color: @insensitive_fg_color;
-}
-
-.song__menu {
-  opacity: 0;
-}
-
-.song__menu--enabled {
-  opacity: 0.2;
 }
 
 row:hover .song__menu--enabled, .song__menu--enabled:checked {
@@ -69,6 +46,23 @@ row:hover .song__menu--enabled, .song__menu--enabled:checked {
   opacity: 0.2;
 }
 
+/* Song Labels */
+.song--playing label.title {
+  font-weight: bold;
+}
+
+/* "Context Menu" */
+.song__menu {
+  opacity: 0;
+}
+
+.song__menu--enabled {
+  opacity: 0.2;
+}
+
+
+/* Song boxed list styling */
+
 .playlist {
  background: transparent;
 }
@@ -77,7 +71,7 @@ row:hover .song__menu--enabled, .song__menu--enabled:checked {
  background: @card_bg_color;
  margin-left:12px;
  margin-right:12px;
- box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0.03), 0px 1px 3px 0px rgba(0, 0, 0, 0.07), 0px 2px 6px 0px rgba(0, 0, 0, 0.03);
+ box-shadow: 1px 0px 3px rgba(0, 0, 0, 0.07), -1px 0px 3px rgba(0, 0, 0, 0.07);
 }
 
 .playlist row:hover {
@@ -96,4 +90,6 @@ background-image: image(alpha(currentColor,0.08));
  margin-bottom: 12px;
  border-bottom-color:rgba(0, 0, 0, 0);
  border-radius: 0 0 12px 12px;
+ box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.21);
 }
+

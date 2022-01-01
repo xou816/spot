@@ -1,12 +1,17 @@
-.title-3 label {
-  font-size: 16px;
+.title-4 label {
   color: @theme_text_color;
+  font-weight: normal;
+  text-decoration: none;
 }
 
-.title-3 {
+.title-4 {
   padding: 0;
 }
 
+.title-4:hover {
+ border-radius: 6px;
+ background-image: image(alpha(currentColor,0.03));
+}
 .album__header .like__button {
   margin-right: 6px;
 }
