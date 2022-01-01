@@ -4,7 +4,10 @@
   padding: 0;
   opacity: 1;
 }
-
+.song__cover {
+  border-radius: 6px;
+  border: 1px solid @card_shade_color;
+}
 .song--playing .song__icon {
   opacity: 1;
 }
@@ -79,4 +82,6 @@ background-image: image(alpha(currentColor,0.08));
  border-radius: 0 0 12px 12px;
  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.21);
 }
+
+
 

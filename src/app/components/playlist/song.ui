@@ -28,6 +28,9 @@
         <child type="overlay">
           <object class="GtkImage" id="song_cover">
             <property name="pixel-size">30</property>
+            <property name="overflow">hidden</property>
+            <property name="halign">center</property>
+            <property name="valign">center</property>
             <style>
               <class name="song__cover"/>
             </style>
