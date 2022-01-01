@@ -5,46 +5,32 @@
   opacity: 1;
 }
 
-/* Hide indices when song covers are displayed */
-.song--cover .song__index {
-  opacity: 0;
+.song--playing .song__icon {
+  opacity: 1;
 }
 
-/* Hide song icon and checkbox */
-.song__icon, .song__checkbox {
+.song__icon, .song__checkbox,
+.song--playing .song__index,
+.song--playing .song__cover,
+.playlist--selectable .song__index,
+.playlist--selectable .song__cover,
+.playlist--selectable .song__icon {
   transition: opacity 150ms ease;
   opacity: 0;
 }
 
-/* Hide song index and album cover on playing song/in selection mode */
 
-.song--playing .song__index,
-.playlist--selectable .song__index,
-.song--playing .song__cover,
-.playlist--selectable .song__cover,
-.playlist--selectable .song__icon {
-  opacity: 0;
-}
-
-
-.song--playing .song__icon,
 .playlist--selectable .song__checkbox,
 .playlist--selectable .song__checkbox check {
   opacity: 1;
   filter: none;
 }
 
-row {
-  transition: background-color 150ms ease;
-}
 
 row:hover .song__menu--enabled, .song__menu--enabled:checked {
   opacity: 1;
 }
 
-.song--playing .song__cover, .playlist--selectable .song__cover {
-  opacity: 0.2;
-}
 
 /* Song Labels */
 .song--playing label.title {
@@ -64,14 +50,15 @@ row:hover .song__menu--enabled, .song__menu--enabled:checked {
 /* Song boxed list styling */
 
 .playlist {
- background: transparent;
+  background: transparent;
 }
 
 .playlist row {
- background: @card_bg_color;
- margin-left:12px;
- margin-right:12px;
- box-shadow: 1px 0px 3px rgba(0, 0, 0, 0.07), -1px 0px 3px rgba(0, 0, 0, 0.07);
+  background: @card_bg_color;
+  margin-left:12px;
+  margin-right:12px;
+  box-shadow: 1px 0px 3px rgba(0, 0, 0, 0.07), -1px 0px 3px rgba(0, 0, 0, 0.07);
+  transition: background-color 150ms ease;
 }
 
 .playlist row:hover {
