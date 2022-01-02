@@ -20,11 +20,9 @@ use std::env;
 use std::error::Error;
 use std::fmt;
 use std::rc::Rc;
-use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 
 use super::Command;
-use crate::api::SpotifyApiClient;
 use crate::app::credentials;
 use crate::app::state::Device;
 use crate::settings::SpotSettings;
@@ -212,7 +210,7 @@ impl SpotifyPlayer {
                 let _ = self.player.take();
                 Ok(())
             }
-            (_, Command::PasswordLogin { username, password }) => {
+            Command::PasswordLogin { username, password } => {
                 let credentials = Credentials::with_password(username, password.clone());
                 let new_session = create_session(&credentials, self.settings.ap_port).await?;
                 let (token, token_expiry_time) =
@@ -233,7 +231,7 @@ impl SpotifyPlayer {
 
                 Ok(())
             }
-            (_, Command::TokenLogin { username, token }) => {
+            Command::TokenLogin { username, token } => {
                 let credentials = Credentials {
                     username,
                     auth_type: AuthenticationType::AUTHENTICATION_SPOTIFY_TOKEN,
