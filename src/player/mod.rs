@@ -22,6 +22,7 @@ pub enum Command {
     PlayerPause,
     PlayerStop,
     PlayerSeek(u32),
+    PlayerSetVolume(f64),
     RefreshToken,
 }
 

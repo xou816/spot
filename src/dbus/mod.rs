@@ -158,6 +158,13 @@ impl EventListener for AppPlaybackStateListener {
                 })
                 .unwrap();
             }
+            AppEvent::PlaybackEvent(PlaybackEvent::VolumeSet(vol)) => {
+                self.with_player(|player| {
+                    player.state.set_volume(*vol);
+                    Ok(())
+                })
+                .unwrap();
+            }
             _ => {}
         }
     }
