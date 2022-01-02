@@ -13,7 +13,7 @@ pub fn build_sidebar_listbox(builder: &gtk::Builder, list_store: &gio::ListStore
     let listbox: gtk::ListBox = builder.object("home_listbox").unwrap();
     listbox.bind_model(Some(list_store), move |obj| {
         let item = obj.downcast_ref::<sidebar_item::SideBarItem>().unwrap();
-        let row = SideBarRow::new(&item);
+        let row = SideBarRow::new(item);
         row.upcast::<gtk::Widget>()
     });
     listbox.add_css_class("navigation-sidebar");
