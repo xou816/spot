@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <template class="SideBarItemWidgetIcon" parent="GtkBox">
+    <property name="visible">True</property>
+    <property name="spacing">12</property>
+    <child>
+      <object class="GtkImage" id="icon">
+          <style>
+              <class name="item_sidebar"/>
+          </style>
+      </object>
+    </child>
+    <child>
+      <object class="GtkLabel" id="title">
+          <property name="width-chars">20</property>
+          <property name="ellipsize">end</property>
+          <property name="xalign">0</property>
+      </object>
+    </child>
+  </template>
+</interface>

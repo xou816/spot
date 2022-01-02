@@ -1,4 +1,6 @@
 use crate::api::CachedSpotifyClient;
+use crate::app::components::sidebar_listbox::{build_sidebar_listbox, SideBarItem};
+use crate::glib::StaticType;
 use crate::settings::SpotSettings;
 use futures::channel::mpsc::UnboundedSender;
 use std::rc::Rc;
@@ -127,8 +129,8 @@ impl App {
     ) -> Box<Navigation> {
         let leaflet: libadwaita::Leaflet = builder.object("leaflet").unwrap();
         let navigation_stack: gtk::Stack = builder.object("navigation_stack").unwrap();
-        let home_stack_sidebar: gtk::StackSidebar = builder.object("home_stack_sidebar").unwrap();
-
+        let home_list_store = gio::ListStore::new(SideBarItem::static_type());
+        let home_listbox = build_sidebar_listbox(builder, &home_list_store);
         let model = NavigationModel::new(Rc::clone(&app_model), dispatcher.box_clone());
         let screen_factory =
             ScreenFactory::new(Rc::clone(&app_model), dispatcher.box_clone(), worker);
@@ -136,7 +138,8 @@ impl App {
             model,
             leaflet,
             navigation_stack,
-            home_stack_sidebar,
+            home_listbox,
+            home_list_store,
             screen_factory,
         ))
     }
