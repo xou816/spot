@@ -11,6 +11,7 @@
     <child>
       <object class="GtkOverlay">
       <property name="overflow">hidden</property>
+      <property name="halign">center</property>
         <child>
           <object class="GtkImage" id="album_art">
             <property name="width-request">160</property>
