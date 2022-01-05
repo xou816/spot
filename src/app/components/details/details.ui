@@ -18,7 +18,7 @@
                   <property name="transition-type">slide-up</property>
                   <child>
                     <object class="AdwSqueezer">
-                      <property name="switch-threshold-policy">natural</property>
+                      <property name="switch-threshold-policy">minimal</property>
                       <property name="valign">center</property>
                       <property name="homogeneous">0</property>
                       <property name="transition-type">crossfade</property>
