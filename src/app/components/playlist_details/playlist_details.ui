@@ -25,7 +25,7 @@
                       <child>
                         <object class="AlbumHeaderWidget" id="header_widget">
                           <style>
-                            <class name="album__header" />
+                            <class name="album__header"/>
                           </style>
                         </object>
                       </child>
@@ -34,7 +34,7 @@
                           <property name="orientation">vertical</property>
                           <property name="spacing">12</property>
                           <style>
-                            <class name="header__mobile" />
+                            <class name="header__mobile"/>
                           </style>
                         </object>
                       </child>
@@ -43,7 +43,7 @@
                 </object>
               </child>
               <style>
-                <class name="header_clamp"/>
+                <class name="details"/>
               </style>
             </object>
           </child>
@@ -68,7 +68,7 @@
       </object>
     </child>
     <style>
-      <class name="container" />
+      <class name="container"/>
     </style>
   </template>
 </interface>

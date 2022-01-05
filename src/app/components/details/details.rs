@@ -97,6 +97,7 @@ impl AlbumDetailsWidget {
         );
 
         let swipe_controller = gtk::GestureSwipe::new();
+        swipe_controller.set_touch_only(true);
         swipe_controller.set_propagation_phase(gtk::PropagationPhase::Capture);
         swipe_controller.connect_swipe(clone!(@weak self as _self => move |_, _, dy| {
             _self.set_header_visible(dy >= 0f64);
