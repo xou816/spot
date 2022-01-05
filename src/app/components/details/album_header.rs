@@ -17,9 +17,6 @@ mod imp {
         pub album_art: TemplateChild<gtk::Image>,
 
         #[template_child]
-        pub album_box: TemplateChild<gtk::Frame>,
-
-        #[template_child]
         pub like_button: TemplateChild<gtk::Button>,
 
         #[template_child]

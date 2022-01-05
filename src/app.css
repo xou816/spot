@@ -11,10 +11,6 @@
   opacity: 1;
 }
 
-headerbar.selection-mode {
-  background-color: @theme_selected_bg_color;
-}
-
 .container {
   transition: opacity 0.3s ease;
   opacity: 0;

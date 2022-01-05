@@ -59,7 +59,11 @@
               <object class="AdwClampScrollable">
               <property name="maximum-size">900</property>
               <child>
-                <object class="GtkListView" id="album_tracks"/>
+                <object class="GtkListView" id="album_tracks">
+                <style>
+                    <class name="album__tracks"/>
+                </style>
+              </object>
               </child>
               </object>
             </child>
@@ -68,7 +72,7 @@
       </object>
     </child>
     <style>
-      <class name="container" />
+      <class name="container"/>
     </style>
   </template>
 </interface>

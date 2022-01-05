@@ -4,15 +4,22 @@
   padding: 0;
   opacity: 1;
 }
+
 .song__cover {
   border-radius: 6px;
   border: 1px solid @card_shade_color;
 }
+
+.album__tracks .song__cover {
+  opacity: 0;
+}
+
 .song--playing .song__icon {
   opacity: 1;
 }
 
-.song__icon, .song__checkbox,
+.song__icon,
+.song__checkbox,
 .song--playing .song__index,
 .song--playing .song__cover,
 .playlist--selectable .song__index,
