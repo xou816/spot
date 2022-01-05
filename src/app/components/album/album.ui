@@ -5,6 +5,8 @@
   <template class="AlbumWidget" parent="AdwBin">
     <child>
       <object class="GtkButton" id="cover_btn">
+      <property name="hexpand">0</property>
+      <property name="halign">center</property>
         <child>
           <object class="GtkBox">
 					<property name="halign">center</property>
