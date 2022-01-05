@@ -10,8 +10,8 @@
 
 
 .title-4:hover {
- border-radius: 6px;
- background-image: image(alpha(currentColor,0.03));
+  border-radius: 6px;
+  background-image: image(alpha(currentColor, 0.03));
 }
 
 .album__header .like__button {
@@ -28,11 +28,15 @@
   margin-bottom: 6px;
 }
 
-clamp.details {
+clamp.details__clamp {
   border-bottom: 1px solid @borders;
-}
-
-headerbar.details, clamp.details {
   background-color: @view_bg_color;
 }
 
+.details__headerbar {
+  transition: background-color .3s ease;
+}
+
+.details__headerbar.flat {
+  background-color: @view_bg_color;
+}

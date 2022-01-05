@@ -25,7 +25,7 @@ impl ScreenFactory {
 
     pub fn make_library(&self) -> impl ListenerComponent {
         let model = LibraryModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        let screen_model = DefaultScreenModel::new(
+        let screen_model = DefaultHeaderBarModel::new(
             Some(gettext("Library")),
             None,
             Rc::clone(&self.app_model),
@@ -40,7 +40,7 @@ impl ScreenFactory {
     pub fn make_saved_playlists(&self) -> impl ListenerComponent {
         let model =
             SavedPlaylistsModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        let screen_model = DefaultScreenModel::new(
+        let screen_model = DefaultHeaderBarModel::new(
             Some(gettext("Playlists")),
             None,
             Rc::clone(&self.app_model),
@@ -57,7 +57,7 @@ impl ScreenFactory {
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        let screen_model = SimpleScreenModelWrapper::new(
+        let screen_model = SimpleHeaderBarModelWrapper::new(
             Rc::clone(&model),
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
@@ -69,7 +69,7 @@ impl ScreenFactory {
     }
 
     pub fn make_saved_tracks(&self) -> impl ListenerComponent {
-        let screen_model = DefaultScreenModel::new(
+        let screen_model = DefaultHeaderBarModel::new(
             Some(gettext("Saved tracks")),
             Some(SelectionContext::Default),
             Rc::clone(&self.app_model),
@@ -91,15 +91,7 @@ impl ScreenFactory {
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        let screen_model = SimpleScreenModelWrapper::new(
-            Rc::clone(&model),
-            Rc::clone(&self.app_model),
-            self.dispatcher.box_clone(),
-        );
-        StandardScreen::new(
-            Details::new(model, self.worker.clone()),
-            Rc::new(screen_model),
-        )
+        Details::new(model, self.worker.clone())
     }
 
     pub fn make_search_results(&self) -> impl ListenerComponent {
@@ -114,7 +106,7 @@ impl ScreenFactory {
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        let screen_model = SimpleScreenModelWrapper::new(
+        let screen_model = SimpleHeaderBarModelWrapper::new(
             Rc::clone(&model),
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
@@ -131,7 +123,7 @@ impl ScreenFactory {
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        let screen_model = SimpleScreenModelWrapper::new(
+        let screen_model = SimpleHeaderBarModelWrapper::new(
             Rc::clone(&model),
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
@@ -143,7 +135,7 @@ impl ScreenFactory {
     }
 
     pub fn make_user_details(&self, id: String) -> impl ListenerComponent {
-        let screen_model = DefaultScreenModel::new(
+        let screen_model = DefaultHeaderBarModel::new(
             None,
             None,
             Rc::clone(&self.app_model),

@@ -45,6 +45,7 @@ mod imp {
         const NAME: &'static str = "HeaderBarWidget";
         type Type = super::HeaderBarWidget;
         type ParentType = libadwaita::Bin;
+        type Interfaces = (gtk::Buildable,);
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
@@ -56,6 +57,24 @@ mod imp {
     }
 
     impl ObjectImpl for HeaderBarWidget {}
+
+    impl BuildableImpl for HeaderBarWidget {
+        fn add_child(
+            &self,
+            buildable: &Self::Type,
+            builder: &gtk::Builder,
+            child: &glib::Object,
+            type_: Option<&str>,
+        ) {
+            if Some("root") == type_ {
+                self.parent_add_child(buildable, builder, child, type_);
+            } else {
+                self.main_header
+                    .set_title_widget(child.downcast_ref::<gtk::Widget>());
+            }
+        }
+    }
+
     impl WidgetImpl for HeaderBarWidget {}
     impl BinImpl for HeaderBarWidget {}
     impl WindowImpl for HeaderBarWidget {}
@@ -133,16 +152,33 @@ impl HeaderBarWidget {
             .set_title(&labels::n_songs_selected_label(count));
     }
 
-    pub fn set_title(&self, title: Option<&str>) {
+    pub fn add_classes(&self, classes: &[&str]) {
         let context = self.widget().main_header.style_context();
+        for &class in classes {
+            context.add_class(class);
+        }
+    }
+
+    pub fn remove_classes(&self, classes: &[&str]) {
+        let context = self.widget().main_header.style_context();
+        for &class in classes {
+            context.remove_class(class);
+        }
+    }
+
+    pub fn set_title_visible(&self, visible: bool) {
+        self.widget().title.set_visible(visible);
+    }
+
+    pub fn set_title_and_subtitle(&self, title: &str, subtitle: &str) {
+        self.widget().title.set_title(title);
+        self.widget().title.set_subtitle(subtitle);
+    }
+
+    pub fn set_title(&self, title: Option<&str>) {
         self.widget().title.set_visible(title.is_some());
         if let Some(title) = title {
             self.widget().title.set_title(title);
-            context.remove_class("flat");
-            context.remove_class("details");
-        } else {
-            context.add_class("flat");
-            context.add_class("details");
         }
     }
 }

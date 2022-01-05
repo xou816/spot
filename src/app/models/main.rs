@@ -105,10 +105,12 @@ impl AlbumDescription {
             .collect::<Vec<String>>()
             .join(", ")
     }
+
     pub fn formatted_time(&self) -> String {
         let duration: u32 = self.songs.iter().map(|song| song.duration).sum();
         format_duration(duration.into())
     }
+
     pub fn year(&self) -> Option<u32> {
         self.release_date
             .as_ref()

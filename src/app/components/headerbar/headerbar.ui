@@ -3,7 +3,7 @@
   <requires lib="gtk" version="4.0" />
   <requires lib="libadwaita" version="1.0" />
   <template class="HeaderBarWidget" parent="AdwBin">
-    <child>
+    <child type="root">
       <object class="GtkOverlay" id="overlay">
         <property name="hexpand">1</property>
         <child>

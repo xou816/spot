@@ -5,8 +5,10 @@ use std::ops::Deref;
 use std::rc::Rc;
 
 use crate::app::components::labels;
+use crate::app::components::HeaderBarModel;
 use crate::app::components::PlaylistModel;
-use crate::app::components::SimpleScreenModel;
+use crate::app::components::SimpleHeaderBarModel;
+use crate::app::components::SimpleHeaderBarModelWrapper;
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
 use crate::app::state::SelectionContext;
@@ -127,6 +129,14 @@ impl DetailsModel {
 
         Some(())
     }
+
+    pub fn to_headerbar_model(self: &Rc<Self>) -> Rc<impl HeaderBarModel> {
+        Rc::new(SimpleHeaderBarModelWrapper::new(
+            self.clone(),
+            self.app_model.clone(),
+            self.dispatcher.box_clone(),
+        ))
+    }
 }
 
 impl PlaylistModel for DetailsModel {
@@ -219,7 +229,7 @@ impl PlaylistModel for DetailsModel {
     }
 }
 
-impl SimpleScreenModel for DetailsModel {
+impl SimpleHeaderBarModel for DetailsModel {
     fn title(&self) -> Option<String> {
         None
     }

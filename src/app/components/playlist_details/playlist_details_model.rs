@@ -4,7 +4,7 @@ use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use crate::app::components::SimpleScreenModel;
+use crate::app::components::SimpleHeaderBarModel;
 use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::*;
 use crate::app::state::SelectionContext;
@@ -202,7 +202,7 @@ impl PlaylistModel for PlaylistDetailsModel {
     }
 }
 
-impl SimpleScreenModel for PlaylistDetailsModel {
+impl SimpleHeaderBarModel for PlaylistDetailsModel {
     fn title(&self) -> Option<String> {
         None
     }

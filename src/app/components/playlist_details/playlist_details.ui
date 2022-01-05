@@ -11,42 +11,42 @@
         <child>
           <object class="GtkWindowHandle">
             <child>
-            <object class="AdwClamp">
-            <property name="maximum-size">900</property>
-              <child>
-                <object class="GtkRevealer" id="header_revealer">
-                  <property name="transition-type">slide-up</property>
-                  <child>
-                    <object class="AdwSqueezer">
-                      <property name="valign">center</property>
-                      <property name="homogeneous">0</property>
-                      <property name="transition-type">crossfade</property>
-                      <property name="switch-threshold-policy">natural</property>
-                      <child>
-                        <object class="AlbumHeaderWidget" id="header_widget">
-                          <style>
-                            <class name="album__header"/>
-                          </style>
-                        </object>
-                      </child>
-                      <child>
-                        <object class="AlbumHeaderWidget" id="header_mobile">
-                          <property name="orientation">vertical</property>
-                          <property name="spacing">12</property>
-                          <style>
-                            <class name="header__mobile"/>
-                          </style>
-                        </object>
-                      </child>
-                    </object>
-                  </child>
-                </object>
-              </child>
-              <style>
-                <class name="details"/>
-              </style>
-            </object>
-          </child>
+              <object class="AdwClamp">
+                <property name="maximum-size">900</property>
+                <child>
+                  <object class="GtkRevealer" id="header_revealer">
+                    <property name="transition-type">slide-up</property>
+                    <child>
+                      <object class="AdwSqueezer">
+                        <property name="valign">center</property>
+                        <property name="homogeneous">0</property>
+                        <property name="transition-type">crossfade</property>
+                        <property name="switch-threshold-policy">natural</property>
+                        <child>
+                          <object class="AlbumHeaderWidget" id="header_widget">
+                            <style>
+                              <class name="album__header" />
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AlbumHeaderWidget" id="header_mobile">
+                            <property name="orientation">vertical</property>
+                            <property name="spacing">12</property>
+                            <style>
+                              <class name="header__mobile" />
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <style>
+                  <class name="details__clamp" />
+                </style>
+              </object>
+            </child>
           </object>
         </child>
         <child>
@@ -57,10 +57,10 @@
             <property name="vexpand">1</property>
             <child>
               <object class="AdwClampScrollable">
-              <property name="maximum-size">900</property>
-              <child>
-                <object class="GtkListView" id="tracks"/>
-              </child>
+                <property name="maximum-size">900</property>
+                <child>
+                  <object class="GtkListView" id="tracks" />
+                </child>
               </object>
             </child>
           </object>
@@ -68,7 +68,7 @@
       </object>
     </child>
     <style>
-      <class name="container"/>
+      <class name="container" />
     </style>
   </template>
 </interface>
