@@ -293,10 +293,21 @@ pub enum PlaylistChange {
     MovedDown(usize),
 }
 
+// TODO move this elsewhere
 #[derive(Clone, Debug)]
 pub enum Device {
     Local,
     Connect(ConnectDevice),
+}
+
+impl Device {
+    // TODO move this elsewhere
+    pub fn label(&self) -> &str {
+        match self {
+            Self::Local => "This device",
+            Self::Connect(ConnectDevice { label, .. }) => &label[..],
+        }
+    }
 }
 
 #[derive(Clone, Debug)]

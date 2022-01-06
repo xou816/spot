@@ -7,7 +7,7 @@ use super::NowPlayingModel;
 use crate::app::components::{
     Component, EventListener, HeaderBarComponent, HeaderBarWidget, Playlist,
 };
-use crate::app::state::LoginEvent;
+use crate::app::state::{Device, LoginEvent};
 use crate::app::{state::PlaybackEvent, AppEvent, Worker};
 
 mod imp {
@@ -22,6 +22,12 @@ mod imp {
 
         #[template_child]
         pub headerbar: TemplateChild<HeaderBarWidget>,
+
+        #[template_child]
+        pub title: TemplateChild<gtk::MenuButton>,
+
+        #[template_child]
+        pub popover: TemplateChild<gtk::Popover>,
 
         #[template_child]
         pub scrolled_window: TemplateChild<gtk::ScrolledWindow>,
@@ -42,7 +48,12 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for NowPlayingWidget {}
+    impl ObjectImpl for NowPlayingWidget {
+        fn constructed(&self, obj: &Self::Type) {
+            self.parent_constructed(obj);
+        }
+    }
+
     impl WidgetImpl for NowPlayingWidget {}
     impl BoxImpl for NowPlayingWidget {}
 }
@@ -74,9 +85,38 @@ impl NowPlayingWidget {
     }
 
     fn headerbar_widget(&self) -> &HeaderBarWidget {
-        imp::NowPlayingWidget::from_instance(self)
-            .headerbar
-            .as_ref()
+        self.widget().headerbar.as_ref()
+    }
+
+    fn make_devices_list(devices: &Vec<Device>) -> gtk::Box {
+        let _box = gtk::BoxBuilder::new()
+            .orientation(gtk::Orientation::Vertical)
+            .build();
+        let mut first_device: Option<gtk::CheckButton> = None;
+        for device in devices {
+            let check = gtk::CheckButtonBuilder::new().label(device.label());
+            let check = if let Some(group) = first_device.as_ref() {
+                check.group(group)
+            } else {
+                check
+            }
+            .build();
+            _box.append(&check);
+            first_device = first_device.or(Some(check));
+        }
+        _box
+    }
+
+    fn set_available_devices(&self, devices: &Vec<Device>) {
+        let widget = self.widget();
+
+        if devices.len() > 1 {
+            let _box = Self::make_devices_list(devices);
+            widget.popover.unparent();
+            widget.popover.set_parent(&*widget.title);
+            widget.title.set_popover(Some(&*widget.popover));
+            widget.popover.set_child(Some(&_box));
+        }
     }
 }
 
@@ -133,7 +173,8 @@ impl EventListener for NowPlaying {
                 self.model.refresh_available_devices();
             }
             AppEvent::PlaybackEvent(PlaybackEvent::AvailableDevicesChanged) => {
-                dbg!(&*self.model.get_available_devices());
+                self.widget
+                    .set_available_devices(&*self.model.get_available_devices());
             }
             _ => (),
         }
