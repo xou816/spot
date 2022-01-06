@@ -270,6 +270,22 @@ pub struct User {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+pub struct Device {
+    #[serde(alias = "type")]
+    pub type_: String,
+    pub name: String,
+    pub id: String,
+    pub is_active: bool,
+    pub is_restricted: bool,
+    pub volume_percent: u32,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct Devices {
+    pub devices: Vec<Device>,
+}
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct TopTracks {
     pub tracks: Vec<TrackItem>,
 }
@@ -516,6 +532,12 @@ impl From<Playlist> for PlaylistDescription {
                 display_name,
             },
         }
+    }
+}
+
+impl From<Device> for ConnectDevice {
+    fn from(Device { id, name, .. }: Device) -> Self {
+        Self { id, label: name }
     }
 }
 

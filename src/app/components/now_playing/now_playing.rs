@@ -7,6 +7,7 @@ use super::NowPlayingModel;
 use crate::app::components::{
     Component, EventListener, HeaderBarComponent, HeaderBarWidget, Playlist,
 };
+use crate::app::state::LoginEvent;
 use crate::app::{state::PlaybackEvent, AppEvent, Worker};
 
 mod imp {
@@ -124,8 +125,17 @@ impl Component for NowPlaying {
 
 impl EventListener for NowPlaying {
     fn on_event(&mut self, event: &AppEvent) {
-        if let AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) = event {
-            self.model.load_more();
+        match event {
+            AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
+                self.model.load_more();
+            }
+            AppEvent::LoginEvent(LoginEvent::LoginCompleted(_)) => {
+                self.model.refresh_available_devices();
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::AvailableDevicesChanged) => {
+                dbg!(&*self.model.get_available_devices());
+            }
+            _ => (),
         }
         self.broadcast_event(event);
     }

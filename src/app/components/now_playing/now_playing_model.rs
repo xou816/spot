@@ -10,6 +10,8 @@ use crate::app::components::SimpleHeaderBarModelWrapper;
 use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::SongDescription;
 use crate::app::models::SongListModel;
+use crate::app::state::Device;
+use crate::app::state::PlaylistChange;
 use crate::app::state::SelectionContext;
 use crate::app::state::{PlaybackAction, PlaybackState, SelectionAction, SelectionState};
 use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel};
@@ -47,6 +49,21 @@ impl NowPlayingModel {
         }));
 
         Some(())
+    }
+
+    pub fn refresh_available_devices(&self) {
+        let api = self.app_model.get_spotify();
+
+        self.dispatcher
+            .call_spotify_and_dispatch(move || async move {
+                api.list_available_devices()
+                    .await
+                    .map(|devices| PlaybackAction::SetAvailableDevices(devices).into())
+            });
+    }
+
+    pub fn get_available_devices(&self) -> impl Deref<Target = Vec<Device>> + '_ {
+        self.app_model.map_state(|s| s.playback.available_devices())
     }
 
     pub fn to_headerbar_model(self: &Rc<Self>) -> Rc<impl HeaderBarModel> {

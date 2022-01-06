@@ -329,6 +329,7 @@ user-library-read,\
 user-library-modify,\
 user-top-read,\
 user-read-recently-played,\
+user-read-playback-state,\
 playlist-modify-public,\
 playlist-modify-private,\
 user-modify-playback-state,\

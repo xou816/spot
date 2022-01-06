@@ -107,6 +107,12 @@ pub struct PlaylistDescription {
 }
 
 #[derive(Clone, Debug)]
+pub struct ConnectDevice {
+    pub id: String,
+    pub label: String,
+}
+
+#[derive(Clone, Debug)]
 pub struct PlaylistSummary {
     pub id: String,
     pub title: String,

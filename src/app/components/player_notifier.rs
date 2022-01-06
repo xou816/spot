@@ -5,6 +5,7 @@ use librespot::core::spotify_id::SpotifyId;
 
 use crate::api::{SpotifyApiClient, SpotifyConnectPlayer};
 use crate::app::components::EventListener;
+use crate::app::models::ConnectDevice;
 use crate::app::state::{Device, LoginAction, LoginEvent, LoginStartedEvent, PlaybackEvent};
 use crate::app::{ActionDispatcher, AppAction, AppEvent};
 use crate::player::Command;
@@ -23,7 +24,10 @@ impl PlayerNotifier {
         command_sender: UnboundedSender<Command>,
     ) -> Self {
         Self {
-            device: Device::Connect("foo".to_string()),
+            device: Device::Connect(ConnectDevice {
+                id: "cafecafe".to_string(),
+                label: "My device".to_string(),
+            }),
             connect_player: SpotifyConnectPlayer::new(api),
             dispatcher,
             command_sender,

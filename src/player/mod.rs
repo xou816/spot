@@ -2,13 +2,11 @@ use futures::channel::mpsc::{unbounded, UnboundedReceiver, UnboundedSender};
 use librespot::core::spotify_id::SpotifyId;
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::Arc;
 use std::time::SystemTime;
 use tokio::task;
 
-use crate::api::SpotifyApiClient;
 use crate::app::credentials::Credentials;
-use crate::app::state::{Device, LoginAction, PlaybackAction, SetLoginSuccessAction};
+use crate::app::state::{LoginAction, PlaybackAction, SetLoginSuccessAction};
 use crate::app::AppAction;
 
 mod player;

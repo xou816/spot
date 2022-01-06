@@ -9,6 +9,7 @@ use std::future::Future;
 use super::cache::{CacheExpiry, CacheManager, CachePolicy, FetchResult};
 use super::client::{SpotifyApiError, SpotifyClient, SpotifyResponse, SpotifyResponseKind};
 use crate::app::models::*;
+use crate::app::state::Device;
 
 pub type SpotifyResult<T> = Result<T, SpotifyApiError>;
 
@@ -89,6 +90,8 @@ pub trait SpotifyApiClient {
         offset: usize,
         limit: usize,
     ) -> BoxFuture<SpotifyResult<Vec<PlaylistDescription>>>;
+
+    fn list_available_devices(&self) -> BoxFuture<SpotifyResult<Vec<Device>>>;
 
     fn update_token(&self, token: String);
 
@@ -658,6 +661,25 @@ impl SpotifyApiClient for CachedSpotifyClient {
                 playlists: playlists?,
             };
             Ok(result)
+        })
+    }
+
+    fn list_available_devices(&self) -> BoxFuture<SpotifyResult<Vec<Device>>> {
+        Box::pin(async move {
+            let devices = self
+                .client
+                .get_player_devices()
+                .send()
+                .await?
+                .deserialize()
+                .ok_or(SpotifyApiError::NoContent)?;
+            Ok(devices
+                .devices
+                .into_iter()
+                .filter(|d| d.is_active && !d.is_restricted)
+                .map(ConnectDevice::from)
+                .map(Device::Connect)
+                .collect())
         })
     }
 
