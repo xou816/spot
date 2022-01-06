@@ -2,69 +2,76 @@
 <interface>
   <requires lib="gtk" version="4.0"/>
   <requires lib="libadwaita" version="1.0"/>
-  <template class="AlbumWidget" parent="GtkBox">
-    <property name="halign">center</property>
-    <property name="valign">start</property>
-    <property name="margin-start">8</property>
-    <property name="margin-end">8</property>
-    <property name="margin-top">8</property>
-    <property name="margin-bottom">8</property>
-    <property name="orientation">vertical</property>
-    <property name="spacing">6</property>
+  <template class="AlbumWidget" parent="AdwBin">
     <child>
       <object class="GtkButton" id="cover_btn">
-        <property name="has-frame">0</property>
+      <property name="hexpand">0</property>
+      <property name="halign">center</property>
         <child>
-          <object class="GtkImage" id="cover_image">
-            <property name="icon-name">media-playback-start-symbolic</property>
+          <object class="GtkBox">
+					<property name="halign">center</property>
+					<property name="valign">start</property>
+					<property name="margin-top">6</property>
+					<property name="margin-bottom">6</property>
+					<property name="orientation">vertical</property>
+					<property name="spacing">6</property>
+            <child>
+            <object class="GtkImage" id="cover_image">
+              <property name="icon-name">media-playback-start-symbolic</property>
+              <style>
+              <class name="card"/>
+              </style>
+            </object>
+            </child>
+            <child>
+            <object class="GtkLabel" id="album_label">
+              <property name="label">Album</property>
+              <property name="justify">center</property>
+              <property name="wrap">1</property>
+              <property name="wrap-mode">word</property>
+              <property name="ellipsize">end</property>
+              <property name="max-width-chars">1</property>
+              <property name="margin-top">6</property>
+              <style>
+                <class name="title-4"/>
+              </style>
+            </object>
+          </child>
+          <child>
+            <object class="GtkLabel" id="artist_label">
+              <property name="label">Artist</property>
+              <property name="justify">center</property>
+              <property name="wrap">1</property>
+              <property name="wrap-mode">word</property>
+              <property name="ellipsize">end</property>
+              <property name="max-width-chars">1</property>
+              <style>
+                <class name="body"/>
+              </style>
+            </object>
+          </child>
+          <child>
+          <object class="GtkLabel" id="year_label">
+            <property name="label">Year</property>
+            <property name="justify">center</property>
+            <property name="wrap">1</property>
+            <property name="wrap-mode">word-char</property>
+            <property name="max-width-chars">1</property>
+            <property name="sensitive">0</property>
+            <style>
+              <class name="body"/>
+            </style>
           </object>
         </child>
-        <style>
-          <class name="album__cover"/>
-        </style>
-      </object>
-    </child>
-    <child>
-      <object class="GtkLabel" id="album_label">
-        <property name="label">Album</property>
-        <property name="justify">center</property>
-        <property name="wrap">1</property>
-        <property name="wrap-mode">word</property>
-        <property name="ellipsize">end</property>
-        <property name="max-width-chars">1</property>
-        <property name="margin-top">6</property>
-        <style>
-          <class name="album__title"/>
-        </style>
-      </object>
-    </child>
-    <child>
-      <object class="GtkLabel" id="artist_label">
-        <property name="label">Artist</property>
-        <property name="justify">center</property>
-        <property name="wrap">1</property>
-        <property name="wrap-mode">word</property>
-        <property name="ellipsize">end</property>
-        <property name="max-width-chars">1</property>
-        <style>
-          <class name="album__artist"/>
-        </style>
-      </object>
-    </child>
-    <child>
-      <object class="GtkLabel" id="year_label">
-        <property name="label">Year</property>
-        <property name="justify">center</property>
-        <property name="wrap">1</property>
-        <property name="wrap-mode">word-char</property>
-        <property name="max-width-chars">1</property>
-        <property name="sensitive">0</property>
-        <style>
-          <class name="album__year"/>
-        </style>
+        </object>
+        </child>
+				<style>
+					<class name="flat"/>
+			  </style>
       </object>
     </child>
     <style>
+			<class name="container"/>
       <class name="album"/>
     </style>
   </template>
