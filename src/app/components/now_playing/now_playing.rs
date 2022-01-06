@@ -4,9 +4,10 @@ use gtk::CompositeTemplate;
 use std::rc::Rc;
 
 use super::NowPlayingModel;
-use crate::app::components::{Component, EventListener, Playlist};
+use crate::app::components::{
+    Component, EventListener, HeaderBarComponent, HeaderBarWidget, Playlist,
+};
 use crate::app::{state::PlaybackEvent, AppEvent, Worker};
-use libadwaita::subclass::prelude::BinImpl;
 
 mod imp {
 
@@ -19,6 +20,9 @@ mod imp {
         pub song_list: TemplateChild<gtk::ListView>,
 
         #[template_child]
+        pub headerbar: TemplateChild<HeaderBarWidget>,
+
+        #[template_child]
         pub scrolled_window: TemplateChild<gtk::ScrolledWindow>,
     }
 
@@ -26,7 +30,7 @@ mod imp {
     impl ObjectSubclass for NowPlayingWidget {
         const NAME: &'static str = "NowPlayingWidget";
         type Type = super::NowPlayingWidget;
-        type ParentType = libadwaita::Bin;
+        type ParentType = gtk::Box;
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
@@ -39,11 +43,11 @@ mod imp {
 
     impl ObjectImpl for NowPlayingWidget {}
     impl WidgetImpl for NowPlayingWidget {}
-    impl BinImpl for NowPlayingWidget {}
+    impl BoxImpl for NowPlayingWidget {}
 }
 
 glib::wrapper! {
-    pub struct NowPlayingWidget(ObjectSubclass<imp::NowPlayingWidget>) @extends gtk::Widget, libadwaita::Bin;
+    pub struct NowPlayingWidget(ObjectSubclass<imp::NowPlayingWidget>) @extends gtk::Widget, gtk::Box;
 }
 
 impl NowPlayingWidget {
@@ -67,6 +71,12 @@ impl NowPlayingWidget {
     fn song_list_widget(&self) -> &gtk::ListView {
         self.imp().song_list.as_ref()
     }
+
+    fn headerbar_widget(&self) -> &HeaderBarWidget {
+        imp::NowPlayingWidget::from_instance(self)
+            .headerbar
+            .as_ref()
+    }
 }
 
 pub struct NowPlaying {
@@ -83,12 +93,21 @@ impl NowPlaying {
             model.load_more();
         }));
 
-        let playlist = Playlist::new(widget.song_list_widget().clone(), model.clone(), worker);
+        let playlist = Box::new(Playlist::new(
+            widget.song_list_widget().clone(),
+            model.clone(),
+            worker
+        ));
+
+        let headerbar = Box::new(HeaderBarComponent::new(
+            widget.headerbar_widget().clone(),
+            model.to_headerbar_model(),
+        ));
 
         Self {
             widget,
             model,
-            children: vec![Box::new(playlist)],
+            children: vec![playlist, headerbar],
         }
     }
 }

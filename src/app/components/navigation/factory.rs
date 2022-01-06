@@ -68,16 +68,7 @@ impl ScreenFactory {
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        let screen_model = SimpleHeaderBarModelWrapper::new(
-            Rc::clone(&model),
-            Rc::clone(&self.app_model),
-            self.dispatcher.box_clone(),
-        );
-        StandardScreen::new(
-            NowPlaying::new(model, self.worker.clone()),
-            &self.leaflet,
-            Rc::new(screen_model),
-        )
+        NowPlaying::new(model, self.worker.clone())
     }
 
     pub fn make_saved_tracks(&self) -> impl ListenerComponent {
