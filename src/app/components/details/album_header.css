@@ -29,14 +29,25 @@
 }
 
 clamp.details__clamp {
-  border-bottom: 1px solid @borders;
   background-color: @view_bg_color;
+  box-shadow: inset 0px -1px 0px @borders;
 }
 
-.details__headerbar {
+headerbar.details__headerbar {
+  box-shadow: none;
   transition: background-color .3s ease;
+}
+
+windowtitle.details__headerbar {
+  transition: opacity .3s ease;
+  opacity: 1;
+}
+
+windowtitle.details__headerbar.flat {
+  opacity: 0;
 }
 
 .details__headerbar.flat {
   background-color: @view_bg_color;
 }
+
