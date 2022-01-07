@@ -1,17 +1,17 @@
-.title-4 label {
+.album__header .title-4 label {
   color: @window_fg_color;
   font-weight: bold;
   text-decoration: none;
 }
 
-.title-4 {
+.album__header .title-4 {
   padding: 0;
 }
 
 
-.title-4:hover {
+.album__header .title-4:hover {
   border-radius: 6px;
-  background-image: image(alpha(currentColor, 0.03));
+  background-image: image(alpha(currentColor, 0.08));
 }
 
 .album__header .like__button {
@@ -38,13 +38,13 @@ headerbar.details__headerbar {
   transition: background-color .3s ease;
 }
 
-windowtitle.details__headerbar {
-  transition: opacity .3s ease;
-  opacity: 1;
+headerbar.flat.details__headerbar windowtitle {
+  opacity: 0;
 }
 
-windowtitle.details__headerbar.flat {
-  opacity: 0;
+headerbar.details__headerbar windowtitle {
+  transition: opacity .3s ease;
+  opacity: 1;
 }
 
 .details__headerbar.flat {

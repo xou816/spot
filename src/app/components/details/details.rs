@@ -87,7 +87,7 @@ impl AlbumDetailsWidget {
         let is_up_to_date = widget.header_revealer.reveals_child() == visible;
         if !is_up_to_date {
             widget.header_revealer.set_reveal_child(visible);
-            widget.headerbar.set_title_visible(!visible);
+            widget.headerbar.set_title_visible(true);
             if visible {
                 widget.headerbar.add_classes(&["flat"]);
             } else {
