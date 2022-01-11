@@ -7,7 +7,8 @@ use crate::app::{BatchQuery, LazyRandomIndex, SongsSource};
 
 #[derive(Debug)]
 pub struct PlaybackState {
-    available_devices: Vec<Device>,
+    available_devices: Vec<ConnectDevice>,
+    current_device: Device,
     index: LazyRandomIndex,
     songs: SongListModel,
     list_position: Option<usize>,
@@ -233,15 +234,20 @@ impl PlaybackState {
         self.index.reset_picking_first(old);
     }
 
-    pub fn available_devices(&self) -> &Vec<Device> {
+    pub fn available_devices(&self) -> &Vec<ConnectDevice> {
         &self.available_devices
+    }
+
+    pub fn current_device(&self) -> &Device {
+        &self.current_device
     }
 }
 
 impl Default for PlaybackState {
     fn default() -> Self {
         Self {
-            available_devices: vec![Device::Local],
+            available_devices: vec![],
+            current_device: Device::Local,
             index: LazyRandomIndex::default(),
             songs: SongListModel::new(50),
             list_position: None,
@@ -275,7 +281,7 @@ pub enum PlaybackAction {
     Queue(Vec<SongDescription>),
     Dequeue(String),
     SwitchDevice(Device),
-    SetAvailableDevices(Vec<Device>),
+    SetAvailableDevices(Vec<ConnectDevice>),
 }
 
 impl From<PlaybackAction> for AppAction {
@@ -293,21 +299,10 @@ pub enum PlaylistChange {
     MovedDown(usize),
 }
 
-// TODO move this elsewhere
 #[derive(Clone, Debug)]
 pub enum Device {
     Local,
     Connect(ConnectDevice),
-}
-
-impl Device {
-    // TODO move this elsewhere
-    pub fn label(&self) -> &str {
-        match self {
-            Self::Local => "This device",
-            Self::Connect(ConnectDevice { label, .. }) => &label[..],
-        }
-    }
 }
 
 #[derive(Clone, Debug)]
@@ -469,10 +464,13 @@ impl UpdatableState for PlaybackState {
                 vec![PlaybackEvent::SeekSynced(pos)]
             }
             PlaybackAction::SetVolume(volume) => vec![PlaybackEvent::VolumeSet(volume)],
-            PlaybackAction::SetAvailableDevices(mut list) => {
-                self.available_devices = vec![Device::Local];
-                self.available_devices.append(&mut list);
+            PlaybackAction::SetAvailableDevices(list) => {
+                self.available_devices = list;
                 vec![PlaybackEvent::AvailableDevicesChanged]
+            }
+            PlaybackAction::SwitchDevice(new_device) => {
+                self.current_device = new_device.clone();
+                vec![PlaybackEvent::SwitchedDevice(new_device)]
             }
             _ => vec![],
         }

@@ -1,4 +1,3 @@
-use gettextrs::gettext;
 use gio::prelude::*;
 use gio::SimpleActionGroup;
 use std::ops::Deref;
@@ -8,6 +7,7 @@ use crate::app::components::HeaderBarModel;
 use crate::app::components::SimpleHeaderBarModel;
 use crate::app::components::SimpleHeaderBarModelWrapper;
 use crate::app::components::{labels, PlaylistModel};
+use crate::app::models::ConnectDevice;
 use crate::app::models::SongDescription;
 use crate::app::models::SongListModel;
 use crate::app::state::Device;
@@ -62,8 +62,22 @@ impl NowPlayingModel {
             });
     }
 
-    pub fn get_available_devices(&self) -> impl Deref<Target = Vec<Device>> + '_ {
+    pub fn get_available_devices(&self) -> impl Deref<Target = Vec<ConnectDevice>> + '_ {
         self.app_model.map_state(|s| s.playback.available_devices())
+    }
+
+    pub fn get_current_device(&self) -> impl Deref<Target = Device> + '_ {
+        self.app_model.map_state(|s| s.playback.current_device())
+    }
+
+    pub fn set_current_device(&self, id: Option<String>) {
+        let devices = self.get_available_devices();
+        let connect_device = id
+            .and_then(|id| devices.iter().find(|&d| d.id == id))
+            .cloned();
+        let device = connect_device.map(Device::Connect).unwrap_or(Device::Local);
+        self.dispatcher
+            .dispatch(PlaybackAction::SwitchDevice(device).into());
     }
 
     pub fn to_headerbar_model(self: &Rc<Self>) -> Rc<impl HeaderBarModel> {

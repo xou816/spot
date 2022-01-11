@@ -24,10 +24,7 @@ impl PlayerNotifier {
         command_sender: UnboundedSender<Command>,
     ) -> Self {
         Self {
-            device: Device::Connect(ConnectDevice {
-                id: "cafecafe".to_string(),
-                label: "My device".to_string(),
-            }),
+            device: Device::Local,
             connect_player: SpotifyConnectPlayer::new(api),
             dispatcher,
             command_sender,
@@ -101,12 +98,23 @@ impl PlayerNotifier {
                 dispatcher.dispatch(AppAction::LoginAction(LoginAction::SetLoginFailure));
             });
     }
+
+    fn switch_device(&mut self, device: &Device) {
+        self.device = device.clone();
+        match device {
+            Device::Connect(_) => {
+                self.send_command_to_local_player(Command::PlayerStop);
+            }
+            Device::Local => {}
+        }
+    }
 }
 
 impl EventListener for PlayerNotifier {
     fn on_event(&mut self, event: &AppEvent) {
         match (&self.device, event) {
             (_, AppEvent::LoginEvent(event)) => self.notify_login(event),
+            (_, AppEvent::PlaybackEvent(PlaybackEvent::SwitchedDevice(d))) => self.switch_device(d),
             (Device::Local, AppEvent::PlaybackEvent(event)) => self.notify_local_player(event),
             (Device::Local, AppEvent::SettingsEvent(SettingsEvent::PlayerSettingsChanged) => self.send_command_to_local_player(Command::ReloadSettings),
             (Device::Connect(_), AppEvent::PlaybackEvent(event)) => {

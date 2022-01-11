@@ -404,7 +404,7 @@ async fn player_setup_delegate(
 ) {
     while let Some(event) = channel.recv().await {
         match event {
-            PlayerEvent::EndOfTrack { .. } | PlayerEvent::Stopped { .. } => {
+            PlayerEvent::EndOfTrack { .. } => {
                 delegate.end_of_track_reached();
             }
             PlayerEvent::Playing { position_ms, .. } => {

@@ -1,3 +1,5 @@
+use gio::{SimpleAction, SimpleActionGroup};
+use glib::FromVariant;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
@@ -7,8 +9,12 @@ use super::NowPlayingModel;
 use crate::app::components::{
     Component, EventListener, HeaderBarComponent, HeaderBarWidget, Playlist,
 };
+use crate::app::models::ConnectDevice;
 use crate::app::state::{Device, LoginEvent};
 use crate::app::{state::PlaybackEvent, AppEvent, Worker};
+
+const ACTIONS: &str = "devices";
+const CONNECT_ACTION: &str = "connect";
 
 mod imp {
 
@@ -27,10 +33,24 @@ mod imp {
         pub title: TemplateChild<gtk::MenuButton>,
 
         #[template_child]
-        pub popover: TemplateChild<gtk::Popover>,
+        pub popover: TemplateChild<gtk::PopoverMenu>,
+
+        #[template_child]
+        pub custom_content: TemplateChild<gtk::Box>,
+
+        #[template_child]
+        pub devices: TemplateChild<gtk::Box>,
+
+        #[template_child]
+        pub this_device_button: TemplateChild<gtk::CheckButton>,
+
+        #[template_child]
+        pub menu: TemplateChild<gio::MenuModel>,
 
         #[template_child]
         pub scrolled_window: TemplateChild<gtk::ScrolledWindow>,
+
+        pub action_group: SimpleActionGroup,
     }
 
     #[glib::object_subclass]
@@ -51,6 +71,20 @@ mod imp {
     impl ObjectImpl for NowPlayingWidget {
         fn constructed(&self, obj: &Self::Type) {
             self.parent_constructed(obj);
+
+            self.popover.set_menu_model(Some(&*self.menu));
+            self.popover
+                .add_child(&*self.custom_content, "custom_content");
+
+            self.title.set_popover(Some(&*self.popover));
+            self.title
+                .upcast_ref::<gtk::Widget>()
+                .insert_action_group(ACTIONS, Some(&self.action_group));
+
+            self.this_device_button
+                .set_action_name(Some(&format!("{}.{}", ACTIONS, CONNECT_ACTION)));
+            self.this_device_button
+                .set_action_target_value(Some(&Option::<String>::None.to_variant()));
         }
     }
 
@@ -67,6 +101,17 @@ impl NowPlayingWidget {
         glib::Object::new()
     }
 
+    fn connect_refresh<F>(&self, f: F)
+    where
+        F: Fn() + 'static,
+    {
+        self.widget().action_group.add_action(&{
+            let logout = SimpleAction::new("refresh", None);
+            logout.connect_activate(move |_, _| f());
+            logout
+        });
+    }
+
     fn connect_bottom_edge<F>(&self, f: F)
     where
         F: Fn() + 'static,
@@ -80,6 +125,26 @@ impl NowPlayingWidget {
             });
     }
 
+    fn connect_switch_device<F>(&self, f: F)
+    where
+        F: Fn(Option<String>) + 'static,
+    {
+        self.imp().action_group.add_action(&{
+            let logout = SimpleAction::new_stateful(
+                "connect",
+                Some(Option::<String>::static_variant_type().as_ref()),
+                &Option::<String>::None.to_variant(),
+            );
+            logout.connect_activate(move |action, device_id| {
+                if let Some(device_id) = device_id {
+                    action.change_state(device_id);
+                    f(Option::<String>::from_variant(device_id).unwrap());
+                }
+            });
+            logout
+        });
+    }
+
     fn song_list_widget(&self) -> &gtk::ListView {
         self.imp().song_list.as_ref()
     }
@@ -88,35 +153,23 @@ impl NowPlayingWidget {
         self.widget().headerbar.as_ref()
     }
 
-    fn make_devices_list(devices: &Vec<Device>) -> gtk::Box {
-        let _box = gtk::BoxBuilder::new()
-            .orientation(gtk::Orientation::Vertical)
-            .build();
-        let mut first_device: Option<gtk::CheckButton> = None;
+    fn update_devices_list(&self, devices: &Vec<ConnectDevice>, active_device: &Device) {
+        let widget = self.imp();
+        widget.title.set_popover(Option::<&gtk::Widget>::None);
+        widget.this_device_button.set_sensitive(!devices.is_empty());
+        while let Some(child) = widget.devices.upcast_ref::<gtk::Widget>().first_child() {
+            widget.devices.remove(&child);
+        }
         for device in devices {
-            let check = gtk::CheckButtonBuilder::new().label(device.label());
-            let check = if let Some(group) = first_device.as_ref() {
-                check.group(group)
-            } else {
-                check
-            }
-            .build();
-            _box.append(&check);
-            first_device = first_device.or(Some(check));
+            let check = gtk::CheckButtonBuilder::new()
+                .action_name(&format!("{}.{}", ACTIONS, CONNECT_ACTION))
+                .action_target(&Some(&device.id).to_variant())
+                .group(&*widget.this_device_button)
+                .label(&device.label)
+                .build();
+            widget.devices.append(&check);
         }
-        _box
-    }
-
-    fn set_available_devices(&self, devices: &Vec<Device>) {
-        let widget = self.widget();
-
-        if devices.len() > 1 {
-            let _box = Self::make_devices_list(devices);
-            widget.popover.unparent();
-            widget.popover.set_parent(&*widget.title);
-            widget.title.set_popover(Some(&*widget.popover));
-            widget.popover.set_child(Some(&_box));
-        }
+        widget.title.set_popover(Some(&*widget.popover));
     }
 }
 
@@ -132,6 +185,14 @@ impl NowPlaying {
 
         widget.connect_bottom_edge(clone!(@weak model => move || {
             model.load_more();
+        }));
+
+        widget.connect_refresh(clone!(@weak model => move || {
+            model.refresh_available_devices();
+        }));
+
+        widget.connect_switch_device(clone!(@weak model => move |id| {
+            model.set_current_device(id);
         }));
 
         let playlist = Box::new(Playlist::new(
@@ -173,8 +234,10 @@ impl EventListener for NowPlaying {
                 self.model.refresh_available_devices();
             }
             AppEvent::PlaybackEvent(PlaybackEvent::AvailableDevicesChanged) => {
-                self.widget
-                    .set_available_devices(&*self.model.get_available_devices());
+                self.widget.update_devices_list(
+                    &*self.model.get_available_devices(),
+                    &*self.model.get_current_device(),
+                );
             }
             _ => (),
         }
