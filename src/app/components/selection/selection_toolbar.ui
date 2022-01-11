@@ -32,9 +32,18 @@
             <property name="valign">center</property>
             <property name="has-frame">0</property>
             <child>
-              <object class="AdwButtonContent">
-                <property name="icon-name">music-queue-symbolic</property>
-                <property name="label" translatable="yes">Add to queue</property>
+              <object class="AdwSqueezer">
+                <child>
+                  <object class="AdwButtonContent">
+                    <property name="icon-name">music-queue-symbolic</property>
+                    <property name="label" translatable="yes">Add to queue</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwButtonContent">
+                    <property name="icon-name">music-queue-symbolic</property>
+                  </object>
+                </child>
               </object>
             </child>
           </object>
@@ -53,9 +62,39 @@
             <property name="valign">center</property>
             <property name="has-frame">0</property>
             <child>
-              <object class="AdwButtonContent">
-                <property name="icon-name">user-trash-symbolic</property>
-                <property name="label" translatable="yes">Remove</property>
+              <object class="AdwSqueezer">
+                <child>
+                  <object class="AdwButtonContent">
+                    <property name="icon-name">user-trash-symbolic</property>
+                    <property name="label" translatable="yes">Remove</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwButtonContent">
+                    <property name="icon-name">user-trash-symbolic</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child type="end">
+          <object class="GtkButton" id="save">
+            <property name="valign">center</property>
+            <property name="has-frame">0</property>
+            <child>
+              <object class="AdwSqueezer">
+                <child>
+                  <object class="AdwButtonContent">
+                    <property name="icon-name">star-new-symbolic</property>
+                    <property name="label" translatable="yes">Save to library</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwButtonContent">
+                    <property name="icon-name">star-new-symbolic</property>
+                  </object>
+                </child>
               </object>
             </child>
           </object>

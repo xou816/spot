@@ -30,6 +30,8 @@ pub enum BrowserAction {
     SetUserDetails(Box<UserDescription>),
     AppendUserPlaylists(Vec<PlaylistDescription>),
     AppendSavedTracks(Box<SongBatch>),
+    SaveTracks(Vec<SongDescription>),
+    RemoveSavedTracks(Vec<SongDescription>),
 }
 
 impl From<BrowserAction> for AppAction {

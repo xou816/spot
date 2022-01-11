@@ -74,7 +74,7 @@ impl ScreenFactory {
     pub fn make_saved_tracks(&self) -> impl ListenerComponent {
         let screen_model = DefaultHeaderBarModel::new(
             Some(gettext("Saved tracks")),
-            Some(SelectionContext::Default),
+            Some(SelectionContext::SavedTracks),
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         );

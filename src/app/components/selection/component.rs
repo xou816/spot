@@ -42,11 +42,14 @@ impl SelectionToolbarModel {
 
     pub fn remove_selection(&self) {
         match &self.selection().context {
+            SelectionContext::SavedTracks => self.remove_saved_tracks(),
             SelectionContext::Queue => self.dequeue_selection(),
             SelectionContext::EditablePlaylist(id) => self.remove_from_playlist(id),
             _ => {}
         }
     }
+
+    fn remove_saved_tracks(&self) {}
 
     fn selection(&self) -> impl Deref<Target = SelectionState> + '_ {
         self.app_model.map_state(|s| &s.selection)
@@ -120,6 +123,16 @@ impl SelectionToolbar {
                     .set_queue(SelectionToolState::Visible(count > 0));
                 self.widget.set_add(SelectionToolState::Visible(count > 0));
                 self.widget.set_remove(SelectionToolState::Hidden);
+                self.widget.set_save(SelectionToolState::Visible(count > 0));
+            }
+            SelectionContext::SavedTracks => {
+                self.widget.set_move(SelectionToolState::Hidden);
+                self.widget
+                    .set_queue(SelectionToolState::Visible(count > 0));
+                self.widget.set_add(SelectionToolState::Visible(count > 0));
+                self.widget
+                    .set_remove(SelectionToolState::Visible(count > 0));
+                self.widget.set_save(SelectionToolState::Hidden);
             }
             SelectionContext::Queue => {
                 self.widget
@@ -128,6 +141,7 @@ impl SelectionToolbar {
                 self.widget.set_add(SelectionToolState::Hidden);
                 self.widget
                     .set_remove(SelectionToolState::Visible(count > 0));
+                self.widget.set_save(SelectionToolState::Visible(count > 0));
             }
             SelectionContext::Playlist => {
                 self.widget.set_move(SelectionToolState::Hidden);
@@ -135,6 +149,7 @@ impl SelectionToolbar {
                     .set_queue(SelectionToolState::Visible(count > 0));
                 self.widget.set_add(SelectionToolState::Hidden);
                 self.widget.set_remove(SelectionToolState::Hidden);
+                self.widget.set_save(SelectionToolState::Hidden);
             }
             SelectionContext::EditablePlaylist(_) => {
                 self.widget.set_move(SelectionToolState::Hidden);
@@ -143,6 +158,7 @@ impl SelectionToolbar {
                 self.widget.set_add(SelectionToolState::Hidden);
                 self.widget
                     .set_remove(SelectionToolState::Visible(count > 0));
+                self.widget.set_save(SelectionToolState::Hidden);
             }
         };
     }
