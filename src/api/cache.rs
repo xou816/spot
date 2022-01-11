@@ -1,5 +1,6 @@
 use async_std::fs;
 use async_std::io;
+use async_std::path::Path;
 use async_std::path::PathBuf;
 use async_std::prelude::*;
 use core::mem::size_of;
@@ -9,6 +10,8 @@ use std::convert::From;
 use std::future::Future;
 use std::time::{Duration, SystemTime};
 use thiserror::Error;
+
+const EXPIRY_FILE_EXT: &str = ".expiry";
 
 #[derive(Error, Debug)]
 pub enum CacheError {
@@ -80,13 +83,12 @@ pub struct CacheManager {
 }
 
 impl CacheManager {
-    pub fn new(dirs: &[&str]) -> Option<Self> {
+    pub fn for_dir(dir: &str) -> Option<Self> {
         let root: PathBuf = glib::user_cache_dir().into();
+        let root = root.join(dir);
         let mask = 0o744;
 
-        for &dir in dirs.iter() {
-            glib::mkdir_with_parents(root.join(dir), mask);
-        }
+        glib::mkdir_with_parents(&root, mask);
 
         Some(Self { root })
     }
@@ -96,7 +98,7 @@ impl CacheManager {
     }
 
     fn cache_meta_path(&self, resource: &str) -> PathBuf {
-        let full = format!("{}.{}", resource, "expiry");
+        let full = resource.to_string() + EXPIRY_FILE_EXT;
         self.root.join(&full)
     }
 }
@@ -178,10 +180,8 @@ impl CacheManager {
         Ok(())
     }
 
-    pub async fn clear_cache_pattern(&self, dir: &str, regex: &Regex) -> Result<(), CacheError> {
-        let dir_path = self.cache_path(dir);
-
-        let mut entries = fs::read_dir(dir_path)
+    pub async fn clear_cache_pattern(&self, regex: &Regex) -> Result<(), CacheError> {
+        let mut entries = fs::read_dir(&self.root)
             .await
             .map_err(CacheError::ReadError)?;
 
@@ -192,19 +192,25 @@ impl CacheManager {
                 .map(|s| regex.is_match(s))
                 .unwrap_or(false);
             if matches {
+                info!("Removing {}...", entry.file_name().to_str().unwrap_or(""));
                 fs::remove_file(entry.path())
                     .await
                     .map_err(CacheError::RemoveError)?;
+                if let Some(expiry_file_path) = entry
+                    .path()
+                    .to_str()
+                    .map(|path| path.to_string() + EXPIRY_FILE_EXT)
+                {
+                    let _ = fs::remove_file(Path::new(&expiry_file_path)).await;
+                }
             }
         }
 
         Ok(())
     }
 
-    pub async fn set_expired_pattern(&self, dir: &str, regex: &Regex) -> Result<(), CacheError> {
-        let dir_path = self.cache_path(dir);
-
-        let mut entries = fs::read_dir(dir_path)
+    pub async fn set_expired_pattern(&self, regex: &Regex) -> Result<(), CacheError> {
+        let mut entries = fs::read_dir(&self.root)
             .await
             .map_err(CacheError::ReadError)?;
 
@@ -212,6 +218,7 @@ impl CacheManager {
             let matches = entry
                 .file_name()
                 .to_str()
+                .and_then(|s| s.strip_suffix(EXPIRY_FILE_EXT))
                 .map(|s| regex.is_match(s))
                 .unwrap_or(false);
             if matches {

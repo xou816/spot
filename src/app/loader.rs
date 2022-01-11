@@ -32,7 +32,7 @@ pub struct ImageLoader {
 impl ImageLoader {
     pub fn new() -> Self {
         Self {
-            cache: CacheManager::new(&["spot/img"]).unwrap(),
+            cache: CacheManager::for_dir("spot/img").unwrap(),
         }
     }
 
@@ -40,7 +40,7 @@ impl ImageLoader {
         let mut hasher = DefaultHasher::new();
         hasher.write(url.as_bytes());
         let hashed = hasher.finish().to_string();
-        format!("spot/img/{}.{}", hashed, ext)
+        hashed + "." + ext
     }
 
     async fn get_image(url: &str) -> Option<Response<AsyncBody>> {
