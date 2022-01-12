@@ -10,7 +10,8 @@ const LIBRARY: &str = "library";
 const SAVED_TRACKS: &str = "saved_tracks";
 const NOW_PLAYING: &str = "now_playing";
 const SAVED_PLAYLISTS: &str = "saved_playlists";
-const NUM_FIXED_ENTRIES: u32 = 5;
+const NEW_PLAYLIST: &str = "new_playlist";
+const NUM_FIXED_ENTRIES: u32 = 6;
 const NUM_PLAYLISTS: usize = 20;
 
 fn add_to_stack_and_listbox(
@@ -35,6 +36,26 @@ fn make_playlist_item(playlist_item: AlbumModel) -> SideBarItem {
     let id = playlist_item.uri();
 
     SideBarItem::new(id.as_str(), &title, "playlist2-symbolic", false)
+}
+
+fn new_playlist_clicked(row: &gtk::ListBoxRow) {
+    let popover = gtk::Popover::new();
+    let label = gtk::Label::new(Option::from(
+        // translators: This is a label labeling the field to enter the name of a new playlist.
+        gettext("Name").as_str(),
+    ));
+    let entry = gtk::Entry::new();
+    let btn = gtk::Button::with_label(
+        // translators: This is a button to create a new playlist.
+        &gettext("Create"),
+    );
+    let gtk_box = gtk::Box::new(gtk::Orientation::Horizontal, 12);
+    gtk_box.append(&label);
+    gtk_box.append(&entry);
+    gtk_box.append(&btn);
+    popover.set_child(Some(&gtk_box));
+    popover.set_parent(row);
+    popover.popup();
 }
 
 pub struct HomePane {
@@ -95,6 +116,13 @@ impl HomePane {
             "",
             true,
         ));
+        list_store.append(&SideBarItem::new(
+            NEW_PLAYLIST,
+            // translators: This is a sidebar entry to create a new playlist.
+            &gettext("New Playlist"),
+            "list-add-symbolic",
+            false,
+        ));
         add_to_stack_and_listbox(
             &stack,
             &list_store,
@@ -130,6 +158,7 @@ impl HomePane {
                         stack.set_visible_child_name(&id);
                         f();
                     },
+                    NEW_PLAYLIST => new_playlist_clicked(row),
                     _ => model.open_playlist(id),
                 }
             }));
