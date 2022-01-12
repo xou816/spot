@@ -241,6 +241,7 @@ pub enum PlaybackAction {
     Load(String),
     LoadSongs(Vec<SongDescription>),
     LoadPagedSongs(SongsSource, SongBatch),
+    SetVolume(f64),
     Next,
     Previous,
     Queue(Vec<SongDescription>),
@@ -269,6 +270,7 @@ pub enum PlaybackEvent {
     RepeatModeChanged(RepeatMode),
     TrackSeeked(u32),
     SeekSynced(u32),
+    VolumeSet(f64),
     TrackChanged(String),
     ShuffleChanged,
     PlaylistChanged(PlaylistChange),
@@ -415,6 +417,7 @@ impl UpdatableState for PlaybackState {
             }
             PlaybackAction::Seek(pos) => vec![PlaybackEvent::TrackSeeked(pos)],
             PlaybackAction::SyncSeek(pos) => vec![PlaybackEvent::SeekSynced(pos)],
+            PlaybackAction::SetVolume(volume) => vec![PlaybackEvent::VolumeSet(volume)],
             _ => vec![],
         }
     }

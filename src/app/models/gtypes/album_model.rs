@@ -50,6 +50,14 @@ impl AlbumModel {
             .ok()
             .map(|s| s.to_string())
     }
+
+    pub fn album_title(&self) -> Option<String> {
+        self.property("album")
+            .unwrap()
+            .get::<&str>()
+            .ok()
+            .map(|s| s.to_string())
+    }
 }
 
 mod imp {

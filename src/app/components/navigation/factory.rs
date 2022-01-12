@@ -37,9 +37,12 @@ impl ScreenFactory {
         )
     }
 
+    pub fn make_saved_playlists_model(&self) -> SavedPlaylistsModel {
+        SavedPlaylistsModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone())
+    }
+
     pub fn make_saved_playlists(&self) -> impl ListenerComponent {
-        let model =
-            SavedPlaylistsModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
+        let model = self.make_saved_playlists_model();
         let screen_model = DefaultHeaderBarModel::new(
             Some(gettext("Playlists")),
             None,
