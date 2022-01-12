@@ -11,7 +11,7 @@ use crate::app::{
 
 use super::widget::HeaderBarWidget;
 
-pub trait ScreenModel {
+pub trait HeaderBarModel {
     fn title(&self) -> Option<String>;
     fn title_updated(&self, event: &AppEvent) -> bool;
     fn go_back(&self);
@@ -24,14 +24,14 @@ pub trait ScreenModel {
     fn selected_count(&self) -> usize;
 }
 
-pub struct DefaultScreenModel {
+pub struct DefaultHeaderBarModel {
     title: Option<String>,
     selection_context: Option<SelectionContext>,
     app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>,
 }
 
-impl DefaultScreenModel {
+impl DefaultHeaderBarModel {
     pub fn new(
         title: Option<String>,
         selection_context: Option<SelectionContext>,
@@ -47,7 +47,7 @@ impl DefaultScreenModel {
     }
 }
 
-impl ScreenModel for DefaultScreenModel {
+impl HeaderBarModel for DefaultHeaderBarModel {
     fn title(&self) -> Option<String> {
         self.title.clone()
     }
@@ -91,20 +91,20 @@ impl ScreenModel for DefaultScreenModel {
     }
 }
 
-pub trait SimpleScreenModel {
+pub trait SimpleHeaderBarModel {
     fn title(&self) -> Option<String>;
     fn title_updated(&self, event: &AppEvent) -> bool;
     fn selection_context(&self) -> Option<&SelectionContext>;
     fn select_all(&self);
 }
 
-pub struct SimpleScreenModelWrapper<M> {
+pub struct SimpleHeaderBarModelWrapper<M> {
     wrapped_model: Rc<M>,
     app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>,
 }
 
-impl<M> SimpleScreenModelWrapper<M> {
+impl<M> SimpleHeaderBarModelWrapper<M> {
     pub fn new(
         wrapped_model: Rc<M>,
         app_model: Rc<AppModel>,
@@ -118,9 +118,9 @@ impl<M> SimpleScreenModelWrapper<M> {
     }
 }
 
-impl<M> ScreenModel for SimpleScreenModelWrapper<M>
+impl<M> HeaderBarModel for SimpleHeaderBarModelWrapper<M>
 where
-    M: SimpleScreenModel + 'static,
+    M: SimpleHeaderBarModel + 'static,
 {
     fn title(&self) -> Option<String> {
         self.wrapped_model.title()
@@ -167,20 +167,39 @@ where
     }
 }
 
-pub struct StandardScreen<Model: ScreenModel> {
-    root: gtk::Widget,
-    widget: HeaderBarWidget,
-    model: Rc<Model>,
-    children: Vec<Box<dyn EventListener>>,
-}
+mod common {
 
-impl<Model> StandardScreen<Model>
-where
-    Model: ScreenModel + 'static,
-{
-    pub fn new(wrapped: impl ListenerComponent + 'static, model: Rc<Model>) -> Self {
-        let widget = HeaderBarWidget::new();
+    use super::*;
 
+    pub fn update_for_event<Model>(event: &AppEvent, widget: &HeaderBarWidget, model: &Rc<Model>)
+    where
+        Model: HeaderBarModel + 'static,
+    {
+        match event {
+            AppEvent::SelectionEvent(SelectionEvent::SelectionModeChanged(active)) => {
+                widget.set_selection_active(*active);
+            }
+            AppEvent::SelectionEvent(SelectionEvent::SelectionChanged) => {
+                widget.set_selection_count(model.selected_count());
+            }
+            AppEvent::BrowserEvent(BrowserEvent::NavigationPushed(_))
+            | AppEvent::BrowserEvent(BrowserEvent::NavigationPoppedTo(_))
+            | AppEvent::BrowserEvent(BrowserEvent::NavigationPopped)
+            | AppEvent::BrowserEvent(BrowserEvent::NavigationHidden(_)) => {
+                model.cancel_selection();
+                widget.set_can_go_back(model.can_go_back());
+            }
+            event if model.title_updated(event) => {
+                widget.set_title(model.title().as_ref().map(|s| &s[..]));
+            }
+            _ => {}
+        }
+    }
+
+    pub fn bind_headerbar<Model>(widget: &HeaderBarWidget, model: &Rc<Model>)
+    where
+        Model: HeaderBarModel + 'static,
+    {
         widget.connect_selection_start(clone!(@weak model => move || model.start_selection()));
         widget.connect_select_all(clone!(@weak model => move || model.select_all()));
         widget.connect_selection_cancel(clone!(@weak model => move || model.cancel_selection()));
@@ -190,6 +209,48 @@ where
         widget.set_selection_possible(model.selection_context().is_some());
         widget.set_select_all_possible(model.can_select_all());
         widget.set_can_go_back(model.can_go_back());
+    }
+}
+
+pub struct HeaderBarComponent<Model: HeaderBarModel> {
+    widget: HeaderBarWidget,
+    model: Rc<Model>,
+}
+
+impl<Model> HeaderBarComponent<Model>
+where
+    Model: HeaderBarModel + 'static,
+{
+    pub fn new(widget: HeaderBarWidget, model: Rc<Model>) -> Self {
+        common::bind_headerbar(&widget, &model);
+        Self { widget, model }
+    }
+}
+
+impl<Model> EventListener for HeaderBarComponent<Model>
+where
+    Model: HeaderBarModel + 'static,
+{
+    fn on_event(&mut self, event: &AppEvent) {
+        common::update_for_event(event, &self.widget, &self.model);
+    }
+}
+
+// wrapper version ("Screen")
+pub struct StandardScreen<Model: HeaderBarModel> {
+    root: gtk::Widget,
+    widget: HeaderBarWidget,
+    model: Rc<Model>,
+    children: Vec<Box<dyn EventListener>>,
+}
+
+impl<Model> StandardScreen<Model>
+where
+    Model: HeaderBarModel + 'static,
+{
+    pub fn new(wrapped: impl ListenerComponent + 'static, model: Rc<Model>) -> Self {
+        let widget = HeaderBarWidget::new();
+        common::bind_headerbar(&widget, &model);
 
         let root = gtk::BoxBuilder::new()
             .orientation(gtk::Orientation::Vertical)
@@ -208,7 +269,7 @@ where
 
 impl<Model> Component for StandardScreen<Model>
 where
-    Model: ScreenModel + 'static,
+    Model: HeaderBarModel + 'static,
 {
     fn get_root_widget(&self) -> &gtk::Widget {
         &self.root
@@ -221,29 +282,10 @@ where
 
 impl<Model> EventListener for StandardScreen<Model>
 where
-    Model: ScreenModel + 'static,
+    Model: HeaderBarModel + 'static,
 {
     fn on_event(&mut self, event: &AppEvent) {
-        match event {
-            AppEvent::SelectionEvent(SelectionEvent::SelectionModeChanged(active)) => {
-                self.widget.set_selection_active(*active);
-            }
-            AppEvent::SelectionEvent(SelectionEvent::SelectionChanged) => {
-                self.widget.set_selection_count(self.model.selected_count());
-            }
-            AppEvent::BrowserEvent(BrowserEvent::NavigationPushed(_))
-            | AppEvent::BrowserEvent(BrowserEvent::NavigationPoppedTo(_))
-            | AppEvent::BrowserEvent(BrowserEvent::NavigationPopped)
-            | AppEvent::BrowserEvent(BrowserEvent::NavigationHidden(_)) => {
-                self.model.cancel_selection();
-                self.widget.set_can_go_back(self.model.can_go_back());
-            }
-            event if self.model.title_updated(event) => {
-                self.widget
-                    .set_title(self.model.title().as_ref().map(|s| &s[..]));
-            }
-            _ => {}
-        }
+        common::update_for_event(event, &self.widget, &self.model);
         self.broadcast_event(event);
     }
 }

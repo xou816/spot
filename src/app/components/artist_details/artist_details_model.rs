@@ -3,7 +3,7 @@ use gio::SimpleActionGroup;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use crate::app::components::SimpleScreenModel;
+use crate::app::components::SimpleHeaderBarModel;
 use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::*;
 use crate::app::state::SelectionContext;
@@ -168,7 +168,7 @@ impl PlaylistModel for ArtistDetailsModel {
     }
 }
 
-impl SimpleScreenModel for ArtistDetailsModel {
+impl SimpleHeaderBarModel for ArtistDetailsModel {
     fn title(&self) -> Option<String> {
         Some(self.get_artist_name()?.clone())
     }

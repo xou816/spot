@@ -5,7 +5,7 @@ use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use crate::app::components::SimpleScreenModel;
+use crate::app::components::SimpleHeaderBarModel;
 use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::SongDescription;
 use crate::app::models::SongModel;
@@ -147,7 +147,7 @@ impl PlaylistModel for NowPlayingModel {
     }
 }
 
-impl SimpleScreenModel for NowPlayingModel {
+impl SimpleHeaderBarModel for NowPlayingModel {
     fn title(&self) -> Option<String> {
         Some(gettext("Now playing"))
     }
