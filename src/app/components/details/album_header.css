@@ -28,6 +28,9 @@
   margin-bottom: 6px;
 }
 
+.header__mobile .card {
+  margin-top: 12px;
+}
 clamp.details__clamp {
   background-color: @view_bg_color;
   box-shadow: inset 0px -1px 0px @borders;
