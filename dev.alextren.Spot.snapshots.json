@@ -1,7 +1,7 @@
 {
     "app-id": "dev.alextren.Spot",
     "runtime": "org.gnome.Platform",
-    "runtime-version": "40",
+    "runtime-version": "41",
     "sdk": "org.gnome.Sdk",
     "sdk-extensions": [
         "org.freedesktop.Sdk.Extension.rust-stable"
@@ -51,7 +51,7 @@
                 {
                     "type": "git",
                     "url": "https://gitlab.gnome.org/GNOME/libadwaita.git",
-                    "branch": "1.0.0-alpha.2"
+                    "branch": "1.0.0.alpha.4"
                 }
             ],
             "modules": [
