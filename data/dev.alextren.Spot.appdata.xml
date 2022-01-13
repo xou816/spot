@@ -23,7 +23,8 @@
   </custom>
   <description>
     <p>
-      Listen to music on Spotify. <b>Requires a premium account.</b>
+      Listen to music on Spotify.
+      <b>Requires a premium account.</b>
     </p>
     <p>Current features:</p>
     <ul>
@@ -50,6 +51,24 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.3.0" date="2022-01-13">
+      <description>
+        <p>
+          There has been no release for a while, but this one packs quite a few features:
+        </p>
+        <ul>
+          <li>redesigned several parts of the application: headers, selection tools, library, album view... (thanks @jannuary!)</li>
+          <li>many, many, many more subtle design changes and tweaks still owed to @jannuary</li>
+          <li>playlists are now accessible from the sidebar (thanks @abegert!)</li>
+          <li>the album art is visible for individual songs, and the release year is visible for albums (thanks @abegert and @sei0o!)</li>
+          <li>volume control over MPRIS (thanks @Diegovsky!)</li>
+          <li>as always, updated translations for yet more languages; thanks to the many people involved on POEditor!</li>
+        </ul>
+        <p>
+          Thank you so much to everyone involved for this release, including those I could not mention. If you're willing to contribute, do not hesitate to seek advice from those trusted contributors, and be sure to direct your UX questions towards @jannuary (as long as they're fine with it!).
+        </p>
+      </description>
+    </release>
     <release version="0.2.2" date="2021-11-10">
       <description>
         <p>Quick fix for a startup crash, sorry for the inconvenience. Thanks @xRMG412! </p>

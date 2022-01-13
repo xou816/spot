@@ -1,8 +1,10 @@
-mod selection_heading;
-pub use selection_heading::*;
+mod widget;
 
-mod selection_tools;
-pub use selection_tools::*;
+mod component;
+pub use component::*;
 
-mod selection_widgets;
-pub use selection_widgets::*;
+use glib::prelude::*;
+
+pub fn expose_widgets() {
+    widget::SelectionToolbarWidget::static_type();
+}

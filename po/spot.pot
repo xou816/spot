@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-27 13:19-0400\n"
+"POT-Creation-Date: 2021-12-22 18:12+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,38 +19,8 @@ msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/batch_loader.rs:91 src/app/components/mod.rs:108
+#: src/app/batch_loader.rs:91 src/app/components/mod.rs:118
 msgid "An error occured. Check logs for details!"
-msgstr ""
-
-#. translators: This is part of a larger label that reads "<Album> by <Artist>"
-#: src/app/components/details/release_details.rs:101
-msgid "by"
-msgstr ""
-
-#. translators: This refers to a music label
-#: src/app/components/details/release_details.rs:108
-msgid "Label:"
-msgstr ""
-
-#. translators: This refers to a release date
-#: src/app/components/details/release_details.rs:115
-msgid "Released:"
-msgstr ""
-
-#. translators: This refers to a number of tracks
-#: src/app/components/details/release_details.rs:122
-msgid "Tracks:"
-msgstr ""
-
-#. translators: This refers to the duration of eg. an album
-#: src/app/components/details/release_details.rs:129
-msgid "Duration:"
-msgstr ""
-
-#. translators: Self explanatory
-#: src/app/components/details/release_details.rs:136
-msgid "Copyright:"
 msgstr ""
 
 #. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
@@ -58,29 +28,42 @@ msgstr ""
 msgid "View album"
 msgstr ""
 
-#. translators: This is part of a contextual menu attached to a single track; the full text is "More from <artist>".
-#: src/app/components/labels.rs:8
-msgid "More from"
-msgstr ""
-
 #. translators: This is part of a contextual menu attached to a single track; the intent is to copy the link (public URL) to a specific track.
-#: src/app/components/labels.rs:11
+#: src/app/components/labels.rs:8
 msgid "Copy link"
 msgstr ""
 
 #. translators: This is part of a contextual menu attached to a single track; this entry adds a track at the end of the play queue.
-#: src/app/components/labels.rs:14
+#: src/app/components/labels.rs:11
+#: src/app/components/selection/selection_toolbar.ui:37
 msgid "Add to queue"
 msgstr ""
 
 #. translators: This is part of a contextual menu attached to a single track; this entry removes a track from the play queue.
-#: src/app/components/labels.rs:17
+#: src/app/components/labels.rs:14
 msgid "Remove from queue"
 msgstr ""
 
 #. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
-#: src/app/components/labels.rs:24
+#: src/app/components/labels.rs:21
 msgid "Add to {}"
+msgstr ""
+
+#. translators: This shows up when in selection mode. This text should be as short as possible.
+#: src/app/components/labels.rs:30
+msgid "{} song selected"
+msgid_plural "{} songs selected"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: This is part of a contextual menu attached to a single track; the full text is "More from <artist>".
+#: src/app/components/labels.rs:39
+msgid "More from {}"
+msgstr ""
+
+#. translators: This is part of a larger label that reads "<Album> by <Artist>"
+#: src/app/components/labels.rs:48
+msgid "{} by {}"
 msgstr ""
 
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
@@ -89,26 +72,35 @@ msgid "Could not save password. Make sure the session keyring is unlocked."
 msgstr ""
 
 #. translators: This is a sidebar entry to browse to saved albums.
-#: src/app/components/navigation/home.rs:36
+#: src/app/components/navigation/factory.rs:29
+#: src/app/components/navigation/home.rs:68
 msgid "Library"
 msgstr ""
 
-#. translators: This is a sidebar entry to browse to saved playlists.
-#: src/app/components/navigation/home.rs:42
+#. translators: This is a sidebar entry that marks that the entries below are playlists.
+#: src/app/components/navigation/factory.rs:47
+#: src/app/components/navigation/home.rs:94
 msgid "Playlists"
 msgstr ""
 
 #. translators: This is a sidebar entry to browse to saved tracks.
-#. This is the visible name for the list of liked songs. It appears in the sidebar as well.
-#: src/app/components/navigation/home.rs:48
-#: src/app/components/saved_tracks/saved_tracks.ui:14
+#: src/app/components/navigation/factory.rs:76
+#: src/app/components/navigation/home.rs:78
 msgid "Saved tracks"
 msgstr ""
 
-#. This is the visible name for the play queue. It appears in the sidebar as well.
-#: src/app/components/navigation/home.rs:53
-#: src/app/components/now_playing/now_playing.ui:14
+#: src/app/components/navigation/home.rs:32
+msgid "Unnamed playlist"
+msgstr ""
+
+#: src/app/components/navigation/home.rs:87
+#: src/app/components/now_playing/now_playing_model.rs:152
 msgid "Now playing"
+msgstr ""
+
+#. translators: This is a sidebar entry to browse to saved playlists.
+#: src/app/components/navigation/home.rs:104
+msgid "All Playlists"
 msgstr ""
 
 #: src/app/components/playback/playback_controls.rs:64
@@ -125,23 +117,6 @@ msgstr ""
 #: src/app/components/playback/playback_info.ui:32
 msgid "No song playing"
 msgstr ""
-
-#. translators: This text is part of a larger text that says "Search results for <search term>".
-#: src/app/components/search/search.rs:102
-msgid "Search results for"
-msgstr ""
-
-#. This text appears when entering selection mode. It should be as short as possible.
-#: src/app/components/selection/selection_heading.rs:73 src/window.ui.in:51
-msgid "No song selected"
-msgstr ""
-
-#. translators: This is part of a larger text that says "<n> songs selected" when in selection mode. This text should be as short as possible.
-#: src/app/components/selection/selection_heading.rs:87
-msgid "song selected"
-msgid_plural "songs selected"
-msgstr[0] ""
-msgstr[1] ""
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:56
@@ -162,30 +137,77 @@ msgstr ""
 msgid "Connection restored"
 msgstr ""
 
-#: src/app/components/playback/playback_controls.ui:17
-msgid "Shuffle"
+#. A title that is shown when the user has not saved any playlists.
+#: src/app/components/saved_playlists/saved_playlists.ui:26
+msgid "You have no saved playlists."
 msgstr ""
 
-#: src/app/components/playback/playback_controls.ui:27
-msgid "Previous"
-msgstr ""
-
-#: src/app/components/playback/playback_controls.ui:50
-msgid "Next"
-msgstr ""
-
-#: src/app/components/playback/playback_controls.ui:60
-msgid "Repeat"
+#. A description of what happens when the user has saved playlists.
+#: src/app/components/saved_playlists/saved_playlists.ui:27
+msgid "Your playlists will be shown here."
 msgstr ""
 
 #. Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify.
-#: src/app/components/artist_details/artist_details.ui:40
+#: src/app/components/artist_details/artist_details.ui:26
 msgid "Top tracks"
 msgstr ""
 
 #. Title of the sections that contains all releases from an artist (both singles and albums).
-#: src/app/components/artist_details/artist_details.ui:71
+#: src/app/components/artist_details/artist_details.ui:55
 msgid "Releases"
+msgstr ""
+
+#. This is the title of a section of the search results
+#: src/app/components/search/search.ui:70
+msgid "Albums"
+msgstr ""
+
+#. This is the title of a section of the search results
+#: src/app/components/search/search.ui:103
+msgid "Artists"
+msgstr ""
+
+#. Title for the empty search page (initial state).
+#: src/app/components/search/search.ui:114
+msgid "Search Spotify."
+msgstr ""
+
+#. Subtitle for the empty search page (initial state).
+#: src/app/components/search/search.ui:115
+msgid "Type to search."
+msgstr ""
+
+#. <property name="icon-name">playlist2-symbolic</property>
+#: src/app/components/selection/selection_toolbar.ui:47
+msgid "Add to playlist..."
+msgstr ""
+
+#: src/app/components/selection/selection_toolbar.ui:58
+msgid "Remove"
+msgstr ""
+
+#. This refers to a music label
+#: src/app/components/details/release_details.ui:38
+msgid "Label"
+msgstr ""
+
+#. This refers to a release date
+#: src/app/components/details/release_details.ui:48
+msgid "Released"
+msgstr ""
+
+#. This refers to a number of tracks
+#: src/app/components/details/release_details.ui:58
+msgid "Tracks"
+msgstr ""
+
+#. This refers to the duration of a release
+#: src/app/components/details/release_details.ui:68
+msgid "Duration"
+msgstr ""
+
+#: src/app/components/details/release_details.ui:78
+msgid "Copyright"
 msgstr ""
 
 #. Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).
@@ -218,14 +240,30 @@ msgstr ""
 msgid "Log in"
 msgstr ""
 
-#. A title that is shown when the user has not saved any playlists.
-#: src/app/components/saved_playlists/saved_playlists.ui:26
-msgid "You have no saved playlists."
+#. Button label. Exits selection mode.
+#: src/app/components/headerbar/headerbar.ui:46
+msgid "Cancel"
 msgstr ""
 
-#. A description of what happens when the user has saved playlists.
-#: src/app/components/saved_playlists/saved_playlists.ui:27
-msgid "Your playlists will be shown here."
+#. Button label. Selects all visible songs.
+#: src/app/components/headerbar/headerbar.ui:57
+msgid "Select all"
+msgstr ""
+
+#: src/app/components/playback/playback_controls.ui:17
+msgid "Shuffle"
+msgstr ""
+
+#: src/app/components/playback/playback_controls.ui:27
+msgid "Previous"
+msgstr ""
+
+#: src/app/components/playback/playback_controls.ui:50
+msgid "Next"
+msgstr ""
+
+#: src/app/components/playback/playback_controls.ui:60
+msgid "Repeat"
 msgstr ""
 
 #. A title that is shown when the user has not saved any albums.
@@ -236,14 +274,4 @@ msgstr ""
 #. A description of what happens when the user has saved albums.
 #: src/app/components/library/library.ui:27
 msgid "Your library will be shown here."
-msgstr ""
-
-#. This is the title of a section of the search results
-#: src/app/components/search/search.ui:66
-msgid "Albums"
-msgstr ""
-
-#. This is the title of a section of the search results
-#: src/app/components/search/search.ui:99
-msgid "Artists"
 msgstr ""

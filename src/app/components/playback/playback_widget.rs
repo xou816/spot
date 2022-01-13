@@ -112,7 +112,7 @@ impl PlaybackWidget {
             style_context.add_class(class);
             widget.seek_bar.set_range(0.0, duration);
             widget.seek_bar.set_value(0.0);
-            widget.track_position.set_text("0:00");
+            widget.track_position.set_text("0∶00");
             widget
                 .track_duration
                 .set_text(&format!(" / {}", format_duration(duration)));
@@ -189,6 +189,11 @@ impl PlaybackWidget {
         let widget = imp::PlaybackWidget::from_instance(self);
         widget.controls.set_shuffled(shuffled);
         widget.controls_mobile.set_shuffled(shuffled);
+    }
+
+    pub fn set_seekbar_visible(&self, visible: bool) {
+        let widget = imp::PlaybackWidget::from_instance(self);
+        widget.seek_bar.set_visible(visible);
     }
 
     pub fn connect_play_pause<F>(&self, f: F)

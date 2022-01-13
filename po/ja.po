@@ -1,0 +1,265 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Spot\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-12-13 09:46-0500\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: POEditor.com\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#. translators: This notification is the default message for unhandled errors. Logs refer to console output.
+#: src/app/batch_loader.rs:91 src/app/components/mod.rs:117
+msgid "An error occured. Check logs for details!"
+msgstr "エラーが発生しました。詳細はログを確認してください。"
+
+#. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
+#: src/app/components/labels.rs:5
+msgid "View album"
+msgstr "アルバムを見る"
+
+#. translators: This is part of a contextual menu attached to a single track; the intent is to copy the link (public URL) to a specific track.
+#: src/app/components/labels.rs:8
+msgid "Copy link"
+msgstr "リンクをコピー"
+
+#. translators: This is part of a contextual menu attached to a single track; this entry adds a track at the end of the play queue.
+#: src/app/components/labels.rs:11
+#: src/app/components/selection/selection_toolbar.ui:37
+msgid "Add to queue"
+msgstr "キューに追加"
+
+#. translators: This is part of a contextual menu attached to a single track; this entry removes a track from the play queue.
+#: src/app/components/labels.rs:14
+msgid "Remove from queue"
+msgstr "キューから削除"
+
+#. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
+#: src/app/components/labels.rs:21
+msgid "Add to {}"
+msgstr "{}に追加"
+
+#. translators: This shows up when in selection mode. This text should be as short as possible.
+#: src/app/components/labels.rs:30
+msgid "{} song selected"
+msgid_plural "{} songs selected"
+msgstr[0] "{}曲選択中"
+
+#. translators: This is part of a contextual menu attached to a single track; the full text is "More from <artist>".
+#: src/app/components/labels.rs:39
+#, fuzzy
+msgid "More from {}"
+msgstr "詳細"
+
+#. translators: This is part of a larger label that reads "<Album> by <Artist>"
+#: src/app/components/labels.rs:48
+msgid "{} by {}"
+msgstr ""
+
+#. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
+#: src/app/components/login/login_model.rs:56
+msgid "Could not save password. Make sure the session keyring is unlocked."
+msgstr ""
+"パスワードを保存できませんでした。セッションキーリングのロックを解除してくだ"
+"さい。"
+
+#. translators: This is a sidebar entry to browse to saved albums.
+#: src/app/components/navigation/factory.rs:29
+#: src/app/components/navigation/home.rs:36
+msgid "Library"
+msgstr "ライブラリ"
+
+#. translators: This is a sidebar entry to browse to saved playlists.
+#: src/app/components/navigation/factory.rs:44
+#: src/app/components/navigation/home.rs:42
+msgid "Playlists"
+msgstr "プレイリスト"
+
+#. translators: This is a sidebar entry to browse to saved tracks.
+#: src/app/components/navigation/factory.rs:73
+#: src/app/components/navigation/home.rs:48
+msgid "Saved tracks"
+msgstr "お気に入り"
+
+#: src/app/components/navigation/home.rs:53
+#: src/app/components/now_playing/now_playing_model.rs:152
+msgid "Now playing"
+msgstr "再生中"
+
+#: src/app/components/playback/playback_controls.rs:64
+msgid "Pause"
+msgstr "一時停止"
+
+#: src/app/components/playback/playback_controls.rs:66
+msgid "Play"
+msgstr "再生"
+
+#. translators: Short text displayed instead of a song title when nothing plays
+#. Short text displayed instead of a song title when nothing plays
+#: src/app/components/playback/playback_info.rs:58
+#: src/app/components/playback/playback_info.ui:32
+msgid "No song playing"
+msgstr "再生中の曲はありません"
+
+#. translators: This is a menu entry.
+#: src/app/components/user_menu/user_menu.rs:56
+msgid "About"
+msgstr "このアプリについて"
+
+#. translators: This is a menu entry.
+#: src/app/components/user_menu/user_menu.rs:58
+msgid "Quit"
+msgstr "終了"
+
+#. translators: This is a menu entry.
+#: src/app/components/user_menu/user_menu.rs:63
+msgid "Log out"
+msgstr "ログアウト"
+
+#: src/app/state/login_state.rs:117
+msgid "Connection restored"
+msgstr "再接続しました"
+
+#. A title that is shown when the user has not saved any playlists.
+#: src/app/components/saved_playlists/saved_playlists.ui:26
+msgid "You have no saved playlists."
+msgstr "保存したプレイリストはありません。"
+
+#. A description of what happens when the user has saved playlists.
+#: src/app/components/saved_playlists/saved_playlists.ui:27
+msgid "Your playlists will be shown here."
+msgstr "プレイリストがここに表示されます。"
+
+#. Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify.
+#: src/app/components/artist_details/artist_details.ui:26
+msgid "Top tracks"
+msgstr "人気のトラック"
+
+#. Title of the sections that contains all releases from an artist (both singles and albums).
+#: src/app/components/artist_details/artist_details.ui:55
+msgid "Releases"
+msgstr "作品"
+
+#. This is the title of a section of the search results
+#: src/app/components/search/search.ui:70
+msgid "Albums"
+msgstr "アルバム"
+
+#. This is the title of a section of the search results
+#: src/app/components/search/search.ui:103
+msgid "Artists"
+msgstr "アーティスト"
+
+#. Title for the empty search page (initial state).
+#: src/app/components/search/search.ui:114
+msgid "Search Spotify."
+msgstr "検索する。"
+
+#. Subtitle for the empty search page (initial state).
+#: src/app/components/search/search.ui:115
+msgid "Type to search."
+msgstr "検索ワードを入力してください。"
+
+#. <property name="icon-name">playlist2-symbolic</property>
+#: src/app/components/selection/selection_toolbar.ui:47
+msgid "Add to playlist..."
+msgstr "プレイリストに追加…"
+
+#: src/app/components/selection/selection_toolbar.ui:58
+msgid "Remove"
+msgstr "削除"
+
+#. This refers to a music label
+#: src/app/components/details/release_details.ui:38
+msgid "Label"
+msgstr "レーベル"
+
+#. This refers to a release date
+#: src/app/components/details/release_details.ui:48
+msgid "Released"
+msgstr "リリース"
+
+#. This refers to a number of tracks
+#: src/app/components/details/release_details.ui:58
+msgid "Tracks"
+msgstr "曲数"
+
+#. This refers to the duration of a release
+#: src/app/components/details/release_details.ui:68
+msgid "Duration"
+msgstr "再生時間"
+
+#: src/app/components/details/release_details.ui:78
+msgid "Copyright"
+msgstr "著作権表示"
+
+#. Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).
+#: src/app/components/login/login.ui:45
+msgid "Login to Spotify Premium"
+msgstr "Spotifyプレミアムにログイン"
+
+#. Placeholder for the username field
+#: src/app/components/login/login.ui:64
+msgid "Username"
+msgstr "ユーザー名"
+
+#. Placeholder for the password field
+#: src/app/components/login/login.ui:72
+msgid "Password"
+msgstr "パスワード"
+
+#. This information is shown when Caps Lock is enabled.
+#: src/app/components/login/login.ui:95
+msgid "Caps Lock is enabled!"
+msgstr "Caps Lockが有効になっています。"
+
+#. This error is shown when authentication fails.
+#: src/app/components/login/login.ui:126
+msgid "Authentication failed!"
+msgstr "認証に失敗しました。"
+
+#. Log in button label
+#: src/app/components/login/login.ui:141
+msgid "Log in"
+msgstr "ログイン"
+
+#. Button label. Exits selection mode.
+#: src/app/components/headerbar/headerbar.ui:46
+msgid "Cancel"
+msgstr "選択解除"
+
+#. Button label. Selects all visible songs.
+#: src/app/components/headerbar/headerbar.ui:57
+msgid "Select all"
+msgstr "すべて選択"
+
+#: src/app/components/playback/playback_controls.ui:17
+msgid "Shuffle"
+msgstr "ランダム"
+
+#: src/app/components/playback/playback_controls.ui:27
+msgid "Previous"
+msgstr "前"
+
+#: src/app/components/playback/playback_controls.ui:50
+msgid "Next"
+msgstr "次"
+
+#: src/app/components/playback/playback_controls.ui:60
+msgid "Repeat"
+msgstr "繰り返し"
+
+#. A title that is shown when the user has not saved any albums.
+#: src/app/components/library/library.ui:26
+msgid "You have no saved albums."
+msgstr "保存したアルバムがありません。"
+
+#. A description of what happens when the user has saved albums.
+#: src/app/components/library/library.ui:27
+msgid "Your library will be shown here."
+msgstr "ライブラリはここに表示されます。"
+
+#~ msgid "by"
+#~ msgstr "by"

@@ -3,11 +3,11 @@ use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use std::rc::Rc;
 
-use crate::app::components::{display_add_css_provider, Component, EventListener, Playlist};
-use crate::app::state::LoginEvent;
-use crate::app::AppEvent;
-
 use super::SavedTracksModel;
+use crate::app::components::{Component, EventListener, Playlist};
+use crate::app::state::LoginEvent;
+use crate::app::{AppEvent, Worker};
+use libadwaita::subclass::prelude::BinImpl;
 
 mod imp {
 
@@ -27,7 +27,7 @@ mod imp {
     impl ObjectSubclass for SavedTracksWidget {
         const NAME: &'static str = "SavedTracksWidget";
         type Type = super::SavedTracksWidget;
-        type ParentType = gtk::Box;
+        type ParentType = libadwaita::Bin;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
@@ -40,16 +40,15 @@ mod imp {
 
     impl ObjectImpl for SavedTracksWidget {}
     impl WidgetImpl for SavedTracksWidget {}
-    impl BoxImpl for SavedTracksWidget {}
+    impl BinImpl for SavedTracksWidget {}
 }
 
 glib::wrapper! {
-    pub struct SavedTracksWidget(ObjectSubclass<imp::SavedTracksWidget>) @extends gtk::Widget, gtk::Box;
+    pub struct SavedTracksWidget(ObjectSubclass<imp::SavedTracksWidget>) @extends gtk::Widget, libadwaita::Bin;
 }
 
 impl SavedTracksWidget {
     fn new() -> Self {
-        display_add_css_provider(resource!("/components/saved_tracks.css"));
         glib::Object::new(&[]).expect("Failed to create an instance of SavedTracksWidget")
     }
 
@@ -80,14 +79,19 @@ pub struct SavedTracks {
 }
 
 impl SavedTracks {
-    pub fn new(model: Rc<SavedTracksModel>) -> Self {
+    pub fn new(model: Rc<SavedTracksModel>, worker: Worker) -> Self {
         let widget = SavedTracksWidget::new();
 
         widget.connect_bottom_edge(clone!(@weak model => move || {
             model.load_more();
         }));
 
-        let playlist = Playlist::new(widget.song_list_widget().clone(), model.clone());
+        let playlist = Playlist::new(
+            widget.song_list_widget().clone(),
+            model.clone(),
+            worker,
+            true,
+        );
 
         Self {
             widget,

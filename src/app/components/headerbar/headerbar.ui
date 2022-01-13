@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0" />
+  <requires lib="libadwaita" version="1.0" />
+  <template class="HeaderBarWidget" parent="AdwBin">
+    <child type="root">
+      <object class="GtkOverlay" id="overlay">
+        <property name="hexpand">1</property>
+        <child>
+          <object class="AdwHeaderBar" id="main_header">
+            <property name="show-end-title-buttons">1</property>
+            <child>
+              <object class="GtkButton" id="go_back">
+                <property name="receives-default">1</property>
+                <property name="halign">start</property>
+                <property name="valign">center</property>
+                <property name="icon-name">go-previous-symbolic</property>
+                <property name="has-frame">0</property>
+              </object>
+            </child>
+            <child type="title">
+              <object class="AdwWindowTitle" id="title">
+                <property name="visible">1</property>
+                <property name="title" translatable="no">Spot</property>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkButton" id="start_selection">
+                <property name="icon-name">object-select-symbolic</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child type="overlay">
+          <object class="AdwHeaderBar" id="selection_header">
+            <property name="show-end-title-buttons">0</property>
+            <property name="visible">0</property>
+            <style>
+              <class name="selection-mode" />
+            </style>
+            <child>
+              <object class="GtkButton" id="cancel">
+                <property name="receives-default">1</property>
+                <property name="halign">start</property>
+                <property name="valign">center</property>
+                <property name="label" translatable="yes" comments="Button label. Exits selection mode.">Cancel</property>
+              </object>
+            </child>
+            <child type="title">
+              <object class="AdwWindowTitle" id="selection_title">
+                <property name="title"></property>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkButton" id="select_all">
+                <property name="valign">center</property>
+                <property name="label" translatable="yes" comments="Button label. Selects all visible songs.">Select all</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

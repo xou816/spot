@@ -3,14 +3,13 @@ use gio::SimpleActionGroup;
 use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
-use std::sync::Arc;
 
-use crate::api::SpotifyApiClient;
-use crate::app::components::{labels, PlaylistModel, SelectionTool, SelectionToolsModel};
-use crate::app::components::{AddSelectionTool, SimpleSelectionTool};
+use crate::app::components::SimpleHeaderBarModel;
+use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::*;
+use crate::app::state::SelectionContext;
 use crate::app::state::{
-    BrowserAction, BrowserEvent, PlaybackAction, SelectionAction, SelectionContext, SelectionState,
+    BrowserAction, BrowserEvent, PlaybackAction, SelectionAction, SelectionState,
 };
 use crate::app::{
     ActionDispatcher, AppAction, AppEvent, AppModel, AppState, BatchQuery, ListDiff, SongsSource,
@@ -18,6 +17,7 @@ use crate::app::{
 
 pub struct PlaylistDetailsModel {
     pub id: String,
+    _editable_selection_context: SelectionContext,
     app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>,
 }
@@ -25,10 +25,20 @@ pub struct PlaylistDetailsModel {
 impl PlaylistDetailsModel {
     pub fn new(id: String, app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
         Self {
-            id,
+            id: id.clone(),
+            _editable_selection_context: SelectionContext::EditablePlaylist(id),
             app_model,
             dispatcher,
         }
+    }
+
+    fn state(&self) -> Ref<'_, AppState> {
+        self.app_model.get_state()
+    }
+
+    fn is_playlist_editable(&self) -> bool {
+        let state = self.app_model.get_state();
+        state.logged_user.playlists.iter().any(|p| p.id == self.id)
     }
 
     fn songs_ref(&self) -> Option<impl Deref<Target = SongList> + '_> {
@@ -50,11 +60,6 @@ impl PlaylistDetailsModel {
                 .playlist
                 .as_ref()
         })
-    }
-
-    fn is_playlist_writable(&self) -> bool {
-        let state = self.app_model.get_state();
-        state.logged_user.playlists.iter().any(|p| p.id == self.id)
     }
 
     pub fn load_playlist_info(&self) {
@@ -97,12 +102,6 @@ impl PlaylistDetailsModel {
             self.dispatcher
                 .dispatch(AppAction::ViewUser(owner.to_owned()));
         }
-    }
-}
-
-impl PlaylistDetailsModel {
-    fn state(&self) -> Ref<'_, AppState> {
-        self.app_model.get_state()
     }
 }
 
@@ -167,11 +166,7 @@ impl PlaylistModel for PlaylistDetailsModel {
         menu.append(Some(&*labels::VIEW_ALBUM), Some("song.view_album"));
         for artist in song.artists.iter() {
             menu.append(
-                Some(&format!(
-                    "{} {}",
-                    *labels::MORE_FROM,
-                    glib::markup_escape_text(&artist.name)
-                )),
+                Some(&labels::more_from_label(&artist.name)),
                 Some(&format!("song.view_artist_{}", artist.id)),
             );
         }
@@ -196,8 +191,9 @@ impl PlaylistModel for PlaylistDetailsModel {
     }
 
     fn enable_selection(&self) -> bool {
-        self.dispatcher
-            .dispatch(AppAction::ChangeSelectionMode(true));
+        self.dispatcher.dispatch(AppAction::EnableSelection(
+            self.selection_context().unwrap().clone(),
+        ));
         true
     }
 
@@ -206,76 +202,28 @@ impl PlaylistModel for PlaylistDetailsModel {
     }
 }
 
-impl SelectionToolsModel for PlaylistDetailsModel {
-    fn dispatcher(&self) -> Box<dyn ActionDispatcher> {
-        self.dispatcher.box_clone()
+impl SimpleHeaderBarModel for PlaylistDetailsModel {
+    fn title(&self) -> Option<String> {
+        None
     }
 
-    fn spotify_client(&self) -> Arc<dyn SpotifyApiClient + Send + Sync> {
-        self.app_model.get_spotify()
+    fn title_updated(&self, _: &AppEvent) -> bool {
+        false
     }
 
-    fn tools_visible(&self, _: &SelectionState) -> Vec<SelectionTool> {
-        let mut playlists: Vec<SelectionTool> = self
-            .app_model
-            .get_state()
-            .logged_user
-            .playlists
-            .iter()
-            .filter(|p| p.id != self.id)
-            .map(|p| SelectionTool::Add(AddSelectionTool::AddToPlaylist(p.clone())))
-            .collect();
-        let mut tools = vec![
-            SelectionTool::Simple(SimpleSelectionTool::SelectAll),
-            SelectionTool::Add(AddSelectionTool::AddToQueue),
-        ];
-        tools.append(&mut playlists);
-        if self.is_playlist_writable() {
-            tools.push(SelectionTool::Simple(SimpleSelectionTool::Remove));
+    fn selection_context(&self) -> Option<&SelectionContext> {
+        Some(if self.is_playlist_editable() {
+            &self._editable_selection_context
+        } else {
+            &SelectionContext::Playlist
+        })
+    }
+
+    fn select_all(&self) {
+        if let Some(songs) = self.songs_ref() {
+            let songs: Vec<SongDescription> = songs.iter().cloned().collect();
+            self.dispatcher
+                .dispatch(SelectionAction::Select(songs).into());
         }
-        tools
-    }
-
-    fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
-        let selection = self
-            .app_model
-            .map_state_opt(|s| Some(&s.selection))
-            .filter(|s| s.context == SelectionContext::Playlist)?;
-        Some(Box::new(selection))
-    }
-
-    fn handle_tool_activated(&self, selection: &SelectionState, tool: &SelectionTool) {
-        match tool {
-            SelectionTool::Simple(SimpleSelectionTool::SelectAll) => {
-                if let Some(songs) = self.songs_ref() {
-                    let vec = songs.iter().collect::<Vec<&SongDescription>>();
-                    self.handle_select_all_tool_borrowed(selection, &vec[..]);
-                }
-            }
-            SelectionTool::Simple(SimpleSelectionTool::Remove) => {
-                self.handle_remove_from_playlist_tool(selection, &self.id);
-            }
-            _ => self.default_handle_tool_activated(selection, tool),
-        };
-    }
-}
-
-impl PlaylistDetailsModel {
-    fn handle_remove_from_playlist_tool(&self, selection: &SelectionState, playlist: &str) {
-        let api = self.spotify_client();
-        let id = playlist.to_string();
-        let uris: Vec<String> = selection
-            .peek_selection()
-            .map(|s| &s.uri)
-            .cloned()
-            .collect();
-        self.dispatcher()
-            .call_spotify_and_dispatch_many(move || async move {
-                api.remove_from_playlist(&id, uris.clone()).await?;
-                Ok(vec![
-                    BrowserAction::RemoveTracksFromPlaylist(uris).into(),
-                    SelectionAction::Clear.into(),
-                ])
-            })
     }
 }

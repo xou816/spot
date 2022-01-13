@@ -2,11 +2,10 @@
 <interface>
   <requires lib="gtk" version="4.0"/>
   <template class="SongWidget" parent="GtkGrid">
-    <property name="height-request">30</property>
-    <property name="margin-start">2</property>
-    <property name="margin-end">2</property>
-    <property name="margin-top">2</property>
-    <property name="margin-bottom">2</property>
+    <property name="margin-start">6</property>
+    <property name="margin-end">6</property>
+    <property name="margin-top">6</property>
+    <property name="margin-bottom">6</property>
     <property name="column-spacing">6</property>
     <property name="row-spacing">0</property>
     <child>
@@ -19,14 +18,29 @@
         <child>
           <object class="GtkLabel" id="song_index">
             <property name="label">1</property>
+            <property name="sensitive">0</property>
             <style>
               <class name="song__index"/>
+              <class name="numeric"/>
+            </style>
+          </object>
+        </child>
+        <child type="overlay">
+          <object class="GtkImage" id="song_cover">
+            <property name="pixel-size">30</property>
+            <property name="overflow">hidden</property>
+            <property name="halign">center</property>
+            <property name="valign">center</property>
+            <style>
+              <class name="song__cover"/>
             </style>
           </object>
         </child>
         <child type="overlay">
           <object class="GtkImage" id="song_icon">
             <property name="icon-name">media-playback-start-symbolic</property>
+            <property name="halign">center</property>
+            <property name="valign">center</property>
             <style>
               <class name="song__icon"/>
             </style>
@@ -57,7 +71,7 @@
           <property name="row">0</property>
         </layout>
         <style>
-          <class name="song__title"/>
+          <class name="title"/>
         </style>
       </object>
     </child>
@@ -74,15 +88,16 @@
           <property name="row">1</property>
         </layout>
         <style>
-          <class name="song__artist"/>
+          <class name="subtitle"/>
         </style>
       </object>
     </child>
     <child>
       <object class="GtkLabel" id="song_length">
         <property name="sensitive">0</property>
-        <property name="label">0:00</property>
-        <property name="max-width-chars">35</property>
+        <property name="label">0∶00</property>
+				<property name="justify">right</property>
+        <property name="max-width-chars">7</property>
         <property name="xalign">1</property>
         <property name="hexpand">0</property>
         <layout>
@@ -91,7 +106,7 @@
           <property name="row">0</property>
         </layout>
         <style>
-          <class name="song__duration"/>
+          <class name="numeric"/>
         </style>
       </object>
     </child>
@@ -103,13 +118,15 @@
         <property name="has-frame">0</property>
         <property name="hexpand">0</property>
         <property name="halign">end</property>
+				<property name="valign">center</property>
+        <property name="tooltip-text">Menu</property>
         <layout>
           <property name="row-span">2</property>
           <property name="column">4</property>
           <property name="row">0</property>
         </layout>
         <style>
-          <class name="song__menu"/>
+          <class name="circular"/>
           <class name="flat"/>
         </style>
       </object>

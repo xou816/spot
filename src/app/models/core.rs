@@ -228,7 +228,7 @@ impl SongList {
         if a == b {
             return;
         }
-        let a_value = self.index_mut(a).map(|v| std::mem::take(v));
+        let a_value = self.index_mut(a).map(std::mem::take);
         let a_value = a_value.as_ref();
         let new_a_value = self
             .index_mut(b)
@@ -334,7 +334,7 @@ mod tests {
             },
             duration: 1000,
             art: None,
-            track_number: 0,
+            track_number: None,
         }
     }
 

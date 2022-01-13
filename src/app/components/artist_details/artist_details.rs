@@ -22,9 +22,6 @@ mod imp {
         pub scrolled_window: TemplateChild<gtk::ScrolledWindow>,
 
         #[template_child]
-        pub artist_name: TemplateChild<gtk::Label>,
-
-        #[template_child]
         pub top_tracks: TemplateChild<gtk::ListView>,
 
         #[template_child]
@@ -69,10 +66,9 @@ impl ArtistDetailsWidget {
         self.widget().top_tracks.as_ref()
     }
 
-    fn set_artist_name(&self, name: &str) {
+    fn set_loaded(&self) {
         let context = self.style_context();
         context.add_class("artist__loaded");
-        self.widget().artist_name.set_text(name);
     }
 
     fn connect_bottom_edge<F>(&self, f: F)
@@ -132,7 +128,7 @@ impl ArtistDetails {
 
         if let Some(store) = model.get_list_store() {
             widget.bind_artist_releases(
-                worker,
+                worker.clone(),
                 &*store,
                 clone!(@weak model => move |id| {
                     model.open_album(id);
@@ -143,18 +139,14 @@ impl ArtistDetails {
         let playlist = Box::new(Playlist::new(
             widget.top_tracks_widget().clone(),
             Rc::clone(&model),
+            worker,
+            true,
         ));
 
         Self {
             model,
             widget,
             children: vec![playlist],
-        }
-    }
-
-    fn update_details(&mut self) {
-        if let Some(name) = self.model.get_artist_name() {
-            self.widget.set_artist_name(&name);
         }
     }
 }
@@ -175,7 +167,7 @@ impl EventListener for ArtistDetails {
             AppEvent::BrowserEvent(BrowserEvent::ArtistDetailsUpdated(id))
                 if id == &self.model.id =>
             {
-                self.update_details();
+                self.widget.set_loaded();
             }
             _ => {}
         }

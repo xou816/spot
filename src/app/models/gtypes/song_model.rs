@@ -10,15 +10,31 @@ glib::wrapper! {
 // Constructor for new instances. This simply calls glib::Object::new() with
 // initial values for our two properties and then returns the new instance
 impl SongModel {
-    pub fn new(id: &str, index: u32, title: &str, artist: &str, duration: &str) -> SongModel {
+    pub fn new(
+        id: &str,
+        index: u32,
+        title: &str,
+        artist: &str,
+        duration: &str,
+        art: &Option<String>,
+    ) -> SongModel {
         glib::Object::new::<SongModel>(&[
             ("index", &index),
             ("title", &title),
             ("artist", &artist),
             ("id", &id),
             ("duration", &duration),
+            ("art", &art),
         ])
         .expect("Failed to create")
+    }
+
+    pub fn cover_url(&self) -> Option<String> {
+        self.property("art")
+            .unwrap()
+            .get::<&str>()
+            .ok()
+            .map(|s| s.to_string())
     }
 
     pub fn set_playing(&self, is_playing: bool) {
@@ -128,6 +144,7 @@ mod imp {
         title: RefCell<Option<String>>,
         artist: RefCell<Option<String>>,
         duration: RefCell<Option<String>>,
+        art: RefCell<Option<String>>,
         playing: RefCell<bool>,
         selected: RefCell<bool>,
         bindings: RefCell<BindingsInner>,
@@ -176,6 +193,7 @@ mod imp {
                 title: RefCell::new(None),
                 artist: RefCell::new(None),
                 duration: RefCell::new(None),
+                art: RefCell::new(None),
                 playing: RefCell::new(false),
                 selected: RefCell::new(false),
                 bindings: RefCell::new(Default::default()),
@@ -185,7 +203,7 @@ mod imp {
 
     // Static array for defining the properties of the new type.
     lazy_static! {
-        static ref PROPERTIES: [glib::ParamSpec; 7] = [
+        static ref PROPERTIES: [glib::ParamSpec; 8] = [
             glib::ParamSpec::new_uint(
                 "index",
                 "Index",
@@ -219,6 +237,7 @@ mod imp {
                 false,
                 glib::ParamFlags::READWRITE,
             ),
+            glib::ParamSpec::new_string("art", "Art", "", None, glib::ParamFlags::READWRITE,),
         ];
     }
 
@@ -268,6 +287,12 @@ mod imp {
                         .expect("type conformity checked by `Object::set_property`");
                     self.duration.replace(dur);
                 }
+                "art" => {
+                    let art = value
+                        .get()
+                        .expect("type conformity checked by `Object::set_property`");
+                    self.art.replace(art);
+                }
                 "playing" => {
                     let playing = value
                         .get()
@@ -293,6 +318,7 @@ mod imp {
                 "artist" => self.artist.borrow().to_value(),
                 "id" => self.id.borrow().to_value(),
                 "duration" => self.duration.borrow().to_value(),
+                "art" => self.art.borrow().to_value(),
                 "playing" => self.playing.borrow().to_value(),
                 "selected" => self.selected.borrow().to_value(),
                 _ => unimplemented!(),

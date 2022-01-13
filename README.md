@@ -27,6 +27,11 @@ Bear special attention to the fact that to enable automatic login, you might hav
 
 See [this comment](https://github.com/xou816/spot/issues/92#issuecomment-801852593) for more details!
 
+### Login in with Facebook
+
+...is not supported. However, you can update your account in order to be able to log in with a username and password [as explained in this issue](https://github.com/xou816/spot/issues/373).
+
+
 ### Settings
 
 Spot can also be configured via `gsettings` if you want to change the audio backend, the song bitrate, etc. [A GUI is planned but not available yet.](https://github.com/xou816/spot/issues/142)
@@ -47,9 +52,9 @@ Similarly, Spot does not display lyrics for songs, but you can use [osdlyrics](h
 
 Spot uses the dark theme variant by default; this can be changed using `gsettings`.
 
-If you are using the flatpak version, don't forget to install your theme with flatpak as well -- even for Adwaita-dark!
+If you are using the flatpak version, don't forget to install your theme with flatpak as well. See [this comment](https://github.com/xou816/spot/issues/209#issuecomment-860180537) for details.
 
-See [this comment](https://github.com/xou816/spot/issues/209#issuecomment-860180537) for details.
+Similarly, snap also requires that you install the corresponding snap for your theme. See [this comment](https://github.com/xou816/spot/issues/338#issuecomment-975543476) for details.
 
 ## Features
 
@@ -119,9 +124,9 @@ ninja spot-pot -C target
 ninja spot-update-po -C target
 ```
 
-### Pulling updates strings from POEditor
+### Pulling updated strings from POEditor
 
-We are now using POEditior and the wonderful [`poeditor-sync`](https://github.com/mick88/poeditor-sync) tool.
+We are now using POEditor and the wonderful [`poeditor-sync`](https://github.com/mick88/poeditor-sync) tool.
 
 ```
 poeditor pull

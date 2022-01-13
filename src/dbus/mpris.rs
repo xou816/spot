@@ -314,9 +314,16 @@ impl SpotMprisPlayer {
 
     #[dbus_interface(property)]
     pub fn volume(&self) -> f64 {
-        0f64
+        self.state.volume()
     }
 
     #[dbus_interface(property)]
-    pub fn set_volume(&self, value: f64) {}
+    pub fn set_volume(&self, value: f64) -> Result<()> {
+        // As per spec, if new volume less than 0 round to 0
+        // also, we don't support volume higher than 100% at the moment.
+        let volume = value.clamp(0.0, 1.0);
+        self.sender
+            .unbounded_send(PlaybackAction::SetVolume(value).into())
+            .map_err(|_| zbus::fdo::Error::Failed("Could not send action".to_string()))
+    }
 }

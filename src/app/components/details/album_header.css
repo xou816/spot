@@ -1,0 +1,56 @@
+.album__header .title-4 label, .header__mobile .title-4 label {
+  color: @window_fg_color;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.album__header .title-4, .header__mobile .title-4 {
+  padding: 0;
+}
+
+
+.album__header .title-4:hover, .header__mobile .title-4:hover {
+  border-radius: 6px;
+  background-image: image(alpha(currentColor, 0.08));
+}
+
+.album__header .like__button {
+  margin-right: 6px;
+}
+
+.album__header .vertical {
+  margin-left: 18px;
+}
+
+.album__header .card {
+  margin-top: 18px;
+  margin-left: 6px;
+  margin-bottom: 6px;
+}
+
+.header__mobile .card {
+  margin-top: 12px;
+}
+clamp.details__clamp {
+  background-color: @view_bg_color;
+  box-shadow: inset 0px -1px 0px @borders;
+}
+
+headerbar.details__headerbar {
+  box-shadow: none;
+  transition: background-color .3s ease;
+}
+
+headerbar.flat.details__headerbar windowtitle {
+  opacity: 0;
+}
+
+headerbar.details__headerbar windowtitle {
+  transition: opacity .3s ease;
+  opacity: 1;
+}
+
+.details__headerbar.flat {
+  background-color: @view_bg_color;
+}
+

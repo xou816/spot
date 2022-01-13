@@ -3,15 +3,20 @@ use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use std::rc::Rc;
 
+use super::album_header::AlbumHeaderWidget;
 use super::release_details::ReleaseDetailsWindow;
 use super::DetailsModel;
 
-use crate::app::components::{display_add_css_provider, Component, EventListener, Playlist};
+use crate::app::components::{
+    Component, EventListener, HeaderBarComponent, HeaderBarWidget, Playlist,
+};
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
 use crate::app::{AppEvent, BrowserEvent};
 
 mod imp {
+
+    use libadwaita::subclass::prelude::BinImpl;
 
     use super::*;
 
@@ -22,35 +27,26 @@ mod imp {
         pub scrolled_window: TemplateChild<gtk::ScrolledWindow>,
 
         #[template_child]
+        pub headerbar: TemplateChild<HeaderBarWidget>,
+
+        #[template_child]
         pub header_revealer: TemplateChild<gtk::Revealer>,
 
         #[template_child]
-        pub album_label: TemplateChild<gtk::Label>,
+        pub header_widget: TemplateChild<AlbumHeaderWidget>,
+
+        #[template_child]
+        pub header_mobile: TemplateChild<AlbumHeaderWidget>,
 
         #[template_child]
         pub album_tracks: TemplateChild<gtk::ListView>,
-
-        #[template_child]
-        pub album_art: TemplateChild<gtk::Image>,
-
-        #[template_child]
-        pub like_button: TemplateChild<gtk::Button>,
-
-        #[template_child]
-        pub info_button: TemplateChild<gtk::Button>,
-
-        #[template_child]
-        pub artist_button: TemplateChild<gtk::LinkButton>,
-
-        #[template_child]
-        pub artist_button_label: TemplateChild<gtk::Label>,
     }
 
     #[glib::object_subclass]
     impl ObjectSubclass for AlbumDetailsWidget {
         const NAME: &'static str = "AlbumDetailsWidget";
         type Type = super::AlbumDetailsWidget;
-        type ParentType = gtk::Box;
+        type ParentType = libadwaita::Bin;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
@@ -61,18 +57,24 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for AlbumDetailsWidget {}
+    impl ObjectImpl for AlbumDetailsWidget {
+        fn constructed(&self, obj: &Self::Type) {
+            self.parent_constructed(obj);
+            self.header_mobile.set_centered();
+            self.headerbar.add_classes(&["details__headerbar"]);
+        }
+    }
+
     impl WidgetImpl for AlbumDetailsWidget {}
-    impl BoxImpl for AlbumDetailsWidget {}
+    impl BinImpl for AlbumDetailsWidget {}
 }
 
 glib::wrapper! {
-    pub struct AlbumDetailsWidget(ObjectSubclass<imp::AlbumDetailsWidget>) @extends gtk::Widget, gtk::Box;
+    pub struct AlbumDetailsWidget(ObjectSubclass<imp::AlbumDetailsWidget>) @extends gtk::Widget, libadwaita::Bin;
 }
 
 impl AlbumDetailsWidget {
     fn new() -> Self {
-        display_add_css_provider(resource!("/components/details.css"));
         glib::Object::new(&[]).expect("Failed to create an instance of AlbumDetailsWidget")
     }
 
@@ -85,23 +87,40 @@ impl AlbumDetailsWidget {
         let is_up_to_date = widget.header_revealer.reveals_child() == visible;
         if !is_up_to_date {
             widget.header_revealer.set_reveal_child(visible);
+            widget.headerbar.set_title_visible(true);
+            if visible {
+                widget.headerbar.add_classes(&["flat"]);
+            } else {
+                widget.headerbar.remove_classes(&["flat"]);
+            }
         }
         is_up_to_date
     }
 
-    fn connect_header(&self) {
+    fn connect_header_visibility(&self) {
         self.set_header_visible(true);
 
         let scroll_controller =
             gtk::EventControllerScroll::new(gtk::EventControllerScrollFlags::VERTICAL);
         scroll_controller.connect_scroll(
             clone!(@weak self as _self => @default-return gtk::Inhibit(false), move |_, _, dy| {
-                gtk::Inhibit(!_self.set_header_visible(dy < 0f64))
+                let visible = dy < 0f64;
+                gtk::Inhibit(!_self.set_header_visible(visible))
             }),
         );
 
-        let widget = self.widget();
-        widget.scrolled_window.add_controller(&scroll_controller);
+        let swipe_controller = gtk::GestureSwipe::new();
+        swipe_controller.set_touch_only(true);
+        swipe_controller.set_propagation_phase(gtk::PropagationPhase::Capture);
+        swipe_controller.connect_swipe(clone!(@weak self as _self => move |_, _, dy| {
+            let visible = dy >= 0f64;
+            _self.set_header_visible(visible);
+        }));
+
+        self.widget()
+            .scrolled_window
+            .add_controller(&scroll_controller);
+        self.add_controller(&swipe_controller);
     }
 
     fn connect_bottom_edge<F>(&self, f: F)
@@ -117,53 +136,65 @@ impl AlbumDetailsWidget {
             });
     }
 
-    fn connect_liked<F>(&self, f: F)
-    where
-        F: Fn() + 'static,
-    {
-        self.widget().like_button.connect_clicked(move |_| f());
-    }
-
-    fn connect_info<F>(&self, f: F)
-    where
-        F: Fn() + 'static,
-    {
-        self.widget().info_button.connect_clicked(move |_| f());
-    }
-
-    fn connect_artist_clicked<F>(&self, f: F)
-    where
-        F: Fn() + 'static,
-    {
-        self.widget().artist_button.connect_activate_link(move |_| {
-            f();
-            glib::signal::Inhibit(true)
-        });
+    fn headerbar_widget(&self) -> &HeaderBarWidget {
+        self.widget().headerbar.as_ref()
     }
 
     fn album_tracks_widget(&self) -> &gtk::ListView {
         self.widget().album_tracks.as_ref()
     }
 
-    fn set_liked(&self, is_liked: bool) {
-        self.widget()
-            .like_button
-            .set_label(if is_liked { "♥" } else { "♡" });
-    }
-
     fn set_loaded(&self) {
         let context = self.style_context();
-        context.add_class("details--loaded");
+        context.add_class("container--loaded");
     }
 
-    pub fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {
-        self.widget().album_art.set_from_pixbuf(Some(art));
+    fn connect_liked<F>(&self, f: F)
+    where
+        F: Fn() + Clone + 'static,
+    {
+        self.widget().header_widget.connect_liked(f.clone());
+        self.widget().header_mobile.connect_liked(f);
     }
 
-    fn set_album_and_artist(&self, album: &str, artist: &str) {
-        let widget = self.widget();
-        widget.album_label.set_label(album);
-        widget.artist_button_label.set_label(artist);
+    fn connect_info<F>(&self, f: F)
+    where
+        F: Fn() + Clone + 'static,
+    {
+        self.widget().header_widget.connect_info(f.clone());
+        self.widget().header_mobile.connect_info(f);
+    }
+
+    fn set_liked(&self, is_liked: bool) {
+        self.widget().header_widget.set_liked(is_liked);
+        self.widget().header_mobile.set_liked(is_liked);
+    }
+
+    fn set_album_and_artist_and_year(&self, album: &str, artist: &str, year: Option<u32>) {
+        self.widget()
+            .header_widget
+            .set_album_and_artist_and_year(album, artist, year);
+        self.widget()
+            .header_mobile
+            .set_album_and_artist_and_year(album, artist, year);
+        self.widget()
+            .headerbar
+            .set_title_and_subtitle(album, artist);
+    }
+
+    fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {
+        self.widget().header_widget.set_artwork(art);
+        self.widget().header_mobile.set_artwork(art);
+    }
+
+    fn connect_artist_clicked<F>(&self, f: F)
+    where
+        F: Fn() + Clone + 'static,
+    {
+        self.widget()
+            .header_widget
+            .connect_artist_clicked(f.clone());
+        self.widget().header_mobile.connect_artist_clicked(f);
     }
 }
 
@@ -182,16 +213,25 @@ impl Details {
         }
 
         let widget = AlbumDetailsWidget::new();
+
         let playlist = Box::new(Playlist::new(
             widget.album_tracks_widget().clone(),
             model.clone(),
+            worker.clone(),
+            false,
+        ));
+
+        let headerbar_widget = widget.headerbar_widget();
+        let headerbar = Box::new(HeaderBarComponent::new(
+            headerbar_widget.clone(),
+            model.to_headerbar_model(),
         ));
 
         let modal = ReleaseDetailsWindow::new();
 
         widget.connect_liked(clone!(@weak model => move || model.toggle_save_album()));
 
-        widget.connect_header();
+        widget.connect_header_visibility();
 
         widget.connect_bottom_edge(clone!(@weak model => move || {
             model.load_more();
@@ -214,13 +254,14 @@ impl Details {
             worker,
             widget,
             modal,
-            children: vec![playlist],
+            children: vec![playlist, headerbar],
         }
     }
 
     fn update_liked(&self) {
         if let Some(info) = self.model.get_album_info() {
             let is_liked = info.description.is_liked;
+            self.widget.set_liked(is_liked);
             self.widget.set_liked(is_liked);
         }
     }
@@ -231,18 +272,22 @@ impl Details {
             let album = &album.description;
 
             self.widget.set_liked(album.is_liked);
-            self.widget
-                .set_album_and_artist(&album.title[..], &album.artists_name());
-            self.widget
-                .connect_artist_clicked(clone!(@weak self.model as model => move || {
-                    model.view_artist();
-                }));
+
+            self.widget.set_album_and_artist_and_year(
+                &album.title[..],
+                &album.artists_name(),
+                album.year(),
+            );
+
+            self.widget.connect_artist_clicked(
+                clone!(@weak self.model as model => move || model.view_artist()),
+            );
 
             self.modal.set_details(
                 &album.title,
                 &album.artists_name(),
                 &details.label,
-                &details.release_date,
+                album.release_date.as_ref().unwrap(),
                 album.songs.len(),
                 &album.formatted_time(),
                 &details.copyright_text,
@@ -250,18 +295,14 @@ impl Details {
 
             if let Some(art) = album.art.clone() {
                 let widget = self.widget.downgrade();
-                let modal = self.modal.downgrade();
 
                 self.worker.send_local_task(async move {
                     let pixbuf = ImageLoader::new()
-                        .load_remote(&art[..], "jpg", 200, 200)
+                        .load_remote(&art[..], "jpg", 320, 320)
                         .await;
-                    if let (Some(widget), Some(modal), Some(ref pixbuf)) =
-                        (widget.upgrade(), modal.upgrade(), pixbuf)
-                    {
+                    if let (Some(widget), Some(ref pixbuf)) = (widget.upgrade(), pixbuf) {
                         widget.set_artwork(pixbuf);
                         widget.set_loaded();
-                        modal.set_artwork(pixbuf);
                     }
                 });
             } else {

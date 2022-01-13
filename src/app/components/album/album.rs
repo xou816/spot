@@ -6,6 +6,7 @@ use crate::app::models::AlbumModel;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
+use libadwaita::subclass::prelude::BinImpl;
 
 mod imp {
 
@@ -21,6 +22,9 @@ mod imp {
         pub artist_label: TemplateChild<gtk::Label>,
 
         #[template_child]
+        pub year_label: TemplateChild<gtk::Label>,
+
+        #[template_child]
         pub cover_btn: TemplateChild<gtk::Button>,
 
         #[template_child]
@@ -31,7 +35,7 @@ mod imp {
     impl ObjectSubclass for AlbumWidget {
         const NAME: &'static str = "AlbumWidget";
         type Type = super::AlbumWidget;
-        type ParentType = gtk::Box;
+        type ParentType = libadwaita::Bin;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
@@ -44,11 +48,11 @@ mod imp {
 
     impl ObjectImpl for AlbumWidget {}
     impl WidgetImpl for AlbumWidget {}
-    impl BoxImpl for AlbumWidget {}
+    impl BinImpl for AlbumWidget {}
 }
 
 glib::wrapper! {
-    pub struct AlbumWidget(ObjectSubclass<imp::AlbumWidget>) @extends gtk::Widget, gtk::Box;
+    pub struct AlbumWidget(ObjectSubclass<imp::AlbumWidget>) @extends gtk::Widget, libadwaita::Bin;
 }
 
 impl AlbumWidget {
@@ -65,7 +69,7 @@ impl AlbumWidget {
 
     fn set_loaded(&self) {
         let context = self.style_context();
-        context.add_class("album--loaded");
+        context.add_class("container--loaded");
     }
 
     fn set_image(&self, pixbuf: Option<&gdk_pixbuf::Pixbuf>) {
@@ -101,6 +105,18 @@ impl AlbumWidget {
             .bind_property("artist", &*widget.artist_label, "label")
             .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
             .build();
+
+        match album_model.year() {
+            Some(_) => {
+                album_model
+                    .bind_property("year", &*widget.year_label, "label")
+                    .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                    .build();
+            }
+            None => {
+                widget.year_label.hide();
+            }
+        }
     }
 
     pub fn connect_album_pressed<F: Fn(&Self) + 'static>(&self, f: F) {

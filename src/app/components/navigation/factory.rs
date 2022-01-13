@@ -1,6 +1,7 @@
 use std::rc::Rc;
 
 use crate::app::components::*;
+use crate::app::state::SelectionContext;
 use crate::app::{ActionDispatcher, AppModel, Worker};
 
 pub struct ScreenFactory {
@@ -22,15 +23,36 @@ impl ScreenFactory {
         }
     }
 
-    pub fn make_library(&self) -> Library {
+    pub fn make_library(&self) -> impl ListenerComponent {
         let model = LibraryModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        Library::new(self.worker.clone(), model)
+        let screen_model = DefaultHeaderBarModel::new(
+            Some(gettext("Library")),
+            None,
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        );
+        StandardScreen::new(
+            Library::new(self.worker.clone(), model),
+            Rc::new(screen_model),
+        )
     }
 
-    pub fn make_saved_playlists(&self) -> SavedPlaylists {
-        let model =
-            SavedPlaylistsModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        SavedPlaylists::new(self.worker.clone(), model)
+    pub fn make_saved_playlists_model(&self) -> SavedPlaylistsModel {
+        SavedPlaylistsModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone())
+    }
+
+    pub fn make_saved_playlists(&self) -> impl ListenerComponent {
+        let model = self.make_saved_playlists_model();
+        let screen_model = DefaultHeaderBarModel::new(
+            Some(gettext("Playlists")),
+            None,
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        );
+        StandardScreen::new(
+            SavedPlaylists::new(self.worker.clone(), model),
+            Rc::new(screen_model),
+        )
     }
 
     pub fn make_now_playing(&self) -> impl ListenerComponent {
@@ -38,15 +60,32 @@ impl ScreenFactory {
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        SelectionTools::new(NowPlaying::new(Rc::clone(&model)), model)
+        let screen_model = SimpleHeaderBarModelWrapper::new(
+            Rc::clone(&model),
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        );
+        StandardScreen::new(
+            NowPlaying::new(model, self.worker.clone()),
+            Rc::new(screen_model),
+        )
     }
 
     pub fn make_saved_tracks(&self) -> impl ListenerComponent {
+        let screen_model = DefaultHeaderBarModel::new(
+            Some(gettext("Saved tracks")),
+            Some(SelectionContext::Default),
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        );
         let model = Rc::new(SavedTracksModel::new(
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        SelectionTools::new(SavedTracks::new(Rc::clone(&model)), model)
+        StandardScreen::new(
+            SavedTracks::new(model, self.worker.clone()),
+            Rc::new(screen_model),
+        )
     }
 
     pub fn make_album_details(&self, id: String) -> impl ListenerComponent {
@@ -55,10 +94,10 @@ impl ScreenFactory {
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        SelectionTools::new(Details::new(Rc::clone(&model), self.worker.clone()), model)
+        Details::new(model, self.worker.clone())
     }
 
-    pub fn make_search_results(&self) -> SearchResults {
+    pub fn make_search_results(&self) -> impl ListenerComponent {
         let model =
             SearchResultsModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
         SearchResults::new(model, self.worker.clone())
@@ -70,9 +109,14 @@ impl ScreenFactory {
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        SelectionTools::new(
-            ArtistDetails::new(Rc::clone(&model), self.worker.clone()),
-            model,
+        let screen_model = SimpleHeaderBarModelWrapper::new(
+            Rc::clone(&model),
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        );
+        StandardScreen::new(
+            ArtistDetails::new(model, self.worker.clone()),
+            Rc::new(screen_model),
         )
     }
 
@@ -82,15 +126,29 @@ impl ScreenFactory {
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        SelectionTools::new(
-            PlaylistDetails::new(Rc::clone(&model), self.worker.clone()),
-            model,
+        let screen_model = SimpleHeaderBarModelWrapper::new(
+            Rc::clone(&model),
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        );
+        StandardScreen::new(
+            PlaylistDetails::new(model, self.worker.clone()),
+            Rc::new(screen_model),
         )
     }
 
-    pub fn make_user_details(&self, id: String) -> UserDetails {
+    pub fn make_user_details(&self, id: String) -> impl ListenerComponent {
+        let screen_model = DefaultHeaderBarModel::new(
+            None,
+            None,
+            Rc::clone(&self.app_model),
+            self.dispatcher.box_clone(),
+        );
         let model =
             UserDetailsModel::new(id, Rc::clone(&self.app_model), self.dispatcher.box_clone());
-        UserDetails::new(model, self.worker.clone())
+        StandardScreen::new(
+            UserDetails::new(model, self.worker.clone()),
+            Rc::new(screen_model),
+        )
     }
 }

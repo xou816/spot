@@ -1,6 +1,8 @@
 use crate::app::components::display_add_css_provider;
+use crate::app::loader::ImageLoader;
 use crate::app::models::SongModel;
 
+use crate::app::Worker;
 use gio::MenuModel;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -32,6 +34,9 @@ mod imp {
 
         #[template_child]
         pub menu_btn: TemplateChild<gtk::MenuButton>,
+
+        #[template_child]
+        pub song_cover: TemplateChild<gtk::Image>,
     }
 
     #[glib::object_subclass]
@@ -70,9 +75,13 @@ impl SongWidget {
         glib::Object::new(&[]).expect("Failed to create an instance of SongWidget")
     }
 
-    pub fn for_model(model: SongModel) -> Self {
+    fn widget(&self) -> &imp::SongWidget {
+        imp::SongWidget::from_instance(self)
+    }
+
+    pub fn for_model(model: SongModel, worker: Worker) -> Self {
         let _self = Self::new();
-        _self.bind(&model);
+        _self.bind(&model, worker, true);
         _self
     }
 
@@ -82,7 +91,7 @@ impl SongWidget {
 
     pub fn set_menu(&self, menu: Option<&MenuModel>) {
         if menu.is_some() {
-            let widget = imp::SongWidget::from_instance(self);
+            let widget = self.widget();
             widget.menu_btn.set_menu_model(menu);
             widget
                 .menu_btn
@@ -105,22 +114,48 @@ impl SongWidget {
         imp::SongWidget::from_instance(self)
             .song_checkbox
             .set_active(is_selected);
-        let song_class = "song-selected";
+    }
+
+    fn set_show_cover(&self, show_cover: bool) {
+        let song_class = "song--cover";
         let context = self.style_context();
-        if is_selected {
+        if show_cover {
             context.add_class(song_class);
         } else {
             context.remove_class(song_class);
         }
     }
 
-    pub fn bind(&self, model: &SongModel) {
-        let widget = imp::SongWidget::from_instance(self);
+    fn set_image(&self, pixbuf: Option<&gdk_pixbuf::Pixbuf>) {
+        self.widget().song_cover.set_from_pixbuf(pixbuf);
+    }
 
-        model.bind_index(&*widget.song_index, "label");
+    pub fn set_art(&self, model: &SongModel, worker: Worker) {
+        if let Some(url) = model.cover_url() {
+            let _self = self.downgrade();
+            worker.send_local_task(async move {
+                if let Some(_self) = _self.upgrade() {
+                    let loader = ImageLoader::new();
+                    let result = loader.load_remote(&url, "jpg", 100, 100).await;
+                    _self.set_image(result.as_ref());
+                }
+            });
+        }
+    }
+
+    pub fn bind(&self, model: &SongModel, worker: Worker, show_cover: bool) {
+        let widget = self.widget();
+
         model.bind_title(&*widget.song_title, "label");
         model.bind_artist(&*widget.song_artist, "label");
         model.bind_duration(&*widget.song_length, "label");
+
+        self.set_show_cover(show_cover);
+        if show_cover {
+            self.set_art(model, worker);
+        } else {
+            model.bind_index(&*widget.song_index, "label");
+        }
 
         self.set_playing(model.get_playing());
         model.connect_playing_local(clone!(@weak self as _self => move |song| {

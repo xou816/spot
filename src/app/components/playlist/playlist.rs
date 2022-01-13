@@ -8,7 +8,7 @@ use crate::app::components::{Component, EventListener, SongWidget};
 use crate::app::models::SongModel;
 use crate::app::{
     state::{PlaybackEvent, SelectionEvent, SelectionState},
-    AppEvent, ListDiff, ListStore,
+    AppEvent, ListDiff, ListStore, Worker,
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -64,13 +64,22 @@ impl<Model> Playlist<Model>
 where
     Model: PlaylistModel + 'static,
 {
-    pub fn new(listview: gtk::ListView, model: Rc<Model>) -> Self {
+    pub fn new(
+        listview: gtk::ListView,
+        model: Rc<Model>,
+        worker: Worker,
+        show_song_covers: bool,
+    ) -> Self {
         let list_model = ListStore::new();
         let selection_model = gtk::NoSelection::new(Some(list_model.unsafe_store()));
         let factory = gtk::SignalListItemFactory::new();
 
+        let style_context = listview.style_context();
+        style_context.add_class("playlist");
+        listview.set_show_separators(true);
+        listview.set_valign(gtk::Align::Start);
+
         listview.set_factory(Some(&factory));
-        listview.style_context().add_class("playlist");
         listview.set_single_click_activate(true);
         listview.set_model(Some(&selection_model));
         Self::set_selection_active(&listview, model.is_selection_enabled());
@@ -84,7 +93,7 @@ where
             song_model.set_state(Self::get_item_state(&*model, &song_model));
 
             let widget = item.child().unwrap().downcast::<SongWidget>().unwrap();
-            widget.bind(&song_model);
+            widget.bind(&song_model, worker.clone(), show_song_covers);
 
             let id = &song_model.get_id();
             widget.set_actions(model.actions_for(id).as_ref());

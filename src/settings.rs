@@ -4,7 +4,7 @@ use librespot::playback::config::Bitrate;
 
 const SETTINGS: &str = "dev.alextren.Spot";
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct WindowGeometry {
     pub width: i32,
     pub height: i32,
@@ -31,16 +31,6 @@ impl WindowGeometry {
             .ok()?;
         settings.apply();
         Some(())
-    }
-}
-
-impl Default for WindowGeometry {
-    fn default() -> Self {
-        Self {
-            width: 0,
-            height: 0,
-            is_maximized: false,
-        }
     }
 }
 
