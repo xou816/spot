@@ -223,7 +223,7 @@ impl SpotifyClient {
             .headers()
             .get("cache-control")
             .and_then(|header| header.to_str().ok())
-            .and_then(|s| Self::parse_cache_control(s));
+            .and_then(Self::parse_cache_control);
 
         match result.status() {
             s if s.is_success() => Ok(SpotifyResponse {

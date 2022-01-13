@@ -281,14 +281,14 @@ pub struct BadTrackItem {}
 #[derive(Deserialize, Debug, Clone)]
 #[serde(untagged)]
 pub enum FailibleTrackItem {
-    Ok(TrackItem),
+    Ok(Box<TrackItem>),
     Failing(BadTrackItem),
 }
 
 impl FailibleTrackItem {
     fn get(self) -> Option<TrackItem> {
         match self {
-            Self::Ok(track) => Some(track),
+            Self::Ok(track) => Some(*track),
             Self::Failing(_) => None,
         }
     }

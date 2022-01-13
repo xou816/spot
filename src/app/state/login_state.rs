@@ -69,18 +69,10 @@ impl From<LoginEvent> for AppEvent {
     }
 }
 
+#[derive(Default)]
 pub struct LoginState {
     pub user: Option<String>,
     pub playlists: Vec<PlaylistSummary>,
-}
-
-impl Default for LoginState {
-    fn default() -> Self {
-        Self {
-            user: None,
-            playlists: vec![],
-        }
-    }
 }
 
 impl UpdatableState for LoginState {
