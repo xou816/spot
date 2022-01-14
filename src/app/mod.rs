@@ -88,8 +88,8 @@ impl App {
                 worker.clone(),
             ),
             App::make_search_button(builder, dispatcher.box_clone()),
-            App::make_user_menu(builder, Rc::clone(model), dispatcher.box_clone()),
-            App::make_notification(builder, dispatcher),
+            App::make_user_menu(builder, Rc::clone(model), dispatcher),
+            App::make_notification(builder),
         ];
 
         self.components.append(&mut components);
@@ -196,15 +196,9 @@ impl App {
         Box::new(user_menu)
     }
 
-    fn make_notification(
-        builder: &gtk::Builder,
-        dispatcher: Box<dyn ActionDispatcher>,
-    ) -> Box<Notification> {
-        let root: gtk::Box = builder.object("notification").unwrap();
-        let content: gtk::Label = builder.object("notification_content").unwrap();
-        let close: gtk::Button = builder.object("close_notification").unwrap();
-        let model = NotificationModel::new(dispatcher);
-        Box::new(Notification::new(model, root, content, close))
+    fn make_notification(builder: &gtk::Builder) -> Box<Notification> {
+        let toast_overlay: libadwaita::ToastOverlay = builder.object("main").unwrap();
+        Box::new(Notification::new(toast_overlay))
     }
 
     fn handle(&mut self, message: AppAction) {
