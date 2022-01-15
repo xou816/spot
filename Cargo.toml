@@ -58,7 +58,7 @@ features = ["gettext-system"]
 [dependencies]
 secret-service = "^2.0.1"
 gdk-pixbuf = "^0.14.0"
-libadwaita = "^0.1.0-alpha-4"
+libadwaita = "^0.1.0-beta-1"
 ref_filter_map = "^1.0.1"
 regex = "^1.4.6"
 async-std = "^1.10.0"
