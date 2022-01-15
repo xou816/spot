@@ -70,6 +70,7 @@ sources = files(
 './api/cache.rs',
 './dbus/types.rs',
 './dbus/mpris.rs',
+'./dbus/listener.rs',
 './dbus/mod.rs',
 './config.rs',
 './app/rng.rs',
