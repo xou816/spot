@@ -55,10 +55,7 @@ async fn dbus_server(
                         player.state_mut().set_has_prev(has_prev);
                         player.state_mut().set_has_next(has_next);
                         player.state_mut().set_current_track(current);
-                        player
-                            .notify_current_track_changed(ctxt.to_owned())
-                            .await
-                            .map_err(|e| zbus::Error::FDO(Box::new(e)))
+                        player.notify_current_track_changed(ctxt).await
                     }
                     MprisStateUpdate::SetPositionMs(position) => {
                         player.state_mut().set_position(position);
@@ -72,10 +69,7 @@ async fn dbus_server(
                         player.state_mut().set_has_prev(has_prev);
                         player.state_mut().set_has_next(has_next);
                         player.state_mut().set_loop_status(loop_status);
-                        player
-                            .notify_loop_status(ctxt.to_owned())
-                            .await
-                            .map_err(|e| zbus::Error::FDO(Box::new(e)))
+                        player.notify_loop_status(ctxt).await
                     }
                     MprisStateUpdate::SetShuffled(shuffled) => {
                         player.state_mut().set_shuffled(shuffled);

@@ -88,6 +88,42 @@ impl SpotMprisPlayer {
     pub fn state_mut(&mut self) -> &mut MprisState {
         &mut self.state
     }
+
+    pub async fn notify_current_track_changed(&self, ctxt: &SignalContext<'_>) -> zbus::Result<()> {
+        let metadata = Value::from(self.metadata());
+        let can_go_next = Value::from(self.can_go_next());
+        let can_go_previous = Value::from(self.can_go_previous());
+
+        zbus::fdo::Properties::properties_changed(
+            ctxt,
+            Self::name(),
+            &HashMap::from([
+                ("Metadata", &metadata),
+                ("CanGoNext", &can_go_next),
+                ("CanGoPrevious", &can_go_previous),
+            ]),
+            &[],
+        )
+        .await
+    }
+
+    pub async fn notify_loop_status(&self, ctxt: &SignalContext<'_>) -> zbus::Result<()> {
+        let loop_status = Value::from(self.loop_status());
+        let can_go_next = Value::from(self.can_go_next());
+        let can_go_previous = Value::from(self.can_go_previous());
+
+        zbus::fdo::Properties::properties_changed(
+            ctxt,
+            Self::name(),
+            &HashMap::from([
+                ("LoopStatus", &loop_status),
+                ("CanGoNext", &can_go_next),
+                ("CanGoPrevious", &can_go_previous),
+            ]),
+            &[],
+        )
+        .await
+    }
 }
 
 #[dbus_interface(interface = "org.mpris.MediaPlayer2.Player")]
@@ -118,52 +154,6 @@ impl SpotMprisPlayer {
         self.sender
             .unbounded_send(PlaybackAction::TogglePlay.into())
             .map_err(|_| Error::Failed("Could not send action".to_string()))
-    }
-
-    pub async fn notify_current_track_changed(
-        &self,
-        #[zbus(signal_context)] ctxt: SignalContext<'_>,
-    ) -> Result<()> {
-        let metadata = Value::from(self.metadata());
-        let can_go_next = Value::from(self.can_go_next());
-        let can_go_previous = Value::from(self.can_go_previous());
-
-        zbus::fdo::Properties::properties_changed(
-            &ctxt,
-            Self::name(),
-            &HashMap::from([
-                ("Metadata", &metadata),
-                ("CanGoNext", &can_go_next),
-                ("CanGoPrevious", &can_go_previous),
-            ]),
-            &[],
-        )
-        .await?;
-
-        Ok(())
-    }
-
-    pub async fn notify_loop_status(
-        &self,
-        #[zbus(signal_context)] ctxt: SignalContext<'_>,
-    ) -> Result<()> {
-        let loop_status = Value::from(self.loop_status());
-        let can_go_next = Value::from(self.can_go_next());
-        let can_go_previous = Value::from(self.can_go_previous());
-
-        zbus::fdo::Properties::properties_changed(
-            &ctxt,
-            Self::name(),
-            &HashMap::from([
-                ("LoopStatus", &loop_status),
-                ("CanGoNext", &can_go_next),
-                ("CanGoPrevious", &can_go_previous),
-            ]),
-            &[],
-        )
-        .await?;
-
-        Ok(())
     }
 
     pub fn previous(&self) -> Result<()> {
