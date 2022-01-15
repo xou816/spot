@@ -109,7 +109,7 @@ impl App {
         app_model: Rc<AppModel>,
         sender: UnboundedSender<AppAction>,
     ) -> Box<impl EventListener> {
-        Box::new(crate::dbus::start_dbus_server(app_model, sender).expect("could not start server"))
+        Box::new(crate::dbus::start_dbus_server(app_model, sender))
     }
 
     fn make_window(
