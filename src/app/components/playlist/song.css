@@ -3,6 +3,7 @@
   margin: 6px 12px;
   padding: 0;
   opacity: 1;
+  min-width: 1.5em;
 }
 
 .song__cover {
