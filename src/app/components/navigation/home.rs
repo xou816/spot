@@ -1,9 +1,11 @@
 use gettextrs::*;
 use gtk::prelude::*;
+use std::borrow::BorrowMut;
 
 use crate::app::components::sidebar_listbox::{SideBarItem, SideBarRow};
 use crate::app::components::{Component, EventListener, SavedPlaylistsModel, ScreenFactory};
 use crate::app::models::AlbumModel;
+use crate::app::state::{LoginEvent, LoginStartedEvent};
 use crate::app::{AppEvent, BrowserEvent};
 
 const LIBRARY: &str = "library";
@@ -38,7 +40,7 @@ fn make_playlist_item(playlist_item: AlbumModel) -> SideBarItem {
     SideBarItem::new(id.as_str(), &title, "playlist2-symbolic", false)
 }
 
-fn new_playlist_clicked(row: &gtk::ListBoxRow) {
+fn new_playlist_clicked(row: &gtk::ListBoxRow, user_id: Option<String>) {
     let popover = gtk::Popover::new();
     let label = gtk::Label::new(Option::from(
         // translators: This is a label labeling the field to enter the name of a new playlist.
@@ -58,19 +60,23 @@ fn new_playlist_clicked(row: &gtk::ListBoxRow) {
     popover.popup();
 }
 
-pub struct HomePane {
+pub struct HomePane<F> {
     stack: gtk::Stack,
     listbox: gtk::ListBox,
     list_store: gio::ListStore,
     components: Vec<Box<dyn EventListener>>,
     saved_playlists_model: SavedPlaylistsModel,
+    user_id: Option<String>,
+    listbox_fun: F,
+    row_activated_handler: Option<glib::SignalHandlerId>,
 }
 
-impl HomePane {
+impl<F: Clone + Fn() + 'static> HomePane<F> {
     pub fn new(
         listbox: gtk::ListBox,
         screen_factory: &ScreenFactory,
         list_store: gio::ListStore,
+        listbox_fun: F,
     ) -> Self {
         let library = screen_factory.make_library();
         let saved_playlists = screen_factory.make_saved_playlists();
@@ -133,7 +139,8 @@ impl HomePane {
             "view-app-grid-symbolic",
             false,
         );
-
+        let user_id = Option::None;
+        let row_activated_handler = Option::None;
         Self {
             stack,
             listbox,
@@ -145,23 +152,29 @@ impl HomePane {
                 Box::new(now_playing),
             ],
             saved_playlists_model,
+            user_id,
+            listbox_fun,
+            row_activated_handler,
         }
     }
 
-    pub fn connect_navigated<F: Fn() + 'static>(&self, f: F) {
+    pub fn connect_navigated(&mut self) {
         let model = self.saved_playlists_model.clone();
-        self.listbox
-            .connect_row_activated(clone!(@weak self.stack as stack => move |_, row| {
+        let f = self.listbox_fun.clone();
+        let handler_id = self.listbox.connect_row_activated(
+            clone!(@weak self.stack as stack @strong self.user_id as user_id => move |_, row| {
                 let id = row.downcast_ref::<SideBarRow>().unwrap().id();
                 match id.as_str() {
                     LIBRARY | SAVED_TRACKS | NOW_PLAYING | SAVED_PLAYLISTS => {
                         stack.set_visible_child_name(&id);
                         f();
                     },
-                    NEW_PLAYLIST => new_playlist_clicked(row),
+                    NEW_PLAYLIST => new_playlist_clicked(row, user_id.clone()),
                     _ => model.open_playlist(id),
                 }
-            }));
+            }),
+        );
+        self.row_activated_handler = Option::from(handler_id);
     }
 
     fn update_playlists_in_sidebar(&mut self) {
@@ -179,7 +192,7 @@ impl HomePane {
     }
 }
 
-impl Component for HomePane {
+impl<F> Component for HomePane<F> {
     fn get_root_widget(&self) -> &gtk::Widget {
         self.stack.upcast_ref()
     }
@@ -189,7 +202,7 @@ impl Component for HomePane {
     }
 }
 
-impl EventListener for HomePane {
+impl<F: Clone + Fn() + 'static> EventListener for HomePane<F> {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
             AppEvent::NowPlayingShown => {
@@ -197,6 +210,23 @@ impl EventListener for HomePane {
             }
             AppEvent::BrowserEvent(BrowserEvent::SavedPlaylistsUpdated) => {
                 self.update_playlists_in_sidebar();
+            }
+            AppEvent::LoginEvent(LoginEvent::LoginStarted(event)) => {
+                match event {
+                    LoginStartedEvent::Password {
+                        username,
+                        password: _,
+                    } => {
+                        self.user_id = Option::from(username.clone());
+                    }
+                    LoginStartedEvent::Token { username, token: _ } => {
+                        self.user_id = Option::from(username.clone());
+                    }
+                }
+                if let Some(handler_id) = self.row_activated_handler.borrow_mut().take() {
+                    self.listbox.disconnect(handler_id);
+                }
+                self.connect_navigated();
             }
             _ => {}
         }

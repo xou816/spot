@@ -57,18 +57,18 @@ impl Navigation {
     }
 
     fn make_home(&self) -> Box<dyn ListenerComponent> {
-        let home = HomePane::new(
+        let mut home = HomePane::new(
             self.home_listbox.clone(),
             &self.screen_factory,
             self.home_list_store.clone(),
-        );
-
-        home.connect_navigated(
             clone!(@weak self.model as model, @weak self.leaflet as leaflet => move || {
                 leaflet.navigate(NavigationDirection::Forward);
                 model.go_home();
-            }),
+            }
+                ),
         );
+
+        home.connect_navigated();
 
         Box::new(home)
     }
