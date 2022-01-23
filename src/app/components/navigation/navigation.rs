@@ -2,9 +2,9 @@ use gtk::traits::WidgetExt;
 use libadwaita::NavigationDirection;
 use std::rc::Rc;
 
-use crate::app::components::{EventListener, ListenerComponent};
+use crate::app::components::{EventListener, HomeModel, ListenerComponent};
 use crate::app::state::ScreenName;
-use crate::app::{AppEvent, BrowserEvent};
+use crate::app::{ActionDispatcher, AppEvent, AppModel, BrowserEvent};
 
 use super::{factory::ScreenFactory, home::HomePane, NavigationModel};
 
@@ -16,6 +16,8 @@ pub struct Navigation {
     home_list_store: gio::ListStore,
     screen_factory: ScreenFactory,
     children: Vec<Box<dyn ListenerComponent>>,
+    dispatcher: Box<dyn ActionDispatcher>,
+    app_model: Rc<AppModel>,
 }
 
 impl Navigation {
@@ -26,6 +28,8 @@ impl Navigation {
         home_listbox: gtk::ListBox,
         home_list_store: gio::ListStore,
         screen_factory: ScreenFactory,
+        dispatcher: Box<dyn ActionDispatcher>,
+        app_model: Rc<AppModel>,
     ) -> Self {
         let model = Rc::new(model);
 
@@ -53,11 +57,15 @@ impl Navigation {
             home_list_store,
             screen_factory,
             children: vec![],
+            dispatcher,
+            app_model,
         }
     }
 
     fn make_home(&self) -> Box<dyn ListenerComponent> {
+        let model = HomeModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
         let mut home = HomePane::new(
+            model,
             self.home_listbox.clone(),
             &self.screen_factory,
             self.home_list_store.clone(),

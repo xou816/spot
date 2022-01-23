@@ -141,6 +141,8 @@ impl App {
             home_listbox,
             home_list_store,
             screen_factory,
+            dispatcher,
+            app_model,
         ))
     }
 

@@ -1,7 +1,9 @@
 use gettextrs::*;
 use gtk::prelude::*;
 use std::borrow::BorrowMut;
+use std::rc::Rc;
 
+use super::HomeModel;
 use crate::app::components::sidebar_listbox::{SideBarItem, SideBarRow};
 use crate::app::components::{Component, EventListener, SavedPlaylistsModel, ScreenFactory};
 use crate::app::models::AlbumModel;
@@ -40,27 +42,34 @@ fn make_playlist_item(playlist_item: AlbumModel) -> SideBarItem {
     SideBarItem::new(id.as_str(), &title, "playlist2-symbolic", false)
 }
 
-fn new_playlist_clicked(row: &gtk::ListBoxRow, user_id: Option<String>) {
-    let popover = gtk::Popover::new();
-    let label = gtk::Label::new(Option::from(
-        // translators: This is a label labeling the field to enter the name of a new playlist.
-        gettext("Name").as_str(),
-    ));
-    let entry = gtk::Entry::new();
-    let btn = gtk::Button::with_label(
-        // translators: This is a button to create a new playlist.
-        &gettext("Create"),
-    );
-    let gtk_box = gtk::Box::new(gtk::Orientation::Horizontal, 12);
-    gtk_box.append(&label);
-    gtk_box.append(&entry);
-    gtk_box.append(&btn);
-    popover.set_child(Some(&gtk_box));
-    popover.set_parent(row);
-    popover.popup();
+fn new_playlist_clicked(row: &gtk::ListBoxRow, user_id: Option<String>, model: Rc<HomeModel>) {
+    if let Some(user_id) = user_id {
+        let popover = gtk::Popover::new();
+        let label = gtk::Label::new(Option::from(
+            // translators: This is a label labeling the field to enter the name of a new playlist.
+            gettext("Name").as_str(),
+        ));
+        let entry = gtk::Entry::new();
+        let btn = gtk::Button::with_label(
+            // translators: This is a button to create a new playlist.
+            &gettext("Create"),
+        );
+        let rc_user = Rc::new(user_id);
+        btn.connect_clicked(clone!(@strong rc_user, @weak entry => move |_| {
+            model.create_new_playlist(entry.text().to_string(), rc_user.to_string());
+        }));
+        let gtk_box = gtk::Box::new(gtk::Orientation::Horizontal, 12);
+        gtk_box.append(&label);
+        gtk_box.append(&entry);
+        gtk_box.append(&btn);
+        popover.set_child(Some(&gtk_box));
+        popover.set_parent(row);
+        popover.popup();
+    }
 }
 
 pub struct HomePane<F> {
+    model: Rc<HomeModel>,
     stack: gtk::Stack,
     listbox: gtk::ListBox,
     list_store: gio::ListStore,
@@ -73,11 +82,13 @@ pub struct HomePane<F> {
 
 impl<F: Clone + Fn() + 'static> HomePane<F> {
     pub fn new(
+        model: HomeModel,
         listbox: gtk::ListBox,
         screen_factory: &ScreenFactory,
         list_store: gio::ListStore,
         listbox_fun: F,
     ) -> Self {
+        let model = Rc::new(model);
         let library = screen_factory.make_library();
         let saved_playlists = screen_factory.make_saved_playlists();
         let saved_tracks = screen_factory.make_saved_tracks();
@@ -142,6 +153,7 @@ impl<F: Clone + Fn() + 'static> HomePane<F> {
         let user_id = Option::None;
         let row_activated_handler = Option::None;
         Self {
+            model,
             stack,
             listbox,
             list_store,
@@ -159,18 +171,18 @@ impl<F: Clone + Fn() + 'static> HomePane<F> {
     }
 
     pub fn connect_navigated(&mut self) {
-        let model = self.saved_playlists_model.clone();
+        let playlist_model = self.saved_playlists_model.clone();
         let f = self.listbox_fun.clone();
         let handler_id = self.listbox.connect_row_activated(
-            clone!(@weak self.stack as stack @strong self.user_id as user_id => move |_, row| {
+            clone!(@weak self.stack as stack @strong self.user_id as user_id @strong self.model as model => move |_, row| {
                 let id = row.downcast_ref::<SideBarRow>().unwrap().id();
                 match id.as_str() {
                     LIBRARY | SAVED_TRACKS | NOW_PLAYING | SAVED_PLAYLISTS => {
                         stack.set_visible_child_name(&id);
                         f();
                     },
-                    NEW_PLAYLIST => new_playlist_clicked(row, user_id.clone()),
-                    _ => model.open_playlist(id),
+                    NEW_PLAYLIST => new_playlist_clicked(row, user_id.clone(), Rc::clone(&model)),
+                    _ => playlist_model.open_playlist(id),
                 }
             }),
         );

@@ -8,3 +8,6 @@ mod home;
 
 mod factory;
 pub use factory::*;
+
+mod home_model;
+pub use home_model::*;
