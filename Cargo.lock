@@ -3039,6 +3039,7 @@ dependencies = [
  "libadwaita",
  "librespot",
  "log",
+ "percent-encoding",
  "protobuf",
  "rand 0.8.4",
  "ref_filter_map",
