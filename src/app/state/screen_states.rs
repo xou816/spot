@@ -40,6 +40,7 @@ pub struct DetailsState {
     pub id: String,
     pub name: ScreenName,
     pub content: Option<AlbumFullDescription>,
+    pub songs: SongListModel,
 }
 
 impl DetailsState {
@@ -48,6 +49,7 @@ impl DetailsState {
             id: id.clone(),
             name: ScreenName::AlbumDetails(id),
             content: None,
+            songs: SongListModel::new(),
         }
     }
 }
@@ -59,22 +61,14 @@ impl UpdatableState for DetailsState {
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
             BrowserAction::SetAlbumDetails(album) if album.description.id == self.id => {
-                let id = album.description.id.clone();
+                let AlbumDescription { id, songs, .. } = album.description.clone();
+                self.songs.add(songs);
                 self.content = Some(*album);
                 vec![BrowserEvent::AlbumDetailsLoaded(id)]
             }
             BrowserAction::AppendAlbumTracks(id, batch) if id == self.id => {
-                let offset = batch.batch.offset;
-                if self
-                    .content
-                    .as_mut()
-                    .and_then(|content| content.description.songs.add(*batch))
-                    .is_some()
-                {
-                    vec![BrowserEvent::AlbumTracksAppended(id, offset)]
-                } else {
-                    vec![]
-                }
+                self.songs.add(*batch);
+                vec![BrowserEvent::AlbumTracksAppended(id)]
             }
             BrowserAction::SaveAlbum(album) if album.id == self.id => {
                 let id = album.id;
@@ -126,26 +120,10 @@ impl UpdatableState for PlaylistDetailsState {
                 vec![BrowserEvent::PlaylistDetailsLoaded(id)]
             }
             BrowserAction::AppendPlaylistTracks(id, song_batch) if id == self.id => {
-                let offset = song_batch.batch.offset;
-                if self
-                    .playlist
-                    .as_mut()
-                    .and_then(|playlist| playlist.songs.add(*song_batch))
-                    .is_some()
-                {
-                    vec![BrowserEvent::PlaylistTracksAppended(id, offset)]
-                } else {
-                    vec![]
-                }
+                unimplemented!()
             }
             BrowserAction::RemoveTracksFromPlaylist(uris) => {
-                if let Some(playlist) = self.playlist.as_mut() {
-                    let id = playlist.id.clone();
-                    playlist.songs.remove(&uris[..]);
-                    vec![BrowserEvent::PlaylistTracksRemoved(id, uris)]
-                } else {
-                    vec![]
-                }
+                unimplemented!()
             }
             _ => vec![],
         }
@@ -428,7 +406,7 @@ mod tests {
             artists: vec![],
             release_date: Some("1970-01-01".to_owned()),
             art: Some("".to_owned()),
-            songs: SongList::new_sized(100),
+            songs: SongBatch::empty(),
             is_liked: false,
         };
         let mut artist_state = ArtistState::new("id".to_owned());

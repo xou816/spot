@@ -56,7 +56,7 @@ pub enum BrowserEvent {
     LibraryUpdated,
     SavedPlaylistsUpdated,
     AlbumDetailsLoaded(String),
-    AlbumTracksAppended(String, usize),
+    AlbumTracksAppended(String),
     PlaylistDetailsLoaded(String),
     PlaylistTracksAppended(String, usize),
     PlaylistTracksRemoved(String, Vec<String>),

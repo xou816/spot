@@ -66,11 +66,7 @@ impl SavedTracksModel {
 
 impl PlaylistModel for SavedTracksModel {
     fn current_song_id(&self) -> Option<String> {
-        self.app_model
-            .get_state()
-            .playback
-            .current_song_id()
-            .cloned()
+        self.app_model.get_state().playback.current_song_id()
     }
 
     fn play_song_at(&self, pos: usize, id: &str) {
@@ -83,26 +79,13 @@ impl PlaylistModel for SavedTracksModel {
                 .dispatch(PlaybackAction::Load(id.to_string()).into());
         }
     }
-
-    fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>> {
-        match event {
-            AppEvent::BrowserEvent(BrowserEvent::SavedTracksAppended(i)) => {
-                let songs = self.songs()?;
-                Some(ListDiff::Append(
-                    songs.iter().skip(*i).map(|s| s.into()).collect(),
-                ))
-            }
-            _ => None,
-        }
-    }
-
     fn autoscroll_to_playing(&self) -> bool {
         true
     }
 
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
         let songs = self.songs()?;
-        let song = songs.get(id)?;
+        let song = songs.get(id)?.as_song_description();
 
         let group = SimpleActionGroup::new();
 
@@ -121,7 +104,7 @@ impl PlaylistModel for SavedTracksModel {
 
         let menu = gio::Menu::new();
         menu.append(Some(&*labels::VIEW_ALBUM), Some("song.view_album"));
-        for artist in song.artists.iter() {
+        for artist in song.as_song_description().artists.iter() {
             menu.append(
                 Some(&labels::more_from_label(&artist.name)),
                 Some(&format!("song.view_artist_{}", artist.id)),
@@ -137,7 +120,7 @@ impl PlaylistModel for SavedTracksModel {
         let song = self.songs().and_then(|s| s.get(id).cloned());
         if let Some(song) = song {
             self.dispatcher
-                .dispatch(SelectionAction::Select(vec![song]).into());
+                .dispatch(SelectionAction::Select(vec![song.as_song_description().clone()]).into());
         }
     }
 

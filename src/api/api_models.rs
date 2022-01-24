@@ -435,12 +435,10 @@ impl From<Album> for AlbumDescription {
                 name: a.name.clone(),
             })
             .collect::<Vec<ArtistRef>>();
-        let songs = SongList::new_from_initial_batch(
-            album
-                .clone()
-                .try_into()
-                .unwrap_or_else(|_| SongBatch::empty()),
-        ); //FIXME
+        let songs = album
+            .clone()
+            .try_into()
+            .unwrap_or_else(|_| SongBatch::empty());
         let art = album.best_image_for_width(200).map(|i| i.url.clone());
 
         Self {
@@ -489,7 +487,7 @@ impl From<Playlist> for PlaylistDescription {
             id,
             title: name,
             art,
-            songs: SongList::new_from_initial_batch(song_batch),
+            songs: song_batch,
             owner: UserRef {
                 id: owner_id,
                 display_name,

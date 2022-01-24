@@ -58,30 +58,12 @@ impl NowPlayingModel {
 
 impl PlaylistModel for NowPlayingModel {
     fn current_song_id(&self) -> Option<String> {
-        self.queue().current_song_id().cloned()
+        self.queue().current_song_id()
     }
 
     fn play_song_at(&self, _pos: usize, id: &str) {
         self.dispatcher
             .dispatch(PlaybackAction::Load(id.to_string()).into());
-    }
-
-    fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>> {
-        let queue = self.queue();
-        let songs = queue.songs().map(|s| s.into());
-
-        match event {
-            AppEvent::PlaybackEvent(PlaybackEvent::PlaylistChanged(change)) => match change {
-                PlaylistChange::Reset => Some(ListDiff::Set(songs.collect())),
-                PlaylistChange::InsertedAt(i, n) => {
-                    Some(ListDiff::Insert(*i, songs.skip(*i).take(*n).collect()))
-                }
-                PlaylistChange::AppendedAt(i) => Some(ListDiff::Append(songs.skip(*i).collect())),
-                PlaylistChange::MovedDown(i) => Some(ListDiff::MoveDown(*i)),
-                PlaylistChange::MovedUp(i) => Some(ListDiff::MoveUp(*i)),
-            },
-            _ => None,
-        }
     }
 
     fn autoscroll_to_playing(&self) -> bool {
@@ -124,9 +106,10 @@ impl PlaylistModel for NowPlayingModel {
 
     fn select_song(&self, id: &str) {
         let queue = self.queue();
-        if let Some(song) = queue.song(id) {
+        let song = queue.song(id);
+        if let Some(song) = song {
             self.dispatcher
-                .dispatch(SelectionAction::Select(vec![song.clone()]).into());
+                .dispatch(SelectionAction::Select(vec![(*song).clone()]).into());
         }
     }
 
@@ -161,7 +144,7 @@ impl SimpleHeaderBarModel for NowPlayingModel {
     }
 
     fn select_all(&self) {
-        let songs: Vec<SongDescription> = self.queue().songs().cloned().collect();
+        let songs: Vec<SongDescription> = self.queue().all_songs_cloned();
         self.dispatcher
             .dispatch(SelectionAction::Select(songs).into());
     }

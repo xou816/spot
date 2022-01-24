@@ -4,8 +4,6 @@ use std::str::FromStr;
 use super::core::{Batch, SongList};
 use super::gtypes::*;
 
-use crate::app::components::utils::format_duration;
-
 impl From<&AlbumDescription> for AlbumModel {
     fn from(album: &AlbumDescription) -> Self {
         AlbumModel::new(
@@ -43,22 +41,15 @@ impl From<PlaylistDescription> for AlbumModel {
     }
 }
 
-impl From<&SongDescription> for SongModel {
-    fn from(song: &SongDescription) -> Self {
-        SongModel::new(
-            &song.id,
-            song.track_number.unwrap_or(1),
-            &song.title,
-            &song.artists_name(),
-            &format_duration(song.duration.into()),
-            &song.art,
-        )
+impl From<SongDescription> for SongModel {
+    fn from(song: SongDescription) -> Self {
+        SongModel::new(song)
     }
 }
 
-impl From<SongDescription> for SongModel {
-    fn from(song: SongDescription) -> Self {
-        SongModel::from(&song)
+impl From<&SongDescription> for SongModel {
+    fn from(song: &SongDescription) -> Self {
+        SongModel::new(song.clone())
     }
 }
 
@@ -93,7 +84,7 @@ pub struct AlbumDescription {
     pub artists: Vec<ArtistRef>,
     pub release_date: Option<String>,
     pub art: Option<String>,
-    pub songs: SongList,
+    pub songs: SongBatch,
     pub is_liked: bool,
 }
 
@@ -107,8 +98,7 @@ impl AlbumDescription {
     }
 
     pub fn formatted_time(&self) -> String {
-        let duration: u32 = self.songs.iter().map(|song| song.duration).sum();
-        format_duration(duration.into())
+        "Unavailable".to_string()
     }
 
     pub fn year(&self) -> Option<u32> {
@@ -136,7 +126,7 @@ pub struct PlaylistDescription {
     pub id: String,
     pub title: String,
     pub art: Option<String>,
-    pub songs: SongList,
+    pub songs: SongBatch,
     pub owner: UserRef,
 }
 

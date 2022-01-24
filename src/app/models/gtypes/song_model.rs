@@ -2,7 +2,10 @@
 
 use gio::prelude::*;
 use glib::{subclass::prelude::*, SignalHandlerId};
+use ref_filter_map::ref_filter_map;
+use std::{cell::Ref, ops::Deref};
 
+use crate::app::models::SongDescription;
 glib::wrapper! {
     pub struct SongModel(ObjectSubclass<imp::SongModel>);
 }
@@ -10,23 +13,10 @@ glib::wrapper! {
 // Constructor for new instances. This simply calls glib::Object::new() with
 // initial values for our two properties and then returns the new instance
 impl SongModel {
-    pub fn new(
-        id: &str,
-        index: u32,
-        title: &str,
-        artist: &str,
-        duration: &str,
-        art: &Option<String>,
-    ) -> SongModel {
-        glib::Object::new::<SongModel>(&[
-            ("index", &index),
-            ("title", &title),
-            ("artist", &artist),
-            ("id", &id),
-            ("duration", &duration),
-            ("art", &art),
-        ])
-        .expect("Failed to create")
+    pub fn new(song: SongDescription) -> Self {
+        let o: Self = glib::Object::new(&[]).unwrap();
+        imp::SongModel::from_instance(&o).song.replace(Some(song));
+        o
     }
 
     pub fn cover_url(&self) -> Option<String> {
@@ -122,12 +112,20 @@ impl SongModel {
     pub fn unbind_all(&self) {
         imp::SongModel::from_instance(self).unbind_all(self);
     }
+
+    pub fn as_song_description(&self) -> impl Deref<Target = SongDescription> + '_ {
+        Ref::map(imp::SongModel::from_instance(self).song.borrow(), |s| {
+            s.as_ref().unwrap()
+        })
+    }
 }
 
 mod imp {
 
+    use crate::app::components::utils::format_duration;
+
     use super::*;
-    use std::cell::RefCell;
+    use std::cell::{Cell, RefCell};
 
     #[derive(Default)]
     struct BindingsInner {
@@ -138,15 +136,11 @@ mod imp {
     // This is the struct containing all state carried with
     // the new type. Generally this has to make use of
     // interior mutability.
+    #[derive(Default)]
     pub struct SongModel {
-        id: RefCell<Option<String>>,
-        index: RefCell<u32>,
-        title: RefCell<Option<String>>,
-        artist: RefCell<Option<String>>,
-        duration: RefCell<Option<String>>,
-        art: RefCell<Option<String>>,
-        playing: RefCell<bool>,
-        selected: RefCell<bool>,
+        pub song: RefCell<Option<SongDescription>>,
+        playing: Cell<bool>,
+        selected: Cell<bool>,
         bindings: RefCell<BindingsInner>,
     }
 
@@ -183,45 +177,54 @@ mod imp {
 
         // Interfaces this type implements
         type Interfaces = ();
-
-        // Called every time a new instance is created. This should return
-        // a new instance of our type with its basic values.
-        fn new() -> Self {
-            Self {
-                id: RefCell::new(None),
-                index: RefCell::new(1),
-                title: RefCell::new(None),
-                artist: RefCell::new(None),
-                duration: RefCell::new(None),
-                art: RefCell::new(None),
-                playing: RefCell::new(false),
-                selected: RefCell::new(false),
-                bindings: RefCell::new(Default::default()),
-            }
-        }
     }
 
     // Static array for defining the properties of the new type.
     lazy_static! {
         static ref PROPERTIES: [glib::ParamSpec; 8] = [
+            glib::ParamSpec::new_string(
+                "id",
+                "Spotify identifier",
+                "",
+                None,
+                glib::ParamFlags::READABLE
+            ),
             glib::ParamSpec::new_uint(
                 "index",
-                "Index",
+                "Track number within an album",
                 "",
                 1,
                 u32::MAX,
                 1,
-                glib::ParamFlags::READWRITE,
+                glib::ParamFlags::READABLE,
             ),
-            glib::ParamSpec::new_string("title", "Title", "", None, glib::ParamFlags::READWRITE),
-            glib::ParamSpec::new_string("artist", "Artist", "", None, glib::ParamFlags::READWRITE),
-            glib::ParamSpec::new_string("id", "id", "", None, glib::ParamFlags::READWRITE),
             glib::ParamSpec::new_string(
-                "duration",
-                "Duration",
+                "title",
+                "Title of the track",
                 "",
                 None,
-                glib::ParamFlags::READWRITE,
+                glib::ParamFlags::READABLE
+            ),
+            glib::ParamSpec::new_string(
+                "artist",
+                "Artists, comma separated",
+                "",
+                None,
+                glib::ParamFlags::READABLE
+            ),
+            glib::ParamSpec::new_string(
+                "duration",
+                "Duration (formatted)",
+                "",
+                None,
+                glib::ParamFlags::READABLE,
+            ),
+            glib::ParamSpec::new_string(
+                "art",
+                "URL to the cover art",
+                "",
+                None,
+                glib::ParamFlags::READABLE,
             ),
             glib::ParamSpec::new_boolean(
                 "playing",
@@ -237,7 +240,6 @@ mod imp {
                 false,
                 glib::ParamFlags::READWRITE,
             ),
-            glib::ParamSpec::new_string("art", "Art", "", None, glib::ParamFlags::READWRITE,),
         ];
     }
 
@@ -257,42 +259,6 @@ mod imp {
             pspec: &glib::ParamSpec,
         ) {
             match pspec.name() {
-                "index" => {
-                    let index = value
-                        .get()
-                        .expect("type conformity checked by `Object::set_property`");
-                    self.index.replace(index);
-                }
-                "title" => {
-                    let title = value
-                        .get()
-                        .expect("type conformity checked by `Object::set_property`");
-                    self.title.replace(title);
-                }
-                "artist" => {
-                    let artist = value
-                        .get()
-                        .expect("type conformity checked by `Object::set_property`");
-                    self.artist.replace(artist);
-                }
-                "id" => {
-                    let id = value
-                        .get()
-                        .expect("type conformity checked by `Object::set_property`");
-                    self.id.replace(id);
-                }
-                "duration" => {
-                    let dur = value
-                        .get()
-                        .expect("type conformity checked by `Object::set_property`");
-                    self.duration.replace(dur);
-                }
-                "art" => {
-                    let art = value
-                        .get()
-                        .expect("type conformity checked by `Object::set_property`");
-                    self.art.replace(art);
-                }
                 "playing" => {
                     let playing = value
                         .get()
@@ -313,14 +279,51 @@ mod imp {
         // is the same as the index of the property in the PROPERTIES array.
         fn property(&self, _obj: &Self::Type, _id: usize, pspec: &glib::ParamSpec) -> glib::Value {
             match pspec.name() {
-                "index" => self.index.borrow().to_value(),
-                "title" => self.title.borrow().to_value(),
-                "artist" => self.artist.borrow().to_value(),
-                "id" => self.id.borrow().to_value(),
-                "duration" => self.duration.borrow().to_value(),
-                "art" => self.art.borrow().to_value(),
-                "playing" => self.playing.borrow().to_value(),
-                "selected" => self.selected.borrow().to_value(),
+                "index" => self
+                    .song
+                    .borrow()
+                    .as_ref()
+                    .expect("song set at constructor")
+                    .track_number
+                    .unwrap_or(1)
+                    .to_value(),
+                "title" => self
+                    .song
+                    .borrow()
+                    .as_ref()
+                    .expect("song set at constructor")
+                    .title
+                    .to_value(),
+                "artist" => self
+                    .song
+                    .borrow()
+                    .as_ref()
+                    .expect("song set at constructor")
+                    .artists_name()
+                    .to_value(),
+                "id" => self
+                    .song
+                    .borrow()
+                    .as_ref()
+                    .expect("song set at constructor")
+                    .id
+                    .to_value(),
+                "duration" => self
+                    .song
+                    .borrow()
+                    .as_ref()
+                    .map(|s| format_duration(s.duration.into()))
+                    .expect("song set at constructor")
+                    .to_value(),
+                "art" => self
+                    .song
+                    .borrow()
+                    .as_ref()
+                    .expect("song set at constructor")
+                    .art
+                    .to_value(),
+                "playing" => self.playing.get().to_value(),
+                "selected" => self.selected.get().to_value(),
                 _ => unimplemented!(),
             }
         }

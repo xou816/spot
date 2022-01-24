@@ -1,5 +1,11 @@
-use super::main::*;
-use std::collections::HashMap;
+use super::{main::*, SongModel};
+
+use gio::prelude::*;
+use gio::ListModel;
+use glib::ObjectType;
+use gtk::subclass::prelude::*;
+use std::cell::{Ref, RefCell, RefMut};
+use std::{collections::HashMap, ops::Deref};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct InsertionRange(pub usize, pub usize);
@@ -64,7 +70,54 @@ pub struct SongList {
     batch_size: usize,
     last_batch_key: usize,
     batches: HashMap<usize, Vec<String>>,
-    indexed_songs: HashMap<String, SongDescription>,
+    indexed_songs: HashMap<String, SongModel>,
+}
+
+glib::wrapper! {
+    pub struct SongListModel(ObjectSubclass<imp::SongListModel>) @implements gio::ListModel;
+}
+
+impl SongListModel {
+    pub fn new() -> Self {
+        glib::Object::new(&[]).unwrap()
+    }
+
+    fn inner_mut(&mut self) -> RefMut<SongList> {
+        imp::SongListModel::from_instance(self).0.borrow_mut()
+    }
+
+    fn inner(&self) -> Ref<SongList> {
+        imp::SongListModel::from_instance(self).0.borrow()
+    }
+
+    fn notify_change(&self, position: usize, removed: usize, added: usize) {
+        glib::source::idle_add_local_once(clone!(@weak self as s => move || {
+            s.items_changed(position as u32, removed as u32, added as u32);
+        }));
+    }
+
+    pub fn add(&mut self, song_batch: SongBatch) {
+        let range = self.inner_mut().add(song_batch);
+        if let Some(InsertionRange(start, end)) = range {
+            self.notify_change(start, 0, end - start)
+        }
+    }
+
+    pub fn get(&self, id: &str) -> Option<SongModel> {
+        self.inner().get(id).cloned()
+    }
+
+    pub fn index(&self, i: usize) -> Option<SongModel> {
+        self.inner().index(i).cloned()
+    }
+
+    pub fn song_batch_for(&self, i: usize) -> Option<SongBatch> {
+        self.inner().song_batch_for(i)
+    }
+
+    pub fn last_batch(&self) -> Option<Batch> {
+        self.inner().last_batch()
+    }
 }
 
 impl SongList {
@@ -85,17 +138,23 @@ impl SongList {
         s
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = &'_ SongDescription> {
+    pub fn all_songs_cloned(&self) -> Vec<SongDescription> {
+        self.iter()
+            .map(|s| s.as_song_description().clone())
+            .collect()
+    }
+
+    fn iter(&self) -> impl Iterator<Item = &SongModel> {
         self.iter_from(0)
     }
 
-    fn iter_from(&self, i: usize) -> impl Iterator<Item = &'_ SongDescription> {
+    fn iter_from(&self, i: usize) -> impl Iterator<Item = &SongModel> {
         let indexed_songs = &self.indexed_songs;
         self.iter_ids_from(i)
             .filter_map(move |(_, id)| indexed_songs.get(id))
     }
 
-    pub fn partial_len(&self) -> usize {
+    fn partial_len(&self) -> usize {
         self.total_loaded
     }
 
@@ -170,7 +229,8 @@ impl SongList {
         self.total_loaded = self.total_loaded.saturating_add(songs.len());
         for song in songs {
             Self::batches_add(&mut self.batches, self.batch_size, &song.id);
-            self.indexed_songs.insert(song.id.clone(), song);
+            self.indexed_songs
+                .insert(song.id.clone(), SongModel::new(song));
         }
         self.last_batch_key = self.batches.len().saturating_sub(1);
     }
@@ -203,7 +263,8 @@ impl SongList {
             .into_iter()
             .map(|song| {
                 let song_id = song.id.clone();
-                self.indexed_songs.insert(song_id.clone(), song);
+                self.indexed_songs
+                    .insert(song_id.clone(), SongModel::new(song));
                 song_id
             })
             .collect();
@@ -240,7 +301,17 @@ impl SongList {
         }
     }
 
-    pub fn index(&self, i: usize) -> Option<&SongDescription> {
+    pub fn index_model(&self, i: usize) -> Option<&SongModel> {
+        let batch_size = self.batch_size;
+        let batch_id = i / batch_size;
+        let indexed_songs = &self.indexed_songs;
+        self.batches
+            .get(&batch_id)
+            .and_then(|batch| batch.get(i % batch_size))
+            .and_then(move |id| indexed_songs.get(id))
+    }
+
+    pub fn index(&self, i: usize) -> Option<&SongModel> {
         let batch_size = self.batch_size;
         let batch_id = i / batch_size;
         let indexed_songs = &self.indexed_songs;
@@ -273,8 +344,7 @@ impl SongList {
         self.batches.get(&batch_id).map(|songs| SongBatch {
             songs: songs
                 .iter()
-                .filter_map(move |id| indexed_songs.get(id))
-                .cloned()
+                .filter_map(move |id| Some(indexed_songs.get(id)?.as_song_description().clone()))
                 .collect(),
             batch: Batch {
                 batch_size,
@@ -296,7 +366,7 @@ impl SongList {
         }
     }
 
-    pub fn get(&self, id: &str) -> Option<&SongDescription> {
+    pub fn get(&self, id: &str) -> Option<&SongModel> {
         self.indexed_songs.get(id)
     }
 
@@ -317,6 +387,48 @@ impl SongList {
     }
 }
 
+mod imp {
+
+    use glib::{Cast, StaticType};
+
+    use super::*;
+
+    pub struct SongListModel(pub RefCell<SongList>);
+
+    #[glib::object_subclass]
+    impl ObjectSubclass for SongListModel {
+        const NAME: &'static str = "SongList";
+
+        type Type = super::SongListModel;
+        type ParentType = glib::Object;
+        type Interfaces = (ListModel,);
+
+        fn new() -> Self {
+            Self(RefCell::new(SongList::new_sized(100)))
+        }
+    }
+
+    impl ObjectImpl for SongListModel {}
+
+    impl ListModelImpl for SongListModel {
+        fn item_type(&self, list_model: &Self::Type) -> glib::Type {
+            SongModel::static_type()
+        }
+
+        fn n_items(&self, list_model: &Self::Type) -> u32 {
+            self.0.borrow().partial_len() as u32
+        }
+
+        fn item(&self, list_model: &Self::Type, position: u32) -> Option<glib::Object> {
+            self.0
+                .borrow()
+                .index_model(position as usize)
+                .map(|m| m.clone().upcast())
+        }
+    }
+}
+
+/*
 #[cfg(test)]
 mod tests {
 
@@ -503,3 +615,4 @@ mod tests {
         assert!(list_iter.next().is_none());
     }
 }
+ */

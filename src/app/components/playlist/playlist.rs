@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 use crate::app::components::utils::AnimatorDefault;
 use crate::app::components::{Component, EventListener, SongWidget};
-use crate::app::models::SongModel;
+use crate::app::models::{SongListModel, SongModel};
 use crate::app::{
     state::{PlaybackEvent, SelectionEvent, SelectionState},
     AppEvent, ListDiff, ListStore, Worker,
@@ -18,11 +18,13 @@ struct RowState {
 }
 
 pub trait PlaylistModel {
+    fn song_list_model(&self) -> SongListModel {
+        SongListModel::new()
+    }
+
     fn current_song_id(&self) -> Option<String>;
 
     fn play_song_at(&self, pos: usize, id: &str);
-
-    fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>>;
 
     fn autoscroll_to_playing(&self) -> bool {
         true
@@ -56,7 +58,6 @@ pub struct Playlist<Model> {
     animator: AnimatorDefault,
     listview: gtk::ListView,
     _press_gesture: gtk::GestureLongPress,
-    list_model: ListStore<SongModel>,
     model: Rc<Model>,
 }
 
@@ -70,8 +71,8 @@ where
         worker: Worker,
         show_song_covers: bool,
     ) -> Self {
-        let list_model = ListStore::new();
-        let selection_model = gtk::NoSelection::new(Some(list_model.unsafe_store()));
+        let list_model = model.song_list_model();
+        let selection_model = gtk::NoSelection::new(Some(&list_model));
         let factory = gtk::SignalListItemFactory::new();
 
         let style_context = listview.style_context();
@@ -106,7 +107,7 @@ where
         });
 
         listview.connect_activate(clone!(@weak list_model, @weak model => move |_, position| {
-            let song = list_model.get(position);
+            let song = list_model.index(position as usize).expect("attempt to access invalid index");
             let selection_enabled = model.is_selection_enabled();
             if selection_enabled {
                 Self::select_song(&*model, &song);
@@ -127,7 +128,6 @@ where
             animator: AnimatorDefault::ease_in_out_animator(),
             listview,
             _press_gesture: press_gesture,
-            list_model,
             model,
         }
     }
@@ -156,7 +156,7 @@ where
     }
 
     fn autoscroll_to_playing(&self, index: usize) {
-        let len = self.list_model.len() as f64;
+        let len = 1f64; //self.model.song_list_model().len() as f64;
         let adj = self
             .listview
             .parent()
@@ -179,7 +179,7 @@ where
     }
 
     fn update_list(&self) {
-        for (i, model_song) in self.list_model.iter().enumerate() {
+        for (i, model_song) in vec![] {
             let state = Self::get_item_state(&*self.model, &model_song);
             model_song.set_state(state);
             if state.is_playing
@@ -213,22 +213,18 @@ where
     Model: PlaylistModel + 'static,
 {
     fn on_event(&mut self, event: &AppEvent) {
-        if let Some(diff) = self.model.diff_for_event(event) {
-            self.list_model.update(diff);
-        } else {
-            match event {
-                AppEvent::SelectionEvent(SelectionEvent::SelectionChanged) => {
-                    self.update_list();
-                }
-                AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
-                    self.update_list();
-                }
-                AppEvent::SelectionEvent(SelectionEvent::SelectionModeChanged(_)) => {
-                    Self::set_selection_active(&self.listview, self.model.is_selection_enabled());
-                    self.update_list();
-                }
-                _ => {}
+        match event {
+            AppEvent::SelectionEvent(SelectionEvent::SelectionChanged) => {
+                self.update_list();
             }
+            AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
+                self.update_list();
+            }
+            AppEvent::SelectionEvent(SelectionEvent::SelectionModeChanged(_)) => {
+                Self::set_selection_active(&self.listview, self.model.is_selection_enabled());
+                self.update_list();
+            }
+            _ => {}
         }
     }
 }

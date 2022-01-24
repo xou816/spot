@@ -79,11 +79,7 @@ impl ArtistDetailsModel {
 
 impl PlaylistModel for ArtistDetailsModel {
     fn current_song_id(&self) -> Option<String> {
-        self.app_model
-            .get_state()
-            .playback
-            .current_song_id()
-            .cloned()
+        self.app_model.get_state().playback.current_song_id()
     }
 
     fn play_song_at(&self, _pos: usize, id: &str) {
@@ -93,18 +89,6 @@ impl PlaylistModel for ArtistDetailsModel {
                 .dispatch(PlaybackAction::LoadSongs(tracks.clone()).into());
             self.dispatcher
                 .dispatch(PlaybackAction::Load(id.to_string()).into());
-        }
-    }
-
-    fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>> {
-        if matches!(
-            event,
-            AppEvent::BrowserEvent(BrowserEvent::ArtistDetailsUpdated(id)) if id == &self.id
-        ) {
-            let tracks = self.songs_ref()?;
-            Some(ListDiff::Set(tracks.iter().map(|s| s.into()).collect()))
-        } else {
-            None
         }
     }
 

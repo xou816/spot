@@ -39,36 +39,30 @@ impl AppPlaybackStateListener {
     }
 
     fn make_track_meta(&self) -> Option<TrackMetadata> {
-        self.app_model
-            .get_state()
-            .playback
-            .current_song()
-            .cloned()
-            .map(
-                |SongDescription {
-                     id,
-                     title,
-                     artists,
-                     album,
-                     duration,
-                     art,
-                     ..
-                 }| TrackMetadata {
-                    id: format!("/dev/alextren/Spot/Track/{}", id),
-                    length: 1000 * duration as u64,
-                    title,
-                    album: album.name,
-                    artist: artists.into_iter().map(|a| a.name).collect(),
-                    art,
-                },
-            )
+        let SongDescription {
+            id,
+            title,
+            artists,
+            album,
+            duration,
+            art,
+            ..
+        } = self.app_model.get_state().playback.current_song()?.clone();
+        Some(TrackMetadata {
+            id: format!("/dev/alextren/Spot/Track/{}", id),
+            length: 1000 * duration as u64,
+            title,
+            album: album.name,
+            artist: artists.into_iter().map(|a| a.name).collect(),
+            art,
+        })
     }
 
     fn has_prev_next(&self) -> (bool, bool) {
         let state = self.app_model.get_state();
         (
-            state.playback.prev_song().is_some(),
-            state.playback.next_song().is_some(),
+            state.playback.prev_index().is_some(),
+            state.playback.next_index().is_some(),
         )
     }
 

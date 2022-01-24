@@ -41,8 +41,8 @@ impl PlaybackModel {
         self.state().playback.is_shuffled()
     }
 
-    fn current_song(&self) -> Option<impl Deref<Target = SongDescription> + '_> {
-        self.app_model.map_state_opt(|s| s.playback.current_song())
+    fn current_song(&self) -> Option<SongDescription> {
+        Some(self.app_model.get_state().playback.current_song()?.clone())
     }
 
     fn play_next_song(&self) {
