@@ -51,6 +51,15 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.3.1" date="2022-01-23">
+      <description>
+        <p>Bugfix release:</p>
+        <ul>
+          <li>fix a startup crash with some locales (thanks @jakubiszon26!)</li>
+          <li>fix a crash when attempting to view some users' profile (thanks @juxuanu!)</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.3.0" date="2022-01-13">
       <description>
         <p>
