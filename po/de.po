@@ -8,11 +8,6 @@ msgstr ""
 "Language: de\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#. translators: This is part of a larger label that reads "<Album> by <Artist>"
-#: src/app/components/details/release_details.rs:89
-msgid "by"
-msgstr "von"
-
 #. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
 #: src/app/components/labels.rs:5
 msgid "View album"
@@ -192,7 +187,6 @@ msgstr "Keine gespeicherten Alben vorhanden."
 msgid "Your library will be shown here."
 msgstr "Die Bibliothek wird hier angezeigt."
 
-#. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
 #: src/app/components/labels.rs:30
 msgid "{} song selected"
 msgid_plural "{} songs selected"
