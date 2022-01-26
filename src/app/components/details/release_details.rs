@@ -25,9 +25,6 @@ mod imp {
         pub tracks: TemplateChild<gtk::Label>,
 
         #[template_child]
-        pub duration: TemplateChild<gtk::Label>,
-
-        #[template_child]
         pub copyright: TemplateChild<gtk::Label>,
     }
 
@@ -78,7 +75,6 @@ impl ReleaseDetailsWindow {
         label: &str,
         release_date: &str,
         track_count: usize,
-        duration: &str,
         copyright: &str,
     ) {
         let widget = self.widget();
@@ -90,7 +86,6 @@ impl ReleaseDetailsWindow {
         widget.label.set_text(label);
         widget.release.set_text(release_date);
         widget.tracks.set_text(&track_count.to_string());
-        widget.duration.set_text(duration);
         widget.copyright.set_text(copyright);
     }
 }

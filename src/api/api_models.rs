@@ -198,6 +198,7 @@ pub struct FullAlbum {
 pub struct Album {
     pub id: String,
     pub tracks: Option<Page<AlbumTrackItem>>,
+    pub total_tracks: u32,
     pub artists: Vec<Artist>,
     pub release_date: Option<String>,
     pub name: String,
@@ -449,6 +450,7 @@ impl From<Album> for AlbumDescription {
             art,
             songs,
             is_liked: false,
+            total_tracks: album.total_tracks as usize,
         }
     }
 }

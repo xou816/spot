@@ -1,7 +1,6 @@
 use gettextrs::gettext;
 use gio::prelude::*;
 use gio::SimpleActionGroup;
-use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
@@ -9,12 +8,9 @@ use crate::app::components::SimpleHeaderBarModel;
 use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::SongDescription;
 use crate::app::models::SongListModel;
-use crate::app::models::SongModel;
 use crate::app::state::SelectionContext;
-use crate::app::state::{
-    PlaybackAction, PlaybackEvent, PlaybackState, SelectionAction, SelectionState,
-};
-use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState, ListDiff};
+use crate::app::state::{PlaybackAction, PlaybackState, SelectionAction, SelectionState};
+use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel};
 
 pub struct NowPlayingModel {
     app_model: Rc<AppModel>,

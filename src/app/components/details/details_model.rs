@@ -12,10 +12,8 @@ use crate::app::components::SimpleHeaderBarModelWrapper;
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
 use crate::app::state::SelectionContext;
-use crate::app::state::{
-    BrowserAction, BrowserEvent, PlaybackAction, SelectionAction, SelectionState,
-};
-use crate::app::{AppAction, AppEvent, AppModel, AppState, BatchQuery, ListDiff, SongsSource};
+use crate::app::state::{BrowserAction, PlaybackAction, SelectionAction, SelectionState};
+use crate::app::{AppAction, AppEvent, AppModel, AppState, BatchQuery, SongsSource};
 
 pub struct DetailsModel {
     pub id: String,

@@ -10,7 +10,7 @@ use crate::app::state::SelectionContext;
 use crate::app::state::{
     BrowserAction, BrowserEvent, PlaybackAction, SelectionAction, SelectionState,
 };
-use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, ListDiff, ListStore};
+use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, ListStore};
 
 pub struct ArtistDetailsModel {
     pub id: String,

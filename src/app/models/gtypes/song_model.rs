@@ -2,7 +2,6 @@
 
 use gio::prelude::*;
 use glib::{subclass::prelude::*, SignalHandlerId};
-use ref_filter_map::ref_filter_map;
 use std::{cell::Ref, ops::Deref};
 
 use crate::app::models::SongDescription;

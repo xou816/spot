@@ -49,7 +49,7 @@ impl DetailsState {
             id: id.clone(),
             name: ScreenName::AlbumDetails(id),
             content: None,
-            songs: SongListModel::new(),
+            songs: SongListModel::new(100),
         }
     }
 }
@@ -105,7 +105,7 @@ impl PlaylistDetailsState {
             id: id.clone(),
             name: ScreenName::PlaylistDetails(id),
             playlist: None,
-            songs: SongListModel::new(),
+            songs: SongListModel::new(100),
         }
     }
 }
@@ -152,7 +152,7 @@ impl ArtistState {
             artist: None,
             next_page: Pagination::new(id, 20),
             albums: ListStore::new(),
-            top_tracks: SongListModel::new(),
+            top_tracks: SongListModel::new(10),
         }
     }
 }
@@ -196,7 +196,7 @@ pub struct HomeState {
     pub albums: ListStore<AlbumModel>,
     pub next_playlists_page: Pagination<()>,
     pub playlists: ListStore<AlbumModel>,
-    pub saved_tracks: SongList,
+    pub saved_tracks: SongListModel,
 }
 
 impl Default for HomeState {
@@ -207,7 +207,7 @@ impl Default for HomeState {
             albums: ListStore::new(),
             next_playlists_page: Pagination::new((), 30),
             playlists: ListStore::new(),
-            saved_tracks: SongList::new_sized(50),
+            saved_tracks: SongListModel::new(50),
         }
     }
 }
@@ -283,7 +283,7 @@ impl UpdatableState for HomeState {
             }
             BrowserAction::AppendSavedTracks(song_batch) => {
                 let offset = song_batch.batch.offset;
-                if self.saved_tracks.add(*song_batch).is_some() {
+                if self.saved_tracks.add(*song_batch).commit() {
                     vec![BrowserEvent::SavedTracksAppended(offset)]
                 } else {
                     vec![]
@@ -413,6 +413,7 @@ mod tests {
             art: Some("".to_owned()),
             songs: SongBatch::empty(),
             is_liked: false,
+            total_tracks: 10,
         };
         let mut artist_state = ArtistState::new("id".to_owned());
         artist_state.update_with(BrowserAction::SetArtistDetails(Box::new(

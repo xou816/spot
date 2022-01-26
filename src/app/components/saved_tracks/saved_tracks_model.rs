@@ -7,10 +7,7 @@ use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::*;
 use crate::app::state::SelectionContext;
 use crate::app::state::{PlaybackAction, SelectionAction, SelectionState};
-use crate::app::{
-    ActionDispatcher, AppAction, AppEvent, AppModel, BatchQuery, BrowserAction, BrowserEvent,
-    ListDiff, SongsSource,
-};
+use crate::app::{ActionDispatcher, AppAction, AppModel, BatchQuery, BrowserAction, SongsSource};
 
 pub struct SavedTracksModel {
     app_model: Rc<AppModel>,
@@ -25,11 +22,6 @@ impl SavedTracksModel {
         }
     }
 
-    fn songs(&self) -> Option<impl Deref<Target = SongList> + '_> {
-        self.app_model
-            .map_state_opt(|s| Some(&s.browser.home_state()?.saved_tracks))
-    }
-
     pub fn load_initial(&self) {
         let query = BatchQuery {
             source: SongsSource::SavedTracks,
@@ -40,7 +32,7 @@ impl SavedTracksModel {
     }
 
     pub fn load_more(&self) -> Option<()> {
-        let last_batch = self.songs()?.last_batch()?;
+        let last_batch = self.song_list_model().last_batch()?;
         let query = BatchQuery {
             source: SongsSource::SavedTracks,
             batch: last_batch,
@@ -65,13 +57,23 @@ impl SavedTracksModel {
 }
 
 impl PlaylistModel for SavedTracksModel {
+    fn song_list_model(&self) -> SongListModel {
+        self.app_model
+            .get_state()
+            .browser
+            .home_state()
+            .expect("illegal attempt to read home_state")
+            .saved_tracks
+            .clone()
+    }
+
     fn current_song_id(&self) -> Option<String> {
         self.app_model.get_state().playback.current_song_id()
     }
 
     fn play_song_at(&self, pos: usize, id: &str) {
         let source = SongsSource::SavedTracks;
-        let batch = self.songs().and_then(|songs| songs.song_batch_for(pos));
+        let batch = self.song_list_model().song_batch_for(pos);
         if let Some(batch) = batch {
             self.dispatcher
                 .dispatch(PlaybackAction::LoadPagedSongs(source, batch).into());
@@ -84,8 +86,8 @@ impl PlaylistModel for SavedTracksModel {
     }
 
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
-        let songs = self.songs()?;
-        let song = songs.get(id)?.description();
+        let song = self.song_list_model().get(id)?;
+        let song = song.description();
 
         let group = SimpleActionGroup::new();
 
@@ -99,12 +101,12 @@ impl PlaylistModel for SavedTracksModel {
     }
 
     fn menu_for(&self, id: &str) -> Option<gio::MenuModel> {
-        let songs = self.songs()?;
-        let song = songs.get(id)?;
+        let song = self.song_list_model().get(id)?;
+        let song = song.description();
 
         let menu = gio::Menu::new();
         menu.append(Some(&*labels::VIEW_ALBUM), Some("song.view_album"));
-        for artist in song.description().artists.iter() {
+        for artist in song.artists.iter() {
             menu.append(
                 Some(&labels::more_from_label(&artist.name)),
                 Some(&format!("song.view_artist_{}", artist.id)),
@@ -117,7 +119,7 @@ impl PlaylistModel for SavedTracksModel {
     }
 
     fn select_song(&self, id: &str) {
-        let song = self.songs().and_then(|s| s.get(id).cloned());
+        let song = self.song_list_model().get(id);
         if let Some(song) = song {
             self.dispatcher
                 .dispatch(SelectionAction::Select(vec![song.description().clone()]).into());

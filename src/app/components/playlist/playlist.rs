@@ -10,9 +10,7 @@ use crate::app::state::{PlaybackEvent, SelectionEvent, SelectionState};
 use crate::app::{AppEvent, Worker};
 
 pub trait PlaylistModel {
-    fn song_list_model(&self) -> SongListModel {
-        SongListModel::new()
-    }
+    fn song_list_model(&self) -> SongListModel;
 
     fn current_song_id(&self) -> Option<String>;
 

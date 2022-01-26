@@ -1,13 +1,6 @@
-use std::ops::Deref;
-
-use crate::app::models::{
-    ChangeRange, SongBatch, SongDescription, SongList, SongListModel, SongListModelPending,
-    SongModel,
-};
+use crate::app::models::{SongBatch, SongDescription, SongListModel, SongListModelPending};
 use crate::app::state::{AppAction, AppEvent, UpdatableState};
 use crate::app::{BatchQuery, LazyRandomIndex, SongsSource};
-
-const RANGE_SIZE: usize = 25;
 
 #[derive(Debug)]
 pub struct PlaybackState {
@@ -207,7 +200,7 @@ impl Default for PlaybackState {
     fn default() -> Self {
         Self {
             index: LazyRandomIndex::default(),
-            songs: SongListModel::new(),
+            songs: SongListModel::new(50),
             position: None,
             source: None,
             repeat: RepeatMode::None,

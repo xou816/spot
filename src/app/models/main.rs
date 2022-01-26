@@ -1,7 +1,7 @@
 use std::convert::From;
 use std::str::FromStr;
 
-use super::core::{Batch, SongList};
+use super::core::Batch;
 use super::gtypes::*;
 
 impl From<&AlbumDescription> for AlbumModel {
@@ -86,6 +86,7 @@ pub struct AlbumDescription {
     pub art: Option<String>,
     pub songs: SongBatch,
     pub is_liked: bool,
+    pub total_tracks: usize,
 }
 
 impl AlbumDescription {
@@ -95,10 +96,6 @@ impl AlbumDescription {
             .map(|a| a.name.to_string())
             .collect::<Vec<String>>()
             .join(", ")
-    }
-
-    pub fn formatted_time(&self) -> String {
-        "Unavailable".to_string()
     }
 
     pub fn year(&self) -> Option<u32> {

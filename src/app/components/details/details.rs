@@ -287,8 +287,7 @@ impl Details {
                 &album.artists_name(),
                 &details.label,
                 album.release_date.as_ref().unwrap(),
-                0,
-                &album.formatted_time(),
+                album.total_tracks,
                 &details.copyright_text,
             );
 

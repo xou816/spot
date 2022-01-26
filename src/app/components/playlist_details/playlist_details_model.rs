@@ -1,6 +1,5 @@
 use gio::prelude::*;
 use gio::SimpleActionGroup;
-use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
@@ -8,12 +7,8 @@ use crate::app::components::SimpleHeaderBarModel;
 use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::*;
 use crate::app::state::SelectionContext;
-use crate::app::state::{
-    BrowserAction, BrowserEvent, PlaybackAction, SelectionAction, SelectionState,
-};
-use crate::app::{
-    ActionDispatcher, AppAction, AppEvent, AppModel, AppState, BatchQuery, ListDiff, SongsSource,
-};
+use crate::app::state::{BrowserAction, PlaybackAction, SelectionAction, SelectionState};
+use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, BatchQuery, SongsSource};
 
 pub struct PlaylistDetailsModel {
     pub id: String,
@@ -99,6 +94,7 @@ impl PlaylistModel for PlaylistDetailsModel {
             .songs
             .clone()
     }
+
     fn current_song_id(&self) -> Option<String> {
         self.app_model.get_state().playback.current_song_id()
     }
