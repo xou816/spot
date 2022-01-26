@@ -8,8 +8,8 @@ use std::rc::Rc;
 use crate::app::components::SimpleHeaderBarModel;
 use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::SongDescription;
+use crate::app::models::SongListModel;
 use crate::app::models::SongModel;
-use crate::app::state::PlaylistChange;
 use crate::app::state::SelectionContext;
 use crate::app::state::{
     PlaybackAction, PlaybackEvent, PlaybackState, SelectionAction, SelectionState,
@@ -29,12 +29,8 @@ impl NowPlayingModel {
         }
     }
 
-    fn state(&self) -> Ref<'_, AppState> {
-        self.app_model.get_state()
-    }
-
-    fn queue(&self) -> Ref<'_, PlaybackState> {
-        Ref::map(self.state(), |s| &s.playback)
+    fn queue(&self) -> impl Deref<Target = PlaybackState> + '_ {
+        self.app_model.map_state(|s| &s.playback)
     }
 
     pub fn load_more(&self) -> Option<()> {
@@ -57,6 +53,10 @@ impl NowPlayingModel {
 }
 
 impl PlaylistModel for NowPlayingModel {
+    fn song_list_model(&self) -> SongListModel {
+        self.queue().songs().clone()
+    }
+
     fn current_song_id(&self) -> Option<String> {
         self.queue().current_song_id()
     }
@@ -72,7 +72,8 @@ impl PlaylistModel for NowPlayingModel {
 
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
         let queue = self.queue();
-        let song = queue.song(id)?;
+        let song = queue.songs().get(id)?;
+        let song = song.description();
         let group = SimpleActionGroup::new();
 
         for view_artist in song.make_artist_actions(self.dispatcher.box_clone(), None) {
@@ -87,7 +88,8 @@ impl PlaylistModel for NowPlayingModel {
 
     fn menu_for(&self, id: &str) -> Option<gio::MenuModel> {
         let queue = self.queue();
-        let song = queue.song(id)?;
+        let song = queue.songs().get(id)?;
+        let song = song.description();
 
         let menu = gio::Menu::new();
         menu.append(Some(&*labels::VIEW_ALBUM), Some("song.view_album"));
@@ -106,10 +108,10 @@ impl PlaylistModel for NowPlayingModel {
 
     fn select_song(&self, id: &str) {
         let queue = self.queue();
-        let song = queue.song(id);
-        if let Some(song) = song {
+        if let Some(song) = queue.songs().get(id) {
+            let song = song.description().clone();
             self.dispatcher
-                .dispatch(SelectionAction::Select(vec![(*song).clone()]).into());
+                .dispatch(SelectionAction::Select(vec![song]).into());
         }
     }
 
@@ -144,7 +146,7 @@ impl SimpleHeaderBarModel for NowPlayingModel {
     }
 
     fn select_all(&self) {
-        let songs: Vec<SongDescription> = self.queue().all_songs_cloned();
+        let songs: Vec<SongDescription> = self.queue().songs().collect();
         self.dispatcher
             .dispatch(SelectionAction::Select(songs).into());
     }

@@ -137,11 +137,15 @@ impl PlaylistModel for DetailsModel {
             .clone()
     }
 
+    fn show_song_covers(&self) -> bool {
+        false
+    }
+
     fn select_song(&self, id: &str) {
         let songs = self.song_list_model();
         if let Some(song) = songs.get(id) {
             self.dispatcher
-                .dispatch(SelectionAction::Select(vec![song.as_song_description().clone()]).into());
+                .dispatch(SelectionAction::Select(vec![song.description().clone()]).into());
         }
     }
 
@@ -177,7 +181,7 @@ impl PlaylistModel for DetailsModel {
 
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
         let song = self.song_list_model().get(id)?;
-        let song = song.as_song_description();
+        let song = song.description();
 
         let group = SimpleActionGroup::new();
 
@@ -192,7 +196,7 @@ impl PlaylistModel for DetailsModel {
 
     fn menu_for(&self, id: &str) -> Option<gio::MenuModel> {
         let song = self.song_list_model().get(id)?;
-        let song = song.as_song_description();
+        let song = song.description();
 
         let menu = gio::Menu::new();
         for artist in song.artists.iter() {
@@ -222,6 +226,8 @@ impl SimpleHeaderBarModel for DetailsModel {
     }
 
     fn select_all(&self) {
-        todo!()
+        let songs: Vec<SongDescription> = self.song_list_model().collect();
+        self.dispatcher
+            .dispatch(SelectionAction::Select(songs).into());
     }
 }

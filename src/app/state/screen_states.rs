@@ -96,6 +96,7 @@ pub struct PlaylistDetailsState {
     pub id: String,
     pub name: ScreenName,
     pub playlist: Option<PlaylistDescription>,
+    pub songs: SongListModel,
 }
 
 impl PlaylistDetailsState {
@@ -104,6 +105,7 @@ impl PlaylistDetailsState {
             id: id.clone(),
             name: ScreenName::PlaylistDetails(id),
             playlist: None,
+            songs: SongListModel::new(),
         }
     }
 }
@@ -115,15 +117,18 @@ impl UpdatableState for PlaylistDetailsState {
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
             BrowserAction::SetPlaylistDetails(playlist) => {
-                let id = playlist.id.clone();
+                let PlaylistDescription { id, songs, .. } = *playlist.clone();
+                self.songs.add(songs);
                 self.playlist = Some(*playlist);
                 vec![BrowserEvent::PlaylistDetailsLoaded(id)]
             }
             BrowserAction::AppendPlaylistTracks(id, song_batch) if id == self.id => {
-                unimplemented!()
+                self.songs.add(*song_batch);
+                vec![BrowserEvent::PlaylistTracksAppended(id)]
             }
             BrowserAction::RemoveTracksFromPlaylist(uris) => {
-                unimplemented!()
+                self.songs.remove(&uris[..]);
+                vec![BrowserEvent::PlaylistTracksRemoved(self.id.clone())]
             }
             _ => vec![],
         }
@@ -136,7 +141,7 @@ pub struct ArtistState {
     pub artist: Option<String>,
     pub next_page: Pagination<String>,
     pub albums: ListStore<AlbumModel>,
-    pub top_tracks: Vec<SongDescription>,
+    pub top_tracks: SongListModel,
 }
 
 impl ArtistState {
@@ -147,7 +152,7 @@ impl ArtistState {
             artist: None,
             next_page: Pagination::new(id, 20),
             albums: ListStore::new(),
-            top_tracks: vec![],
+            top_tracks: SongListModel::new(),
         }
     }
 }
@@ -171,7 +176,7 @@ impl UpdatableState for ArtistState {
                 self.next_page.reset_count(self.albums.len());
 
                 top_tracks.truncate(5);
-                self.top_tracks = top_tracks;
+                self.top_tracks.append(top_tracks);
 
                 vec![BrowserEvent::ArtistDetailsUpdated(id)]
             }

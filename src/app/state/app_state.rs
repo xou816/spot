@@ -3,7 +3,7 @@ use crate::app::state::{
     login_state::{LoginAction, LoginEvent, LoginState},
     playback_state::{PlaybackAction, PlaybackEvent, PlaybackState},
     selection_state::{SelectionAction, SelectionContext, SelectionEvent, SelectionState},
-    PlaylistChange, ScreenName, UpdatableState,
+    ScreenName, UpdatableState,
 };
 
 #[derive(Clone, Debug)]
@@ -88,13 +88,10 @@ impl AppState {
             AppAction::ViewNowPlaying => vec![AppEvent::NowPlayingShown],
             AppAction::Raise => vec![AppEvent::Raised],
             AppAction::QueueSelection => {
-                let append_at = self.playback.len();
-                for track in self.selection.take_selection() {
-                    self.playback.queue(track);
-                }
+                self.playback.queue(self.selection.take_selection());
                 vec![
                     SelectionEvent::SelectionModeChanged(false).into(),
-                    PlaybackEvent::PlaylistChanged(PlaylistChange::AppendedAt(append_at)).into(),
+                    PlaybackEvent::PlaylistChanged.into(),
                 ]
             }
             AppAction::DequeueSelection => {
@@ -103,7 +100,7 @@ impl AppState {
                 }
                 vec![
                     SelectionEvent::SelectionModeChanged(false).into(),
-                    PlaybackEvent::PlaylistChanged(PlaylistChange::Reset).into(),
+                    PlaybackEvent::PlaylistChanged.into(),
                 ]
             }
             AppAction::MoveDownSelection => {
@@ -112,11 +109,7 @@ impl AppState {
                 selection
                     .next()
                     .and_then(|song| playback.move_down(&song.id))
-                    .map(|index| {
-                        vec![
-                            PlaybackEvent::PlaylistChanged(PlaylistChange::MovedDown(index)).into(),
-                        ]
-                    })
+                    .map(|_| vec![PlaybackEvent::PlaylistChanged.into()])
                     .unwrap_or_else(Vec::new)
             }
             AppAction::MoveUpSelection => {
@@ -125,9 +118,7 @@ impl AppState {
                 selection
                     .next()
                     .and_then(|song| playback.move_up(&song.id))
-                    .map(|index| {
-                        vec![PlaybackEvent::PlaylistChanged(PlaylistChange::MovedUp(index)).into()]
-                    })
+                    .map(|_| vec![PlaybackEvent::PlaylistChanged.into()])
                     .unwrap_or_else(Vec::new)
             }
             AppAction::EnableSelection(context) => {

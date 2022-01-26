@@ -113,11 +113,26 @@ impl SongModel {
         imp::SongModel::from_instance(self).unbind_all(self);
     }
 
-    pub fn as_song_description(&self) -> impl Deref<Target = SongDescription> + '_ {
+    pub fn description(&self) -> impl Deref<Target = SongDescription> + '_ {
         Ref::map(imp::SongModel::from_instance(self).song.borrow(), |s| {
-            s.as_ref().unwrap()
+            s.as_ref().expect("song set at constructor")
         })
     }
+
+    pub fn into_description(&self) -> SongDescription {
+        imp::SongModel::from_instance(&self)
+            .song
+            .borrow()
+            .as_ref()
+            .cloned()
+            .expect("song set at constructor")
+    }
+}
+
+#[derive(Copy, Clone, Default)]
+pub struct SongState {
+    pub is_playing: bool,
+    pub is_selected: bool,
 }
 
 mod imp {
@@ -139,8 +154,7 @@ mod imp {
     #[derive(Default)]
     pub struct SongModel {
         pub song: RefCell<Option<SongDescription>>,
-        playing: Cell<bool>,
-        selected: Cell<bool>,
+        pub state: Cell<SongState>,
         bindings: RefCell<BindingsInner>,
     }
 
@@ -260,16 +274,24 @@ mod imp {
         ) {
             match pspec.name() {
                 "playing" => {
-                    let playing = value
+                    let is_playing = value
                         .get()
                         .expect("type conformity checked by `Object::set_property`");
-                    self.playing.replace(playing);
+                    let SongState { is_selected, .. } = self.state.get();
+                    self.state.set(SongState {
+                        is_playing,
+                        is_selected,
+                    });
                 }
                 "selected" => {
-                    let selected = value
+                    let is_selected = value
                         .get()
                         .expect("type conformity checked by `Object::set_property`");
-                    self.selected.replace(selected);
+                    let SongState { is_playing, .. } = self.state.get();
+                    self.state.set(SongState {
+                        is_playing,
+                        is_selected,
+                    });
                 }
                 _ => unimplemented!(),
             }
@@ -322,8 +344,8 @@ mod imp {
                     .expect("song set at constructor")
                     .art
                     .to_value(),
-                "playing" => self.playing.get().to_value(),
-                "selected" => self.selected.get().to_value(),
+                "playing" => self.state.get().is_playing.to_value(),
+                "selected" => self.state.get().is_selected.to_value(),
                 _ => unimplemented!(),
             }
         }

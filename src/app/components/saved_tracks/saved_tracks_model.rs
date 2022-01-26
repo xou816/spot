@@ -85,7 +85,7 @@ impl PlaylistModel for SavedTracksModel {
 
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
         let songs = self.songs()?;
-        let song = songs.get(id)?.as_song_description();
+        let song = songs.get(id)?.description();
 
         let group = SimpleActionGroup::new();
 
@@ -104,7 +104,7 @@ impl PlaylistModel for SavedTracksModel {
 
         let menu = gio::Menu::new();
         menu.append(Some(&*labels::VIEW_ALBUM), Some("song.view_album"));
-        for artist in song.as_song_description().artists.iter() {
+        for artist in song.description().artists.iter() {
             menu.append(
                 Some(&labels::more_from_label(&artist.name)),
                 Some(&format!("song.view_artist_{}", artist.id)),
@@ -120,7 +120,7 @@ impl PlaylistModel for SavedTracksModel {
         let song = self.songs().and_then(|s| s.get(id).cloned());
         if let Some(song) = song {
             self.dispatcher
-                .dispatch(SelectionAction::Select(vec![song.as_song_description().clone()]).into());
+                .dispatch(SelectionAction::Select(vec![song.description().clone()]).into());
         }
     }
 

@@ -47,7 +47,7 @@ impl AppPlaybackStateListener {
             duration,
             art,
             ..
-        } = self.app_model.get_state().playback.current_song()?.clone();
+        } = self.app_model.get_state().playback.current_song()?;
         Some(TrackMetadata {
             id: format!("/dev/alextren/Spot/Track/{}", id),
             length: 1000 * duration as u64,

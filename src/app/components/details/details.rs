@@ -218,7 +218,6 @@ impl Details {
             widget.album_tracks_widget().clone(),
             model.clone(),
             worker.clone(),
-            false,
         ));
 
         let headerbar_widget = widget.headerbar_widget();

@@ -1,6 +1,8 @@
 use std::ops::Deref;
 
-use crate::app::models::{InsertionRange, SongBatch, SongDescription, SongList};
+use crate::app::models::{
+    ChangeRange, SongBatch, SongDescription, SongList, SongListModel, SongModel,
+};
 use crate::app::state::{AppAction, AppEvent, UpdatableState};
 use crate::app::{BatchQuery, LazyRandomIndex, SongsSource};
 
@@ -9,7 +11,7 @@ const RANGE_SIZE: usize = 25;
 #[derive(Debug)]
 pub struct PlaybackState {
     index: LazyRandomIndex,
-    songs: SongList,
+    songs: SongListModel,
     position: Option<usize>,
     source: Option<SongsSource>,
     repeat: RepeatMode,
@@ -18,6 +20,10 @@ pub struct PlaybackState {
 }
 
 impl PlaybackState {
+    pub fn songs(&self) -> &SongListModel {
+        &self.songs
+    }
+
     pub fn is_playing(&self) -> bool {
         self.is_playing && self.position.is_some()
     }
@@ -46,51 +52,39 @@ impl PlaybackState {
         }
     }
 
-    pub fn song(&self, id: &str) -> Option<impl Deref<Target = SongDescription> + '_> {
-        Some(self.songs.get(id)?.as_song_description())
-    }
-
-    pub fn len(&self) -> usize {
-        self.songs.len()
-    }
-
-    pub fn all_songs_cloned(&self) -> Vec<SongDescription> {
-        self.songs.all_songs_cloned()
-    }
-
-    fn index(&self, i: usize) -> Option<impl Deref<Target = SongDescription> + '_> {
-        let model = if self.is_shuffled {
+    fn index(&self, i: usize) -> Option<SongDescription> {
+        let song = if self.is_shuffled {
             self.songs.index(self.index.get(i)?)
         } else {
             self.songs.index(i)
         };
-        Some(model?.as_song_description())
+        Some(song?.into_description())
     }
 
     pub fn current_song_id(&self) -> Option<String> {
-        Some(self.index(self.position?).as_ref()?.id.clone())
+        Some(self.index(self.position?)?.id)
     }
 
-    pub fn current_song(&self) -> Option<impl Deref<Target = SongDescription> + '_> {
+    pub fn current_song(&self) -> Option<SongDescription> {
         self.index(self.position?)
     }
 
     fn set_source(&mut self, source: Option<SongsSource>) {
-        self.songs = SongList::new_sized(2 * RANGE_SIZE);
+        self.songs.clear();
         self.source = source;
         self.index = Default::default();
         self.position = None;
     }
 
-    fn add_batch(&mut self, song_batch: SongBatch) -> Option<InsertionRange> {
+    fn add_batch(&mut self, song_batch: SongBatch) -> bool {
         let SongBatch { songs, batch } = song_batch;
-        let range = self.songs.add(SongBatch { songs, batch });
+        let added = self.songs.add(SongBatch { songs, batch });
         self.index.resize(self.songs.len());
-        range
+        added
     }
 
-    pub fn queue(&mut self, track: SongDescription) {
-        self.songs.append(vec![track]);
+    pub fn queue(&mut self, tracks: Vec<SongDescription>) {
+        self.songs.append(tracks);
         self.index.grow(self.songs.len());
     }
 
@@ -120,7 +114,7 @@ impl PlaybackState {
 
     pub fn move_down(&mut self, id: &str) -> Option<usize> {
         let index = self.songs.find_index(id)?;
-        self.swap(index, index + 1);
+        self.swap(index + 1, index);
         Some(index)
     }
 
@@ -210,7 +204,7 @@ impl Default for PlaybackState {
     fn default() -> Self {
         Self {
             index: LazyRandomIndex::default(),
-            songs: SongList::new_sized(2 * RANGE_SIZE),
+            songs: SongListModel::new(),
             position: None,
             source: None,
             repeat: RepeatMode::None,
@@ -248,15 +242,6 @@ impl From<PlaybackAction> for AppAction {
 }
 
 #[derive(Clone, Debug)]
-pub enum PlaylistChange {
-    Reset,
-    InsertedAt(usize, usize),
-    AppendedAt(usize),
-    MovedUp(usize),
-    MovedDown(usize),
-}
-
-#[derive(Clone, Debug)]
 pub enum PlaybackEvent {
     PlaybackPaused,
     PlaybackResumed,
@@ -266,7 +251,7 @@ pub enum PlaybackEvent {
     VolumeSet(f64),
     TrackChanged(String),
     ShuffleChanged,
-    PlaylistChanged(PlaylistChange),
+    PlaylistChanged,
     PlaybackStopped,
 }
 
@@ -371,18 +356,15 @@ impl UpdatableState for PlaybackState {
             }
             PlaybackAction::LoadSongs(tracks) => {
                 self.set_source(None);
-                for track in tracks {
-                    self.queue(track);
-                }
-                vec![PlaybackEvent::PlaylistChanged(PlaylistChange::Reset)]
+                self.queue(tracks);
+
+                vec![PlaybackEvent::PlaylistChanged]
             }
             PlaybackAction::LoadPagedSongs(source, batch)
                 if Some(&source) == self.source.as_ref() =>
             {
-                if let Some(InsertionRange(a, b)) = self.add_batch(batch) {
-                    vec![PlaybackEvent::PlaylistChanged(PlaylistChange::InsertedAt(
-                        a, b,
-                    ))]
+                if self.add_batch(batch) {
+                    vec![PlaybackEvent::PlaylistChanged]
                 } else {
                     vec![]
                 }
@@ -392,14 +374,15 @@ impl UpdatableState for PlaybackState {
             {
                 self.set_source(Some(source));
                 self.add_batch(batch);
-                vec![PlaybackEvent::PlaylistChanged(PlaylistChange::Reset)]
+                vec![PlaybackEvent::PlaylistChanged]
             }
             PlaybackAction::Queue(tracks) => {
-                todo!()
+                self.queue(tracks);
+                vec![PlaybackEvent::PlaylistChanged]
             }
             PlaybackAction::Dequeue(id) => {
                 self.dequeue(&id);
-                vec![PlaybackEvent::PlaylistChanged(PlaylistChange::Reset)]
+                vec![PlaybackEvent::PlaylistChanged]
             }
             PlaybackAction::Seek(pos) => vec![PlaybackEvent::TrackSeeked(pos)],
             PlaybackAction::SyncSeek(pos) => vec![PlaybackEvent::SeekSynced(pos)],

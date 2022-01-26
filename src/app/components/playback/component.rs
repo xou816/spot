@@ -42,7 +42,7 @@ impl PlaybackModel {
     }
 
     fn current_song(&self) -> Option<SongDescription> {
-        Some(self.app_model.get_state().playback.current_song()?.clone())
+        self.app_model.get_state().playback.current_song()
     }
 
     fn play_next_song(&self) {

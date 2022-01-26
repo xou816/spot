@@ -140,7 +140,6 @@ impl ArtistDetails {
             widget.top_tracks_widget().clone(),
             Rc::clone(&model),
             worker,
-            true,
         ));
 
         Self {
