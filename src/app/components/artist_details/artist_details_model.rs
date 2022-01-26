@@ -90,7 +90,7 @@ impl PlaylistModel for ArtistDetailsModel {
     fn play_song_at(&self, _pos: usize, id: &str) {
         let tracks: Vec<SongDescription> = self.song_list_model().collect();
         self.dispatcher
-            .dispatch(PlaybackAction::LoadSongs(tracks).into());
+            .dispatch(PlaybackAction::Queue(tracks).into());
         self.dispatcher
             .dispatch(PlaybackAction::Load(id.to_string()).into());
     }

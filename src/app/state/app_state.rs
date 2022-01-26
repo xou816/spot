@@ -95,9 +95,14 @@ impl AppState {
                 ]
             }
             AppAction::DequeueSelection => {
-                for track in self.selection.take_selection() {
-                    self.playback.dequeue(&track.id);
-                }
+                let tracks: Vec<String> = self
+                    .selection
+                    .take_selection()
+                    .into_iter()
+                    .map(|s| s.id)
+                    .collect();
+                self.playback.dequeue(&tracks);
+
                 vec![
                     SelectionEvent::SelectionModeChanged(false).into(),
                     PlaybackEvent::PlaylistChanged.into(),

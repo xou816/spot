@@ -1,7 +1,8 @@
 use std::ops::Deref;
 
 use crate::app::models::{
-    ChangeRange, SongBatch, SongDescription, SongList, SongListModel, SongModel,
+    ChangeRange, SongBatch, SongDescription, SongList, SongListModel, SongListModelPending,
+    SongModel,
 };
 use crate::app::state::{AppAction, AppEvent, UpdatableState};
 use crate::app::{BatchQuery, LazyRandomIndex, SongsSource};
@@ -69,39 +70,39 @@ impl PlaybackState {
         self.index(self.position?)
     }
 
-    fn set_source(&mut self, source: Option<SongsSource>) {
-        self.songs.clear();
+    fn set_source(&mut self, source: Option<SongsSource>) -> SongListModelPending {
         self.source = source;
         self.index = Default::default();
         self.position = None;
+        self.songs.clear()
+    }
+
+    fn set_batch(&mut self, source: Option<SongsSource>, song_batch: SongBatch) -> bool {
+        let ok = self.set_source(source).and(|s| s.add(song_batch)).commit();
+        self.index.resize(self.songs.len());
+        ok
     }
 
     fn add_batch(&mut self, song_batch: SongBatch) -> bool {
-        let SongBatch { songs, batch } = song_batch;
-        let added = self.songs.add(SongBatch { songs, batch });
+        let ok = self.songs.add(song_batch).commit();
         self.index.resize(self.songs.len());
-        added
+        ok
     }
 
     pub fn queue(&mut self, tracks: Vec<SongDescription>) {
-        self.songs.append(tracks);
+        self.set_source(None).and(|s| s.append(tracks)).commit();
         self.index.grow(self.songs.len());
     }
 
-    pub fn dequeue(&mut self, id: &str) {
-        let position = self.songs.find_index(id);
-        self.songs.remove(&[id.to_string()]);
-        let new_len = self.songs.len();
-        self.position = self
-            .position
-            .filter(|_| new_len > 0)
-            .and_then(|p| Some(if p > 0 && p >= position? { p - 1 } else { p }));
-        self.index.shrink(new_len);
+    pub fn dequeue(&mut self, ids: &[String]) {
+        let current_id = self.current_song_id();
+        self.songs.remove(ids).commit();
+        self.position = current_id.and_then(|id| self.songs.find_index(&id));
+        self.index.shrink(self.songs.len());
     }
 
-    fn swap(&mut self, index: usize, other_index: usize) {
+    fn swap_pos(&mut self, index: usize, other_index: usize) {
         let len = self.songs.len();
-        self.songs.swap(index, other_index);
         self.position = self
             .position
             .map(|position| match position {
@@ -114,13 +115,15 @@ impl PlaybackState {
 
     pub fn move_down(&mut self, id: &str) -> Option<usize> {
         let index = self.songs.find_index(id)?;
-        self.swap(index + 1, index);
+        self.songs.move_down(index).commit();
+        self.swap_pos(index + 1, index);
         Some(index)
     }
 
     pub fn move_up(&mut self, id: &str) -> Option<usize> {
         let index = self.songs.find_index(id).filter(|&index| index > 0)?;
-        self.swap(index - 1, index);
+        self.songs.move_up(index).commit();
+        self.swap_pos(index - 1, index);
         Some(index)
     }
 
@@ -226,7 +229,6 @@ pub enum PlaybackAction {
     Seek(u32),
     SyncSeek(u32),
     Load(String),
-    LoadSongs(Vec<SongDescription>),
     LoadPagedSongs(SongsSource, SongBatch),
     SetVolume(f64),
     Next,
@@ -354,12 +356,6 @@ impl UpdatableState for PlaybackState {
                     vec![]
                 }
             }
-            PlaybackAction::LoadSongs(tracks) => {
-                self.set_source(None);
-                self.queue(tracks);
-
-                vec![PlaybackEvent::PlaylistChanged]
-            }
             PlaybackAction::LoadPagedSongs(source, batch)
                 if Some(&source) == self.source.as_ref() =>
             {
@@ -372,8 +368,7 @@ impl UpdatableState for PlaybackState {
             PlaybackAction::LoadPagedSongs(source, batch)
                 if Some(&source) != self.source.as_ref() =>
             {
-                self.set_source(Some(source));
-                self.add_batch(batch);
+                self.set_batch(Some(source), batch);
                 vec![PlaybackEvent::PlaylistChanged]
             }
             PlaybackAction::Queue(tracks) => {
@@ -381,7 +376,7 @@ impl UpdatableState for PlaybackState {
                 vec![PlaybackEvent::PlaylistChanged]
             }
             PlaybackAction::Dequeue(id) => {
-                self.dequeue(&id);
+                self.dequeue(&[id]);
                 vec![PlaybackEvent::PlaylistChanged]
             }
             PlaybackAction::Seek(pos) => vec![PlaybackEvent::TrackSeeked(pos)],

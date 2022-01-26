@@ -62,12 +62,12 @@ impl UpdatableState for DetailsState {
         match action {
             BrowserAction::SetAlbumDetails(album) if album.description.id == self.id => {
                 let AlbumDescription { id, songs, .. } = album.description.clone();
-                self.songs.add(songs);
+                self.songs.add(songs).commit();
                 self.content = Some(*album);
                 vec![BrowserEvent::AlbumDetailsLoaded(id)]
             }
             BrowserAction::AppendAlbumTracks(id, batch) if id == self.id => {
-                self.songs.add(*batch);
+                self.songs.add(*batch).commit();
                 vec![BrowserEvent::AlbumTracksAppended(id)]
             }
             BrowserAction::SaveAlbum(album) if album.id == self.id => {
@@ -118,16 +118,16 @@ impl UpdatableState for PlaylistDetailsState {
         match action {
             BrowserAction::SetPlaylistDetails(playlist) => {
                 let PlaylistDescription { id, songs, .. } = *playlist.clone();
-                self.songs.add(songs);
+                self.songs.add(songs).commit();
                 self.playlist = Some(*playlist);
                 vec![BrowserEvent::PlaylistDetailsLoaded(id)]
             }
             BrowserAction::AppendPlaylistTracks(id, song_batch) if id == self.id => {
-                self.songs.add(*song_batch);
+                self.songs.add(*song_batch).commit();
                 vec![BrowserEvent::PlaylistTracksAppended(id)]
             }
             BrowserAction::RemoveTracksFromPlaylist(uris) => {
-                self.songs.remove(&uris[..]);
+                self.songs.remove(&uris[..]).commit();
                 vec![BrowserEvent::PlaylistTracksRemoved(self.id.clone())]
             }
             _ => vec![],
@@ -176,7 +176,7 @@ impl UpdatableState for ArtistState {
                 self.next_page.reset_count(self.albums.len());
 
                 top_tracks.truncate(5);
-                self.top_tracks.append(top_tracks);
+                self.top_tracks.append(top_tracks).commit();
 
                 vec![BrowserEvent::ArtistDetailsUpdated(id)]
             }

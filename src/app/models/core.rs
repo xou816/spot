@@ -12,7 +12,7 @@ pub enum ListChange {
     Inserted(ChangeRange),
     Swapped(u32, u32),
     Removed(ChangeRange),
-    Shrunk { from: u32, to: u32 },
+    Resized { from: u32, to: u32 },
 }
 
 impl ListChange {
@@ -34,14 +34,15 @@ impl ListChange {
         ChangeRange::new(a, b).map(Self::Removed)
     }
 
-    fn into_tuples(self) -> Vec<(u32, u32, u32)> {
-        debug!("change: {:?}", &self);
-        match self {
-            Self::Inserted(ChangeRange(a, b)) => vec![(a, 0, b - a)],
-            Self::Removed(ChangeRange(a, b)) => vec![(a, b - a, 0)],
-            Self::Swapped(a, b) => vec![(u32::min(a, b), 2, 2)],
-            Self::Shrunk { from, to } => vec![(0, from, to)],
-        }
+    fn into_tuple(self) -> (u32, u32, u32) {
+        let tuples = match self {
+            Self::Inserted(ChangeRange(a, b)) => (a, 0, b - a + 1),
+            Self::Removed(ChangeRange(a, b)) => (a, b - a + 1, 0),
+            Self::Swapped(a, b) => (u32::min(a, b), 2, 2),
+            Self::Resized { from, to } => (0, from, to),
+        };
+        debug!("changes: {:?}", &tuples);
+        tuples
     }
 }
 
@@ -59,16 +60,12 @@ impl ChangeRange {
         }
     }
 
-    fn union(a: Option<Self>, b: Option<Self>) -> Option<Self> {
-        match (a, b) {
-            (Some(Self(a0, a1)), Some(Self(b0, b1))) => {
-                let start = u32::min(a0, b0);
-                let end = u32::max(a0 + b0, a1 + b1) - start;
-                Some(Self(start, end))
-            }
-            (Some(a), None) | (None, Some(a)) => Some(a),
-            _ => None,
-        }
+    fn union(self, b: Self) -> Self {
+        let Self(a0, a1) = self;
+        let Self(b0, b1) = b;
+        let start = u32::min(a0, b0);
+        let end = u32::max(a0 + b0, a1 + b1) - start;
+        Self(start, end)
     }
 }
 
@@ -118,6 +115,72 @@ glib::wrapper! {
     pub struct SongListModel(ObjectSubclass<imp::SongListModel>) @implements gio::ListModel;
 }
 
+#[must_use]
+pub struct SongListModelPending<'a> {
+    change: Option<ListChange>,
+    song_list_model: &'a mut SongListModel,
+}
+
+impl<'a> SongListModelPending<'a> {
+    fn new(change: Option<ListChange>, song_list_model: &'a mut SongListModel) -> Self {
+        Self {
+            change,
+            song_list_model,
+        }
+    }
+
+    pub fn and<Op>(self, op: Op) -> Self
+    where
+        Op: FnOnce(&mut SongListModel) -> SongListModelPending<'_> + 'static,
+    {
+        let Self {
+            change,
+            song_list_model,
+        } = self;
+
+        let len = song_list_model.len() as u32;
+        let new_change = op(song_list_model).change;
+
+        let change = if let (Some(change), Some(new_change)) = (change, new_change) {
+            Some(Self::merge(len, change, new_change))
+        } else {
+            change.or(new_change)
+        };
+
+        Self {
+            change,
+            song_list_model,
+        }
+    }
+
+    fn merge(len: u32, change: ListChange, new_change: ListChange) -> ListChange {
+        match (len, change, new_change) {
+            (
+                len,
+                ListChange::Removed(ChangeRange(a0, a1)),
+                ListChange::Inserted(ChangeRange(b0, b1)),
+            ) => {
+                let orig_len = len + a1 - a0 + 1;
+                let new_len = len + b1 - b0 + 1;
+                ListChange::Resized {
+                    from: orig_len,
+                    to: new_len,
+                }
+            }
+            _ => todo!(),
+        }
+    }
+
+    pub fn commit(self) -> bool {
+        let Self {
+            change,
+            song_list_model,
+        } = self;
+        song_list_model.notify_changes(change);
+        change.is_some()
+    }
+}
+
 impl SongListModel {
     pub fn new() -> Self {
         glib::Object::new(&[]).unwrap()
@@ -133,7 +196,7 @@ impl SongListModel {
 
     fn notify_changes(&self, changes: impl IntoIterator<Item = ListChange> + 'static) {
         glib::source::idle_add_local_once(clone!(@weak self as s => move || {
-            for (a, b, c) in changes.into_iter().flat_map(|c| c.into_tuples()) {
+            for (a, b, c) in changes.into_iter().map(|c| c.into_tuple()) {
                 s.items_changed(a, b, c);
             }
         }));
@@ -152,11 +215,10 @@ impl SongListModel {
         self.inner().iter().map(|s| s.into_description()).collect()
     }
 
-    pub fn add(&mut self, song_batch: SongBatch) -> bool {
+    pub fn add(&mut self, song_batch: SongBatch) -> SongListModelPending {
         debug!("add");
         let range = self.inner_mut().add(song_batch);
-        self.notify_changes(range);
-        range.is_some()
+        SongListModelPending::new(range, self)
     }
 
     pub fn get(&self, id: &str) -> Option<SongModel> {
@@ -183,36 +245,38 @@ impl SongListModel {
         self.inner().len()
     }
 
-    pub fn all_songs_cloned(&self) -> Vec<SongDescription> {
-        self.inner().all_songs_cloned()
-    }
-
-    pub fn append(&mut self, songs: Vec<SongDescription>) {
+    pub fn append(&mut self, songs: Vec<SongDescription>) -> SongListModelPending {
         debug!("append");
         let range = self.inner_mut().append(songs);
-        self.notify_changes(range);
+        SongListModelPending::new(range, self)
     }
 
     pub fn find_index(&self, song_id: &str) -> Option<usize> {
         self.inner().find_index(song_id)
     }
 
-    pub fn remove(&mut self, ids: &[String]) {
+    pub fn remove(&mut self, ids: &[String]) -> SongListModelPending {
         debug!("remove");
         let change = self.inner_mut().remove(ids);
-        self.notify_changes(change);
+        SongListModelPending::new(change, self)
     }
 
-    pub fn swap(&mut self, a: usize, b: usize) {
-        debug!("swap");
-        let swap = self.inner_mut().swap(a, b);
-        self.notify_changes(swap);
+    pub fn move_down(&mut self, a: usize) -> SongListModelPending {
+        debug!("move_down");
+        let swap = self.inner_mut().swap(a + 1, a);
+        SongListModelPending::new(swap, self)
     }
 
-    pub fn clear(&mut self) {
+    pub fn move_up(&mut self, a: usize) -> SongListModelPending {
+        debug!("move_up");
+        let swap = self.inner_mut().swap(a - 1, a);
+        SongListModelPending::new(swap, self)
+    }
+
+    pub fn clear(&mut self) -> SongListModelPending {
         debug!("clear");
         let removed = self.inner_mut().clear();
-        self.notify_changes(removed);
+        SongListModelPending::new(removed, self)
     }
 }
 
@@ -302,9 +366,9 @@ impl SongList {
     }
 
     pub fn clear(&mut self) -> Option<ListChange> {
-        let len = self.partial_len();
+        let last = self.partial_len().saturating_sub(1);
         *self = Self::new_sized(self.batch_size);
-        ListChange::removed(0, len)
+        ListChange::removed(0, last)
     }
 
     pub fn remove(&mut self, ids: &[String]) -> Option<ListChange> {
@@ -320,7 +384,7 @@ impl SongList {
         let removed = ids.len();
         self.total = self.total.saturating_sub(removed);
         self.total_loaded = self.total_loaded.saturating_sub(removed);
-        Some(ListChange::Shrunk {
+        Some(ListChange::Resized {
             from: len as u32,
             to: self.total_loaded as u32,
         })
@@ -337,7 +401,10 @@ impl SongList {
                 .insert(song.id.clone(), SongModel::new(song));
         }
         self.last_batch_key = self.batches.len().saturating_sub(1);
-        ListChange::inserted(insertion_start, insertion_start + songs_len)
+        ListChange::inserted(
+            insertion_start,
+            (insertion_start + songs_len).saturating_sub(1),
+        )
     }
 
     pub fn add(&mut self, song_batch: SongBatch) -> Option<ListChange> {
@@ -346,7 +413,7 @@ impl SongList {
                 .resize(self.batch_size)
                 .into_iter()
                 .map(|new_batch| self.add_one(new_batch))
-                .reduce(ChangeRange::union)
+                .reduce(|acc, cur| Some(acc?.union(cur?)))
                 .unwrap_or(None)
         } else {
             self.add_one(song_batch)
@@ -380,7 +447,7 @@ impl SongList {
         self.total_loaded += len;
         self.last_batch_key = usize::max(self.last_batch_key, index);
 
-        ChangeRange::new(insertion_start, insertion_start + len)
+        ChangeRange::new(insertion_start, (insertion_start + len).saturating_sub(1))
     }
 
     fn index_mut(&mut self, i: usize) -> Option<&mut String> {
