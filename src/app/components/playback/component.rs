@@ -116,7 +116,7 @@ impl PlaybackControl {
             self.widget
                 .set_title_and_artist(&song.title, &song.artists_name());
             self.widget.set_song_duration(Some(song.duration as f64));
-            if let Some(url) = song.art.clone() {
+            if let Some(url) = song.art {
                 self.widget.set_artwork_from_url(url, &self.worker);
             }
         } else {

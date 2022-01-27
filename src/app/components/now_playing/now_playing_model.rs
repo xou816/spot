@@ -33,6 +33,7 @@ impl NowPlayingModel {
         let queue = self.queue();
         let loader = self.app_model.get_batch_loader();
         let query = queue.next_query()?;
+        debug!("next_query = {:?}", &query);
 
         self.dispatcher.dispatch_async(Box::pin(async move {
             let source = query.source.clone();

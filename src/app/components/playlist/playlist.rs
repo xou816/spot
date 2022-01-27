@@ -118,7 +118,7 @@ where
         });
 
         listview.connect_activate(clone!(@weak list_model, @weak model => move |_, position| {
-            let song = list_model.index(position as usize).expect("attempt to access invalid index");
+            let song = list_model.index_continuous(position as usize).expect("attempt to access invalid index");
             let song = song.description();
             let selection_enabled = model.is_selection_enabled();
             if selection_enabled {

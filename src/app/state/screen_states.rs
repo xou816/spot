@@ -413,7 +413,6 @@ mod tests {
             art: Some("".to_owned()),
             songs: SongBatch::empty(),
             is_liked: false,
-            total_tracks: 10,
         };
         let mut artist_state = ArtistState::new("id".to_owned());
         artist_state.update_with(BrowserAction::SetArtistDetails(Box::new(

@@ -7,7 +7,7 @@ use std::cell::{Ref, RefCell, RefMut};
 use std::collections::HashMap;
 use std::convert::TryInto;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ListChange {
     Inserted(ChangeRange),
     Swapped(u32, u32),
@@ -64,7 +64,7 @@ impl ChangeRange {
         let Self(a0, a1) = self;
         let Self(b0, b1) = b;
         let start = u32::min(a0, b0);
-        let end = u32::max(a0 + b0, a1 + b1) - start;
+        let end = b1 - b0 + a1 - a0 + start + 1;
         Self(start, end)
     }
 }
@@ -195,11 +195,13 @@ impl SongListModel {
     }
 
     fn notify_changes(&self, changes: impl IntoIterator<Item = ListChange> + 'static) {
-        glib::source::idle_add_local_once(clone!(@weak self as s => move || {
-            for (a, b, c) in changes.into_iter().map(|c| c.into_tuple()) {
-                s.items_changed(a, b, c);
-            }
-        }));
+        if cfg!(not(test)) {
+            glib::source::idle_add_local_once(clone!(@weak self as s => move || {
+                for (a, b, c) in changes.into_iter().map(|c| c.into_tuple()) {
+                    s.items_changed(a, b, c);
+                }
+            }));
+        }
     }
 
     pub fn for_each<F>(&self, f: F)
@@ -216,7 +218,6 @@ impl SongListModel {
     }
 
     pub fn add(&mut self, song_batch: SongBatch) -> SongListModelPending {
-        debug!("add");
         let range = self.inner_mut().add(song_batch);
         SongListModelPending::new(range, self)
     }
@@ -227,6 +228,10 @@ impl SongListModel {
 
     pub fn index(&self, i: usize) -> Option<SongModel> {
         self.inner().index(i).cloned()
+    }
+
+    pub fn index_continuous(&self, i: usize) -> Option<SongModel> {
+        self.inner().index_continuous(i).cloned()
     }
 
     pub fn song_batch_for(&self, i: usize) -> Option<SongBatch> {
@@ -246,7 +251,6 @@ impl SongListModel {
     }
 
     pub fn append(&mut self, songs: Vec<SongDescription>) -> SongListModelPending {
-        debug!("append");
         let range = self.inner_mut().append(songs);
         SongListModelPending::new(range, self)
     }
@@ -256,25 +260,21 @@ impl SongListModel {
     }
 
     pub fn remove(&mut self, ids: &[String]) -> SongListModelPending {
-        debug!("remove");
         let change = self.inner_mut().remove(ids);
         SongListModelPending::new(change, self)
     }
 
     pub fn move_down(&mut self, a: usize) -> SongListModelPending {
-        debug!("move_down");
         let swap = self.inner_mut().swap(a + 1, a);
         SongListModelPending::new(swap, self)
     }
 
     pub fn move_up(&mut self, a: usize) -> SongListModelPending {
-        debug!("move_up");
         let swap = self.inner_mut().swap(a - 1, a);
         SongListModelPending::new(swap, self)
     }
 
     pub fn clear(&mut self) -> SongListModelPending {
-        debug!("clear");
         let removed = self.inner_mut().clear();
         SongListModelPending::new(removed, self)
     }
@@ -412,8 +412,11 @@ impl SongList {
             song_batch
                 .resize(self.batch_size)
                 .into_iter()
-                .map(|new_batch| self.add_one(new_batch))
-                .reduce(|acc, cur| Some(acc?.union(cur?)))
+                .map(|new_batch| {
+                    debug!("adding batch {:?}", &new_batch.batch);
+                    self.add_one(new_batch)
+                })
+                .reduce(|acc, cur| Some(acc?.union(cur?)).or(acc).or(cur))
                 .unwrap_or(None)
         } else {
             self.add_one(song_batch)
@@ -427,6 +430,7 @@ impl SongList {
         let index = batch.offset / batch.batch_size;
 
         if self.batches.contains_key(&index) {
+            warn!("batch already loaded");
             return None;
         }
 
@@ -475,7 +479,7 @@ impl SongList {
         ListChange::swapped(a, b)
     }
 
-    pub fn index(&self, i: usize) -> Option<&SongModel> {
+    fn index(&self, i: usize) -> Option<&SongModel> {
         let batch_size = self.batch_size;
         let batch_id = i / batch_size;
         let indexed_songs = &self.indexed_songs;
@@ -483,6 +487,18 @@ impl SongList {
             .get(&batch_id)
             .and_then(|batch| batch.get(i % batch_size))
             .and_then(move |id| indexed_songs.get(id))
+    }
+
+    fn index_continuous(&self, i: usize) -> Option<&SongModel> {
+        let batch_size = self.batch_size;
+        let bi = i / batch_size;
+        let batch = (0..=self.last_batch_key)
+            .into_iter()
+            .filter_map(move |i| self.batches.get(&i))
+            .nth(bi)?;
+        batch
+            .get(i % batch_size)
+            .and_then(move |id| self.indexed_songs.get(id))
     }
 
     pub fn needed_batch_for(&self, i: usize) -> Option<Batch> {
@@ -508,7 +524,7 @@ impl SongList {
         self.batches.get(&batch_id).map(|songs| SongBatch {
             songs: songs
                 .iter()
-                .filter_map(move |id| Some(indexed_songs.get(id)?.description().clone()))
+                .filter_map(move |id| Some(indexed_songs.get(id)?.into_description()))
                 .collect(),
             batch: Batch {
                 batch_size,
@@ -609,7 +625,7 @@ mod imp {
 
         fn item(&self, _: &Self::Type, position: u32) -> Option<glib::Object> {
             self.get()
-                .index(position as usize)
+                .index_continuous(position as usize)
                 .map(|m| m.clone().upcast())
         }
     }
@@ -629,7 +645,6 @@ mod imp {
     }
 }
 
-/*
 #[cfg(test)]
 mod tests {
 
@@ -671,8 +686,8 @@ mod tests {
         let list = SongList::new_from_initial_batch(batch(0));
 
         let mut list_iter = list.iter();
-        assert_eq!(list_iter.next().unwrap().id, "song0");
-        assert_eq!(list_iter.next().unwrap().id, "song1");
+        assert_eq!(list_iter.next().unwrap().description().id, "song0");
+        assert_eq!(list_iter.next().unwrap().description().id, "song1");
         assert!(list_iter.next().is_none());
     }
 
@@ -703,15 +718,15 @@ mod tests {
         let mut list = SongList::new_from_initial_batch(batch(0));
 
         let range = list.add(batch(1));
-        assert_eq!(range, Some(InsertionRange(2, 2)));
+        assert_eq!(range, Some(ListChange::Inserted(ChangeRange(2, 3))));
         assert_eq!(list.partial_len(), 4);
 
         let range = list.add(batch(3));
-        assert_eq!(range, Some(InsertionRange(4, 2)));
+        assert_eq!(range, Some(ListChange::Inserted(ChangeRange(4, 5))));
         assert_eq!(list.partial_len(), 6);
 
         let range = list.add(batch(2));
-        assert_eq!(range, Some(InsertionRange(4, 2)));
+        assert_eq!(range, Some(ListChange::Inserted(ChangeRange(4, 5))));
         assert_eq!(list.partial_len(), 8);
 
         let range = list.add(batch(2));
@@ -737,19 +752,11 @@ mod tests {
         assert_eq!(list.partial_len(), 4);
 
         let mut list_iter = list.iter();
-        assert_eq!(list_iter.next().unwrap().id, "song0");
-        assert_eq!(list_iter.next().unwrap().id, "song1");
-        assert_eq!(list_iter.next().unwrap().id, "song4");
-        assert_eq!(list_iter.next().unwrap().id, "song5");
+        assert_eq!(list_iter.next().unwrap().description().id, "song0");
+        assert_eq!(list_iter.next().unwrap().description().id, "song1");
+        assert_eq!(list_iter.next().unwrap().description().id, "song4");
+        assert_eq!(list_iter.next().unwrap().description().id, "song5");
         assert!(list_iter.next().is_none());
-    }
-
-    #[test]
-    fn test_status() {
-        let list = SongList::new_from_initial_batch(batch(0));
-        assert_eq!(list.status(0), SongIndexStatus::Present);
-        assert_eq!(list.status(6), SongIndexStatus::Absent);
-        assert_eq!(list.status(10), SongIndexStatus::OutOfBounds);
     }
 
     #[test]
@@ -762,9 +769,9 @@ mod tests {
         assert_eq!(list.partial_len(), 3);
 
         let mut list_iter = list.iter();
-        assert_eq!(list_iter.next().unwrap().id, "song1");
-        assert_eq!(list_iter.next().unwrap().id, "song2");
-        assert_eq!(list_iter.next().unwrap().id, "song3");
+        assert_eq!(list_iter.next().unwrap().description().id, "song1");
+        assert_eq!(list_iter.next().unwrap().description().id, "song2");
+        assert_eq!(list_iter.next().unwrap().description().id, "song3");
         assert!(list_iter.next().is_none());
     }
 
@@ -789,11 +796,11 @@ mod tests {
         list.append(vec![song("song4")]);
 
         let mut list_iter = list.iter();
-        assert_eq!(list_iter.next().unwrap().id, "song0");
-        assert_eq!(list_iter.next().unwrap().id, "song1");
-        assert_eq!(list_iter.next().unwrap().id, "song2");
-        assert_eq!(list_iter.next().unwrap().id, "song3");
-        assert_eq!(list_iter.next().unwrap().id, "song4");
+        assert_eq!(list_iter.next().unwrap().description().id, "song0");
+        assert_eq!(list_iter.next().unwrap().description().id, "song1");
+        assert_eq!(list_iter.next().unwrap().description().id, "song2");
+        assert_eq!(list_iter.next().unwrap().description().id, "song3");
+        assert_eq!(list_iter.next().unwrap().description().id, "song4");
         assert!(list_iter.next().is_none());
     }
 
@@ -810,10 +817,9 @@ mod tests {
         list.swap(2, 3); // should be no-op
 
         let mut list_iter = list.iter();
-        assert_eq!(list_iter.next().unwrap().id, "song1");
-        assert_eq!(list_iter.next().unwrap().id, "song2");
-        assert_eq!(list_iter.next().unwrap().id, "song0");
+        assert_eq!(list_iter.next().unwrap().description().id, "song1");
+        assert_eq!(list_iter.next().unwrap().description().id, "song2");
+        assert_eq!(list_iter.next().unwrap().description().id, "song0");
         assert!(list_iter.next().is_none());
     }
 }
- */

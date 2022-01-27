@@ -61,6 +61,7 @@ impl PlaylistDetailsModel {
 
         let id = self.id.clone();
         let next_query = query.next()?;
+        debug!("next_query = {:?}", &next_query);
         let loader = self.app_model.get_batch_loader();
 
         self.dispatcher.dispatch_async(Box::pin(async move {

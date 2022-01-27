@@ -86,7 +86,6 @@ pub struct AlbumDescription {
     pub art: Option<String>,
     pub songs: SongBatch,
     pub is_liked: bool,
-    pub total_tracks: usize,
 }
 
 impl AlbumDescription {
@@ -116,6 +115,7 @@ pub struct AlbumFullDescription {
 pub struct AlbumReleaseDetails {
     pub label: String,
     pub copyright_text: String,
+    pub total_tracks: usize,
 }
 
 #[derive(Clone, Debug)]
@@ -223,4 +223,39 @@ pub struct UserDescription {
     pub id: String,
     pub name: String,
     pub playlists: Vec<PlaylistDescription>,
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    fn song(id: &str) -> SongDescription {
+        SongDescription {
+            id: id.to_string(),
+            uri: "".to_string(),
+            title: "Title".to_string(),
+            artists: vec![],
+            album: AlbumRef {
+                id: "".to_string(),
+                name: "".to_string(),
+            },
+            duration: 1000,
+            art: None,
+            track_number: None,
+        }
+    }
+
+    #[test]
+    fn resize_batch() {
+        let batch = SongBatch {
+            songs: vec![song("1"), song("2"), song("3"), song("4")],
+            batch: Batch::first_of_size(4),
+        };
+
+        let batches = batch.resize(2);
+        assert_eq!(batches.len(), 2);
+        assert_eq!(&batches.get(0).unwrap().songs.get(0).unwrap().id, "1");
+        assert_eq!(&batches.get(1).unwrap().songs.get(0).unwrap().id, "3");
+    }
 }
