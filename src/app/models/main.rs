@@ -1,55 +1,34 @@
-use std::convert::From;
 use std::str::FromStr;
 
-use super::core::Batch;
-use super::gtypes::*;
-
-impl From<&AlbumDescription> for AlbumModel {
-    fn from(album: &AlbumDescription) -> Self {
-        AlbumModel::new(
-            &album.artists_name(),
-            &album.title,
-            album.year(),
-            album.art.as_ref(),
-            &album.id,
-        )
-    }
+#[derive(Clone, Copy, Debug)]
+pub struct Batch {
+    pub offset: usize,
+    pub batch_size: usize,
+    pub total: usize,
 }
 
-impl From<AlbumDescription> for AlbumModel {
-    fn from(album: AlbumDescription) -> Self {
-        Self::from(&album)
+impl Batch {
+    pub fn first_of_size(batch_size: usize) -> Self {
+        Self {
+            offset: 0,
+            batch_size,
+            total: 0,
+        }
     }
-}
 
-impl From<&PlaylistDescription> for AlbumModel {
-    fn from(playlist: &PlaylistDescription) -> Self {
-        AlbumModel::new(
-            &playlist.owner.display_name,
-            &playlist.title,
-            // Playlists do not have their released date since they are expected to be updated anytime.
-            None,
-            playlist.art.as_ref(),
-            &playlist.id,
-        )
-    }
-}
+    pub fn next(self) -> Option<Self> {
+        let Self {
+            offset,
+            batch_size,
+            total,
+        } = self;
 
-impl From<PlaylistDescription> for AlbumModel {
-    fn from(playlist: PlaylistDescription) -> Self {
-        Self::from(&playlist)
-    }
-}
-
-impl From<SongDescription> for SongModel {
-    fn from(song: SongDescription) -> Self {
-        SongModel::new(song)
-    }
-}
-
-impl From<&SongDescription> for SongModel {
-    fn from(song: &SongDescription) -> Self {
-        SongModel::new(song.clone())
+        Some(Self {
+            offset: offset + batch_size,
+            batch_size,
+            total,
+        })
+        .filter(|b| b.offset < total)
     }
 }
 
@@ -153,6 +132,12 @@ impl SongDescription {
             .collect::<Vec<String>>()
             .join(", ")
     }
+}
+
+#[derive(Copy, Clone, Default)]
+pub struct SongState {
+    pub is_playing: bool,
+    pub is_selected: bool,
 }
 
 #[derive(Debug, Clone)]

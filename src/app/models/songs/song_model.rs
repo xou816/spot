@@ -4,13 +4,13 @@ use gio::prelude::*;
 use glib::{subclass::prelude::*, SignalHandlerId};
 use std::{cell::Ref, ops::Deref};
 
-use crate::app::models::SongDescription;
+use crate::app::components::utils::format_duration;
+use crate::app::models::*;
+
 glib::wrapper! {
     pub struct SongModel(ObjectSubclass<imp::SongModel>);
 }
 
-// Constructor for new instances. This simply calls glib::Object::new() with
-// initial values for our two properties and then returns the new instance
 impl SongModel {
     pub fn new(song: SongDescription) -> Self {
         let o: Self = glib::Object::new(&[]).unwrap();
@@ -106,15 +106,7 @@ impl SongModel {
     }
 }
 
-#[derive(Copy, Clone, Default)]
-pub struct SongState {
-    pub is_playing: bool,
-    pub is_selected: bool,
-}
-
 mod imp {
-
-    use crate::app::components::utils::format_duration;
 
     use super::*;
     use std::cell::{Cell, RefCell};
@@ -125,9 +117,6 @@ mod imp {
         pub bindings: Vec<glib::Binding>,
     }
 
-    // This is the struct containing all state carried with
-    // the new type. Generally this has to make use of
-    // interior mutability.
     #[derive(Default)]
     pub struct SongModel {
         pub song: RefCell<Option<SongDescription>>,
@@ -150,22 +139,13 @@ mod imp {
             bindings.bindings.drain(..).for_each(|b| b.unbind());
         }
     }
-
-    // ObjectSubclass is the trait that defines the new type and
-    // contains all information needed by the GObject type system,
-    // including the new type's name, parent type, etc.
     #[glib::object_subclass]
     impl ObjectSubclass for SongModel {
-        // This type name must be unique per process.
         const NAME: &'static str = "SongModel";
-
         type Type = super::SongModel;
-
-        // The parent type this one is inheriting from.
         type ParentType = glib::Object;
     }
 
-    // Static array for defining the properties of the new type.
     lazy_static! {
         static ref PROPERTIES: [glib::ParamSpec; 8] = [
             glib::ParamSpecString::new(
@@ -229,14 +209,11 @@ mod imp {
         ];
     }
 
-    // Trait that is used to override virtual methods of glib::Object.
     impl ObjectImpl for SongModel {
         fn properties() -> &'static [glib::ParamSpec] {
             &*PROPERTIES
         }
 
-        // Called whenever a property is set on this instance. The id
-        // is the same as the index of the property in the PROPERTIES array.
         fn set_property(
             &self,
             _obj: &Self::Type,
@@ -269,8 +246,6 @@ mod imp {
             }
         }
 
-        // Called whenever a property is retrieved from this instance. The id
-        // is the same as the index of the property in the PROPERTIES array.
         fn property(&self, _obj: &Self::Type, _id: usize, pspec: &glib::ParamSpec) -> glib::Value {
             match pspec.name() {
                 "index" => self

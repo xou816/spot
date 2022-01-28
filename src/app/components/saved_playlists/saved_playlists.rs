@@ -121,7 +121,7 @@ impl SavedPlaylists {
             self.worker.clone(),
             &*self.model.get_list_store().unwrap(),
             clone!(@weak self.model as model => move |id| {
-                model.open_playlist(id.clone());
+                model.open_playlist(id);
             }),
         );
     }

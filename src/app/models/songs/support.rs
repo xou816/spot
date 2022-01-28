@@ -1,11 +1,7 @@
-use super::{main::*, SongModel};
-
-use gio::prelude::*;
-use gio::ListModel;
-use gtk::subclass::prelude::*;
-use std::cell::{Ref, RefCell, RefMut};
 use std::collections::HashMap;
 use std::convert::TryInto;
+
+use crate::app::models::*;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ListChange {
@@ -16,7 +12,7 @@ pub enum ListChange {
 }
 
 impl ListChange {
-    fn swapped(a: impl TryInto<u32>, b: impl TryInto<u32>) -> Option<Self> {
+    pub fn swapped(a: impl TryInto<u32>, b: impl TryInto<u32>) -> Option<Self> {
         let a = a.try_into().ok()?;
         let b = b.try_into().ok()?;
         if b != a {
@@ -26,15 +22,15 @@ impl ListChange {
         }
     }
 
-    fn inserted(a: impl TryInto<u32>, b: impl TryInto<u32>) -> Option<Self> {
+    pub fn inserted(a: impl TryInto<u32>, b: impl TryInto<u32>) -> Option<Self> {
         ChangeRange::new(a, b).map(Self::Inserted)
     }
 
-    fn removed(a: impl TryInto<u32>, b: impl TryInto<u32>) -> Option<Self> {
+    pub fn removed(a: impl TryInto<u32>, b: impl TryInto<u32>) -> Option<Self> {
         ChangeRange::new(a, b).map(Self::Removed)
     }
 
-    fn into_tuple(self) -> (u32, u32, u32) {
+    pub fn into_tuple(self) -> (u32, u32, u32) {
         let tuples = match self {
             Self::Inserted(ChangeRange(a, b)) => (a, 0, b - a + 1),
             Self::Removed(ChangeRange(a, b)) => (a, b - a + 1, 0),
@@ -47,10 +43,10 @@ impl ListChange {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct ChangeRange(u32, u32);
+pub struct ChangeRange(pub u32, pub u32);
 
 impl ChangeRange {
-    fn new(a: impl TryInto<u32>, b: impl TryInto<u32>) -> Option<Self> {
+    pub fn new(a: impl TryInto<u32>, b: impl TryInto<u32>) -> Option<Self> {
         let a = a.try_into().ok()?;
         let b = b.try_into().ok()?;
         if b.saturating_sub(a) > 0 {
@@ -60,44 +56,12 @@ impl ChangeRange {
         }
     }
 
-    fn union(self, b: Self) -> Self {
+    pub fn union(self, b: Self) -> Self {
         let Self(a0, a1) = self;
         let Self(b0, b1) = b;
         let start = u32::min(a0, b0);
         let end = b1 - b0 + a1 - a0 + start + 1;
         Self(start, end)
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct Batch {
-    pub offset: usize,
-    pub batch_size: usize,
-    pub total: usize,
-}
-
-impl Batch {
-    pub fn first_of_size(batch_size: usize) -> Self {
-        Self {
-            offset: 0,
-            batch_size,
-            total: 0,
-        }
-    }
-
-    pub fn next(self) -> Option<Self> {
-        let Self {
-            offset,
-            batch_size,
-            total,
-        } = self;
-
-        Some(Self {
-            offset: offset + batch_size,
-            batch_size,
-            total,
-        })
-        .filter(|b| b.offset < total)
     }
 }
 
@@ -111,177 +75,8 @@ pub struct SongList {
     indexed_songs: HashMap<String, SongModel>,
 }
 
-glib::wrapper! {
-    pub struct SongListModel(ObjectSubclass<imp::SongListModel>) @implements gio::ListModel;
-}
-
-#[must_use]
-pub struct SongListModelPending<'a> {
-    change: Option<ListChange>,
-    song_list_model: &'a mut SongListModel,
-}
-
-impl<'a> SongListModelPending<'a> {
-    fn new(change: Option<ListChange>, song_list_model: &'a mut SongListModel) -> Self {
-        Self {
-            change,
-            song_list_model,
-        }
-    }
-
-    pub fn and<Op>(self, op: Op) -> Self
-    where
-        Op: FnOnce(&mut SongListModel) -> SongListModelPending<'_> + 'static,
-    {
-        let Self {
-            change,
-            song_list_model,
-        } = self;
-
-        let len = song_list_model.len() as u32;
-        let new_change = op(song_list_model).change;
-
-        let change = if let (Some(change), Some(new_change)) = (change, new_change) {
-            Some(Self::merge(len, change, new_change))
-        } else {
-            change.or(new_change)
-        };
-
-        Self {
-            change,
-            song_list_model,
-        }
-    }
-
-    fn merge(len: u32, change: ListChange, new_change: ListChange) -> ListChange {
-        match (len, change, new_change) {
-            (
-                len,
-                ListChange::Removed(ChangeRange(a0, a1)),
-                ListChange::Inserted(ChangeRange(b0, b1)),
-            ) => {
-                let orig_len = len + a1 - a0 + 1;
-                let new_len = len + b1 - b0 + 1;
-                ListChange::Resized {
-                    from: orig_len,
-                    to: new_len,
-                }
-            }
-            _ => todo!(),
-        }
-    }
-
-    pub fn commit(self) -> bool {
-        let Self {
-            change,
-            song_list_model,
-        } = self;
-        song_list_model.notify_changes(change);
-        change.is_some()
-    }
-}
-
-impl SongListModel {
-    pub fn new(batch_size: u32) -> Self {
-        glib::Object::new(&[("batch-size", &batch_size)]).unwrap()
-    }
-
-    fn inner_mut(&mut self) -> RefMut<SongList> {
-        imp::SongListModel::from_instance(self).get_mut()
-    }
-
-    fn inner(&self) -> Ref<SongList> {
-        imp::SongListModel::from_instance(self).get()
-    }
-
-    fn notify_changes(&self, changes: impl IntoIterator<Item = ListChange> + 'static) {
-        if cfg!(not(test)) {
-            glib::source::idle_add_local_once(clone!(@weak self as s => move || {
-                for (a, b, c) in changes.into_iter().map(|c| c.into_tuple()) {
-                    s.items_changed(a, b, c);
-                }
-            }));
-        }
-    }
-
-    pub fn for_each<F>(&self, f: F)
-    where
-        F: Fn(usize, &SongModel),
-    {
-        for (i, song) in self.inner().iter().enumerate() {
-            f(i, song);
-        }
-    }
-
-    pub fn collect(&self) -> Vec<SongDescription> {
-        self.inner().iter().map(|s| s.into_description()).collect()
-    }
-
-    pub fn add(&mut self, song_batch: SongBatch) -> SongListModelPending {
-        let range = self.inner_mut().add(song_batch);
-        SongListModelPending::new(range, self)
-    }
-
-    pub fn get(&self, id: &str) -> Option<SongModel> {
-        self.inner().get(id).cloned()
-    }
-
-    pub fn index(&self, i: usize) -> Option<SongModel> {
-        self.inner().index(i).cloned()
-    }
-
-    pub fn index_continuous(&self, i: usize) -> Option<SongModel> {
-        self.inner().index_continuous(i).cloned()
-    }
-
-    pub fn song_batch_for(&self, i: usize) -> Option<SongBatch> {
-        self.inner().song_batch_for(i)
-    }
-
-    pub fn last_batch(&self) -> Option<Batch> {
-        self.inner().last_batch()
-    }
-
-    pub fn needed_batch_for(&self, i: usize) -> Option<Batch> {
-        self.inner().needed_batch_for(i)
-    }
-
-    pub fn len(&self) -> usize {
-        self.inner().len()
-    }
-
-    pub fn append(&mut self, songs: Vec<SongDescription>) -> SongListModelPending {
-        let range = self.inner_mut().append(songs);
-        SongListModelPending::new(range, self)
-    }
-
-    pub fn find_index(&self, song_id: &str) -> Option<usize> {
-        self.inner().find_index(song_id)
-    }
-
-    pub fn remove(&mut self, ids: &[String]) -> SongListModelPending {
-        let change = self.inner_mut().remove(ids);
-        SongListModelPending::new(change, self)
-    }
-
-    pub fn move_down(&mut self, a: usize) -> SongListModelPending {
-        let swap = self.inner_mut().swap(a + 1, a);
-        SongListModelPending::new(swap, self)
-    }
-
-    pub fn move_up(&mut self, a: usize) -> SongListModelPending {
-        let swap = self.inner_mut().swap(a - 1, a);
-        SongListModelPending::new(swap, self)
-    }
-
-    pub fn clear(&mut self) -> SongListModelPending {
-        let removed = self.inner_mut().clear();
-        SongListModelPending::new(removed, self)
-    }
-}
-
 impl SongList {
-    fn new_sized(batch_size: usize) -> Self {
+    pub fn new_sized(batch_size: usize) -> Self {
         Self {
             total: 0,
             total_loaded: 0,
@@ -292,13 +87,17 @@ impl SongList {
         }
     }
 
-    fn iter(&self) -> impl Iterator<Item = &SongModel> {
+    pub fn batch_size(&self) -> usize {
+        self.batch_size
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = &SongModel> {
         let indexed_songs = &self.indexed_songs;
         self.iter_ids_from(0)
             .filter_map(move |(_, id)| indexed_songs.get(id))
     }
 
-    fn partial_len(&self) -> usize {
+    pub fn partial_len(&self) -> usize {
         self.total_loaded
     }
 
@@ -312,7 +111,7 @@ impl SongList {
         batch_size * batch_count
     }
 
-    fn len(&self) -> usize {
+    pub fn len(&self) -> usize {
         self.total
     }
 
@@ -323,7 +122,7 @@ impl SongList {
             .skip(i % batch_size)
     }
 
-    fn find_index(&self, song_id: &str) -> Option<usize> {
+    pub fn find_index(&self, song_id: &str) -> Option<usize> {
         self.iter_ids_from(0)
             .find(|(_, id)| &id[..] == song_id)
             .map(|(pos, _)| pos)
@@ -355,13 +154,13 @@ impl SongList {
         }
     }
 
-    fn clear(&mut self) -> Option<ListChange> {
+    pub fn clear(&mut self) -> Option<ListChange> {
         let last = self.partial_len().saturating_sub(1);
         *self = Self::new_sized(self.batch_size);
         ListChange::removed(0, last)
     }
 
-    fn remove(&mut self, ids: &[String]) -> Option<ListChange> {
+    pub fn remove(&mut self, ids: &[String]) -> Option<ListChange> {
         let len = self.total_loaded;
         let mut batches = HashMap::<usize, Vec<String>>::default();
         self.iter_ids_from(0)
@@ -380,7 +179,7 @@ impl SongList {
         })
     }
 
-    fn append(&mut self, songs: Vec<SongDescription>) -> Option<ListChange> {
+    pub fn append(&mut self, songs: Vec<SongDescription>) -> Option<ListChange> {
         let songs_len = songs.len();
         let insertion_start = self.estimated_len(self.last_batch_key + 1);
         self.total = self.total.saturating_add(songs_len);
@@ -397,7 +196,7 @@ impl SongList {
         )
     }
 
-    fn add(&mut self, song_batch: SongBatch) -> Option<ListChange> {
+    pub fn add(&mut self, song_batch: SongBatch) -> Option<ListChange> {
         let range = if song_batch.batch.batch_size != self.batch_size {
             song_batch
                 .resize(self.batch_size)
@@ -452,7 +251,7 @@ impl SongList {
             .and_then(|s| s.get_mut(i % batch_size))
     }
 
-    fn swap(&mut self, a: usize, b: usize) -> Option<ListChange> {
+    pub fn swap(&mut self, a: usize, b: usize) -> Option<ListChange> {
         if a == b {
             return None;
         }
@@ -469,7 +268,7 @@ impl SongList {
         ListChange::swapped(a, b)
     }
 
-    fn index(&self, i: usize) -> Option<&SongModel> {
+    pub fn index(&self, i: usize) -> Option<&SongModel> {
         let batch_size = self.batch_size;
         let batch_id = i / batch_size;
         let indexed_songs = &self.indexed_songs;
@@ -479,7 +278,7 @@ impl SongList {
             .and_then(move |id| indexed_songs.get(id))
     }
 
-    fn index_continuous(&self, i: usize) -> Option<&SongModel> {
+    pub fn index_continuous(&self, i: usize) -> Option<&SongModel> {
         let batch_size = self.batch_size;
         let bi = i / batch_size;
         let batch = (0..=self.last_batch_key)
@@ -491,7 +290,7 @@ impl SongList {
             .and_then(move |id| self.indexed_songs.get(id))
     }
 
-    fn needed_batch_for(&self, i: usize) -> Option<Batch> {
+    pub fn needed_batch_for(&self, i: usize) -> Option<Batch> {
         let total = self.total;
         let batch_size = self.batch_size;
         let batch_id = i / batch_size;
@@ -506,7 +305,7 @@ impl SongList {
         }
     }
 
-    fn song_batch_for(&self, i: usize) -> Option<SongBatch> {
+    pub fn song_batch_for(&self, i: usize) -> Option<SongBatch> {
         let total = self.total;
         let batch_size = self.batch_size;
         let batch_id = i / batch_size;
@@ -524,7 +323,7 @@ impl SongList {
         })
     }
 
-    fn last_batch(&self) -> Option<Batch> {
+    pub fn last_batch(&self) -> Option<Batch> {
         if self.total_loaded == 0 {
             None
         } else {
@@ -536,102 +335,8 @@ impl SongList {
         }
     }
 
-    fn get(&self, id: &str) -> Option<&SongModel> {
+    pub fn get(&self, id: &str) -> Option<&SongModel> {
         self.indexed_songs.get(id)
-    }
-}
-
-mod imp {
-
-    use glib::{Cast, StaticType};
-
-    use super::*;
-
-    pub struct SongListModel(RefCell<Option<SongList>>);
-
-    #[glib::object_subclass]
-    impl ObjectSubclass for SongListModel {
-        const NAME: &'static str = "SongList";
-
-        type Type = super::SongListModel;
-        type ParentType = glib::Object;
-        type Interfaces = (ListModel,);
-
-        fn new() -> Self {
-            Self(RefCell::new(None))
-        }
-    }
-
-    lazy_static! {
-        static ref PROPERTIES: [glib::ParamSpec; 1] = [glib::ParamSpecUInt::new(
-            "batch-size",
-            "Size of the batches",
-            "",
-            1,
-            u32::MAX,
-            1,
-            glib::ParamFlags::READWRITE,
-        )];
-    }
-
-    impl ObjectImpl for SongListModel {
-        fn properties() -> &'static [glib::ParamSpec] {
-            &*PROPERTIES
-        }
-
-        fn set_property(
-            &self,
-            _obj: &Self::Type,
-            _id: usize,
-            value: &glib::Value,
-            pspec: &glib::ParamSpec,
-        ) {
-            if "batch-size" == pspec.name() {
-                let batch_size = value.get::<u32>().unwrap();
-                *self.0.borrow_mut() = Some(SongList::new_sized(batch_size as usize))
-            } else {
-                unimplemented!()
-            }
-        }
-
-        fn property(&self, _obj: &Self::Type, _id: usize, pspec: &glib::ParamSpec) -> glib::Value {
-            if "batch-size" == pspec.name() {
-                let size = self.get().batch_size as u32;
-                size.to_value()
-            } else {
-                unimplemented!()
-            }
-        }
-    }
-
-    impl ListModelImpl for SongListModel {
-        fn item_type(&self, _: &Self::Type) -> glib::Type {
-            SongModel::static_type()
-        }
-
-        fn n_items(&self, _: &Self::Type) -> u32 {
-            self.get().partial_len() as u32
-        }
-
-        fn item(&self, _: &Self::Type, position: u32) -> Option<glib::Object> {
-            self.get()
-                .index_continuous(position as usize)
-                .map(|m| m.clone().upcast())
-        }
-    }
-
-    impl SongListModel {
-        pub fn get_mut(&self) -> RefMut<SongList> {
-            RefMut::map(self.0.borrow_mut(), |s| {
-                s.as_mut().expect("set at construction")
-            })
-        }
-
-        pub fn get(&self) -> Ref<SongList> {
-            Ref::map(self.0.borrow(), |s| {
-                s.as_ref().expect("set at construction")
-            })
-        }
     }
 }
 
