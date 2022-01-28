@@ -150,7 +150,7 @@ where
             .listview
             .parent()
             .and_then(|p| p.downcast::<gtk::ScrolledWindow>().ok())
-            .and_then(|w| w.vadjustment());
+            .map(|w| w.vadjustment());
         if let Some(adj) = adj {
             let v = adj.value();
             let pos = (index as f64) * adj.upper() / len;

@@ -19,29 +19,23 @@ impl SongModel {
     }
 
     pub fn set_playing(&self, is_playing: bool) {
-        self.set_property("playing", is_playing)
-            .expect("set 'playing' failed");
+        self.set_property("playing", is_playing);
     }
 
     pub fn set_selected(&self, is_selected: bool) {
-        self.set_property("selected", is_selected)
-            .expect("set 'selected' failed");
+        self.set_property("selected", is_selected);
     }
 
     pub fn get_playing(&self) -> bool {
-        self.property("playing").unwrap().get::<bool>().unwrap()
+        self.property("playing")
     }
 
     pub fn get_selected(&self) -> bool {
-        self.property("selected").unwrap().get::<bool>().unwrap()
+        self.property("selected")
     }
 
     pub fn get_id(&self) -> String {
         self.property("id")
-            .unwrap()
-            .get::<&str>()
-            .unwrap()
-            .to_string()
     }
 
     pub fn bind_index(&self, o: &impl ObjectType, property: &str) {
@@ -146,10 +140,8 @@ mod imp {
             self.bindings.borrow_mut().signals.push(id);
         }
 
-        pub fn push_binding(&self, binding: Option<glib::Binding>) {
-            if let Some(binding) = binding {
-                self.bindings.borrow_mut().bindings.push(binding);
-            }
+        pub fn push_binding(&self, binding: glib::Binding) {
+            self.bindings.borrow_mut().bindings.push(binding);
         }
 
         pub fn unbind_all<O: ObjectExt>(&self, o: &O) {
@@ -171,22 +163,19 @@ mod imp {
 
         // The parent type this one is inheriting from.
         type ParentType = glib::Object;
-
-        // Interfaces this type implements
-        type Interfaces = ();
     }
 
     // Static array for defining the properties of the new type.
     lazy_static! {
         static ref PROPERTIES: [glib::ParamSpec; 8] = [
-            glib::ParamSpec::new_string(
+            glib::ParamSpecString::new(
                 "id",
                 "Spotify identifier",
                 "",
                 None,
                 glib::ParamFlags::READABLE
             ),
-            glib::ParamSpec::new_uint(
+            glib::ParamSpecUInt::new(
                 "index",
                 "Track number within an album",
                 "",
@@ -195,42 +184,42 @@ mod imp {
                 1,
                 glib::ParamFlags::READABLE,
             ),
-            glib::ParamSpec::new_string(
+            glib::ParamSpecString::new(
                 "title",
                 "Title of the track",
                 "",
                 None,
                 glib::ParamFlags::READABLE
             ),
-            glib::ParamSpec::new_string(
+            glib::ParamSpecString::new(
                 "artist",
                 "Artists, comma separated",
                 "",
                 None,
                 glib::ParamFlags::READABLE
             ),
-            glib::ParamSpec::new_string(
+            glib::ParamSpecString::new(
                 "duration",
                 "Duration (formatted)",
                 "",
                 None,
                 glib::ParamFlags::READABLE,
             ),
-            glib::ParamSpec::new_string(
+            glib::ParamSpecString::new(
                 "art",
                 "URL to the cover art",
                 "",
                 None,
                 glib::ParamFlags::READABLE,
             ),
-            glib::ParamSpec::new_boolean(
+            glib::ParamSpecBoolean::new(
                 "playing",
                 "Playing",
                 "",
                 false,
                 glib::ParamFlags::READWRITE
             ),
-            glib::ParamSpec::new_boolean(
+            glib::ParamSpecBoolean::new(
                 "selected",
                 "Selected",
                 "",

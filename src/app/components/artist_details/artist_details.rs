@@ -90,7 +90,7 @@ impl ArtistDetailsWidget {
         store: &ListStore<AlbumModel>,
         on_album_pressed: F,
     ) where
-        F: Fn(&String) + Clone + 'static,
+        F: Fn(String) + Clone + 'static,
     {
         self.widget()
             .artist_releases
@@ -100,9 +100,7 @@ impl ArtistDetailsWidget {
                 let album = AlbumWidget::for_model(item, worker.clone());
                 let f = on_album_pressed.clone();
                 album.connect_album_pressed(clone!(@weak item => move |_| {
-                    if let Some(id) = item.uri().as_ref() {
-                        f(id);
-                    }
+                    f(item.uri());
                 }));
                 child.set_child(Some(&album));
                 child.upcast::<gtk::Widget>()

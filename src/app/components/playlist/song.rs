@@ -9,6 +9,7 @@ use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 
 mod imp {
+
     use super::*;
 
     const SONG_CLASS: &str = "song--playing";
@@ -58,14 +59,14 @@ mod imp {
 
     lazy_static! {
         static ref PROPERTIES: [glib::ParamSpec; 2] = [
-            glib::ParamSpec::new_boolean(
+            glib::ParamSpecBoolean::new(
                 "playing",
                 "Playing",
                 "",
                 false,
                 glib::ParamFlags::READWRITE
             ),
-            glib::ParamSpec::new_boolean(
+            glib::ParamSpecBoolean::new(
                 "selected",
                 "Selected",
                 "",
@@ -120,6 +121,12 @@ mod imp {
         fn constructed(&self, obj: &Self::Type) {
             self.parent_constructed(obj);
             self.song_checkbox.set_sensitive(false);
+        }
+
+        fn dispose(&self, obj: &Self::Type) {
+            while let Some(child) = obj.first_child() {
+                child.unparent();
+            }
         }
     }
 

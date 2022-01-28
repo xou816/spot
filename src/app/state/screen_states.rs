@@ -219,10 +219,7 @@ impl UpdatableState for HomeState {
     fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
         match action {
             BrowserAction::SetLibraryContent(content) => {
-                if !self
-                    .albums
-                    .eq(&content, |a, b| a.uri().as_ref() == Some(&b.id))
-                {
+                if !self.albums.eq(&content, |a, b| a.uri() == b.id) {
                     self.albums
                         .replace_all(content.into_iter().map(|a| a.into()));
                     self.next_albums_page.reset_count(self.albums.len());
@@ -238,10 +235,7 @@ impl UpdatableState for HomeState {
             }
             BrowserAction::SaveAlbum(album) => {
                 let album_id = album.id.clone();
-                let already_present = self
-                    .albums
-                    .iter()
-                    .any(|a| a.uri().as_ref() == Some(&album_id));
+                let already_present = self.albums.iter().any(|a| a.uri() == album_id);
                 if already_present {
                     vec![]
                 } else {
@@ -251,10 +245,7 @@ impl UpdatableState for HomeState {
                 }
             }
             BrowserAction::UnsaveAlbum(id) => {
-                let position = self
-                    .albums
-                    .iter()
-                    .position(|a| a.uri().as_ref() == Some(&id));
+                let position = self.albums.iter().position(|a| a.uri() == id);
                 if let Some(position) = position {
                     self.albums.remove(position as u32);
                     self.next_albums_page.decrement();
@@ -264,10 +255,7 @@ impl UpdatableState for HomeState {
                 }
             }
             BrowserAction::SetPlaylistsContent(content) => {
-                if !self
-                    .playlists
-                    .eq(&content, |a, b| a.uri().as_ref() == Some(&b.id))
-                {
+                if !self.playlists.eq(&content, |a, b| a.uri() == b.id) {
                     self.playlists
                         .replace_all(content.into_iter().map(|a| a.into()));
                     self.next_playlists_page.reset_count(self.playlists.len());

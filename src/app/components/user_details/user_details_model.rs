@@ -39,9 +39,8 @@ impl UserDetailsModel {
             });
     }
 
-    pub fn open_playlist(&self, id: &str) {
-        self.dispatcher
-            .dispatch(AppAction::ViewPlaylist(id.to_string()));
+    pub fn open_playlist(&self, id: String) {
+        self.dispatcher.dispatch(AppAction::ViewPlaylist(id));
     }
 
     pub fn load_more(&self) -> Option<()> {

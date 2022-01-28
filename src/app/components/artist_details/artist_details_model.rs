@@ -47,9 +47,8 @@ impl ArtistDetailsModel {
             });
     }
 
-    pub fn open_album(&self, id: &str) {
-        self.dispatcher
-            .dispatch(AppAction::ViewAlbum(id.to_string()));
+    pub fn open_album(&self, id: String) {
+        self.dispatcher.dispatch(AppAction::ViewAlbum(id));
     }
 
     pub fn load_more(&self) -> Option<()> {

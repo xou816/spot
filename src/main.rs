@@ -44,7 +44,6 @@ fn main() {
     }
 
     let context = glib::MainContext::default();
-    context.push_thread_default();
 
     let dispatch_loop = DispatchLoop::new();
     let sender = dispatch_loop.make_dispatcher();
@@ -78,7 +77,7 @@ fn main() {
 fn startup(settings: &settings::SpotSettings) {
     gtk::init().unwrap_or_else(|_| panic!("Failed to initialize GTK"));
     libadwaita::init();
-    let manager = libadwaita::StyleManager::default().unwrap();
+    let manager = libadwaita::StyleManager::default();
 
     let res = gio::Resource::load(config::PKGDATADIR.to_owned() + "/spot.gresource")
         .expect("Could not load resources");

@@ -11,7 +11,7 @@ impl Notification {
     }
 
     fn show(&self, content: &str) {
-        let toast = libadwaita::ToastBuilder::new()
+        let toast = libadwaita::Toast::builder()
             .title(content)
             .timeout(4)
             .build();

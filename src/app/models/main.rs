@@ -10,7 +10,7 @@ impl From<&AlbumDescription> for AlbumModel {
             &album.artists_name(),
             &album.title,
             album.year(),
-            &album.art,
+            album.art.as_ref(),
             &album.id,
         )
     }
@@ -29,7 +29,7 @@ impl From<&PlaylistDescription> for AlbumModel {
             &playlist.title,
             // Playlists do not have their released date since they are expected to be updated anytime.
             None,
-            &playlist.art,
+            playlist.art.as_ref(),
             &playlist.id,
         )
     }

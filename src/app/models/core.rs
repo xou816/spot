@@ -563,7 +563,7 @@ mod imp {
     }
 
     lazy_static! {
-        static ref PROPERTIES: [glib::ParamSpec; 1] = [glib::ParamSpec::new_uint(
+        static ref PROPERTIES: [glib::ParamSpec; 1] = [glib::ParamSpecUInt::new(
             "batch-size",
             "Size of the batches",
             "",

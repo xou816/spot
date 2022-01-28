@@ -252,7 +252,7 @@ where
         let widget = HeaderBarWidget::new();
         common::bind_headerbar(&widget, &model);
 
-        let root = gtk::BoxBuilder::new()
+        let root = gtk::Box::builder()
             .orientation(gtk::Orientation::Vertical)
             .build();
         root.append(&widget);
