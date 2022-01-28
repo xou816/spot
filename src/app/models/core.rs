@@ -281,7 +281,7 @@ impl SongListModel {
 }
 
 impl SongList {
-    pub fn new_sized(batch_size: usize) -> Self {
+    fn new_sized(batch_size: usize) -> Self {
         Self {
             total: 0,
             total_loaded: 0,
@@ -292,17 +292,7 @@ impl SongList {
         }
     }
 
-    pub fn new_from_initial_batch(initial: SongBatch) -> Self {
-        let mut s = Self::new_sized(initial.batch.batch_size);
-        s.add(initial);
-        s
-    }
-
-    pub fn all_songs_cloned(&self) -> Vec<SongDescription> {
-        self.iter().map(|s| s.description().clone()).collect()
-    }
-
-    pub fn iter(&self) -> impl Iterator<Item = &SongModel> {
+    fn iter(&self) -> impl Iterator<Item = &SongModel> {
         let indexed_songs = &self.indexed_songs;
         self.iter_ids_from(0)
             .filter_map(move |(_, id)| indexed_songs.get(id))
@@ -322,7 +312,7 @@ impl SongList {
         batch_size * batch_count
     }
 
-    pub fn len(&self) -> usize {
+    fn len(&self) -> usize {
         self.total
     }
 
@@ -333,7 +323,7 @@ impl SongList {
             .skip(i % batch_size)
     }
 
-    pub fn find_index(&self, song_id: &str) -> Option<usize> {
+    fn find_index(&self, song_id: &str) -> Option<usize> {
         self.iter_ids_from(0)
             .find(|(_, id)| &id[..] == song_id)
             .map(|(pos, _)| pos)
@@ -365,13 +355,13 @@ impl SongList {
         }
     }
 
-    pub fn clear(&mut self) -> Option<ListChange> {
+    fn clear(&mut self) -> Option<ListChange> {
         let last = self.partial_len().saturating_sub(1);
         *self = Self::new_sized(self.batch_size);
         ListChange::removed(0, last)
     }
 
-    pub fn remove(&mut self, ids: &[String]) -> Option<ListChange> {
+    fn remove(&mut self, ids: &[String]) -> Option<ListChange> {
         let len = self.total_loaded;
         let mut batches = HashMap::<usize, Vec<String>>::default();
         self.iter_ids_from(0)
@@ -390,7 +380,7 @@ impl SongList {
         })
     }
 
-    pub fn append(&mut self, songs: Vec<SongDescription>) -> Option<ListChange> {
+    fn append(&mut self, songs: Vec<SongDescription>) -> Option<ListChange> {
         let songs_len = songs.len();
         let insertion_start = self.estimated_len(self.last_batch_key + 1);
         self.total = self.total.saturating_add(songs_len);
@@ -407,7 +397,7 @@ impl SongList {
         )
     }
 
-    pub fn add(&mut self, song_batch: SongBatch) -> Option<ListChange> {
+    fn add(&mut self, song_batch: SongBatch) -> Option<ListChange> {
         let range = if song_batch.batch.batch_size != self.batch_size {
             song_batch
                 .resize(self.batch_size)
@@ -462,7 +452,7 @@ impl SongList {
             .and_then(|s| s.get_mut(i % batch_size))
     }
 
-    pub fn swap(&mut self, a: usize, b: usize) -> Option<ListChange> {
+    fn swap(&mut self, a: usize, b: usize) -> Option<ListChange> {
         if a == b {
             return None;
         }
@@ -501,7 +491,7 @@ impl SongList {
             .and_then(move |id| self.indexed_songs.get(id))
     }
 
-    pub fn needed_batch_for(&self, i: usize) -> Option<Batch> {
+    fn needed_batch_for(&self, i: usize) -> Option<Batch> {
         let total = self.total;
         let batch_size = self.batch_size;
         let batch_id = i / batch_size;
@@ -516,7 +506,7 @@ impl SongList {
         }
     }
 
-    pub fn song_batch_for(&self, i: usize) -> Option<SongBatch> {
+    fn song_batch_for(&self, i: usize) -> Option<SongBatch> {
         let total = self.total;
         let batch_size = self.batch_size;
         let batch_id = i / batch_size;
@@ -534,7 +524,7 @@ impl SongList {
         })
     }
 
-    pub fn last_batch(&self) -> Option<Batch> {
+    fn last_batch(&self) -> Option<Batch> {
         if self.total_loaded == 0 {
             None
         } else {
@@ -546,7 +536,7 @@ impl SongList {
         }
     }
 
-    pub fn get(&self, id: &str) -> Option<&SongModel> {
+    fn get(&self, id: &str) -> Option<&SongModel> {
         self.indexed_songs.get(id)
     }
 }
@@ -649,6 +639,14 @@ mod imp {
 mod tests {
 
     use super::*;
+
+    impl SongList {
+        fn new_from_initial_batch(initial: SongBatch) -> Self {
+            let mut s = Self::new_sized(initial.batch.batch_size);
+            s.add(initial);
+            s
+        }
+    }
 
     fn song(id: &str) -> SongDescription {
         SongDescription {

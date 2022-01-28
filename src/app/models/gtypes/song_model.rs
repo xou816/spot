@@ -18,14 +18,6 @@ impl SongModel {
         o
     }
 
-    pub fn cover_url(&self) -> Option<String> {
-        self.property("art")
-            .unwrap()
-            .get::<&str>()
-            .ok()
-            .map(|s| s.to_string())
-    }
-
     pub fn set_playing(&self, is_playing: bool) {
         self.set_property("playing", is_playing)
             .expect("set 'playing' failed");
@@ -52,7 +44,7 @@ impl SongModel {
             .to_string()
     }
 
-    pub fn bind_index<O: ObjectType>(&self, o: &O, property: &str) {
+    pub fn bind_index(&self, o: &impl ObjectType, property: &str) {
         imp::SongModel::from_instance(self).push_binding(
             self.bind_property("index", o, property)
                 .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
@@ -60,7 +52,7 @@ impl SongModel {
         );
     }
 
-    pub fn bind_artist<O: ObjectType>(&self, o: &O, property: &str) {
+    pub fn bind_artist(&self, o: &impl ObjectType, property: &str) {
         imp::SongModel::from_instance(self).push_binding(
             self.bind_property("artist", o, property)
                 .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
@@ -68,7 +60,7 @@ impl SongModel {
         );
     }
 
-    pub fn bind_title<O: ObjectType>(&self, o: &O, property: &str) {
+    pub fn bind_title(&self, o: &impl ObjectType, property: &str) {
         imp::SongModel::from_instance(self).push_binding(
             self.bind_property("title", o, property)
                 .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
@@ -76,7 +68,7 @@ impl SongModel {
         );
     }
 
-    pub fn bind_duration<O: ObjectType>(&self, o: &O, property: &str) {
+    pub fn bind_duration(&self, o: &impl ObjectType, property: &str) {
         imp::SongModel::from_instance(self).push_binding(
             self.bind_property("duration", o, property)
                 .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
@@ -84,28 +76,20 @@ impl SongModel {
         );
     }
 
-    pub fn connect_playing_local<F: Fn(&Self) + 'static>(&self, handler: F) {
-        let signal_id = self
-            .connect_local("notify::playing", true, move |values| {
-                if let Ok(_self) = values[0].get::<Self>() {
-                    handler(&_self);
-                }
-                None
-            })
-            .expect("connecting to prop 'playing' failed");
-        imp::SongModel::from_instance(self).push_signal(signal_id);
+    pub fn bind_playing(&self, o: &impl ObjectType, property: &str) {
+        imp::SongModel::from_instance(self).push_binding(
+            self.bind_property("playing", o, property)
+                .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                .build(),
+        );
     }
 
-    pub fn connect_selected_local<F: Fn(&Self) + 'static>(&self, handler: F) {
-        let signal_id = self
-            .connect_local("notify::selected", true, move |values| {
-                if let Ok(_self) = values[0].get::<Self>() {
-                    handler(&_self);
-                }
-                None
-            })
-            .expect("connecting to prop 'selected' failed");
-        imp::SongModel::from_instance(self).push_signal(signal_id);
+    pub fn bind_selected(&self, o: &impl ObjectType, property: &str) {
+        imp::SongModel::from_instance(self).push_binding(
+            self.bind_property("selected", o, property)
+                .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                .build(),
+        );
     }
 
     pub fn unbind_all(&self) {
@@ -347,15 +331,6 @@ mod imp {
                 "selected" => self.state.get().is_selected.to_value(),
                 _ => unimplemented!(),
             }
-        }
-
-        // Called right after construction of the instance.
-        fn constructed(&self, obj: &Self::Type) {
-            // Chain up to the parent type's implementation of this virtual
-            // method.
-            self.parent_constructed(obj);
-
-            // And here we could do our own initialization.
         }
     }
 }

@@ -11,6 +11,8 @@ use gtk::CompositeTemplate;
 mod imp {
     use super::*;
 
+    const SONG_CLASS: &str = "song--playing";
+
     #[derive(Debug, Default, CompositeTemplate)]
     #[template(resource = "/dev/alextren/Spot/components/song.ui")]
     pub struct SongWidget {
@@ -54,7 +56,67 @@ mod imp {
         }
     }
 
+    lazy_static! {
+        static ref PROPERTIES: [glib::ParamSpec; 2] = [
+            glib::ParamSpec::new_boolean(
+                "playing",
+                "Playing",
+                "",
+                false,
+                glib::ParamFlags::READWRITE
+            ),
+            glib::ParamSpec::new_boolean(
+                "selected",
+                "Selected",
+                "",
+                false,
+                glib::ParamFlags::READWRITE,
+            ),
+        ];
+    }
+
     impl ObjectImpl for SongWidget {
+        fn properties() -> &'static [glib::ParamSpec] {
+            &*PROPERTIES
+        }
+
+        fn set_property(
+            &self,
+            obj: &Self::Type,
+            _id: usize,
+            value: &glib::Value,
+            pspec: &glib::ParamSpec,
+        ) {
+            match pspec.name() {
+                "playing" => {
+                    let is_playing = value
+                        .get()
+                        .expect("type conformity checked by `Object::set_property`");
+                    let context = obj.style_context();
+                    if is_playing {
+                        context.add_class(SONG_CLASS);
+                    } else {
+                        context.remove_class(SONG_CLASS);
+                    }
+                }
+                "selected" => {
+                    let is_selected = value
+                        .get()
+                        .expect("type conformity checked by `Object::set_property`");
+                    self.song_checkbox.set_active(is_selected);
+                }
+                _ => unimplemented!(),
+            }
+        }
+
+        fn property(&self, obj: &Self::Type, _id: usize, pspec: &glib::ParamSpec) -> glib::Value {
+            match pspec.name() {
+                "playing" => obj.style_context().has_class(SONG_CLASS).to_value(),
+                "selected" => self.song_checkbox.is_active().to_value(),
+                _ => unimplemented!(),
+            }
+        }
+
         fn constructed(&self, obj: &Self::Type) {
             self.parent_constructed(obj);
             self.song_checkbox.set_sensitive(false);
@@ -79,12 +141,6 @@ impl SongWidget {
         imp::SongWidget::from_instance(self)
     }
 
-    pub fn for_model(model: SongModel, worker: Worker) -> Self {
-        let _self = Self::new();
-        _self.bind(&model, worker, true);
-        _self
-    }
-
     pub fn set_actions(&self, actions: Option<&gio::ActionGroup>) {
         self.insert_action_group("song", actions);
     }
@@ -98,22 +154,6 @@ impl SongWidget {
                 .style_context()
                 .add_class("song__menu--enabled");
         }
-    }
-
-    fn set_playing(&self, is_playing: bool) {
-        let song_class = "song--playing";
-        let context = self.style_context();
-        if is_playing {
-            context.add_class(song_class);
-        } else {
-            context.remove_class(song_class);
-        }
-    }
-
-    fn set_selected(&self, is_selected: bool) {
-        imp::SongWidget::from_instance(self)
-            .song_checkbox
-            .set_active(is_selected);
     }
 
     fn set_show_cover(&self, show_cover: bool) {
@@ -131,7 +171,7 @@ impl SongWidget {
     }
 
     pub fn set_art(&self, model: &SongModel, worker: Worker) {
-        if let Some(url) = model.cover_url() {
+        if let Some(url) = model.description().art.clone() {
             let _self = self.downgrade();
             worker.send_local_task(async move {
                 if let Some(_self) = _self.upgrade() {
@@ -149,6 +189,8 @@ impl SongWidget {
         model.bind_title(&*widget.song_title, "label");
         model.bind_artist(&*widget.song_artist, "label");
         model.bind_duration(&*widget.song_length, "label");
+        model.bind_playing(self, "playing");
+        model.bind_selected(self, "selected");
 
         self.set_show_cover(show_cover);
         if show_cover {
@@ -156,15 +198,5 @@ impl SongWidget {
         } else {
             model.bind_index(&*widget.song_index, "label");
         }
-
-        self.set_playing(model.get_playing());
-        model.connect_playing_local(clone!(@weak self as _self => move |song| {
-            _self.set_playing(song.get_playing());
-        }));
-
-        self.set_selected(model.get_selected());
-        model.connect_selected_local(clone!(@weak self as _self => move |song| {
-            _self.set_selected(song.get_selected());
-        }));
     }
 }
