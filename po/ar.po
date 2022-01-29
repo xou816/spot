@@ -8,11 +8,6 @@ msgstr ""
 "Language: ar\n"
 "Plural-Forms: nplurals=6; plural= n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
 
-#. translators: This is part of a larger label that reads "<Album> by <Artist>"
-#: src/app/components/details/release_details.rs:89
-msgid "by"
-msgstr "بواسطة"
-
 #. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
 #: src/app/components/labels.rs:5
 msgid "View album"
@@ -192,7 +187,6 @@ msgstr "ليس لديك ألبومات مسجلة."
 msgid "Your library will be shown here."
 msgstr "المكتبة خاصتك ستظهر هنا."
 
-#. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
 #: src/app/components/labels.rs:30
 msgid "{} song selected"
 msgid_plural "{} songs selected"
@@ -265,5 +259,5 @@ msgstr "حقوق النشر"
 #. translators: This is part of a larger label that reads "<Album> by <Artist>"
 #: src/app/components/labels.rs:48
 msgid "{} by {}"
-msgstr ""
+msgstr "{}بواسطة {}"
 

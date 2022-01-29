@@ -2,6 +2,7 @@ use form_urlencoded::Serializer;
 use isahc::config::Configurable;
 use isahc::http::{method::Method, request::Builder, StatusCode, Uri};
 use isahc::{AsyncReadResponseExt, HttpClient, Request};
+use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
 use serde::{de::Deserialize, Serialize};
 use serde_json::from_str;
 use std::convert::Into;
@@ -14,6 +15,18 @@ pub use super::api_models::*;
 use super::cache::CacheError;
 
 const SPOTIFY_HOST: &str = "api.spotify.com";
+
+// https://url.spec.whatwg.org/#path-percent-encode-set
+const PATH_ENCODE_SET: &AsciiSet = &CONTROLS
+    .add(b' ')
+    .add(b'"')
+    .add(b'#')
+    .add(b'<')
+    .add(b'>')
+    .add(b'?')
+    .add(b'`')
+    .add(b'{')
+    .add(b'}');
 
 fn make_query_params<'a>() -> Serializer<'a, String> {
     Serializer::new(String::new())
@@ -453,6 +466,7 @@ impl SpotifyClient {
     }
 
     pub(crate) fn get_user(&self, id: &str) -> SpotifyRequest<'_, (), User> {
+        let id = utf8_percent_encode(id, PATH_ENCODE_SET);
         self.request()
             .method(Method::GET)
             .uri(format!("/v1/users/{}", id), None)
@@ -464,6 +478,7 @@ impl SpotifyClient {
         offset: usize,
         limit: usize,
     ) -> SpotifyRequest<'_, (), Page<Playlist>> {
+        let id = utf8_percent_encode(id, PATH_ENCODE_SET);
         let query = make_query_params()
             .append_pair("offset", &offset.to_string()[..])
             .append_pair("limit", &limit.to_string()[..])
@@ -479,6 +494,21 @@ impl SpotifyClient {
 pub mod tests {
 
     use super::*;
+
+    #[test]
+    fn test_username_encoding() {
+        let username = "anna.lafuente❤";
+        let client = SpotifyClient::new();
+        let req = client.get_user(username);
+        assert_eq!(
+            req.request
+                .uri_ref()
+                .and_then(|u| u.path_and_query())
+                .unwrap()
+                .as_str(),
+            "/v1/users/anna.lafuente%E2%9D%A4"
+        );
+    }
 
     #[test]
     fn test_search_query() {

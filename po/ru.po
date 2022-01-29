@@ -8,11 +8,6 @@ msgstr ""
 "Language: ru\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#. translators: This is part of a larger label that reads "<Album> by <Artist>"
-#: src/app/components/details/release_details.rs:89
-msgid "by"
-msgstr "в исполнении"
-
 #. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
 #: src/app/components/labels.rs:5
 msgid "View album"
@@ -192,7 +187,6 @@ msgstr "У вас нет сохраненных альбомов."
 msgid "Your library will be shown here."
 msgstr "Здесь будет показана ваша фонотека."
 
-#. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
 #: src/app/components/labels.rs:30
 msgid "{} song selected"
 msgid_plural "{} songs selected"
@@ -262,5 +256,5 @@ msgstr "Авторское право"
 #. translators: This is part of a larger label that reads "<Album> by <Artist>"
 #: src/app/components/labels.rs:48
 msgid "{} by {}"
-msgstr "{} В исполнении {}"
+msgstr "{} в исполнении {}"
 
