@@ -1,6 +1,7 @@
 [Desktop Entry]
 Version=1.0
 Name=Spot
+GenericName=Music Player
 Exec=spot
 Icon=dev.alextren.Spot
 Terminal=false
