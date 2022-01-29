@@ -3,7 +3,7 @@ use gtk::prelude::*;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use crate::app::components::utils::AnimatorDefault;
+use crate::app::components::utils::{ancestor, AnimatorDefault};
 use crate::app::components::{Component, EventListener, SongWidget};
 use crate::app::models::{SongListModel, SongModel, SongState};
 use crate::app::state::{PlaybackEvent, SelectionEvent, SelectionState};
@@ -145,16 +145,16 @@ where
     }
 
     fn autoscroll_to_playing(&self, index: usize) {
-        let len = 1f64; //self.model.song_list_model().len() as f64;
-        let adj = self
-            .listview
-            .parent()
-            .and_then(|p| p.downcast::<gtk::ScrolledWindow>().ok())
-            .map(|w| w.vadjustment());
+        let len = self.model.song_list_model().partial_len() as f64;
+        let scrolled_window: Option<gtk::ScrolledWindow> = ancestor(&self.listview);
+        let adj = scrolled_window.map(|w| w.vadjustment());
         if let Some(adj) = adj {
             let v = adj.value();
+            let v2 = v + 0.9 * adj.page_size();
             let pos = (index as f64) * adj.upper() / len;
-            if pos < v || pos > v + 0.9 * adj.page_size() {
+            debug!("estimated pos: {}", pos);
+            debug!("current window: {} -- {}", v, v2);
+            if pos < v || pos > v2 {
                 self.animator.animate(
                     20,
                     clone!(@weak adj => @default-return false, move |p| {

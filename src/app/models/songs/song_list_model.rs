@@ -124,6 +124,10 @@ impl SongListModel {
         self.inner().needed_batch_for(i)
     }
 
+    pub fn partial_len(&self) -> usize {
+        self.inner().partial_len()
+    }
+
     pub fn len(&self) -> usize {
         self.inner().len()
     }

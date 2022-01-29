@@ -64,7 +64,7 @@ impl PlaylistModel for NowPlayingModel {
     }
 
     fn autoscroll_to_playing(&self) -> bool {
-        true
+        false // too buggy for now
     }
 
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {

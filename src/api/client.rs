@@ -258,7 +258,7 @@ impl SpotifyClient {
                 result
                     .text()
                     .await
-                    .unwrap_or("(no details available)".to_string()),
+                    .unwrap_or_else(|_| "(no details available)".to_string()),
             )),
         }
     }
@@ -280,7 +280,7 @@ impl SpotifyClient {
                 result
                     .text()
                     .await
-                    .unwrap_or("(no details available)".to_string()),
+                    .unwrap_or_else(|_| "(no details available)".to_string()),
             )),
         }
     }
