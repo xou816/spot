@@ -1,67 +1,113 @@
 use std::collections::HashMap;
-use std::convert::TryInto;
+use std::convert::{TryFrom, TryInto};
 
 use crate::app::models::*;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum ListChange {
-    Inserted(ChangeRange),
-    Swapped(u32, u32),
-    Removed(ChangeRange),
-    Resized { from: u32, to: u32 },
+enum Range {
+    Empty,
+    NotEmpty(u32, u32),
 }
 
-impl ListChange {
-    pub fn swapped(a: impl TryInto<u32>, b: impl TryInto<u32>) -> Option<Self> {
-        let a = a.try_into().ok()?;
-        let b = b.try_into().ok()?;
-        if b != a {
-            Some(Self::Swapped(a, b))
-        } else {
-            None
+impl Range {
+    fn of(a: impl TryInto<u32>, b: impl TryInto<u32>) -> Self {
+        match (a.try_into(), b.try_into()) {
+            (Ok(a), Ok(b)) if b >= a => Self::NotEmpty(a, b),
+            _ => Self::Empty,
         }
     }
 
-    pub fn inserted(a: impl TryInto<u32>, b: impl TryInto<u32>) -> Option<Self> {
-        ChangeRange::new(a, b).map(Self::Inserted)
+    fn len(self) -> u32 {
+        match self {
+            Self::Empty => 0,
+            Self::NotEmpty(a, b) => b - a + 1,
+        }
     }
 
-    pub fn removed(a: impl TryInto<u32>, b: impl TryInto<u32>) -> Option<Self> {
-        ChangeRange::new(a, b).map(Self::Removed)
+    fn union(self, other: Self) -> Self {
+        match (self, other) {
+            (Self::NotEmpty(a0, b0), Self::NotEmpty(a1, b1)) => {
+                let start = u32::min(a0, a1);
+                let end = u32::max(b0, b1);
+                Self::NotEmpty(start, end)
+            }
+            (Self::Empty, r) | (r, Self::Empty) => r,
+        }
     }
 
-    pub fn into_tuple(self) -> (u32, u32, u32) {
-        let tuples = match self {
-            Self::Inserted(ChangeRange(a, b)) => (a, 0, b - a + 1),
-            Self::Removed(ChangeRange(a, b)) => (a, b - a + 1, 0),
-            Self::Swapped(a, b) => (u32::min(a, b), 2, 2),
-            Self::Resized { from, to } => (0, from, to),
-        };
-        debug!("changes: {:?}", &tuples);
-        tuples
+    fn offset_by(self, offset: i32) -> Self {
+        match self {
+            Self::Empty => Self::Empty,
+            Self::NotEmpty(a, b) => Self::of((a as i32) + offset, (b as i32) + offset),
+        }
+    }
+
+    fn start<Target>(self) -> Option<Target>
+    where
+        Target: TryFrom<u32>,
+    {
+        match self {
+            Self::Empty => None,
+            Self::NotEmpty(a, _) => Some(a.try_into().ok()?),
+        }
     }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct ChangeRange(pub u32, pub u32);
+pub struct ListRangeUpdate(pub i32, pub i32, pub i32);
 
-impl ChangeRange {
-    pub fn new(a: impl TryInto<u32>, b: impl TryInto<u32>) -> Option<Self> {
-        let a = a.try_into().ok()?;
-        let b = b.try_into().ok()?;
-        if b.saturating_sub(a) > 0 {
-            Some(Self(a, b))
-        } else {
-            None
-        }
+impl ListRangeUpdate {
+    pub fn inserted(position: impl TryInto<i32>, added: impl TryInto<i32>) -> Self {
+        Self(
+            position.try_into().unwrap_or_default(),
+            0,
+            added.try_into().unwrap_or_default(),
+        )
     }
 
-    pub fn union(self, b: Self) -> Self {
-        let Self(a0, a1) = self;
-        let Self(b0, b1) = b;
-        let start = u32::min(a0, b0);
-        let end = b1 - b0 + a1 - a0 + start + 1;
-        Self(start, end)
+    pub fn removed(position: impl TryInto<i32>, removed: impl TryInto<i32>) -> Self {
+        Self(
+            position.try_into().unwrap_or_default(),
+            removed.try_into().unwrap_or_default(),
+            0,
+        )
+    }
+
+    pub fn updated(position: impl TryInto<i32>) -> Self {
+        Self(position.try_into().unwrap_or_default(), 1, 1)
+    }
+
+    pub fn merge(self, other: Self) -> Self {
+        // reorder for simplicity
+        let (left, right) = if self.0 <= other.0 {
+            (self, other)
+        } else {
+            (other, self)
+        };
+
+        let Self(p0, r0, a0) = left;
+        let Self(p1, r1, a1) = right;
+
+        // range [s, e] affected by first update
+        let ra0 = Range::of(p0, p0 + r0 - 1);
+
+        // ...second update, but only the range affecting existing elements
+        let ra1 = {
+            let s1 = i32::max(p0 + a0, p1);
+            let e1 = i32::max(s1 - 1, p1 + r1 - 1);
+            Range::of(s1, e1)
+        };
+
+        // remap to original
+        let ra1 = ra1.offset_by(r0 - a0);
+
+        // union
+        let rau = ra0.union(ra1);
+
+        let removed = rau.len() as i32;
+        let position = rau.start().unwrap_or(p0);
+        let added = removed - (r0 - a0) - (r1 - a1);
+        Self(position, removed, added)
     }
 }
 
@@ -154,13 +200,13 @@ impl SongList {
         }
     }
 
-    pub fn clear(&mut self) -> Option<ListChange> {
-        let last = self.partial_len().saturating_sub(1);
+    pub fn clear(&mut self) -> ListRangeUpdate {
+        let len = self.partial_len();
         *self = Self::new_sized(self.batch_size);
-        ListChange::removed(0, last)
+        ListRangeUpdate::removed(0, len)
     }
 
-    pub fn remove(&mut self, ids: &[String]) -> Option<ListChange> {
+    pub fn remove(&mut self, ids: &[String]) -> ListRangeUpdate {
         let len = self.total_loaded;
         let mut batches = HashMap::<usize, Vec<String>>::default();
         self.iter_ids_from(0)
@@ -173,13 +219,10 @@ impl SongList {
         let removed = ids.len();
         self.total = self.total.saturating_sub(removed);
         self.total_loaded = self.total_loaded.saturating_sub(removed);
-        Some(ListChange::Resized {
-            from: len as u32,
-            to: self.total_loaded as u32,
-        })
+        ListRangeUpdate(0, len as i32, self.total_loaded as i32)
     }
 
-    pub fn append(&mut self, songs: Vec<SongDescription>) -> Option<ListChange> {
+    pub fn append(&mut self, songs: Vec<SongDescription>) -> ListRangeUpdate {
         let songs_len = songs.len();
         let insertion_start = self.estimated_len(self.last_batch_key + 1);
         self.total = self.total.saturating_add(songs_len);
@@ -190,14 +233,11 @@ impl SongList {
                 .insert(song.id.clone(), SongModel::new(song));
         }
         self.last_batch_key = self.batches.len().saturating_sub(1);
-        ListChange::inserted(
-            insertion_start,
-            (insertion_start + songs_len).saturating_sub(1),
-        )
+        ListRangeUpdate::inserted(insertion_start, songs_len)
     }
 
-    pub fn add(&mut self, song_batch: SongBatch) -> Option<ListChange> {
-        let range = if song_batch.batch.batch_size != self.batch_size {
+    pub fn add(&mut self, song_batch: SongBatch) -> Option<ListRangeUpdate> {
+        if song_batch.batch.batch_size != self.batch_size {
             song_batch
                 .resize(self.batch_size)
                 .into_iter()
@@ -205,21 +245,23 @@ impl SongList {
                     debug!("adding batch {:?}", &new_batch.batch);
                     self.add_one(new_batch)
                 })
-                .reduce(|acc, cur| Some(acc?.union(cur?)).or(acc).or(cur))
+                .reduce(|acc, cur| {
+                    let merged = acc?.merge(cur?);
+                    Some(merged).or(acc).or(cur)
+                })
                 .unwrap_or(None)
         } else {
             self.add_one(song_batch)
-        };
-        range.map(ListChange::Inserted)
+        }
     }
 
-    fn add_one(&mut self, SongBatch { songs, batch }: SongBatch) -> Option<ChangeRange> {
+    fn add_one(&mut self, SongBatch { songs, batch }: SongBatch) -> Option<ListRangeUpdate> {
         assert_eq!(batch.batch_size, self.batch_size);
 
         let index = batch.offset / batch.batch_size;
 
         if self.batches.contains_key(&index) {
-            warn!("batch already loaded");
+            debug!("batch already loaded");
             return None;
         }
 
@@ -240,7 +282,7 @@ impl SongList {
         self.total_loaded += len;
         self.last_batch_key = usize::max(self.last_batch_key, index);
 
-        ChangeRange::new(insertion_start, (insertion_start + len).saturating_sub(1))
+        Some(ListRangeUpdate::inserted(insertion_start, len))
     }
 
     fn index_mut(&mut self, i: usize) -> Option<&mut String> {
@@ -251,7 +293,7 @@ impl SongList {
             .and_then(|s| s.get_mut(i % batch_size))
     }
 
-    pub fn swap(&mut self, a: usize, b: usize) -> Option<ListChange> {
+    pub fn swap(&mut self, a: usize, b: usize) -> Option<ListRangeUpdate> {
         if a == b {
             return None;
         }
@@ -265,7 +307,7 @@ impl SongList {
         if let (Some(a_mut), Some(a_value)) = (a_mut, new_a_value) {
             *a_mut = a_value;
         }
-        ListChange::swapped(a, b)
+        Some(ListRangeUpdate::updated(a).merge(ListRangeUpdate::updated(b)))
     }
 
     pub fn index(&self, i: usize) -> Option<&SongModel> {
@@ -345,6 +387,8 @@ mod tests {
 
     use super::*;
 
+    const NO_CHANGE: ListRangeUpdate = ListRangeUpdate(0, 0, 0);
+
     impl SongList {
         fn new_from_initial_batch(initial: SongBatch) -> Self {
             let mut s = Self::new_sized(initial.batch.batch_size);
@@ -385,6 +429,61 @@ mod tests {
     }
 
     #[test]
+    fn test_merge_range() {
+        // [0, 1, 2, 3, 4, 5]
+        let change1 = ListRangeUpdate(0, 4, 2);
+        // [x, x, 4, 5]
+        let change2 = ListRangeUpdate(1, 1, 2);
+        // [x, y, y, 4, 5]
+        assert_eq!(change1.merge(change2), ListRangeUpdate(0, 4, 3));
+        assert_eq!(change2.merge(change1), ListRangeUpdate(0, 4, 3));
+
+        // [0, 1, 2, 3, 4, 5, 6]
+        let change1 = ListRangeUpdate(0, 2, 3);
+        // [x, x, x, 2, 3, 4, 5, 6]
+        let change2 = ListRangeUpdate(4, 1, 1);
+        // [x, x, x, 2, y, 4, 5, 6]
+        assert_eq!(change1.merge(change2), ListRangeUpdate(0, 4, 5));
+        assert_eq!(change2.merge(change1), ListRangeUpdate(0, 4, 5));
+
+        // [0, 1, 2, 3, 4, 5, 6]
+        let change1 = ListRangeUpdate(0, 3, 2);
+        // [x, x, 3, 4, 5, 6]
+        let change2 = ListRangeUpdate(4, 1, 1);
+        // [x, x, 3, 4, y, 6]
+        assert_eq!(change1.merge(change2), ListRangeUpdate(0, 6, 5));
+        assert_eq!(change2.merge(change1), ListRangeUpdate(0, 6, 5));
+
+        // [0, 1, 2, 3, 4, 5]
+        let change1 = ListRangeUpdate(0, 4, 2);
+        // [x, x, 4, 5]
+        let change2 = ListRangeUpdate(1, 1, 1);
+        // [x, y, 4, 5]
+        assert_eq!(change1.merge(change2), ListRangeUpdate(0, 4, 2));
+        assert_eq!(change2.merge(change1), ListRangeUpdate(0, 4, 2));
+
+        // [0, 1, 2, 3, 4, 5]
+        let change1 = ListRangeUpdate(0, 4, 2);
+        // [x, x, 4, 5]
+        let change2 = ListRangeUpdate(0, 4, 2);
+        // [y, y]
+        assert_eq!(change1.merge(change2), ListRangeUpdate(0, 6, 2));
+        assert_eq!(change2.merge(change1), ListRangeUpdate(0, 6, 2));
+
+        // []
+        let change1 = ListRangeUpdate(0, 0, 2);
+        // [x, x]
+        let change2 = ListRangeUpdate(2, 0, 2);
+        // [x, x, y, y]
+        assert_eq!(change1.merge(change2), ListRangeUpdate(0, 0, 4));
+        assert_eq!(change2.merge(change1), ListRangeUpdate(0, 0, 4));
+
+        let change1 = ListRangeUpdate(0, 4, 2);
+        assert_eq!(change1.merge(NO_CHANGE), ListRangeUpdate(0, 4, 2));
+        assert_eq!(NO_CHANGE.merge(change1), ListRangeUpdate(0, 4, 2));
+    }
+
+    #[test]
     fn test_iter() {
         let list = SongList::new_from_initial_batch(batch(0));
 
@@ -421,15 +520,15 @@ mod tests {
         let mut list = SongList::new_from_initial_batch(batch(0));
 
         let range = list.add(batch(1));
-        assert_eq!(range, Some(ListChange::Inserted(ChangeRange(2, 3))));
+        assert_eq!(range, Some(ListRangeUpdate::inserted(2, 2)));
         assert_eq!(list.partial_len(), 4);
 
         let range = list.add(batch(3));
-        assert_eq!(range, Some(ListChange::Inserted(ChangeRange(4, 5))));
+        assert_eq!(range, Some(ListRangeUpdate::inserted(4, 2)));
         assert_eq!(list.partial_len(), 6);
 
         let range = list.add(batch(2));
-        assert_eq!(range, Some(ListChange::Inserted(ChangeRange(4, 5))));
+        assert_eq!(range, Some(ListRangeUpdate::inserted(4, 2)));
         assert_eq!(list.partial_len(), 8);
 
         let range = list.add(batch(2));

@@ -9,12 +9,12 @@ use crate::app::models::*;
 
 #[must_use]
 pub struct SongListModelPending<'a> {
-    change: Option<ListChange>,
+    change: Option<ListRangeUpdate>,
     song_list_model: &'a mut SongListModel,
 }
 
 impl<'a> SongListModelPending<'a> {
-    fn new(change: Option<ListChange>, song_list_model: &'a mut SongListModel) -> Self {
+    fn new(change: Option<ListRangeUpdate>, song_list_model: &'a mut SongListModel) -> Self {
         Self {
             change,
             song_list_model,
@@ -30,36 +30,17 @@ impl<'a> SongListModelPending<'a> {
             song_list_model,
         } = self;
 
-        let len = song_list_model.len() as u32;
         let new_change = op(song_list_model).change;
 
-        let change = if let (Some(change), Some(new_change)) = (change, new_change) {
-            Some(Self::merge(len, change, new_change))
+        let merged_change = if let (Some(change), Some(new_change)) = (change, new_change) {
+            Some(change.merge(new_change))
         } else {
             change.or(new_change)
         };
 
         Self {
-            change,
+            change: merged_change,
             song_list_model,
-        }
-    }
-
-    fn merge(len: u32, change: ListChange, new_change: ListChange) -> ListChange {
-        match (len, change, new_change) {
-            (
-                len,
-                ListChange::Removed(ChangeRange(a0, a1)),
-                ListChange::Inserted(ChangeRange(b0, b1)),
-            ) => {
-                let orig_len = len + a1 - a0 + 1;
-                let new_len = len + b1 - b0 + 1;
-                ListChange::Resized {
-                    from: orig_len,
-                    to: new_len,
-                }
-            }
-            _ => todo!(),
         }
     }
 
@@ -90,11 +71,12 @@ impl SongListModel {
         imp::SongListModel::from_instance(self).get()
     }
 
-    fn notify_changes(&self, changes: impl IntoIterator<Item = ListChange> + 'static) {
+    fn notify_changes(&self, changes: impl IntoIterator<Item = ListRangeUpdate> + 'static) {
         if cfg!(not(test)) {
             glib::source::idle_add_local_once(clone!(@weak self as s => move || {
-                for (a, b, c) in changes.into_iter().map(|c| c.into_tuple()) {
-                    s.items_changed(a, b, c);
+                for ListRangeUpdate(a, b, c) in changes.into_iter() {
+                    debug!("pos {}, removed {}, added {}", a, b, c);
+                    s.items_changed(a as u32, b as u32, c as u32);
                 }
             }));
         }
@@ -148,7 +130,7 @@ impl SongListModel {
 
     pub fn append(&mut self, songs: Vec<SongDescription>) -> SongListModelPending {
         let range = self.inner_mut().append(songs);
-        SongListModelPending::new(range, self)
+        SongListModelPending::new(Some(range), self)
     }
 
     pub fn find_index(&self, song_id: &str) -> Option<usize> {
@@ -157,7 +139,7 @@ impl SongListModel {
 
     pub fn remove(&mut self, ids: &[String]) -> SongListModelPending {
         let change = self.inner_mut().remove(ids);
-        SongListModelPending::new(change, self)
+        SongListModelPending::new(Some(change), self)
     }
 
     pub fn move_down(&mut self, a: usize) -> SongListModelPending {
@@ -172,7 +154,7 @@ impl SongListModel {
 
     pub fn clear(&mut self) -> SongListModelPending {
         let removed = self.inner_mut().clear();
-        SongListModelPending::new(removed, self)
+        SongListModelPending::new(Some(removed), self)
     }
 }
 
