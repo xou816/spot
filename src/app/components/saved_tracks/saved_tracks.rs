@@ -86,12 +86,7 @@ impl SavedTracks {
             model.load_more();
         }));
 
-        let playlist = Playlist::new(
-            widget.song_list_widget().clone(),
-            model.clone(),
-            worker,
-            true,
-        );
+        let playlist = Playlist::new(widget.song_list_widget().clone(), model.clone(), worker);
 
         Self {
             widget,

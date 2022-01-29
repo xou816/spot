@@ -208,6 +208,7 @@ pub struct Album {
 pub struct AlbumInfo {
     pub label: String,
     pub copyrights: Vec<Copyright>,
+    pub total_tracks: u32,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -435,12 +436,10 @@ impl From<Album> for AlbumDescription {
                 name: a.name.clone(),
             })
             .collect::<Vec<ArtistRef>>();
-        let songs = SongList::new_from_initial_batch(
-            album
-                .clone()
-                .try_into()
-                .unwrap_or_else(|_| SongBatch::empty()),
-        ); //FIXME
+        let songs = album
+            .clone()
+            .try_into()
+            .unwrap_or_else(|_| SongBatch::empty());
         let art = album.best_image_for_width(200).map(|i| i.url.clone());
 
         Self {
@@ -456,7 +455,13 @@ impl From<Album> for AlbumDescription {
 }
 
 impl From<AlbumInfo> for AlbumReleaseDetails {
-    fn from(AlbumInfo { label, copyrights }: AlbumInfo) -> Self {
+    fn from(
+        AlbumInfo {
+            label,
+            copyrights,
+            total_tracks,
+        }: AlbumInfo,
+    ) -> Self {
         let copyright_text = copyrights
             .iter()
             .map(|c| format!("[{}] {}", c.type_, c.text))
@@ -466,6 +471,7 @@ impl From<AlbumInfo> for AlbumReleaseDetails {
         Self {
             label,
             copyright_text,
+            total_tracks: total_tracks as usize,
         }
     }
 }
@@ -489,7 +495,7 @@ impl From<Playlist> for PlaylistDescription {
             id,
             title: name,
             art,
-            songs: SongList::new_from_initial_batch(song_batch),
+            songs: song_batch,
             owner: UserRef {
                 id: owner_id,
                 display_name,

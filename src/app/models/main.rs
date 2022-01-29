@@ -1,64 +1,34 @@
-use std::convert::From;
 use std::str::FromStr;
 
-use super::core::{Batch, SongList};
-use super::gtypes::*;
-
-use crate::app::components::utils::format_duration;
-
-impl From<&AlbumDescription> for AlbumModel {
-    fn from(album: &AlbumDescription) -> Self {
-        AlbumModel::new(
-            &album.artists_name(),
-            &album.title,
-            album.year(),
-            &album.art,
-            &album.id,
-        )
-    }
+#[derive(Clone, Copy, Debug)]
+pub struct Batch {
+    pub offset: usize,
+    pub batch_size: usize,
+    pub total: usize,
 }
 
-impl From<AlbumDescription> for AlbumModel {
-    fn from(album: AlbumDescription) -> Self {
-        Self::from(&album)
+impl Batch {
+    pub fn first_of_size(batch_size: usize) -> Self {
+        Self {
+            offset: 0,
+            batch_size,
+            total: 0,
+        }
     }
-}
 
-impl From<&PlaylistDescription> for AlbumModel {
-    fn from(playlist: &PlaylistDescription) -> Self {
-        AlbumModel::new(
-            &playlist.owner.display_name,
-            &playlist.title,
-            // Playlists do not have their released date since they are expected to be updated anytime.
-            None,
-            &playlist.art,
-            &playlist.id,
-        )
-    }
-}
+    pub fn next(self) -> Option<Self> {
+        let Self {
+            offset,
+            batch_size,
+            total,
+        } = self;
 
-impl From<PlaylistDescription> for AlbumModel {
-    fn from(playlist: PlaylistDescription) -> Self {
-        Self::from(&playlist)
-    }
-}
-
-impl From<&SongDescription> for SongModel {
-    fn from(song: &SongDescription) -> Self {
-        SongModel::new(
-            &song.id,
-            song.track_number.unwrap_or(1),
-            &song.title,
-            &song.artists_name(),
-            &format_duration(song.duration.into()),
-            &song.art,
-        )
-    }
-}
-
-impl From<SongDescription> for SongModel {
-    fn from(song: SongDescription) -> Self {
-        SongModel::from(&song)
+        Some(Self {
+            offset: offset + batch_size,
+            batch_size,
+            total,
+        })
+        .filter(|b| b.offset < total)
     }
 }
 
@@ -93,7 +63,7 @@ pub struct AlbumDescription {
     pub artists: Vec<ArtistRef>,
     pub release_date: Option<String>,
     pub art: Option<String>,
-    pub songs: SongList,
+    pub songs: SongBatch,
     pub is_liked: bool,
 }
 
@@ -104,11 +74,6 @@ impl AlbumDescription {
             .map(|a| a.name.to_string())
             .collect::<Vec<String>>()
             .join(", ")
-    }
-
-    pub fn formatted_time(&self) -> String {
-        let duration: u32 = self.songs.iter().map(|song| song.duration).sum();
-        format_duration(duration.into())
     }
 
     pub fn year(&self) -> Option<u32> {
@@ -129,6 +94,7 @@ pub struct AlbumFullDescription {
 pub struct AlbumReleaseDetails {
     pub label: String,
     pub copyright_text: String,
+    pub total_tracks: usize,
 }
 
 #[derive(Clone, Debug)]
@@ -136,7 +102,7 @@ pub struct PlaylistDescription {
     pub id: String,
     pub title: String,
     pub art: Option<String>,
-    pub songs: SongList,
+    pub songs: SongBatch,
     pub owner: UserRef,
 }
 
@@ -166,6 +132,12 @@ impl SongDescription {
             .collect::<Vec<String>>()
             .join(", ")
     }
+}
+
+#[derive(Copy, Clone, Default)]
+pub struct SongState {
+    pub is_playing: bool,
+    pub is_selected: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -236,4 +208,39 @@ pub struct UserDescription {
     pub id: String,
     pub name: String,
     pub playlists: Vec<PlaylistDescription>,
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    fn song(id: &str) -> SongDescription {
+        SongDescription {
+            id: id.to_string(),
+            uri: "".to_string(),
+            title: "Title".to_string(),
+            artists: vec![],
+            album: AlbumRef {
+                id: "".to_string(),
+                name: "".to_string(),
+            },
+            duration: 1000,
+            art: None,
+            track_number: None,
+        }
+    }
+
+    #[test]
+    fn resize_batch() {
+        let batch = SongBatch {
+            songs: vec![song("1"), song("2"), song("3"), song("4")],
+            batch: Batch::first_of_size(4),
+        };
+
+        let batches = batch.resize(2);
+        assert_eq!(batches.len(), 2);
+        assert_eq!(&batches.get(0).unwrap().songs.get(0).unwrap().id, "1");
+        assert_eq!(&batches.get(1).unwrap().songs.get(0).unwrap().id, "3");
+    }
 }

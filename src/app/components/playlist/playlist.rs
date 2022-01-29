@@ -5,26 +5,22 @@ use std::rc::Rc;
 
 use crate::app::components::utils::AnimatorDefault;
 use crate::app::components::{Component, EventListener, SongWidget};
-use crate::app::models::SongModel;
-use crate::app::{
-    state::{PlaybackEvent, SelectionEvent, SelectionState},
-    AppEvent, ListDiff, ListStore, Worker,
-};
-
-#[derive(Clone, Copy, Debug)]
-struct RowState {
-    is_selected: bool,
-    is_playing: bool,
-}
+use crate::app::models::{SongListModel, SongModel, SongState};
+use crate::app::state::{PlaybackEvent, SelectionEvent, SelectionState};
+use crate::app::{AppEvent, Worker};
 
 pub trait PlaylistModel {
+    fn song_list_model(&self) -> SongListModel;
+
     fn current_song_id(&self) -> Option<String>;
 
     fn play_song_at(&self, pos: usize, id: &str);
 
-    fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>>;
-
     fn autoscroll_to_playing(&self) -> bool {
+        true
+    }
+
+    fn show_song_covers(&self) -> bool {
         true
     }
 
@@ -50,13 +46,34 @@ pub trait PlaylistModel {
             .map(|s| s.is_selection_enabled())
             .unwrap_or(false)
     }
+
+    fn song_state(&self, id: &str) -> SongState {
+        let is_playing = self.current_song_id().map(|s| s.eq(id)).unwrap_or(false);
+        let is_selected = self
+            .selection()
+            .map(|s| s.is_song_selected(id))
+            .unwrap_or(false);
+        SongState {
+            is_selected,
+            is_playing,
+        }
+    }
+
+    fn toggle_select(&self, id: &str) {
+        if let Some(selection) = self.selection() {
+            if selection.is_song_selected(id) {
+                self.deselect_song(id);
+            } else {
+                self.select_song(id);
+            }
+        }
+    }
 }
 
 pub struct Playlist<Model> {
     animator: AnimatorDefault,
     listview: gtk::ListView,
     _press_gesture: gtk::GestureLongPress,
-    list_model: ListStore<SongModel>,
     model: Rc<Model>,
 }
 
@@ -64,14 +81,9 @@ impl<Model> Playlist<Model>
 where
     Model: PlaylistModel + 'static,
 {
-    pub fn new(
-        listview: gtk::ListView,
-        model: Rc<Model>,
-        worker: Worker,
-        show_song_covers: bool,
-    ) -> Self {
-        let list_model = ListStore::new();
-        let selection_model = gtk::NoSelection::new(Some(list_model.unsafe_store()));
+    pub fn new(listview: gtk::ListView, model: Rc<Model>, worker: Worker) -> Self {
+        let list_model = model.song_list_model();
+        let selection_model = gtk::NoSelection::new(Some(&list_model));
         let factory = gtk::SignalListItemFactory::new();
 
         let style_context = listview.style_context();
@@ -90,10 +102,10 @@ where
 
         factory.connect_bind(clone!(@weak model => move |_, item| {
             let song_model = item.item().unwrap().downcast::<SongModel>().unwrap();
-            song_model.set_state(Self::get_item_state(&*model, &song_model));
+            song_model.set_state(model.song_state(&song_model.get_id()));
 
             let widget = item.child().unwrap().downcast::<SongWidget>().unwrap();
-            widget.bind(&song_model, worker.clone(), show_song_covers);
+            widget.bind(&song_model, worker.clone(), model.show_song_covers());
 
             let id = &song_model.get_id();
             widget.set_actions(model.actions_for(id).as_ref());
@@ -106,12 +118,13 @@ where
         });
 
         listview.connect_activate(clone!(@weak list_model, @weak model => move |_, position| {
-            let song = list_model.get(position);
+            let song = list_model.index_continuous(position as usize).expect("attempt to access invalid index");
+            let song = song.description();
             let selection_enabled = model.is_selection_enabled();
             if selection_enabled {
-                Self::select_song(&*model, &song);
+                model.toggle_select(&song.id);
             } else {
-                model.play_song_at(position as usize, &song.get_id());
+                model.play_song_at(position as usize, &song.id);
             }
         }));
 
@@ -127,41 +140,17 @@ where
             animator: AnimatorDefault::ease_in_out_animator(),
             listview,
             _press_gesture: press_gesture,
-            list_model,
             model,
         }
     }
 
-    fn select_song(model: &Model, song: &SongModel) {
-        if let Some(selection) = model.selection() {
-            if selection.is_song_selected(&song.get_id()) {
-                model.deselect_song(&song.get_id());
-            } else {
-                model.select_song(&song.get_id());
-            }
-        }
-    }
-
-    fn get_item_state(model: &Model, item: &SongModel) -> RowState {
-        let id = &item.get_id();
-        let is_playing = model.current_song_id().map(|s| s.eq(id)).unwrap_or(false);
-        let is_selected = model
-            .selection()
-            .map(|s| s.is_song_selected(id))
-            .unwrap_or(false);
-        RowState {
-            is_selected,
-            is_playing,
-        }
-    }
-
     fn autoscroll_to_playing(&self, index: usize) {
-        let len = self.list_model.len() as f64;
+        let len = 1f64; //self.model.song_list_model().len() as f64;
         let adj = self
             .listview
             .parent()
             .and_then(|p| p.downcast::<gtk::ScrolledWindow>().ok())
-            .and_then(|w| w.vadjustment());
+            .map(|w| w.vadjustment());
         if let Some(adj) = adj {
             let v = adj.value();
             let pos = (index as f64) * adj.upper() / len;
@@ -179,32 +168,39 @@ where
     }
 
     fn update_list(&self) {
-        for (i, model_song) in self.list_model.iter().enumerate() {
-            let state = Self::get_item_state(&*self.model, &model_song);
+        let autoscroll_to_playing = self.model.autoscroll_to_playing();
+        let is_selection_enabled = self.model.is_selection_enabled();
+
+        self.model.song_list_model().for_each(|i, model_song| {
+            let state = self.model.song_state(&model_song.get_id());
             model_song.set_state(state);
-            if state.is_playing
-                && self.model.autoscroll_to_playing()
-                && !self.model.is_selection_enabled()
-            {
+            if state.is_playing && autoscroll_to_playing && !is_selection_enabled {
                 self.autoscroll_to_playing(i);
             }
-        }
+        });
     }
 
     fn set_selection_active(listview: &gtk::ListView, active: bool) {
+        let class_name = "playlist--selectable";
         let context = listview.style_context();
         if active {
-            context.add_class("playlist--selectable");
+            context.add_class(class_name);
         } else {
-            context.remove_class("playlist--selectable");
+            context.remove_class(class_name);
         }
     }
 }
 
 impl SongModel {
-    fn set_state(&self, state: RowState) {
-        self.set_playing(state.is_playing);
-        self.set_selected(state.is_selected);
+    fn set_state(
+        &self,
+        SongState {
+            is_playing,
+            is_selected,
+        }: SongState,
+    ) {
+        self.set_playing(is_playing);
+        self.set_selected(is_selected);
     }
 }
 
@@ -213,22 +209,18 @@ where
     Model: PlaylistModel + 'static,
 {
     fn on_event(&mut self, event: &AppEvent) {
-        if let Some(diff) = self.model.diff_for_event(event) {
-            self.list_model.update(diff);
-        } else {
-            match event {
-                AppEvent::SelectionEvent(SelectionEvent::SelectionChanged) => {
-                    self.update_list();
-                }
-                AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
-                    self.update_list();
-                }
-                AppEvent::SelectionEvent(SelectionEvent::SelectionModeChanged(_)) => {
-                    Self::set_selection_active(&self.listview, self.model.is_selection_enabled());
-                    self.update_list();
-                }
-                _ => {}
+        match event {
+            AppEvent::SelectionEvent(SelectionEvent::SelectionChanged) => {
+                self.update_list();
             }
+            AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
+                self.update_list();
+            }
+            AppEvent::SelectionEvent(SelectionEvent::SelectionModeChanged(_)) => {
+                Self::set_selection_active(&self.listview, self.model.is_selection_enabled());
+                self.update_list();
+            }
+            _ => {}
         }
     }
 }

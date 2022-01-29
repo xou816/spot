@@ -13,31 +13,19 @@ impl SideBarItem {
     }
 
     pub(crate) fn id(&self) -> String {
-        self.property("id")
-            .unwrap()
-            .get::<&str>()
-            .unwrap()
-            .to_string()
+        self.property::<String>("id")
     }
 
     pub(crate) fn title(&self) -> String {
-        self.property("title")
-            .unwrap()
-            .get::<&str>()
-            .unwrap()
-            .to_string()
+        self.property::<String>("title")
     }
 
     pub(crate) fn iconname(&self) -> String {
-        self.property("iconname")
-            .unwrap()
-            .get::<&str>()
-            .unwrap()
-            .to_string()
+        self.property::<String>("iconname")
     }
 
     pub(crate) fn grayedout(&self) -> bool {
-        self.property("grayedout").unwrap().get::<bool>().unwrap()
+        self.property::<bool>("grayedout")
     }
 }
 
@@ -72,16 +60,16 @@ mod imp {
 
     lazy_static! {
         static ref PROPERTIES: [glib::ParamSpec; 4] = [
-            glib::ParamSpec::new_string("id", "ID", "", None, glib::ParamFlags::READWRITE),
-            glib::ParamSpec::new_string("title", "Title", "", None, glib::ParamFlags::READWRITE),
-            glib::ParamSpec::new_string(
+            glib::ParamSpecString::new("id", "ID", "", None, glib::ParamFlags::READWRITE),
+            glib::ParamSpecString::new("title", "Title", "", None, glib::ParamFlags::READWRITE),
+            glib::ParamSpecString::new(
                 "iconname",
                 "IconName",
                 "",
                 None,
                 glib::ParamFlags::READWRITE
             ),
-            glib::ParamSpec::new_boolean(
+            glib::ParamSpecBoolean::new(
                 "grayedout",
                 "GrayedOut",
                 "",

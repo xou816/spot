@@ -40,14 +40,14 @@ impl Clock {
             },
         ));
         if let Some(previous_source) = self.source.replace(new_source) {
-            glib::source_remove(previous_source);
+            previous_source.remove();
         }
     }
 
     pub fn stop(&self) {
         let new_source = None;
         if let Some(previous_source) = self.source.replace(new_source) {
-            glib::source_remove(previous_source);
+            previous_source.remove();
         }
     }
 }
@@ -71,7 +71,7 @@ impl Debouncer {
                 glib::Continue(false)
             });
         if let Some(previous_source) = self.0.replace(Some(new_source)) {
-            glib::source_remove(previous_source);
+            previous_source.remove();
         }
     }
 }

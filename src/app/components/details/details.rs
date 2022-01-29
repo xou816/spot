@@ -218,7 +218,6 @@ impl Details {
             widget.album_tracks_widget().clone(),
             model.clone(),
             worker.clone(),
-            false,
         ));
 
         let headerbar_widget = widget.headerbar_widget();
@@ -288,8 +287,7 @@ impl Details {
                 &album.artists_name(),
                 &details.label,
                 album.release_date.as_ref().unwrap(),
-                album.songs.len(),
-                &album.formatted_time(),
+                details.total_tracks,
                 &details.copyright_text,
             );
 
