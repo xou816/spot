@@ -49,7 +49,35 @@ impl SelectionToolbarModel {
         }
     }
 
-    fn remove_saved_tracks(&self) {}
+    pub fn save_selection(&self) {
+        let api = self.app_model.get_spotify();
+        let ids: Vec<String> = self
+            .selection()
+            .peek_selection()
+            .map(|s| &s.id)
+            .cloned()
+            .collect();
+        self.dispatcher
+            .call_spotify_and_dispatch_many(move || async move {
+                api.save_tracks(ids).await?;
+                Ok(vec![AppAction::SaveSelection])
+            })
+    }
+
+    fn remove_saved_tracks(&self) {
+        let api = self.app_model.get_spotify();
+        let ids: Vec<String> = self
+            .selection()
+            .peek_selection()
+            .map(|s| &s.id)
+            .cloned()
+            .collect();
+        self.dispatcher
+            .call_spotify_and_dispatch_many(move || async move {
+                api.remove_saved_tracks(ids).await?;
+                Ok(vec![AppAction::UnsaveSelection])
+            })
+    }
 
     fn selection(&self) -> impl Deref<Target = SelectionState> + '_ {
         self.app_model.map_state(|s| &s.selection)
@@ -111,6 +139,7 @@ impl SelectionToolbar {
         widget.connect_move_down(clone!(@weak model => move || model.move_down_selection()));
         widget.connect_queue(clone!(@weak model => move || model.queue_selection()));
         widget.connect_remove(clone!(@weak model => move || model.remove_selection()));
+        widget.connect_save(clone!(@weak model => move || model.save_selection()));
         Self { model, widget }
     }
 

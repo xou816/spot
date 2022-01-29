@@ -152,8 +152,8 @@ pub enum SpotifyApiError {
     NoToken,
     #[error("No content from request")]
     NoContent,
-    #[error("Request failed with status {0}")]
-    BadStatus(u16),
+    #[error("Request failed ({0}): {1}")]
+    BadStatus(u16, String),
     #[error(transparent)]
     ClientError(#[from] isahc::Error),
     #[error(transparent)]
@@ -253,7 +253,13 @@ impl SpotifyClient {
                 max_age: cache_control.unwrap_or(10),
                 etag,
             }),
-            s => Err(SpotifyApiError::BadStatus(s.as_u16())),
+            s => Err(SpotifyApiError::BadStatus(
+                s.as_u16(),
+                result
+                    .text()
+                    .await
+                    .unwrap_or("(no details available)".to_string()),
+            )),
         }
     }
 
@@ -261,7 +267,7 @@ impl SpotifyClient {
     where
         B: Into<isahc::AsyncBody>,
     {
-        let result = self.client.send_async(request).await?;
+        let mut result = self.client.send_async(request).await?;
         match result.status() {
             StatusCode::UNAUTHORIZED => {
                 self.clear_token();
@@ -269,7 +275,13 @@ impl SpotifyClient {
             }
             StatusCode::NOT_MODIFIED => Ok(()),
             s if s.is_success() => Ok(()),
-            s => Err(SpotifyApiError::BadStatus(s.as_u16())),
+            s => Err(SpotifyApiError::BadStatus(
+                s.as_u16(),
+                result
+                    .text()
+                    .await
+                    .unwrap_or("(no details available)".to_string()),
+            )),
         }
     }
 }

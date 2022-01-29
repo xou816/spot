@@ -270,12 +270,31 @@ impl UpdatableState for HomeState {
                 vec![BrowserEvent::SavedPlaylistsUpdated]
             }
             BrowserAction::AppendSavedTracks(song_batch) => {
-                let offset = song_batch.batch.offset;
                 if self.saved_tracks.add(*song_batch).commit() {
-                    vec![BrowserEvent::SavedTracksAppended(offset)]
+                    vec![BrowserEvent::SavedTracksUpdated]
                 } else {
                     vec![]
                 }
+            }
+            BrowserAction::SetSavedTracks(song_batch) => {
+                if self
+                    .saved_tracks
+                    .clear()
+                    .and(|s| s.add(*song_batch))
+                    .commit()
+                {
+                    vec![BrowserEvent::SavedTracksUpdated]
+                } else {
+                    vec![]
+                }
+            }
+            BrowserAction::SaveTracks(tracks) => {
+                self.saved_tracks.prepend(tracks).commit();
+                vec![BrowserEvent::SavedTracksUpdated]
+            }
+            BrowserAction::RemoveSavedTracks(tracks) => {
+                self.saved_tracks.remove(&tracks[..]).commit();
+                vec![BrowserEvent::SavedTracksUpdated]
             }
             _ => vec![],
         }

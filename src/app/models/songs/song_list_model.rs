@@ -133,6 +133,11 @@ impl SongListModel {
         SongListModelPending::new(Some(range), self)
     }
 
+    pub fn prepend(&mut self, songs: Vec<SongDescription>) -> SongListModelPending {
+        let range = self.inner_mut().prepend(songs);
+        SongListModelPending::new(Some(range), self)
+    }
+
     pub fn find_index(&self, song_id: &str) -> Option<usize> {
         self.inner().find_index(song_id)
     }
