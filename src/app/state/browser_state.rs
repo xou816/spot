@@ -29,7 +29,10 @@ pub enum BrowserAction {
     UnsaveAlbum(String),
     SetUserDetails(Box<UserDescription>),
     AppendUserPlaylists(Vec<PlaylistDescription>),
+    SetSavedTracks(Box<SongBatch>),
     AppendSavedTracks(Box<SongBatch>),
+    SaveTracks(Vec<SongDescription>),
+    RemoveSavedTracks(Vec<String>),
 }
 
 impl From<BrowserAction> for AppAction {
@@ -69,7 +72,7 @@ pub enum BrowserEvent {
     AlbumSaved(String),
     AlbumUnsaved(String),
     UserDetailsUpdated(String),
-    SavedTracksAppended(usize),
+    SavedTracksUpdated,
 }
 
 pub enum BrowserScreen {
@@ -148,8 +151,8 @@ where
         Self(vec![initial])
     }
 
-    fn iter_mut(&mut self) -> std::slice::IterMut<'_, Screen> {
-        self.0.iter_mut()
+    fn iter_mut(&mut self) -> impl Iterator<Item = &mut Screen> {
+        self.0.iter_mut().rev()
     }
 
     fn iter_rev(&self) -> impl Iterator<Item = &Screen> {
@@ -256,6 +259,13 @@ impl BrowserState {
 
     pub fn home_state(&self) -> Option<&HomeState> {
         extract_state!(&self, BrowserScreen::Home(s) => s)
+    }
+
+    pub fn home_state_mut(&mut self) -> Option<&mut HomeState> {
+        self.navigation.iter_mut().find_map(|screen| match screen {
+            BrowserScreen::Home(s) => Some(&mut **s),
+            _ => None,
+        })
     }
 
     pub fn details_state(&self, id: &str) -> Option<&DetailsState> {

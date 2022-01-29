@@ -21,6 +21,8 @@ pub enum AppAction {
     DequeueSelection,
     MoveUpSelection,
     MoveDownSelection,
+    SaveSelection,
+    UnsaveSelection,
     EnableSelection(SelectionContext),
     CancelSelection,
 }
@@ -125,6 +127,39 @@ impl AppState {
                     .and_then(|song| playback.move_up(&song.id))
                     .map(|_| vec![PlaybackEvent::PlaylistChanged.into()])
                     .unwrap_or_else(Vec::new)
+            }
+            AppAction::SaveSelection => {
+                let tracks = self.selection.take_selection();
+                let mut events: Vec<AppEvent> = self
+                    .browser
+                    .home_state_mut()
+                    .into_iter()
+                    .flat_map(move |home| {
+                        home.update_with(BrowserAction::SaveTracks(tracks.clone()))
+                    })
+                    .map(AppEvent::BrowserEvent)
+                    .collect();
+                events.push(SelectionEvent::SelectionModeChanged(false).into());
+                events
+            }
+            AppAction::UnsaveSelection => {
+                let tracks: Vec<String> = self
+                    .selection
+                    .take_selection()
+                    .into_iter()
+                    .map(|s| s.id)
+                    .collect();
+                let mut events: Vec<AppEvent> = self
+                    .browser
+                    .home_state_mut()
+                    .into_iter()
+                    .flat_map(move |home| {
+                        home.update_with(BrowserAction::RemoveSavedTracks(tracks.clone()))
+                    })
+                    .map(AppEvent::BrowserEvent)
+                    .collect();
+                events.push(SelectionEvent::SelectionModeChanged(false).into());
+                events
             }
             AppAction::EnableSelection(context) => {
                 if let Some(active) = self.selection.set_mode(Some(context)) {

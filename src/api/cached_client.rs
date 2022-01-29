@@ -43,7 +43,11 @@ pub trait SpotifyApiClient {
 
     fn save_album(&self, id: &str) -> BoxFuture<SpotifyResult<AlbumDescription>>;
 
+    fn save_tracks(&self, ids: Vec<String>) -> BoxFuture<SpotifyResult<()>>;
+
     fn remove_saved_album(&self, id: &str) -> BoxFuture<SpotifyResult<()>>;
+
+    fn remove_saved_tracks(&self, ids: Vec<String>) -> BoxFuture<SpotifyResult<()>>;
 
     fn get_saved_playlists(
         &self,
@@ -361,12 +365,30 @@ impl SpotifyApiClient for CachedSpotifyClient {
         })
     }
 
+    fn save_tracks(&self, ids: Vec<String>) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(async move {
+            let _ = self.cache.set_expired_pattern(&*ME_TRACKS_CACHE).await;
+            self.client.save_tracks(ids).send_no_response().await?;
+            Ok(())
+        })
+    }
+
     fn remove_saved_album(&self, id: &str) -> BoxFuture<SpotifyResult<()>> {
         let id = id.to_owned();
 
         Box::pin(async move {
             let _ = self.cache.set_expired_pattern(&*ME_ALBUMS_CACHE).await;
             self.client.remove_saved_album(&id).send_no_response().await
+        })
+    }
+
+    fn remove_saved_tracks(&self, ids: Vec<String>) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(async move {
+            let _ = self.cache.set_expired_pattern(&*ME_TRACKS_CACHE).await;
+            self.client
+                .remove_saved_tracks(ids)
+                .send_no_response()
+                .await
         })
     }
 

@@ -236,6 +236,28 @@ impl SongList {
         ListRangeUpdate::inserted(insertion_start, songs_len)
     }
 
+    pub fn prepend(&mut self, songs: Vec<SongDescription>) -> ListRangeUpdate {
+        let songs_len = songs.len();
+        let insertion_start = 0;
+
+        let mut batches = HashMap::<usize, Vec<String>>::default();
+        for song in songs {
+            Self::batches_add(&mut batches, self.batch_size, &song.id);
+            self.indexed_songs
+                .insert(song.id.clone(), SongModel::new(song));
+        }
+        self.iter_ids_from(0).for_each(|(_, next)| {
+            Self::batches_add(&mut batches, self.batch_size, next);
+        });
+
+        self.total = self.total.saturating_add(songs_len);
+        self.total_loaded = self.total_loaded.saturating_add(songs_len);
+        self.last_batch_key = batches.len().saturating_sub(1);
+        self.batches = batches;
+
+        ListRangeUpdate::inserted(insertion_start, songs_len)
+    }
+
     pub fn add(&mut self, song_batch: SongBatch) -> Option<ListRangeUpdate> {
         if song_batch.batch.batch_size != self.batch_size {
             song_batch

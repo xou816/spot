@@ -23,28 +23,28 @@ impl SavedTracksModel {
     }
 
     pub fn load_initial(&self) {
+        let loader = self.app_model.get_batch_loader();
         let query = BatchQuery {
             source: SongsSource::SavedTracks,
             batch: Batch::first_of_size(50),
         };
-
-        self.load_batch(query);
+        self.dispatcher.dispatch_async(Box::pin(async move {
+            let action = loader
+                .query(query, |song_batch| {
+                    BrowserAction::SetSavedTracks(Box::new(song_batch)).into()
+                })
+                .await;
+            Some(action)
+        }));
     }
 
     pub fn load_more(&self) -> Option<()> {
-        let last_batch = self.song_list_model().last_batch()?;
+        let loader = self.app_model.get_batch_loader();
+        let last_batch = self.song_list_model().last_batch()?.next()?;
         let query = BatchQuery {
             source: SongsSource::SavedTracks,
             batch: last_batch,
         };
-
-        self.load_batch(query.next()?);
-        Some(())
-    }
-
-    fn load_batch(&self, query: BatchQuery) {
-        let loader = self.app_model.get_batch_loader();
-
         self.dispatcher.dispatch_async(Box::pin(async move {
             let action = loader
                 .query(query, |song_batch| {
@@ -53,6 +53,7 @@ impl SavedTracksModel {
                 .await;
             Some(action)
         }));
+        Some(())
     }
 }
 
@@ -133,7 +134,7 @@ impl PlaylistModel for SavedTracksModel {
 
     fn enable_selection(&self) -> bool {
         self.dispatcher
-            .dispatch(AppAction::EnableSelection(SelectionContext::Default));
+            .dispatch(AppAction::EnableSelection(SelectionContext::SavedTracks));
         true
     }
 

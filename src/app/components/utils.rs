@@ -124,6 +124,19 @@ where
     }
 }
 
+pub fn ancestor<Current, Ancestor>(widget: &Current) -> Option<Ancestor>
+where
+    Current: IsA<gtk::Widget>,
+    Ancestor: IsA<gtk::Widget>,
+{
+    widget.parent().and_then(|p| {
+        p.clone()
+            .downcast::<Ancestor>()
+            .ok()
+            .or_else(|| ancestor(&p))
+    })
+}
+
 pub fn wrap_flowbox_item<
     Model: glib::IsA<glib::Object>,
     Widget: gtk::glib::IsA<gtk::Widget>,

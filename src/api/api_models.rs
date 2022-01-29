@@ -13,6 +13,11 @@ pub struct Uris {
     pub uris: Vec<String>,
 }
 
+#[derive(Serialize)]
+pub struct Ids {
+    pub ids: Vec<String>,
+}
+
 pub enum SearchType {
     Artist,
     Album,

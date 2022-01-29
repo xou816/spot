@@ -33,6 +33,7 @@ pub enum SelectionContext {
     Queue,
     Playlist,
     EditablePlaylist(String),
+    SavedTracks,
     Default,
 }
 

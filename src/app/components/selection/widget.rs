@@ -31,6 +31,9 @@ mod imp {
 
         #[template_child]
         pub queue: TemplateChild<gtk::Button>,
+
+        #[template_child]
+        pub save: TemplateChild<gtk::Button>,
     }
 
     #[glib::object_subclass]
@@ -105,6 +108,13 @@ impl SelectionToolbarWidget {
         self.widget().queue.connect_clicked(move |_| f());
     }
 
+    pub fn connect_save<F>(&self, f: F)
+    where
+        F: Fn() + 'static,
+    {
+        self.widget().save.connect_clicked(move |_| f());
+    }
+
     pub fn connect_remove<F>(&self, f: F)
     where
         F: Fn() + 'static,
@@ -132,6 +142,11 @@ impl SelectionToolbarWidget {
     pub fn set_remove(&self, state: SelectionToolState) {
         self.widget().remove.set_sensitive(state.sensitive());
         self.widget().remove.set_visible(state.visible());
+    }
+
+    pub fn set_save(&self, state: SelectionToolState) {
+        self.widget().save.set_sensitive(state.sensitive());
+        self.widget().save.set_visible(state.visible());
     }
 
     pub fn set_visible(&self, visible: bool) {
