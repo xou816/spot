@@ -4,6 +4,7 @@ use std::borrow::BorrowMut;
 use std::rc::Rc;
 
 use super::HomeModel;
+use crate::app::components::navigation::create_playlist::CreatePlaylistWidget;
 use crate::app::components::sidebar_listbox::{SideBarItem, SideBarRow};
 use crate::app::components::{Component, EventListener, SavedPlaylistsModel, ScreenFactory};
 use crate::app::models::AlbumModel;
@@ -44,30 +45,7 @@ fn make_playlist_item(playlist_item: AlbumModel) -> SideBarItem {
 
 fn new_playlist_clicked(row: &gtk::ListBoxRow, user_id: Option<String>, model: Rc<HomeModel>) {
     if let Some(user_id) = user_id {
-        let popover = gtk::Popover::new();
-        let label = gtk::Label::new(Option::from(
-            // translators: This is a label labeling the field to enter the name of a new playlist.
-            gettext("Name").as_str(),
-        ));
-        let entry = gtk::Entry::new();
-        let btn = gtk::Button::with_label(
-            // translators: This is a button to create a new playlist.
-            &gettext("Create"),
-        );
-        let rc_user = Rc::new(user_id);
-        btn.connect_clicked(
-            clone!(@strong rc_user, @weak entry, @weak popover => move |_| {
-                model.create_new_playlist(entry.text().to_string(), rc_user.to_string());
-                popover.popdown();
-            }),
-        );
-        let gtk_box = gtk::Box::new(gtk::Orientation::Horizontal, 12);
-        gtk_box.append(&label);
-        gtk_box.append(&entry);
-        gtk_box.append(&btn);
-        popover.set_child(Some(&gtk_box));
-        popover.set_parent(row);
-        popover.popup();
+        CreatePlaylistWidget::new(row, model, Rc::new(user_id));
     }
 }
 

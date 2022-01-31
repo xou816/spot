@@ -11,3 +11,5 @@ pub use factory::*;
 
 mod home_model;
 pub use home_model::*;
+
+mod create_playlist;
