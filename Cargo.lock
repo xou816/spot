@@ -3058,7 +3058,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "zbus 2.0.1",
- "zvariant 3.0.0",
+ "zvariant 3.1.2",
 ]
 
 [[package]]
@@ -3634,7 +3634,7 @@ dependencies = [
  "static_assertions",
  "zbus_macros 2.0.1",
  "zbus_names",
- "zvariant 3.0.0",
+ "zvariant 3.1.2",
 ]
 
 [[package]]
@@ -3670,7 +3670,7 @@ checksum = "45dfcdcf87b71dad505d30cc27b1b7b88a64b6d1c435648f48f9dbc1fdc4b7e1"
 dependencies = [
  "serde",
  "static_assertions",
- "zvariant 3.0.0",
+ "zvariant 3.1.2",
 ]
 
 [[package]]
@@ -3710,16 +3710,16 @@ dependencies = [
 
 [[package]]
 name = "zvariant"
-version = "3.0.0"
+version = "3.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a946c049b2eac1a253f98e9267a8ce7a3d93be274ea146e6dd7a0965232a911"
+checksum = "49ea5dc38b2058fae6a5b79009388143dadce1e91c26a67f984a0fc0381c8033"
 dependencies = [
  "byteorder",
  "enumflags2 0.7.3",
  "libc",
  "serde",
  "static_assertions",
- "zvariant_derive 3.0.0",
+ "zvariant_derive 3.1.2",
 ]
 
 [[package]]
@@ -3736,9 +3736,9 @@ dependencies = [
 
 [[package]]
 name = "zvariant_derive"
-version = "3.0.0"
+version = "3.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "28fce5afb8d639bff79b1e8cdb258a3ca22d458f4603b23d794b4cb4e878c990"
+checksum = "8c2cecc5a61c2a053f7f653a24cd15b3b0195d7f7ddb5042c837fb32e161fb7a"
 dependencies = [
  "proc-macro-crate 1.1.0",
  "proc-macro2",
