@@ -934,9 +934,9 @@ dependencies = [
 
 [[package]]
 name = "gdk-pixbuf"
-version = "0.15.1"
+version = "0.15.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "172dfe1d9dfb62936bf7ad3ede2913a1b21b1e3db56990e46e00789201de9070"
+checksum = "73aa2f5de1b45710da90a55863276667dc3a3264aaf6a2aeace62bb015244d49"
 dependencies = [
  "bitflags",
  "gdk-pixbuf-sys",
