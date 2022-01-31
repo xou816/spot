@@ -29,7 +29,6 @@ pub enum AppAction {
     UnsaveSelection,
     EnableSelection(SelectionContext),
     CancelSelection,
-    PlaylistCreated,
 }
 
 impl AppAction {
@@ -207,9 +206,6 @@ impl AppState {
             AppAction::SelectionAction(a) => forward_action(a, &mut self.selection),
             AppAction::LoginAction(a) => forward_action(a, &mut self.logged_user),
             AppAction::SettingsAction(a) => forward_action(a, &mut self.settings),
-            AppAction::PlaylistCreated => {
-                vec![AppEvent::BrowserEvent(BrowserEvent::SavedPlaylistsUpdated)]
-            }
             _ => vec![],
         }
     }

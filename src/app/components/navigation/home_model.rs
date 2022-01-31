@@ -1,4 +1,4 @@
-use crate::app::{ActionDispatcher, AppAction, AppModel};
+use crate::app::{ActionDispatcher, AppModel, BrowserAction};
 use std::rc::Rc;
 
 pub struct HomeModel {
@@ -20,7 +20,7 @@ impl HomeModel {
             .call_spotify_and_dispatch(move || async move {
                 api.create_new_playlist(name.as_str(), user_id.as_str())
                     .await
-                    .map(|_| AppAction::PlaylistCreated.into())
+                    .map(|p| BrowserAction::AppendPlaylistsContent(vec![p]).into())
             })
     }
 }
