@@ -55,9 +55,12 @@ fn new_playlist_clicked(row: &gtk::ListBoxRow, user_id: Option<String>, model: R
             &gettext("Create"),
         );
         let rc_user = Rc::new(user_id);
-        btn.connect_clicked(clone!(@strong rc_user, @weak entry => move |_| {
-            model.create_new_playlist(entry.text().to_string(), rc_user.to_string());
-        }));
+        btn.connect_clicked(
+            clone!(@strong rc_user, @weak entry, @weak popover => move |_| {
+                model.create_new_playlist(entry.text().to_string(), rc_user.to_string());
+                popover.popdown();
+            }),
+        );
         let gtk_box = gtk::Box::new(gtk::Orientation::Horizontal, 12);
         gtk_box.append(&label);
         gtk_box.append(&entry);
