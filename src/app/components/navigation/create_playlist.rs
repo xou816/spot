@@ -1,5 +1,4 @@
 use crate::app::components::HomeModel;
-use glib::SignalHandlerId;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
@@ -49,23 +48,25 @@ impl CreatePlaylistWidget {
     pub fn new(parent: &gtk::ListBoxRow, model: Rc<HomeModel>, user: Rc<String>) -> Self {
         let w: CreatePlaylistWidget =
             glib::Object::new(&[]).expect("Failed to create an instance of CreatePlaylistWidget");
-        w.connect_button_clicked(model, user);
+        w.connect_create(model, user);
         w.set_parent(parent);
         w.popup();
         w
     }
 
-    pub fn connect_button_clicked(
-        &self,
-        model: Rc<HomeModel>,
-        user: Rc<String>,
-    ) -> SignalHandlerId {
+    fn connect_create(&self, model: Rc<HomeModel>, user: Rc<String>) {
         let widget = imp::CreatePlaylistWidget::from_instance(self);
         let btn = widget.button.get();
         let entry = widget.entry.get();
+        entry.connect_activate(
+            clone!(@weak self as _self, @weak user, @weak model => move |entry| {
+                model.create_new_playlist(entry.text().to_string(), user.to_string());
+                _self.popdown();
+            }),
+        );
         btn.connect_clicked(clone!(@weak self as _self => move |_| {
             model.create_new_playlist(entry.text().to_string(), user.to_string());
             _self.popdown();
-        }))
+        }));
     }
 }
