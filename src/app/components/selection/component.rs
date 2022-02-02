@@ -1,3 +1,4 @@
+use gettextrs::gettext;
 use gtk::prelude::*;
 use std::ops::Deref;
 use std::rc::Rc;
@@ -60,7 +61,10 @@ impl SelectionToolbarModel {
         self.dispatcher
             .call_spotify_and_dispatch_many(move || async move {
                 api.save_tracks(ids).await?;
-                Ok(vec![AppAction::SaveSelection])
+                Ok(vec![
+                    AppAction::SaveSelection,
+                    AppAction::ShowNotification(gettext("Tracks saved!")),
+                ])
             })
     }
 

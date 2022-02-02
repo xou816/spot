@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-12-22 18:12+0100\n"
+"POT-Creation-Date: 2022-01-29 17:34-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -35,7 +35,7 @@ msgstr ""
 
 #. translators: This is part of a contextual menu attached to a single track; this entry adds a track at the end of the play queue.
 #: src/app/components/labels.rs:11
-#: src/app/components/selection/selection_toolbar.ui:37
+#: src/app/components/selection/selection_toolbar.ui:39
 msgid "Add to queue"
 msgstr ""
 
@@ -94,7 +94,7 @@ msgid "Unnamed playlist"
 msgstr ""
 
 #: src/app/components/navigation/home.rs:87
-#: src/app/components/now_playing/now_playing_model.rs:152
+#: src/app/components/now_playing/now_playing_model.rs:134
 msgid "Now playing"
 msgstr ""
 
@@ -118,6 +118,10 @@ msgstr ""
 msgid "No song playing"
 msgstr ""
 
+#: src/app/components/selection/component.rs:66
+msgid "Tracks saved!"
+msgstr ""
+
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:56
 msgid "About"
@@ -133,7 +137,7 @@ msgstr ""
 msgid "Log out"
 msgstr ""
 
-#: src/app/state/login_state.rs:117
+#: src/app/state/login_state.rs:109
 msgid "Connection restored"
 msgstr ""
 
@@ -153,7 +157,7 @@ msgid "Top tracks"
 msgstr ""
 
 #. Title of the sections that contains all releases from an artist (both singles and albums).
-#: src/app/components/artist_details/artist_details.ui:55
+#: src/app/components/artist_details/artist_details.ui:53
 msgid "Releases"
 msgstr ""
 
@@ -178,12 +182,16 @@ msgid "Type to search."
 msgstr ""
 
 #. <property name="icon-name">playlist2-symbolic</property>
-#: src/app/components/selection/selection_toolbar.ui:47
+#: src/app/components/selection/selection_toolbar.ui:56
 msgid "Add to playlist..."
 msgstr ""
 
-#: src/app/components/selection/selection_toolbar.ui:58
+#: src/app/components/selection/selection_toolbar.ui:69
 msgid "Remove"
+msgstr ""
+
+#: src/app/components/selection/selection_toolbar.ui:90
+msgid "Save to library"
 msgstr ""
 
 #. This refers to a music label
@@ -201,12 +209,7 @@ msgstr ""
 msgid "Tracks"
 msgstr ""
 
-#. This refers to the duration of a release
 #: src/app/components/details/release_details.ui:68
-msgid "Duration"
-msgstr ""
-
-#: src/app/components/details/release_details.ui:78
 msgid "Copyright"
 msgstr ""
 
