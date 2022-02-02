@@ -61,6 +61,14 @@ impl PlaybackState {
         Some(song?.into_description())
     }
 
+    pub fn current_source(&self) -> Option<&SongsSource> {
+        self.source.as_ref()
+    }
+
+    pub fn current_song_index(&self) -> Option<usize> {
+        self.position
+    }
+
     pub fn current_song_id(&self) -> Option<String> {
         Some(self.index(self.list_position?)?.id)
     }
@@ -305,6 +313,7 @@ pub enum PlaybackEvent {
     SeekSynced(u32),
     VolumeSet(f64),
     TrackChanged(String),
+    SourceChanged,
     Preload(String),
     ShuffleChanged,
     PlaylistChanged,
@@ -324,10 +333,6 @@ impl From<PlaybackEvent> for AppEvent {
     fn from(playback_event: PlaybackEvent) -> Self {
         Self::PlaybackEvent(playback_event)
     }
-}
-
-fn make_events(opt_events: Vec<Option<PlaybackEvent>>) -> Vec<PlaybackEvent> {
-    opt_events.into_iter().flatten().collect()
 }
 
 impl UpdatableState for PlaybackState {
@@ -379,10 +384,10 @@ impl UpdatableState for PlaybackState {
             }
             PlaybackAction::Next => {
                 if let Some(id) = self.play_next() {
-                    make_events(vec![
-                        Some(PlaybackEvent::TrackChanged(id)),
-                        Some(PlaybackEvent::PlaybackResumed),
-                    ])
+                    vec![
+                        PlaybackEvent::TrackChanged(id),
+                        PlaybackEvent::PlaybackResumed,
+                    ]
                 } else {
                     self.stop();
                     vec![PlaybackEvent::PlaybackStopped]
@@ -394,20 +399,20 @@ impl UpdatableState for PlaybackState {
             }
             PlaybackAction::Previous => {
                 if let Some(id) = self.play_prev() {
-                    make_events(vec![
-                        Some(PlaybackEvent::TrackChanged(id)),
-                        Some(PlaybackEvent::PlaybackResumed),
-                    ])
+                    vec![
+                        PlaybackEvent::TrackChanged(id),
+                        PlaybackEvent::PlaybackResumed,
+                    ]
                 } else {
                     make_events(vec![Some(PlaybackEvent::TrackSeeked(0))])
                 }
             }
             PlaybackAction::Load(id) => {
                 if self.play(&id) {
-                    make_events(vec![
-                        Some(PlaybackEvent::TrackChanged(id)),
-                        Some(PlaybackEvent::PlaybackResumed),
-                    ])
+                    vec![
+                        PlaybackEvent::TrackChanged(id),
+                        PlaybackEvent::PlaybackResumed,
+                    ]
                 } else {
                     vec![]
                 }
@@ -431,12 +436,13 @@ impl UpdatableState for PlaybackState {
             PlaybackAction::LoadPagedSongs(source, batch)
                 if Some(&source) != self.source.as_ref() =>
             {
+                debug!("new source: {:?}", &source);
                 self.set_batch(Some(source), batch);
-                vec![PlaybackEvent::PlaylistChanged]
+                vec![PlaybackEvent::PlaylistChanged, PlaybackEvent::SourceChanged]
             }
             PlaybackAction::LoadSongs(tracks) => {
                 self.set_queue(tracks);
-                vec![PlaybackEvent::PlaylistChanged]
+                vec![PlaybackEvent::PlaylistChanged, PlaybackEvent::SourceChanged]
             }
             PlaybackAction::Queue(tracks) => {
                 self.queue(tracks);

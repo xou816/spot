@@ -17,12 +17,20 @@ impl SpotifyConnectPlayer {
         self.api.player_seek(position as usize)
     }
 
+    pub fn play_in_context(
+        &self,
+        context: String,
+        position: usize,
+    ) -> impl Future<Output = SpotifyResult<()>> + '_ {
+        self.api.player_play_in_context(context, position)
+    }
+
     pub fn play(&self, uri: String) -> impl Future<Output = SpotifyResult<()>> + '_ {
-        self.api.player_play(Some(uri))
+        self.api.player_play_no_context(vec![uri])
     }
 
     pub fn resume(&self) -> impl Future<Output = SpotifyResult<()>> + '_ {
-        self.api.player_play(None)
+        self.api.player_resume()
     }
 
     pub fn pause(&self) -> impl Future<Output = SpotifyResult<()>> + '_ {

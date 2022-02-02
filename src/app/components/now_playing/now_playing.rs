@@ -234,10 +234,8 @@ impl EventListener for NowPlaying {
                 self.model.refresh_available_devices();
             }
             AppEvent::PlaybackEvent(PlaybackEvent::AvailableDevicesChanged) => {
-                self.widget.update_devices_list(
-                    &*self.model.get_available_devices(),
-                    &*self.model.get_current_device(),
-                );
+                self.widget
+                    .update_devices_list(&*self.model.get_available_devices());
             }
             _ => (),
         }

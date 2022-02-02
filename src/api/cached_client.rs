@@ -7,7 +7,7 @@ use std::convert::Into;
 use std::future::Future;
 
 use super::cache::{CacheExpiry, CacheManager, CachePolicy, FetchResult};
-use super::client::{SpotifyApiError, SpotifyClient, SpotifyResponse, SpotifyResponseKind};
+use super::client::*;
 use crate::app::models::*;
 
 pub type SpotifyResult<T> = Result<T, SpotifyApiError>;
@@ -95,9 +95,18 @@ pub trait SpotifyApiClient {
     fn update_token(&self, token: String);
 
     fn player_pause(&self) -> BoxFuture<SpotifyResult<()>>;
-    fn player_play(&self, uri: Option<String>) -> BoxFuture<SpotifyResult<()>>;
+    fn player_resume(&self) -> BoxFuture<SpotifyResult<()>>;
     fn player_next(&self) -> BoxFuture<SpotifyResult<()>>;
     fn player_seek(&self, pos: usize) -> BoxFuture<SpotifyResult<()>>;
+
+    fn player_play_in_context(
+        &self,
+        context: String,
+        offset: usize,
+    ) -> BoxFuture<SpotifyResult<()>>;
+
+    fn player_play_no_context(&self, uris: Vec<String>) -> BoxFuture<SpotifyResult<()>>;
+
     fn add_to_queue(&self, uri: String) -> BoxFuture<SpotifyResult<()>>;
 }
 
@@ -675,7 +684,10 @@ impl SpotifyApiClient for CachedSpotifyClient {
             Ok(devices
                 .devices
                 .into_iter()
-                .filter(|d| d.is_active && !d.is_restricted)
+                .filter(|d| {
+                    debug!("found device: {:?}", d);
+                    !d.is_restricted
+                })
                 .map(ConnectDevice::from)
                 .collect())
         })
@@ -688,13 +700,38 @@ impl SpotifyApiClient for CachedSpotifyClient {
         })
     }
 
-    fn player_play(&self, uri: Option<String>) -> BoxFuture<SpotifyResult<()>> {
+    fn player_resume(&self) -> BoxFuture<SpotifyResult<()>> {
         Box::pin(async move {
-            if let Some(uri) = uri {
-                self.client.player_play_uri(uri).send_no_response().await?;
-            } else {
-                self.client.player_play().send_no_response().await?;
-            }
+            self.client.player_resume().send_no_response().await?;
+            Ok(())
+        })
+    }
+
+    fn player_play_in_context(
+        &self,
+        context_uri: String,
+        offset: usize,
+    ) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(async move {
+            self.client
+                .player_set_playing(PlayRequest::Contextual {
+                    context_uri,
+                    offset: PlayOffset {
+                        position: offset as u32,
+                    },
+                })
+                .send_no_response()
+                .await?;
+            Ok(())
+        })
+    }
+
+    fn player_play_no_context(&self, uris: Vec<String>) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(async move {
+            self.client
+                .player_set_playing(PlayRequest::Uris { uris })
+                .send_no_response()
+                .await?;
             Ok(())
         })
     }

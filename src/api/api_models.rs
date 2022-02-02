@@ -19,6 +19,23 @@ pub struct Uris {
 }
 
 #[derive(Serialize)]
+pub struct PlayOffset {
+    pub position: u32,
+}
+
+#[derive(Serialize)]
+#[serde(untagged)]
+pub enum PlayRequest {
+    Contextual {
+        context_uri: String,
+        offset: PlayOffset,
+    },
+    Uris {
+        uris: Vec<String>,
+    },
+}
+
+#[derive(Serialize)]
 pub struct Ids {
     pub ids: Vec<String>,
 }

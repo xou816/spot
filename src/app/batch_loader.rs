@@ -30,6 +30,16 @@ impl PartialEq for SongsSource {
 
 impl Eq for SongsSource {}
 
+impl SongsSource {
+    pub fn spotify_uri(&self) -> Option<String> {
+        match self {
+            Self::Playlist(id) => Some(format!("spotify:playlist:{}", id)),
+            Self::Album(id) => Some(format!("spotify:album:{}", id)),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct BatchQuery {
     pub source: SongsSource,

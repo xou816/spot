@@ -549,17 +549,20 @@ impl SpotifyClient {
             .uri("/v1/me/player/currently-playing".to_string(), None)
     }
 
-    pub(crate) fn player_play(&self) -> SpotifyRequest<'_, (), ()> {
+    pub(crate) fn player_resume(&self) -> SpotifyRequest<'_, (), ()> {
         self.request()
             .method(Method::PUT)
             .uri("/v1/me/player/play".to_string(), None)
     }
 
-    pub(crate) fn player_play_uri(&self, uri: String) -> SpotifyRequest<'_, Vec<u8>, ()> {
+    pub(crate) fn player_set_playing(
+        &self,
+        request: PlayRequest,
+    ) -> SpotifyRequest<'_, Vec<u8>, ()> {
         self.request()
             .method(Method::PUT)
             .uri("/v1/me/player/play".to_string(), None)
-            .json_body(Uris { uris: vec![uri] })
+            .json_body(request)
     }
 
     pub(crate) fn player_pause(&self) -> SpotifyRequest<'_, (), ()> {
@@ -580,12 +583,6 @@ impl SpotifyClient {
         self.request()
             .method(Method::POST)
             .uri("/v1/me/player/queue".to_string(), Some(&query))
-    }
-
-    pub(crate) fn player_previous(&self) -> SpotifyRequest<'_, (), ()> {
-        self.request()
-            .method(Method::PUT)
-            .uri("/v1/me/player/previous".to_string(), None)
     }
 
     pub(crate) fn player_seek(&self, pos: usize) -> SpotifyRequest<'_, (), ()> {

@@ -1,4 +1,4 @@
-use crate::api::{CachedSpotifyClient, SpotifyApiClient};
+use crate::api::CachedSpotifyClient;
 use crate::app::components::sidebar_listbox::{build_sidebar_listbox, SideBarItem};
 use crate::glib::StaticType;
 use crate::settings::SpotSettings;
@@ -47,11 +47,11 @@ impl App {
     ) -> Self {
         let state = AppState::new();
         let spotify_client = Arc::new(CachedSpotifyClient::new());
-        let model = Rc::new(AppModel::new(state, spotify_client.clone()));
+        let model = Rc::new(AppModel::new(state, spotify_client));
 
         let components: Vec<Box<dyn EventListener>> = vec![
             App::make_player_notifier(
-                spotify_client,
+                Rc::clone(&model),
                 &settings,
                 Box::new(ActionDispatcherImpl::new(sender.clone(), worker.clone())),
                 sender.clone(),
@@ -101,13 +101,13 @@ impl App {
     }
 
     fn make_player_notifier(
-        api: Arc<dyn SpotifyApiClient + Send + Sync>,
+        app_model: Rc<AppModel>,
         settings: &SpotSettings,
         dispatcher: Box<dyn ActionDispatcher>,
         sender: UnboundedSender<AppAction>,
     ) -> Box<impl EventListener> {
         Box::new(PlayerNotifier::new(
-            api,
+            app_model,
             dispatcher,
             crate::player::start_player_service(settings.player_settings.clone(), sender),
         ))
