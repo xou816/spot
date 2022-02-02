@@ -161,7 +161,7 @@ impl NowPlayingWidget {
             widget.devices.remove(&child);
         }
         for device in devices {
-            let check = gtk::CheckButtonBuilder::new()
+            let check = gtk::CheckButton::builder()
                 .action_name(&format!("{}.{}", ACTIONS, CONNECT_ACTION))
                 .action_target(&Some(&device.id).to_variant())
                 .group(&*widget.this_device_button)
@@ -198,7 +198,7 @@ impl NowPlaying {
         let playlist = Box::new(Playlist::new(
             widget.song_list_widget().clone(),
             model.clone(),
-            worker
+            worker,
         ));
 
         let headerbar = Box::new(HeaderBarComponent::new(

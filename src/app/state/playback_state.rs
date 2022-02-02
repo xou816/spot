@@ -291,15 +291,6 @@ impl From<PlaybackAction> for AppAction {
 }
 
 #[derive(Clone, Debug)]
-pub enum PlaylistChange {
-    Reset,
-    InsertedAt(usize, usize),
-    AppendedAt(usize),
-    MovedUp(usize),
-    MovedDown(usize),
-}
-
-#[derive(Clone, Debug)]
 pub enum Device {
     Local,
     Connect(ConnectDevice),

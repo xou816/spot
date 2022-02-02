@@ -11,7 +11,6 @@ use crate::app::models::ConnectDevice;
 use crate::app::models::SongDescription;
 use crate::app::models::SongListModel;
 use crate::app::state::Device;
-use crate::app::state::PlaylistChange;
 use crate::app::state::SelectionContext;
 use crate::app::state::{PlaybackAction, PlaybackState, SelectionAction, SelectionState};
 use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel};

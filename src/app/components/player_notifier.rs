@@ -5,7 +5,6 @@ use librespot::core::spotify_id::SpotifyId;
 
 use crate::api::{SpotifyApiClient, SpotifyConnectPlayer};
 use crate::app::components::EventListener;
-use crate::app::models::ConnectDevice;
 use crate::app::state::{Device, LoginAction, LoginEvent, LoginStartedEvent, PlaybackEvent};
 use crate::app::{ActionDispatcher, AppAction, AppEvent};
 use crate::player::Command;
