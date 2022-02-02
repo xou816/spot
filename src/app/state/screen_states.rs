@@ -267,6 +267,11 @@ impl UpdatableState for HomeState {
                 self.playlists.extend(content.iter().map(|p| p.into()));
                 vec![BrowserEvent::SavedPlaylistsUpdated]
             }
+            BrowserAction::PrependPlaylistsContent(content) => {
+                self.playlists
+                    .prepend(content.into_iter().map(|p| p.into()));
+                vec![BrowserEvent::SavedPlaylistsUpdated]
+            }
             BrowserAction::AppendSavedTracks(song_batch) => {
                 if self.saved_tracks.add(*song_batch.clone()).commit() {
                     vec![BrowserEvent::SavedTracksUpdated]

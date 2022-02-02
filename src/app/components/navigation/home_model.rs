@@ -20,7 +20,7 @@ impl HomeModel {
             .call_spotify_and_dispatch(move || async move {
                 api.create_new_playlist(name.as_str(), user_id.as_str())
                     .await
-                    .map(|p| BrowserAction::AppendPlaylistsContent(vec![p]).into())
+                    .map(|p| BrowserAction::PrependPlaylistsContent(vec![p]).into())
             })
     }
 }
