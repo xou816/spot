@@ -1,4 +1,6 @@
 use crate::app::{ActionDispatcher, AppModel, BrowserAction};
+use crate::AppAction;
+use gettextrs::*;
 use std::rc::Rc;
 
 pub struct HomeModel {
@@ -17,10 +19,19 @@ impl HomeModel {
     pub fn create_new_playlist(&self, name: String, user_id: String) {
         let api = self.app_model.get_spotify();
         self.dispatcher
-            .call_spotify_and_dispatch(move || async move {
+            .call_spotify_and_dispatch_many(move || async move {
                 api.create_new_playlist(name.as_str(), user_id.as_str())
                     .await
-                    .map(|p| BrowserAction::PrependPlaylistsContent(vec![p]).into())
+                    .map(|p| {
+                        vec![
+                            BrowserAction::PrependPlaylistsContent(vec![p]).into(),
+                            AppAction::ShowNotification(gettext!(
+                                // translators: This is a notification that pop ups when a new playlist is created. It includes the name of that playlist.
+                                "New playlist '{}' created.",
+                                name
+                            )),
+                        ]
+                    })
             })
     }
 }
