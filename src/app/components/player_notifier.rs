@@ -4,12 +4,10 @@ use std::rc::Rc;
 use futures::channel::mpsc::UnboundedSender;
 use librespot::core::spotify_id::SpotifyId;
 
-use crate::api::SpotifyConnectPlayer;
 use crate::app::components::EventListener;
-use crate::app::state::{
-    Device, LoginAction, LoginEvent, LoginStartedEvent, PlaybackAction, PlaybackEvent,
-};
+use crate::app::state::{Device, LoginAction, LoginEvent, LoginStartedEvent, PlaybackEvent};
 use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, SongsSource};
+use crate::connect::ConnectCommand;
 use crate::player::Command;
 
 enum CurrentlyPlaying {
@@ -34,6 +32,7 @@ pub struct PlayerNotifier {
     app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>,
     command_sender: UnboundedSender<Command>,
+    connect_command_sender: UnboundedSender<ConnectCommand>,
 }
 
 impl PlayerNotifier {
@@ -41,11 +40,13 @@ impl PlayerNotifier {
         app_model: Rc<AppModel>,
         dispatcher: Box<dyn ActionDispatcher>,
         command_sender: UnboundedSender<Command>,
+        connect_command_sender: UnboundedSender<ConnectCommand>,
     ) -> Self {
         Self {
             app_model,
             dispatcher,
             command_sender,
+            connect_command_sender,
         }
     }
 
@@ -70,10 +71,6 @@ impl PlayerNotifier {
 
     fn device(&self) -> impl Deref<Target = Device> + '_ {
         self.app_model.map_state(|s| s.playback.current_device())
-    }
-
-    fn player(&self) -> SpotifyConnectPlayer {
-        SpotifyConnectPlayer::new(self.app_model.get_spotify())
     }
 
     fn notify_login(&self, event: &LoginEvent) {
@@ -101,29 +98,35 @@ impl PlayerNotifier {
     }
 
     fn notify_connect_player(&self, event: &PlaybackEvent) {
-        let player = self.player();
         let event = event.clone();
         let currently_playing = self.currently_playing();
-        self.dispatcher.dispatch_async(Box::pin(async move {
-            match event {
-                PlaybackEvent::TrackChanged(_) | PlaybackEvent::SourceChanged => {
-                    match currently_playing {
-                        Some(CurrentlyPlaying::WithSource {
-                            context, offset, ..
-                        }) => player.play_in_context(context, offset).await.ok()?,
-                        Some(CurrentlyPlaying::Song(id)) => {
-                            player.play(format!("spotify:track:{}", id)).await.ok()?
-                        }
-                        None => {}
-                    }
+        let command = match event {
+            PlaybackEvent::TrackChanged(_) | PlaybackEvent::SourceChanged => {
+                match currently_playing {
+                    Some(CurrentlyPlaying::WithSource {
+                        context,
+                        offset,
+                        song,
+                    }) => Some(ConnectCommand::PlayerLoadInContext {
+                        context,
+                        offset,
+                        song,
+                    }),
+                    Some(CurrentlyPlaying::Song(id)) => Some(ConnectCommand::PlayerLoad(id)),
+                    None => None,
                 }
-                PlaybackEvent::TrackSeeked(position) => player.seek(position).await.ok()?,
-                PlaybackEvent::PlaybackPaused => player.pause().await.ok()?,
-                PlaybackEvent::PlaybackResumed => player.resume().await.ok()?,
-                _ => {}
-            };
-            None
-        }))
+            }
+            PlaybackEvent::TrackSeeked(position) => {
+                Some(ConnectCommand::PlayerSeek(position as usize))
+            }
+            PlaybackEvent::PlaybackPaused => Some(ConnectCommand::PlayerPause),
+            PlaybackEvent::PlaybackResumed => Some(ConnectCommand::PlayerResume),
+            _ => None,
+        };
+
+        if let Some(command) = command {
+            self.send_command_to_connect_player(command);
+        }
     }
 
     fn notify_local_player(&self, event: &PlaybackEvent) {
@@ -144,6 +147,10 @@ impl PlayerNotifier {
         }
     }
 
+    fn send_command_to_connect_player(&self, command: ConnectCommand) {
+        self.connect_command_sender.unbounded_send(command).unwrap();
+    }
+
     fn send_command_to_local_player(&self, command: Command) {
         let dispatcher = &self.dispatcher;
         self.command_sender
@@ -155,19 +162,18 @@ impl PlayerNotifier {
 
     fn switch_device(&mut self, device: &Device) {
         match device {
-            Device::Connect(_) => {
+            Device::Connect(device) => {
                 self.send_command_to_local_player(Command::PlayerStop);
+                self.send_command_to_connect_player(ConnectCommand::SetDevice(device.id.clone()));
                 self.notify_connect_player(&PlaybackEvent::SourceChanged);
-                self.dispatcher.dispatch(PlaybackAction::Seek(0).into());
             }
             Device::Local => {
                 let id = self
                     .currently_playing()
                     .and_then(|c| SpotifyId::from_base62(c.song_id()).ok());
                 if let Some(id) = id {
-                    self.notify_connect_player(&PlaybackEvent::PlaybackPaused);
+                    self.send_command_to_connect_player(ConnectCommand::PlayerStop);
                     self.send_command_to_local_player(Command::PlayerLoad(id));
-                    self.send_command_to_local_player(Command::PlayerResume);
                 }
             }
         }

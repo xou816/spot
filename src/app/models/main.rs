@@ -1,5 +1,7 @@
 use std::str::FromStr;
 
+use crate::app::SongsSource;
+
 #[derive(Clone, Copy, Debug)]
 pub struct Batch {
     pub offset: usize,
@@ -214,6 +216,23 @@ pub struct UserDescription {
     pub id: String,
     pub name: String,
     pub playlists: Vec<PlaylistDescription>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum RepeatMode {
+    Song,
+    Playlist,
+    None,
+}
+
+#[derive(Clone, Debug)]
+pub struct ConnectPlayerState {
+    pub is_playing: bool,
+    pub source: Option<SongsSource>,
+    pub current_song_id: Option<String>,
+    pub progress_ms: u32,
+    pub repeat: RepeatMode,
+    pub shuffle: bool,
 }
 
 #[cfg(test)]

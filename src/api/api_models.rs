@@ -303,6 +303,43 @@ pub struct Devices {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+pub struct PlayerState {
+    pub progress_ms: u32,
+    pub is_playing: bool,
+    pub repeat_state: String,
+    pub shuffle_state: bool,
+    pub item: FailibleTrackItem,
+}
+
+impl From<PlayerState> for ConnectPlayerState {
+    fn from(
+        PlayerState {
+            progress_ms,
+            is_playing,
+            repeat_state,
+            shuffle_state,
+            item,
+        }: PlayerState,
+    ) -> Self {
+        let repeat = match &repeat_state[..] {
+            "track" => RepeatMode::Song,
+            "context" => RepeatMode::Playlist,
+            _ => RepeatMode::None,
+        };
+        let shuffle = shuffle_state;
+        let current_song_id = item.get().map(|i| i.track.id);
+        Self {
+            is_playing,
+            progress_ms,
+            repeat,
+            shuffle,
+            source: None, // FIXME!
+            current_song_id,
+        }
+    }
+}
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct TopTracks {
     pub tracks: Vec<TrackItem>,
 }

@@ -10,7 +10,7 @@ use crate::app::components::{
     Component, EventListener, HeaderBarComponent, HeaderBarWidget, Playlist,
 };
 use crate::app::models::ConnectDevice;
-use crate::app::state::{Device, LoginEvent};
+use crate::app::state::LoginEvent;
 use crate::app::{state::PlaybackEvent, AppEvent, Worker};
 
 const ACTIONS: &str = "devices";
@@ -145,6 +145,17 @@ impl NowPlayingWidget {
         });
     }
 
+    fn set_current_device(&self, device_id: Option<String>) {
+        let action = self.widget().action_group.lookup_action("connect");
+        if let Some(action) = action {
+            action.change_state(&device_id.to_variant());
+        }
+    }
+
+    fn widget(&self) -> &imp::NowPlayingWidget {
+        imp::NowPlayingWidget::from_instance(self)
+    }
+
     fn song_list_widget(&self) -> &gtk::ListView {
         self.imp().song_list.as_ref()
     }
@@ -153,7 +164,7 @@ impl NowPlayingWidget {
         self.widget().headerbar.as_ref()
     }
 
-    fn update_devices_list(&self, devices: &Vec<ConnectDevice>, active_device: &Device) {
+    fn update_devices_list(&self, devices: &[ConnectDevice]) {
         let widget = self.imp();
         widget.title.set_popover(Option::<&gtk::Widget>::None);
         widget.this_device_button.set_sensitive(!devices.is_empty());
@@ -236,6 +247,10 @@ impl EventListener for NowPlaying {
             AppEvent::PlaybackEvent(PlaybackEvent::AvailableDevicesChanged) => {
                 self.widget
                     .update_devices_list(&*self.model.get_available_devices());
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::SwitchedDevice(_)) => {
+                self.widget
+                    .set_current_device(self.model.get_current_device_id());
             }
             _ => (),
         }

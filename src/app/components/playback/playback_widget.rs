@@ -5,7 +5,7 @@ use gtk::{glib, CompositeTemplate};
 use crate::app::components::display_add_css_provider;
 use crate::app::components::utils::{format_duration, Clock, Debouncer};
 use crate::app::loader::ImageLoader;
-use crate::app::state::RepeatMode;
+use crate::app::models::RepeatMode;
 use crate::app::Worker;
 
 use super::playback_controls::PlaybackControlsWidget;

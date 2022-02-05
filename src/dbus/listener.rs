@@ -3,8 +3,8 @@ use std::rc::Rc;
 
 use crate::app::{
     components::EventListener,
-    models::SongDescription,
-    state::{PlaybackEvent, RepeatMode},
+    models::{RepeatMode, SongDescription},
+    state::PlaybackEvent,
     AppEvent, AppModel,
 };
 

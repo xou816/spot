@@ -137,7 +137,9 @@ where
 {
     pub(crate) fn deserialize(&'a self) -> Option<T> {
         if let SpotifyResponseKind::Ok(ref content, _) = self.kind {
-            from_str(content).ok()
+            from_str(content)
+                .map_err(|e| error!("Deserialization failed: {}", e))
+                .ok()
         } else {
             None
         }
@@ -152,6 +154,8 @@ pub enum SpotifyApiError {
     NoToken,
     #[error("No content from request")]
     NoContent,
+    #[error("Request rate exceeded")]
+    TooManyRequests,
     #[error("Request failed ({0}): {1}")]
     BadStatus(u16, String),
     #[error(transparent)]
@@ -239,6 +243,7 @@ impl SpotifyClient {
             .and_then(Self::parse_cache_control);
 
         match result.status() {
+            StatusCode::NO_CONTENT => Err(SpotifyApiError::NoContent),
             s if s.is_success() => Ok(SpotifyResponse {
                 kind: SpotifyResponseKind::Ok(result.text().await?, PhantomData),
                 max_age: cache_control.unwrap_or(10),
@@ -248,6 +253,7 @@ impl SpotifyClient {
                 self.clear_token();
                 Err(SpotifyApiError::InvalidToken)
             }
+            StatusCode::TOO_MANY_REQUESTS => Err(SpotifyApiError::TooManyRequests),
             StatusCode::NOT_MODIFIED => Ok(SpotifyResponse {
                 kind: SpotifyResponseKind::NotModified,
                 max_age: cache_control.unwrap_or(10),
@@ -273,6 +279,7 @@ impl SpotifyClient {
                 self.clear_token();
                 Err(SpotifyApiError::InvalidToken)
             }
+            StatusCode::TOO_MANY_REQUESTS => Err(SpotifyApiError::TooManyRequests),
             StatusCode::NOT_MODIFIED => Ok(()),
             s if s.is_success() => Ok(()),
             s => Err(SpotifyApiError::BadStatus(
@@ -543,50 +550,56 @@ impl SpotifyClient {
             .uri("/v1/me/player/devices".to_string(), None)
     }
 
-    pub(crate) fn get_player_playing(&self) -> SpotifyRequest<'_, (), ()> {
+    pub(crate) fn player_state(&self) -> SpotifyRequest<'_, (), PlayerState> {
         self.request()
             .method(Method::GET)
-            .uri("/v1/me/player/currently-playing".to_string(), None)
+            .uri("/v1/me/player".to_string(), None)
     }
 
-    pub(crate) fn player_resume(&self) -> SpotifyRequest<'_, (), ()> {
+    pub(crate) fn player_resume(&self, device_id: &str) -> SpotifyRequest<'_, (), ()> {
+        let query = make_query_params()
+            .append_pair("device_id", device_id)
+            .finish();
         self.request()
             .method(Method::PUT)
-            .uri("/v1/me/player/play".to_string(), None)
+            .uri("/v1/me/player/play".to_string(), Some(&query))
     }
 
     pub(crate) fn player_set_playing(
         &self,
+        device_id: &str,
         request: PlayRequest,
     ) -> SpotifyRequest<'_, Vec<u8>, ()> {
+        let query = make_query_params()
+            .append_pair("device_id", device_id)
+            .finish();
         self.request()
             .method(Method::PUT)
-            .uri("/v1/me/player/play".to_string(), None)
+            .uri("/v1/me/player/play".to_string(), Some(&query))
             .json_body(request)
     }
 
-    pub(crate) fn player_pause(&self) -> SpotifyRequest<'_, (), ()> {
-        self.request()
-            .method(Method::PUT)
-            .uri("/v1/me/player/pause".to_string(), None)
-    }
-
-    pub(crate) fn player_next(&self) -> SpotifyRequest<'_, (), ()> {
-        self.request()
-            .method(Method::PUT)
-            .uri("/v1/me/player/next".to_string(), None)
-    }
-
-    pub(crate) fn add_to_queue(&self, uri: String) -> SpotifyRequest<'_, (), ()> {
-        let query = make_query_params().append_pair("uri", &uri).finish();
-
-        self.request()
-            .method(Method::POST)
-            .uri("/v1/me/player/queue".to_string(), Some(&query))
-    }
-
-    pub(crate) fn player_seek(&self, pos: usize) -> SpotifyRequest<'_, (), ()> {
+    pub(crate) fn player_pause(&self, device_id: &str) -> SpotifyRequest<'_, (), ()> {
         let query = make_query_params()
+            .append_pair("device_id", device_id)
+            .finish();
+        self.request()
+            .method(Method::PUT)
+            .uri("/v1/me/player/pause".to_string(), Some(&query))
+    }
+
+    pub(crate) fn player_next(&self, device_id: &str) -> SpotifyRequest<'_, (), ()> {
+        let query = make_query_params()
+            .append_pair("device_id", device_id)
+            .finish();
+        self.request()
+            .method(Method::PUT)
+            .uri("/v1/me/player/next".to_string(), Some(&query))
+    }
+
+    pub(crate) fn player_seek(&self, device_id: &str, pos: usize) -> SpotifyRequest<'_, (), ()> {
+        let query = make_query_params()
+            .append_pair("device_id", device_id)
             .append_pair("position_ms", &pos.to_string()[..])
             .finish();
 

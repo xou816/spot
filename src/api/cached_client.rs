@@ -94,20 +94,28 @@ pub trait SpotifyApiClient {
 
     fn update_token(&self, token: String);
 
-    fn player_pause(&self) -> BoxFuture<SpotifyResult<()>>;
-    fn player_resume(&self) -> BoxFuture<SpotifyResult<()>>;
-    fn player_next(&self) -> BoxFuture<SpotifyResult<()>>;
-    fn player_seek(&self, pos: usize) -> BoxFuture<SpotifyResult<()>>;
+    fn player_pause(&self, device_id: String) -> BoxFuture<SpotifyResult<()>>;
+
+    fn player_resume(&self, device_id: String) -> BoxFuture<SpotifyResult<()>>;
+
+    fn player_next(&self, device_id: String) -> BoxFuture<SpotifyResult<()>>;
+
+    fn player_seek(&self, device_id: String, pos: usize) -> BoxFuture<SpotifyResult<()>>;
 
     fn player_play_in_context(
         &self,
+        device_id: String,
         context: String,
         offset: usize,
     ) -> BoxFuture<SpotifyResult<()>>;
 
-    fn player_play_no_context(&self, uris: Vec<String>) -> BoxFuture<SpotifyResult<()>>;
+    fn player_play_no_context(
+        &self,
+        device_id: String,
+        uris: Vec<String>,
+    ) -> BoxFuture<SpotifyResult<()>>;
 
-    fn add_to_queue(&self, uri: String) -> BoxFuture<SpotifyResult<()>>;
+    fn player_state(&self) -> BoxFuture<SpotifyResult<ConnectPlayerState>>;
 }
 
 enum SpotCacheKey<'a> {
@@ -693,67 +701,93 @@ impl SpotifyApiClient for CachedSpotifyClient {
         })
     }
 
-    fn player_pause(&self) -> BoxFuture<SpotifyResult<()>> {
+    fn player_pause(&self, device_id: String) -> BoxFuture<SpotifyResult<()>> {
         Box::pin(async move {
-            self.client.player_pause().send_no_response().await?;
+            self.client
+                .player_pause(&device_id)
+                .send_no_response()
+                .await?;
             Ok(())
         })
     }
 
-    fn player_resume(&self) -> BoxFuture<SpotifyResult<()>> {
+    fn player_resume(&self, device_id: String) -> BoxFuture<SpotifyResult<()>> {
         Box::pin(async move {
-            self.client.player_resume().send_no_response().await?;
+            self.client
+                .player_resume(&device_id)
+                .send_no_response()
+                .await?;
             Ok(())
         })
     }
 
     fn player_play_in_context(
         &self,
+        device_id: String,
         context_uri: String,
         offset: usize,
     ) -> BoxFuture<SpotifyResult<()>> {
         Box::pin(async move {
             self.client
-                .player_set_playing(PlayRequest::Contextual {
-                    context_uri,
-                    offset: PlayOffset {
-                        position: offset as u32,
+                .player_set_playing(
+                    &device_id,
+                    PlayRequest::Contextual {
+                        context_uri,
+                        offset: PlayOffset {
+                            position: offset as u32,
+                        },
                     },
-                })
+                )
                 .send_no_response()
                 .await?;
             Ok(())
         })
     }
 
-    fn player_play_no_context(&self, uris: Vec<String>) -> BoxFuture<SpotifyResult<()>> {
+    fn player_play_no_context(
+        &self,
+        device_id: String,
+        uris: Vec<String>,
+    ) -> BoxFuture<SpotifyResult<()>> {
         Box::pin(async move {
             self.client
-                .player_set_playing(PlayRequest::Uris { uris })
+                .player_set_playing(&device_id, PlayRequest::Uris { uris })
                 .send_no_response()
                 .await?;
             Ok(())
         })
     }
 
-    fn player_next(&self) -> BoxFuture<SpotifyResult<()>> {
+    fn player_next(&self, device_id: String) -> BoxFuture<SpotifyResult<()>> {
         Box::pin(async move {
-            self.client.player_next().send_no_response().await?;
+            self.client
+                .player_next(&device_id)
+                .send_no_response()
+                .await?;
             Ok(())
         })
     }
 
-    fn add_to_queue(&self, uri: String) -> BoxFuture<SpotifyResult<()>> {
+    fn player_seek(&self, device_id: String, pos: usize) -> BoxFuture<SpotifyResult<()>> {
         Box::pin(async move {
-            self.client.add_to_queue(uri).send_no_response().await?;
+            self.client
+                .player_seek(&device_id, pos)
+                .send_no_response()
+                .await?;
             Ok(())
         })
     }
 
-    fn player_seek(&self, pos: usize) -> BoxFuture<SpotifyResult<()>> {
+    fn player_state(&self) -> BoxFuture<SpotifyResult<ConnectPlayerState>> {
         Box::pin(async move {
-            self.client.player_seek(pos).send_no_response().await?;
-            Ok(())
+            let result = self
+                .client
+                .player_state()
+                .send()
+                .await?
+                .deserialize()
+                .ok_or(SpotifyApiError::NoContent)?;
+            Ok(result.into())
         })
     }
 }

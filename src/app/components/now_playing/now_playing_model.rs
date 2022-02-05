@@ -65,8 +65,13 @@ impl NowPlayingModel {
         self.app_model.map_state(|s| s.playback.available_devices())
     }
 
-    pub fn get_current_device(&self) -> impl Deref<Target = Device> + '_ {
-        self.app_model.map_state(|s| s.playback.current_device())
+    pub fn get_current_device_id(&self) -> Option<String> {
+        let state = self.app_model.get_state();
+        if let Device::Connect(device) = state.playback.current_device() {
+            Some(device.id.clone())
+        } else {
+            None
+        }
     }
 
     pub fn set_current_device(&self, id: Option<String>) {

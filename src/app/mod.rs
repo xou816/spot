@@ -106,10 +106,12 @@ impl App {
         dispatcher: Box<dyn ActionDispatcher>,
         sender: UnboundedSender<AppAction>,
     ) -> Box<impl EventListener> {
+        let api = app_model.get_spotify();
         Box::new(PlayerNotifier::new(
             app_model,
             dispatcher,
-            crate::player::start_player_service(settings.player_settings.clone(), sender),
+            crate::player::start_player_service(settings.player_settings.clone(), sender.clone()),
+            crate::connect::start_connect_server(api, sender),
         ))
     }
 

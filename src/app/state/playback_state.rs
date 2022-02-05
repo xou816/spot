@@ -236,9 +236,9 @@ impl PlaybackState {
         }
     }
 
-    fn toggle_shuffle(&mut self) {
-        self.is_shuffled = !self.is_shuffled;
-        let old = self.list_position.replace(0).unwrap_or(0);
+    fn set_shuffled(&mut self, shuffled: bool) {
+        self.is_shuffled = shuffled;
+        let old = self.position.replace(0).unwrap_or(0);
         self.index.reset_picking_first(old);
     }
 
@@ -275,6 +275,7 @@ pub enum PlaybackAction {
     Pause,
     Stop,
     SetRepeatMode(RepeatMode),
+    SetShuffled(bool),
     ToggleRepeat,
     ToggleShuffle,
     Seek(u32),
@@ -322,13 +323,6 @@ pub enum PlaybackEvent {
     AvailableDevicesChanged,
 }
 
-#[derive(Clone, Copy, Debug)]
-pub enum RepeatMode {
-    Song,
-    Playlist,
-    None,
-}
-
 impl From<PlaybackEvent> for AppEvent {
     fn from(playback_event: PlaybackEvent) -> Self {
         Self::PlaybackEvent(playback_event)
@@ -374,12 +368,16 @@ impl UpdatableState for PlaybackState {
                 };
                 vec![PlaybackEvent::RepeatModeChanged(self.repeat)]
             }
-            PlaybackAction::SetRepeatMode(mode) => {
+            PlaybackAction::SetRepeatMode(mode) if self.repeat != mode => {
                 self.repeat = mode;
                 vec![PlaybackEvent::RepeatModeChanged(self.repeat)]
             }
+            PlaybackAction::SetShuffled(shuffled) if self.is_shuffled != shuffled => {
+                self.set_shuffled(shuffled);
+                vec![PlaybackEvent::ShuffleChanged]
+            }
             PlaybackAction::ToggleShuffle => {
-                self.toggle_shuffle();
+                self.set_shuffled(!self.is_shuffled);
                 vec![PlaybackEvent::ShuffleChanged]
             }
             PlaybackAction::Next => {
@@ -647,14 +645,14 @@ mod tests {
         state.play("2");
         assert_eq!(state.current_position(), Some(1));
 
-        state.toggle_shuffle();
+        state.set_shuffled(true);
         assert!(state.is_shuffled());
         assert_eq!(state.current_position(), Some(0));
 
         state.play_next();
         assert_eq!(state.current_position(), Some(1));
 
-        state.toggle_shuffle();
+        state.set_shuffled(false);
         assert!(!state.is_shuffled());
 
         let ids = state.song_ids();
@@ -674,12 +672,12 @@ mod tests {
         let mut state = PlaybackState::default();
         state.queue(vec![song("1"), song("2"), song("3")]);
 
-        state.toggle_shuffle();
+        state.set_shuffled(true);
         assert!(state.is_shuffled());
 
         state.queue(vec![song("4")]);
 
-        state.toggle_shuffle();
+        state.set_shuffled(false);
         assert!(!state.is_shuffled());
 
         let ids = state.song_ids();
