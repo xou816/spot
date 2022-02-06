@@ -50,6 +50,10 @@ impl PlayerNotifier {
         }
     }
 
+    fn is_playing(&self) -> bool {
+        self.app_model.get_state().playback.is_playing()
+    }
+
     fn currently_playing(&self) -> Option<CurrentlyPlaying> {
         let state = self.app_model.get_state();
         let song = state.playback.current_song_id()?;
@@ -136,7 +140,12 @@ impl PlayerNotifier {
             PlaybackEvent::PlaybackStopped => Some(Command::PlayerStop),
             PlaybackEvent::VolumeSet(volume) => Some(Command::PlayerSetVolume(*volume)),
             PlaybackEvent::TrackChanged(id) => {
-                SpotifyId::from_base62(id).ok().map(Command::PlayerLoad)
+                SpotifyId::from_base62(id)
+                    .ok()
+                    .map(|track| Command::PlayerLoad {
+                        track,
+                        resume: true,
+                    })
             }
             PlaybackEvent::TrackSeeked(position) => Some(Command::PlayerSeek(*position)),
             _ => None,
@@ -168,12 +177,15 @@ impl PlayerNotifier {
                 self.notify_connect_player(&PlaybackEvent::SourceChanged);
             }
             Device::Local => {
-                let id = self
+                self.send_command_to_connect_player(ConnectCommand::PlayerStop);
+                let track = self
                     .currently_playing()
                     .and_then(|c| SpotifyId::from_base62(c.song_id()).ok());
-                if let Some(id) = id {
-                    self.send_command_to_connect_player(ConnectCommand::PlayerStop);
-                    self.send_command_to_local_player(Command::PlayerLoad(id));
+                if let Some(track) = track {
+                    self.send_command_to_local_player(Command::PlayerLoad {
+                        track,
+                        resume: self.is_playing(),
+                    });
                 }
             }
         }

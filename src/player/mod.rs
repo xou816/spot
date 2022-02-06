@@ -17,7 +17,7 @@ pub enum Command {
     PasswordLogin { username: String, password: String },
     TokenLogin { username: String, token: String },
     Logout,
-    PlayerLoad(SpotifyId),
+    PlayerLoad { track: SpotifyId, resume: bool },
     PlayerResume,
     PlayerPause,
     PlayerStop,

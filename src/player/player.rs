@@ -161,11 +161,11 @@ impl SpotifyPlayer {
                 self.api.player_seek(position as usize).await.unwrap();
                 Ok(())
             }
-            (Device::Local, Command::PlayerLoad(track)) => {
+            (Device::Local, Command::PlayerLoad { track, resume }) => {
                 self.player
                     .as_mut()
                     .ok_or(SpotifyError::PlayerNotReady)?
-                    .load(track, true, 0);
+                    .load(track, resume, 0);
                 Ok(())
             }
             (Device::Connect, Command::PlayerLoad(track)) => {

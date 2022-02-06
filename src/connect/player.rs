@@ -7,6 +7,7 @@ use crate::api::{SpotifyApiClient, SpotifyApiError, SpotifyResult};
 use crate::app::state::{Device, PlaybackAction};
 use crate::app::AppAction;
 
+#[derive(Debug)]
 pub enum ConnectCommand {
     SetDevice(String),
     PlayerLoadInContext {
@@ -46,9 +47,9 @@ impl ConnectPlayer {
     }
 
     fn device_lost(&self) {
+        let _ = self.device_id.lock().unwrap().take();
         self.send_actions([
             AppAction::ShowNotification(gettext("Connection to device lost!")),
-            PlaybackAction::Pause.into(),
             PlaybackAction::SwitchDevice(Device::Local).into(),
             PlaybackAction::SetAvailableDevices(vec![]).into(),
         ]);
@@ -80,6 +81,7 @@ impl ConnectPlayer {
     pub async fn sync_state(&self) {
         let device_id = self.device_id.try_lock().ok().and_then(|d| (*d).clone());
         if device_id.is_some() {
+            debug!("polling connect device...");
             self.sync_state_unguarded().await;
         }
     }
@@ -95,8 +97,12 @@ impl ConnectPlayer {
                 offset,
                 song,
             } => {
-                let current_state = self.api.player_state().await?;
-                if current_state.current_song_id != Some(song) {
+                let current_state = self.api.player_state().await.ok();
+                let should_play = current_state
+                    .and_then(|s| s.current_song_id)
+                    .map(|id| id != song)
+                    .unwrap_or(true);
+                if should_play {
                     self.api
                         .player_play_in_context(device_id, context, offset)
                         .await
@@ -112,21 +118,22 @@ impl ConnectPlayer {
     }
 
     pub async fn handle_command(&self, command: ConnectCommand) {
-        let mut device_id = self.device_id.lock().unwrap();
-
-        let device_lost = if let ConnectCommand::SetDevice(new_device_id) = command {
-            *device_id = Some(new_device_id);
-            false
-        } else if let ConnectCommand::PlayerStop = command {
-            if let Some(old_id) = device_id.take() {
-                let _ = self.api.player_pause(old_id).await;
+        let device_lost = {
+            let mut device_id = self.device_id.lock().unwrap();
+            if let ConnectCommand::SetDevice(new_device_id) = command {
+                *device_id = Some(new_device_id);
+                false
+            } else if let ConnectCommand::PlayerStop = command {
+                if let Some(old_id) = device_id.take() {
+                    let _ = self.api.player_pause(old_id).await;
+                }
+                false
+            } else if let Some(device_id) = &*device_id {
+                let result = self.handle_other_command(device_id.clone(), command).await;
+                matches!(result, Err(SpotifyApiError::BadStatus(404, _)))
+            } else {
+                true
             }
-            false
-        } else if let Some(device_id) = &*device_id {
-            let result = self.handle_other_command(device_id.clone(), command).await;
-            matches!(result, Err(SpotifyApiError::BadStatus(404, _)))
-        } else {
-            true
         };
 
         if device_lost {

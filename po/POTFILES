@@ -6,6 +6,7 @@ src/app/components/mod.rs
 src/app/components/navigation/factory.rs
 src/app/components/notification/mod.rs
 src/app/components/now_playing/now_playing_model.rs
+src/app/components/navigation/home.rs
 src/app/components/playback/playback_controls.rs
 src/app/components/playback/playback_info.rs
 src/app/components/selection/component.rs
@@ -13,6 +14,7 @@ src/app/components/sidebar/sidebar_item.rs
 src/app/components/sidebar/sidebar.rs
 src/app/components/user_menu/user_menu.rs
 src/app/state/login_state.rs
+src/connect/player.rs
 src/main.rs
 
 # find src -name "*.ui*" -o -name "*.blp*"
