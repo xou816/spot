@@ -29,6 +29,30 @@ pub enum AppAction {
 
 impl AppAction {
     #[allow(non_snake_case)]
+    pub fn OpenURI(uri: String) -> Option<Self> {
+        debug!("parsing {}", &uri);
+        let mut parts = uri.split(':');
+        if parts.next()? != "spotify" {
+            return None;
+        }
+
+        // Might start with /// because of https://gitlab.gnome.org/GNOME/glib/-/issues/1886/
+        let action = parts
+            .next()?
+            .strip_prefix("///")
+            .filter(|p| !p.is_empty())?;
+        let data = parts.next()?;
+
+        match action {
+            "album" => Some(Self::ViewAlbum(data.to_string())),
+            "artist" => Some(Self::ViewArtist(data.to_string())),
+            "playlist" => Some(Self::ViewPlaylist(data.to_string())),
+            "user" => Some(Self::ViewUser(data.to_string())),
+            _ => None,
+        }
+    }
+
+    #[allow(non_snake_case)]
     pub fn ViewAlbum(id: String) -> Self {
         BrowserAction::NavigationPush(ScreenName::AlbumDetails(id)).into()
     }
