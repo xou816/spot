@@ -191,12 +191,9 @@ impl PlaylistModel for PlaylistDetailsModel {
     }
 
     fn enable_selection(&self) -> bool {
-        self.dispatcher
-            .dispatch(AppAction::EnableSelection(if self.is_playlist_editable() {
-                SelectionContext::EditablePlaylist(self.id.clone())
-            } else {
-                SelectionContext::Playlist
-            }));
+        self.dispatcher.dispatch(AppAction::EnableSelection(
+            self.selection_context().unwrap(),
+        ));
         true
     }
 
