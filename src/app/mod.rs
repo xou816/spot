@@ -202,11 +202,13 @@ impl App {
     }
 
     fn handle(&mut self, message: AppAction) {
-        if let AppAction::Start = message {
-            self.add_ui_components();
-        }
+        let starting = matches!(&message, &AppAction::Start);
 
         let events = self.model.update_state(message);
+
+        if !events.is_empty() && starting {
+            self.add_ui_components();
+        }
 
         for event in events.iter() {
             for component in self.components.iter_mut() {

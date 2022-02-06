@@ -60,16 +60,19 @@ fn main() {
 
     let sender_clone = sender.clone();
     gtk_app.connect_activate(move |gtk_app| {
+        debug!("activate");
         if let Some(existing_window) = gtk_app.active_window() {
             existing_window.present();
         } else {
             window.set_application(Some(gtk_app));
             gtk_app.add_window(&window);
-            sender_clone.unbounded_send(AppAction::Start).unwrap();
         }
+        sender_clone.unbounded_send(AppAction::Start).unwrap();
     });
 
-    gtk_app.connect_open(move |_, targets, _| {
+    gtk_app.connect_open(move |gtk_app, targets, _| {
+        gtk_app.activate();
+
         // There should only be one target because %u is used in desktop file
         let target = &targets[0];
         let uri = target.uri().to_string();

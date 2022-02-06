@@ -91,6 +91,7 @@ pub enum AppEvent {
 }
 
 pub struct AppState {
+    started: bool,
     pub playback: PlaybackState,
     pub browser: BrowserState,
     pub selection: SelectionState,
@@ -100,6 +101,7 @@ pub struct AppState {
 impl AppState {
     pub fn new() -> Self {
         Self {
+            started: false,
             playback: Default::default(),
             browser: BrowserState::new(),
             selection: Default::default(),
@@ -109,7 +111,10 @@ impl AppState {
 
     pub fn update_state(&mut self, message: AppAction) -> Vec<AppEvent> {
         match message {
-            AppAction::Start => vec![AppEvent::Started],
+            AppAction::Start if !self.started => {
+                self.started = true;
+                vec![AppEvent::Started]
+            }
             AppAction::ShowNotification(c) => vec![AppEvent::NotificationShown(c)],
             AppAction::ViewNowPlaying => vec![AppEvent::NowPlayingShown],
             AppAction::Raise => vec![AppEvent::Raised],
@@ -218,6 +223,7 @@ impl AppState {
                 .map(AppEvent::SelectionEvent)
                 .collect(),
             AppAction::LoginAction(a) => self.logged_user.update_with(a).into_iter().collect(),
+            _ => vec![],
         }
     }
 }
