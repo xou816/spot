@@ -73,9 +73,10 @@ fn main() {
         // There should only be one target because %u is used in desktop file
         let target = &targets[0];
         let uri = target.uri().to_string();
-        if let Some(action) = AppAction::OpenURI(uri) {
-            sender.unbounded_send(action).unwrap();
-        }
+        let action = AppAction::OpenURI(uri).unwrap_or_else(|| {
+            AppAction::ShowNotification(gettext("Failed to open link!").to_string())
+        });
+        sender.unbounded_send(action).unwrap();
     });
 
     context.invoke_local(move || {

@@ -3,6 +3,7 @@ use gio::SimpleActionGroup;
 use std::ops::Deref;
 use std::rc::Rc;
 
+use crate::api::SpotifyApiError;
 use crate::app::components::SimpleHeaderBarModel;
 use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::*;
@@ -41,9 +42,15 @@ impl ArtistDetailsModel {
         let api = self.app_model.get_spotify();
         self.dispatcher
             .call_spotify_and_dispatch(move || async move {
-                api.get_artist(&id)
-                    .await
-                    .map(|artist| BrowserAction::SetArtistDetails(Box::new(artist)).into())
+                let artist = api.get_artist(&id).await;
+                match artist {
+                    Ok(artist) => Ok(BrowserAction::SetArtistDetails(Box::new(artist)).into()),
+                    Err(SpotifyApiError::BadStatus(400, _))
+                    | Err(SpotifyApiError::BadStatus(404, _)) => {
+                        Ok(BrowserAction::NavigationPop.into())
+                    }
+                    Err(e) => Err(e),
+                }
             });
     }
 
