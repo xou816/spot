@@ -4,6 +4,7 @@ use futures::channel::mpsc::UnboundedSender;
 use gettextrs::gettext;
 
 use crate::api::{SpotifyApiClient, SpotifyApiError, SpotifyResult};
+use crate::app::models::RepeatMode;
 use crate::app::state::{Device, PlaybackAction};
 use crate::app::AppAction;
 
@@ -20,6 +21,9 @@ pub enum ConnectCommand {
     PlayerPause,
     PlayerStop,
     PlayerSeek(usize),
+    PlayerRepeat(RepeatMode),
+    PlayerShuffle(bool),
+    PlayerSetVolume(u8),
 }
 
 pub struct ConnectPlayer {
@@ -113,6 +117,13 @@ impl ConnectPlayer {
             ConnectCommand::PlayerResume => self.api.player_resume(device_id).await,
             ConnectCommand::PlayerPause => self.api.player_pause(device_id).await,
             ConnectCommand::PlayerSeek(offset) => self.api.player_seek(device_id, offset).await,
+            ConnectCommand::PlayerRepeat(mode) => self.api.player_repeat(device_id, mode).await,
+            ConnectCommand::PlayerShuffle(shuffle) => {
+                self.api.player_shuffle(device_id, shuffle).await
+            }
+            ConnectCommand::PlayerSetVolume(volume) => {
+                self.api.player_volume(device_id, volume).await
+            }
             _ => Ok(()),
         }
     }

@@ -102,6 +102,12 @@ pub trait SpotifyApiClient {
 
     fn player_seek(&self, device_id: String, pos: usize) -> BoxFuture<SpotifyResult<()>>;
 
+    fn player_repeat(&self, device_id: String, mode: RepeatMode) -> BoxFuture<SpotifyResult<()>>;
+
+    fn player_shuffle(&self, device_id: String, shuffle: bool) -> BoxFuture<SpotifyResult<()>>;
+
+    fn player_volume(&self, device_id: String, volume: u8) -> BoxFuture<SpotifyResult<()>>;
+
     fn player_play_in_context(
         &self,
         device_id: String,
@@ -788,6 +794,43 @@ impl SpotifyApiClient for CachedSpotifyClient {
                 .deserialize()
                 .ok_or(SpotifyApiError::NoContent)?;
             Ok(result.into())
+        })
+    }
+
+    fn player_repeat(&self, device_id: String, mode: RepeatMode) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(async move {
+            self.client
+                .player_repeat(
+                    &device_id,
+                    match mode {
+                        RepeatMode::Song => "track",
+                        RepeatMode::Playlist => "context",
+                        RepeatMode::None => "off",
+                    },
+                )
+                .send_no_response()
+                .await?;
+            Ok(())
+        })
+    }
+
+    fn player_shuffle(&self, device_id: String, shuffle: bool) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(async move {
+            self.client
+                .player_shuffle(&device_id, shuffle)
+                .send_no_response()
+                .await?;
+            Ok(())
+        })
+    }
+
+    fn player_volume(&self, device_id: String, volume: u8) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(async move {
+            self.client
+                .player_volume(&device_id, volume)
+                .send_no_response()
+                .await?;
+            Ok(())
         })
     }
 }

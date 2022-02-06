@@ -66,11 +66,6 @@ impl AppPlaybackStateListener {
         )
     }
 
-    fn is_shuffled(&self) -> bool {
-        let state = self.app_model.get_state();
-        state.playback.is_shuffled()
-    }
-
     fn loop_status(&self) -> LoopStatus {
         let state = self.app_model.get_state();
         match state.playback.repeat_mode() {
@@ -109,8 +104,8 @@ impl AppPlaybackStateListener {
                     loop_status,
                 })
             }
-            PlaybackEvent::ShuffleChanged => {
-                Some(MprisStateUpdate::SetShuffled(self.is_shuffled()))
+            PlaybackEvent::ShuffleChanged(shuffled) => {
+                Some(MprisStateUpdate::SetShuffled(*shuffled))
             }
             PlaybackEvent::TrackSeeked(pos) | PlaybackEvent::SeekSynced(pos) => {
                 let pos = 1000 * (*pos as u128);

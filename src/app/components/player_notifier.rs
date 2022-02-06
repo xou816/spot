@@ -125,6 +125,13 @@ impl PlayerNotifier {
             }
             PlaybackEvent::PlaybackPaused => Some(ConnectCommand::PlayerPause),
             PlaybackEvent::PlaybackResumed => Some(ConnectCommand::PlayerResume),
+            PlaybackEvent::VolumeSet(volume) => Some(ConnectCommand::PlayerSetVolume(
+                (volume * 100f64).trunc() as u8,
+            )),
+            PlaybackEvent::RepeatModeChanged(mode) => Some(ConnectCommand::PlayerRepeat(mode)),
+            PlaybackEvent::ShuffleChanged(shuffled) => {
+                Some(ConnectCommand::PlayerShuffle(shuffled))
+            }
             _ => None,
         };
 

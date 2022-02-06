@@ -139,7 +139,7 @@ impl EventListener for PlaybackControl {
             AppEvent::PlaybackEvent(PlaybackEvent::RepeatModeChanged(mode)) => {
                 self.update_repeat(mode);
             }
-            AppEvent::PlaybackEvent(PlaybackEvent::ShuffleChanged) => {
+            AppEvent::PlaybackEvent(PlaybackEvent::ShuffleChanged(_)) => {
                 self.update_shuffled();
             }
             AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {

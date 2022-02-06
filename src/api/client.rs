@@ -607,6 +607,43 @@ impl SpotifyClient {
             .method(Method::PUT)
             .uri("/v1/me/player/seek".to_string(), Some(&query))
     }
+
+    pub(crate) fn player_repeat(&self, device_id: &str, state: &str) -> SpotifyRequest<'_, (), ()> {
+        let query = make_query_params()
+            .append_pair("device_id", device_id)
+            .append_pair("state", state)
+            .finish();
+
+        self.request()
+            .method(Method::PUT)
+            .uri("/v1/me/player/repeat".to_string(), Some(&query))
+    }
+
+    pub(crate) fn player_shuffle(
+        &self,
+        device_id: &str,
+        shuffle: bool,
+    ) -> SpotifyRequest<'_, (), ()> {
+        let query = make_query_params()
+            .append_pair("device_id", device_id)
+            .append_pair("state", if shuffle { "true" } else { "false" })
+            .finish();
+
+        self.request()
+            .method(Method::PUT)
+            .uri("/v1/me/player/shuffle".to_string(), Some(&query))
+    }
+
+    pub(crate) fn player_volume(&self, device_id: &str, volume: u8) -> SpotifyRequest<'_, (), ()> {
+        let query = make_query_params()
+            .append_pair("device_id", device_id)
+            .append_pair("volume_percent", &volume.to_string())
+            .finish();
+
+        self.request()
+            .method(Method::PUT)
+            .uri("/v1/me/player/volume".to_string(), Some(&query))
+    }
 }
 
 #[cfg(test)]
