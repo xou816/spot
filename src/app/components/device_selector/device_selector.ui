@@ -28,7 +28,7 @@
   </template>
   <menu id="menu">
     <section>
-      <attribute name="label" translatable="yes">Listening on</attribute>
+      <attribute name="label" translatable="yes">Playing on</attribute>
       <item>
         <attribute name="custom">custom_content</attribute>
       </item>
