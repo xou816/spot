@@ -90,6 +90,14 @@ impl ConnectPlayer {
         }
     }
 
+    async fn should_play(&self, song: &str) -> bool {
+        let current_state = self.api.player_state().await.ok();
+        current_state
+            .and_then(|s| s.current_song_id)
+            .map(|id| id != song)
+            .unwrap_or(true)
+    }
+
     async fn handle_other_command(
         &self,
         device_id: String,
@@ -101,17 +109,23 @@ impl ConnectPlayer {
                 offset,
                 song,
             } => {
-                let current_state = self.api.player_state().await.ok();
-                let should_play = current_state
-                    .and_then(|s| s.current_song_id)
-                    .map(|id| id != song)
-                    .unwrap_or(true);
+                let should_play = self.should_play(song.as_str()).await;
                 if should_play {
                     self.api
                         .player_play_in_context(device_id, context, offset)
                         .await
                 } else {
-                    Ok(())
+                    self.api.player_resume(device_id).await
+                }
+            }
+            ConnectCommand::PlayerLoad(song) => {
+                let should_play = self.should_play(song.as_str()).await;
+                if should_play {
+                    self.api
+                        .player_play_no_context(device_id, vec![format!("spotify:track:{}", song)])
+                        .await
+                } else {
+                    self.api.player_resume(device_id).await
                 }
             }
             ConnectCommand::PlayerResume => self.api.player_resume(device_id).await,

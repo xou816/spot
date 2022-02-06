@@ -1,5 +1,6 @@
 # grep gettext src/**/*.rs | cut -d: -f1 | uniq
 src/app/batch_loader.rs
+src/app/components/device_selector/widget.rs
 src/app/components/labels.rs
 src/app/components/login/login_model.rs
 src/app/components/mod.rs
@@ -37,6 +38,7 @@ src/app/components/playlist_details/playlist_headerbar.blp
 src/app/components/playlist_details/playlist_header.blp
 src/app/components/playlist_details/playlist_details.blp
 src/app/components/headerbar/headerbar.blp
+src/app/components/device_selector/device_selector.ui
 src/app/components/sidebar/create_playlist.blp
 src/app/components/sidebar/sidebar_row.blp
 src/app/components/album/album.blp

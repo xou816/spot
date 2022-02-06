@@ -175,8 +175,8 @@ impl SimpleHeaderBarModel for ArtistDetailsModel {
         )
     }
 
-    fn selection_context(&self) -> Option<&SelectionContext> {
-        Some(&SelectionContext::Default)
+    fn selection_context(&self) -> Option<SelectionContext> {
+        Some(SelectionContext::Default)
     }
 
     fn select_all(&self) {

@@ -590,8 +590,22 @@ impl From<Playlist> for PlaylistDescription {
 }
 
 impl From<Device> for ConnectDevice {
-    fn from(Device { id, name, .. }: Device) -> Self {
-        Self { id, label: name }
+    fn from(
+        Device {
+            id, name, type_, ..
+        }: Device,
+    ) -> Self {
+        let kind = match type_.to_lowercase().as_str() {
+            "smartphone" => ConnectDeviceKind::Phone,
+            "computer" => ConnectDeviceKind::Computer,
+            "speaker" => ConnectDeviceKind::Speaker,
+            _ => ConnectDeviceKind::Other,
+        };
+        Self {
+            id,
+            label: name,
+            kind,
+        }
     }
 }
 

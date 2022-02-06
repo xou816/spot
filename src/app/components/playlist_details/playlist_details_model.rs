@@ -204,3 +204,27 @@ impl PlaylistModel for PlaylistDetailsModel {
         Some(Box::new(self.app_model.map_state(|s| &s.selection)))
     }
 }
+
+impl SimpleHeaderBarModel for PlaylistDetailsModel {
+    fn title(&self) -> Option<String> {
+        None
+    }
+
+    fn title_updated(&self, _: &AppEvent) -> bool {
+        false
+    }
+
+    fn selection_context(&self) -> Option<SelectionContext> {
+        Some(if self.is_playlist_editable() {
+            SelectionContext::EditablePlaylist(self.id.clone())
+        } else {
+            SelectionContext::Playlist
+        })
+    }
+
+    fn select_all(&self) {
+        let songs: Vec<SongDescription> = self.song_list_model().collect();
+        self.dispatcher
+            .dispatch(SelectionAction::Select(songs).into());
+    }
+}

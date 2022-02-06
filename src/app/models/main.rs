@@ -108,10 +108,19 @@ pub struct PlaylistDescription {
     pub owner: UserRef,
 }
 
+#[derive(Clone, Copy, Debug)]
+pub enum ConnectDeviceKind {
+    Phone,
+    Computer,
+    Speaker,
+    Other,
+}
+
 #[derive(Clone, Debug)]
 pub struct ConnectDevice {
     pub id: String,
     pub label: String,
+    pub kind: ConnectDeviceKind,
 }
 
 #[derive(Clone, Debug)]

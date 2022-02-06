@@ -3,16 +3,15 @@ use gio::SimpleActionGroup;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use crate::app::components::HeaderBarModel;
-use crate::app::components::SimpleHeaderBarModel;
-use crate::app::components::SimpleHeaderBarModelWrapper;
-use crate::app::components::{labels, PlaylistModel};
-use crate::app::models::ConnectDevice;
-use crate::app::models::SongDescription;
-use crate::app::models::SongListModel;
+use crate::app::components::{
+    labels, DeviceSelectorModel, HeaderBarModel, PlaylistModel, SimpleHeaderBarModel,
+    SimpleHeaderBarModelWrapper,
+};
+use crate::app::models::{SongDescription, SongListModel};
 use crate::app::state::Device;
-use crate::app::state::SelectionContext;
-use crate::app::state::{PlaybackAction, PlaybackState, SelectionAction, SelectionState};
+use crate::app::state::{
+    PlaybackAction, PlaybackState, SelectionAction, SelectionContext, SelectionState,
+};
 use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel};
 
 pub struct NowPlayingModel {
@@ -50,46 +49,24 @@ impl NowPlayingModel {
         Some(())
     }
 
-    pub fn refresh_available_devices(&self) {
-        let api = self.app_model.get_spotify();
-
-        self.dispatcher
-            .call_spotify_and_dispatch(move || async move {
-                api.list_available_devices()
-                    .await
-                    .map(|devices| PlaybackAction::SetAvailableDevices(devices).into())
-            });
-    }
-
-    pub fn get_available_devices(&self) -> impl Deref<Target = Vec<ConnectDevice>> + '_ {
-        self.app_model.map_state(|s| s.playback.available_devices())
-    }
-
-    pub fn get_current_device_id(&self) -> Option<String> {
-        let state = self.app_model.get_state();
-        if let Device::Connect(device) = state.playback.current_device() {
-            Some(device.id.clone())
-        } else {
-            None
-        }
-    }
-
-    pub fn set_current_device(&self, id: Option<String>) {
-        let devices = self.get_available_devices();
-        let connect_device = id
-            .and_then(|id| devices.iter().find(|&d| d.id == id))
-            .cloned();
-        let device = connect_device.map(Device::Connect).unwrap_or(Device::Local);
-        self.dispatcher
-            .dispatch(PlaybackAction::SwitchDevice(device).into());
-    }
-
     pub fn to_headerbar_model(self: &Rc<Self>) -> Rc<impl HeaderBarModel> {
         Rc::new(SimpleHeaderBarModelWrapper::new(
             self.clone(),
             self.app_model.clone(),
             self.dispatcher.box_clone(),
         ))
+    }
+
+    pub fn device_selector_model(&self) -> DeviceSelectorModel {
+        DeviceSelectorModel::new(self.app_model.clone(), self.dispatcher.box_clone())
+    }
+
+    fn current_selection_context(&self) -> SelectionContext {
+        let state = self.app_model.get_state();
+        match state.playback.current_device() {
+            Device::Local => SelectionContext::Queue,
+            Device::Connect(_) => SelectionContext::ReadOnlyQueue,
+        }
     }
 }
 
@@ -167,7 +144,7 @@ impl PlaylistModel for NowPlayingModel {
 
     fn enable_selection(&self) -> bool {
         self.dispatcher
-            .dispatch(AppAction::EnableSelection(SelectionContext::Queue));
+            .dispatch(AppAction::EnableSelection(self.current_selection_context()));
         true
     }
 
@@ -186,8 +163,8 @@ impl SimpleHeaderBarModel for NowPlayingModel {
         false
     }
 
-    fn selection_context(&self) -> Option<&SelectionContext> {
-        Some(&SelectionContext::Queue)
+    fn selection_context(&self) -> Option<SelectionContext> {
+        Some(self.current_selection_context())
     }
 
     fn select_all(&self) {

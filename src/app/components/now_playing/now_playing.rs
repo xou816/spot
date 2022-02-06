@@ -1,5 +1,3 @@
-use gio::{SimpleAction, SimpleActionGroup};
-use glib::FromVariant;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
@@ -7,14 +5,11 @@ use std::rc::Rc;
 
 use super::NowPlayingModel;
 use crate::app::components::{
-    Component, EventListener, HeaderBarComponent, HeaderBarWidget, Playlist,
+    Component, DeviceSelector, DeviceSelectorWidget, EventListener, HeaderBarComponent,
+    HeaderBarWidget, Playlist,
 };
-use crate::app::models::ConnectDevice;
-use crate::app::state::LoginEvent;
-use crate::app::{state::PlaybackEvent, AppEvent, Worker};
-
-const ACTIONS: &str = "devices";
-const CONNECT_ACTION: &str = "connect";
+use crate::app::state::PlaybackEvent;
+use crate::app::{AppEvent, Worker};
 
 mod imp {
 
@@ -30,27 +25,10 @@ mod imp {
         pub headerbar: TemplateChild<HeaderBarWidget>,
 
         #[template_child]
-        pub title: TemplateChild<gtk::MenuButton>,
-
-        #[template_child]
-        pub popover: TemplateChild<gtk::PopoverMenu>,
-
-        #[template_child]
-        pub custom_content: TemplateChild<gtk::Box>,
-
-        #[template_child]
-        pub devices: TemplateChild<gtk::Box>,
-
-        #[template_child]
-        pub this_device_button: TemplateChild<gtk::CheckButton>,
-
-        #[template_child]
-        pub menu: TemplateChild<gio::MenuModel>,
+        pub device_selector: TemplateChild<DeviceSelectorWidget>,
 
         #[template_child]
         pub scrolled_window: TemplateChild<gtk::ScrolledWindow>,
-
-        pub action_group: SimpleActionGroup,
     }
 
     #[glib::object_subclass]
@@ -71,20 +49,6 @@ mod imp {
     impl ObjectImpl for NowPlayingWidget {
         fn constructed(&self, obj: &Self::Type) {
             self.parent_constructed(obj);
-
-            self.popover.set_menu_model(Some(&*self.menu));
-            self.popover
-                .add_child(&*self.custom_content, "custom_content");
-
-            self.title.set_popover(Some(&*self.popover));
-            self.title
-                .upcast_ref::<gtk::Widget>()
-                .insert_action_group(ACTIONS, Some(&self.action_group));
-
-            self.this_device_button
-                .set_action_name(Some(&format!("{}.{}", ACTIONS, CONNECT_ACTION)));
-            self.this_device_button
-                .set_action_target_value(Some(&Option::<String>::None.to_variant()));
         }
     }
 
@@ -101,17 +65,6 @@ impl NowPlayingWidget {
         glib::Object::new()
     }
 
-    fn connect_refresh<F>(&self, f: F)
-    where
-        F: Fn() + 'static,
-    {
-        self.widget().action_group.add_action(&{
-            let logout = SimpleAction::new("refresh", None);
-            logout.connect_activate(move |_, _| f());
-            logout
-        });
-    }
-
     fn connect_bottom_edge<F>(&self, f: F)
     where
         F: Fn() + 'static,
@@ -125,33 +78,6 @@ impl NowPlayingWidget {
             });
     }
 
-    fn connect_switch_device<F>(&self, f: F)
-    where
-        F: Fn(Option<String>) + 'static,
-    {
-        self.imp().action_group.add_action(&{
-            let logout = SimpleAction::new_stateful(
-                "connect",
-                Some(Option::<String>::static_variant_type().as_ref()),
-                &Option::<String>::None.to_variant(),
-            );
-            logout.connect_activate(move |action, device_id| {
-                if let Some(device_id) = device_id {
-                    action.change_state(device_id);
-                    f(Option::<String>::from_variant(device_id).unwrap());
-                }
-            });
-            logout
-        });
-    }
-
-    fn set_current_device(&self, device_id: Option<String>) {
-        let action = self.widget().action_group.lookup_action("connect");
-        if let Some(action) = action {
-            action.change_state(&device_id.to_variant());
-        }
-    }
-
     fn widget(&self) -> &imp::NowPlayingWidget {
         imp::NowPlayingWidget::from_instance(self)
     }
@@ -161,26 +87,11 @@ impl NowPlayingWidget {
     }
 
     fn headerbar_widget(&self) -> &HeaderBarWidget {
-        self.widget().headerbar.as_ref()
+        self.imp().headerbar.as_ref()
     }
 
-    fn update_devices_list(&self, devices: &[ConnectDevice]) {
-        let widget = self.imp();
-        widget.title.set_popover(Option::<&gtk::Widget>::None);
-        widget.this_device_button.set_sensitive(!devices.is_empty());
-        while let Some(child) = widget.devices.upcast_ref::<gtk::Widget>().first_child() {
-            widget.devices.remove(&child);
-        }
-        for device in devices {
-            let check = gtk::CheckButton::builder()
-                .action_name(&format!("{}.{}", ACTIONS, CONNECT_ACTION))
-                .action_target(&Some(&device.id).to_variant())
-                .group(&*widget.this_device_button)
-                .label(&device.label)
-                .build();
-            widget.devices.append(&check);
-        }
-        widget.title.set_popover(Some(&*widget.popover));
+    fn device_selector_widget(&self) -> &DeviceSelectorWidget {
+        self.imp().device_selector.as_ref()
     }
 }
 
@@ -198,14 +109,6 @@ impl NowPlaying {
             model.load_more();
         }));
 
-        widget.connect_refresh(clone!(@weak model => move || {
-            model.refresh_available_devices();
-        }));
-
-        widget.connect_switch_device(clone!(@weak model => move |id| {
-            model.set_current_device(id);
-        }));
-
         let playlist = Box::new(Playlist::new(
             widget.song_list_widget().clone(),
             model.clone(),
@@ -217,10 +120,15 @@ impl NowPlaying {
             model.to_headerbar_model(),
         ));
 
+        let device_selector = Box::new(DeviceSelector::new(
+            widget.device_selector_widget().clone(),
+            model.device_selector_model(),
+        ));
+
         Self {
             widget,
             model,
-            children: vec![playlist, headerbar],
+            children: vec![playlist, headerbar, device_selector],
         }
     }
 }
@@ -237,22 +145,8 @@ impl Component for NowPlaying {
 
 impl EventListener for NowPlaying {
     fn on_event(&mut self, event: &AppEvent) {
-        match event {
-            AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
-                self.model.load_more();
-            }
-            AppEvent::LoginEvent(LoginEvent::LoginCompleted(_)) => {
-                self.model.refresh_available_devices();
-            }
-            AppEvent::PlaybackEvent(PlaybackEvent::AvailableDevicesChanged) => {
-                self.widget
-                    .update_devices_list(&*self.model.get_available_devices());
-            }
-            AppEvent::PlaybackEvent(PlaybackEvent::SwitchedDevice(_)) => {
-                self.widget
-                    .set_current_device(self.model.get_current_device_id());
-            }
-            _ => (),
+        if let AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) = event {
+            self.model.load_more();
         }
         self.broadcast_event(event);
     }

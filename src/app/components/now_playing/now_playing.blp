@@ -6,7 +6,9 @@ template NowPlayingWidget : Box {
   vexpand: true;
   hexpand: true;
 
-  .HeaderBarWidget headerbar {}
+  .HeaderBarWidget headerbar {
+    .DeviceSelectorWidget device_selector {}
+  }
 
   ScrolledWindow scrolled_window {
     vexpand: true;

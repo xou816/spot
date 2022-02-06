@@ -16,7 +16,7 @@ pub trait HeaderBarModel {
     fn title_updated(&self, event: &AppEvent) -> bool;
     fn go_back(&self);
     fn can_go_back(&self) -> bool;
-    fn selection_context(&self) -> Option<&SelectionContext>;
+    fn selection_context(&self) -> Option<SelectionContext>;
     fn can_select_all(&self) -> bool;
     fn start_selection(&self);
     fn select_all(&self);
@@ -65,8 +65,8 @@ impl HeaderBarModel for DefaultHeaderBarModel {
         self.app_model.get_state().browser.can_pop()
     }
 
-    fn selection_context(&self) -> Option<&SelectionContext> {
-        self.selection_context.as_ref()
+    fn selection_context(&self) -> Option<SelectionContext> {
+        self.selection_context.clone()
     }
 
     fn can_select_all(&self) -> bool {
@@ -94,7 +94,7 @@ impl HeaderBarModel for DefaultHeaderBarModel {
 pub trait SimpleHeaderBarModel {
     fn title(&self) -> Option<String>;
     fn title_updated(&self, event: &AppEvent) -> bool;
-    fn selection_context(&self) -> Option<&SelectionContext>;
+    fn selection_context(&self) -> Option<SelectionContext>;
     fn select_all(&self);
 }
 
@@ -139,7 +139,7 @@ where
         self.app_model.get_state().browser.can_pop()
     }
 
-    fn selection_context(&self) -> Option<&SelectionContext> {
+    fn selection_context(&self) -> Option<SelectionContext> {
         self.wrapped_model.selection_context()
     }
 
@@ -150,7 +150,7 @@ where
     fn start_selection(&self) {
         if let Some(context) = self.wrapped_model.selection_context() {
             self.dispatcher
-                .dispatch(AppAction::EnableSelection(context.clone()));
+                .dispatch(AppAction::EnableSelection(context));
         }
     }
 

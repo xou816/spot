@@ -154,6 +154,12 @@ impl PlayerNotifier {
                         resume: true,
                     })
             }
+            PlaybackEvent::SourceChanged => {
+                let resume = self.is_playing();
+                self.currently_playing()
+                    .and_then(|c| SpotifyId::from_base62(c.song_id()).ok())
+                    .map(|track| Command::PlayerLoad { track, resume })
+            }
             PlaybackEvent::TrackSeeked(position) => Some(Command::PlayerSeek(*position)),
             _ => None,
         };
@@ -185,15 +191,7 @@ impl PlayerNotifier {
             }
             Device::Local => {
                 self.send_command_to_connect_player(ConnectCommand::PlayerStop);
-                let track = self
-                    .currently_playing()
-                    .and_then(|c| SpotifyId::from_base62(c.song_id()).ok());
-                if let Some(track) = track {
-                    self.send_command_to_local_player(Command::PlayerLoad {
-                        track,
-                        resume: self.is_playing(),
-                    });
-                }
+                self.notify_local_player(&PlaybackEvent::SourceChanged);
             }
         }
     }
