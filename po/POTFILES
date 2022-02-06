@@ -36,3 +36,4 @@ src/app/components/playback/playback_widget.ui
 src/app/components/playback/playback_info.ui
 src/app/components/playback/playback_controls.ui
 src/app/components/library/library.ui
+src/app/components/navigation/create_playlist.ui

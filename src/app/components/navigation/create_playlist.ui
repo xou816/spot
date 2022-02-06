@@ -7,7 +7,7 @@
       <object class="GtkBox" id="box">
         <child>
           <object class="GtkLabel" id="label">
-            <property name="label">Name</property>
+            <property name="label" translatable="yes" comments="label for the entry containing the name of a new playlist">Name</property>
           </object>
         </child>
         <child>
@@ -30,7 +30,7 @@
         </child>
         <child>
           <object class="GtkButton" id="button">
-            <property name="label">Create</property>
+            <property name="label" translatable="yes" comments="Button that creates a new playlist">Create</property>
             <property name="focusable">True</property>
             <property name="halign">end</property>
             <property name="use-underline">True</property>
