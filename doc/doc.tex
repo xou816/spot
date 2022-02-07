@@ -1,0 +1,191 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[margin=25mm]{geometry}
+\usepackage{tikz}
+\usepackage[outputdir=target]{minted}
+
+\usemintedstyle{lovelace}
+
+\renewcommand\familydefault{\sfdefault}
+
+\definecolor{spotifygreen}{HTML}{1DB954}
+
+\usetikzlibrary{calc}
+\usetikzlibrary{arrows.meta}
+\usetikzlibrary{decorations.pathreplacing}
+\usetikzlibrary{shapes}
+\usetikzlibrary{positioning}
+
+\tikzstyle{box}=[fill=black, solid, line width=0mm, text=white, rounded corners=2mm, font={\bfseries}, inner sep=3mm]    
+\tikzstyle{sizedbox}=[box, text width=3cm, anchor=north, align=center]
+\tikzstyle{link}=[->, >=latex, line width=.5mm, rounded corners, shorten >=1pt]
+\tikzstyle{smalllink}=[->, >=latex, line width=.2mm, rounded corners, shorten >=1pt, dashed, gray]
+
+
+\begin{document}
+
+\section{Data flow within Spot}
+
+\subsection{Overview}
+
+\paragraph{Single source of truth.} There is a single place that is considered the source of truth for anything that is related to the app state, and that is, well, the \texttt{AppState}. The app state aggregates the state of the UI, as well as the player state. This makes it easier to keep things in sync -- when possible, anything state-related should be read from the app state over some local, possibly out-of-date state.
+
+\paragraph{Centralized.} That state is centralized and unique. This allows various parts of the application to access any part of it, and conversely makes it easy to perform state updates that affect various and sometimes unrelated parts of the application.
+
+\paragraph{Controlled mutations.} There is only one way to modify the app state, and that is by dispatching \emph{actions} -- plain structs that represent a mutation to the state. Updates to the state produce \emph{events}, which \texttt{EventListeners} can use to update the UI. 
+
+\begin{figure}[!h]
+
+    \centering
+    
+    \begin{tikzpicture}
+
+    \node[box, fill=spotifygreen, minimum height=2cm] (model) at (0, 0) {\ttfamily AppModel};
+    \node[box] (ui) at (-4, -3) {Gtk widgets};
+    \node[box] (listeners) at (4, -3) {Listeners};
+
+    \draw[link] (ui) edge[bend left=20] node[above, sloped] {\footnotesize actions} (model);
+    \draw[link] (model) edge[bend left=10] node[above, sloped] {\footnotesize events} (listeners);
+    \draw[link] (listeners) edge[bend left=60] node[below, sloped] {\footnotesize update} (ui);
+    \draw[link, dashed] (listeners) edge[bend left=10] node[below, sloped] {\footnotesize read-only access} (model);
+
+    \end{tikzpicture}
+
+    \caption{The data flow and and its relation to the UI -- the \texttt{AppModel} enforces read-only access to the state.}
+    \label{fig:flow}
+
+\end{figure}
+
+This draws heavy inspiration from the Flux architecture\footnote{See https://facebook.github.io/flux/docs/in-depth-overview for instance}; the one big difference here is that there is no way to automatically find out which portion of the UI should be updated. Instead, listeners are responsible for figuring out the updates to apply based on the events.
+
+It should be noted that the app state is only readable from the main thread for simplicity. 
+
+\subsection{How actions are handled}
+
+Here is the relevant part of the code\footnote{Variables have been renamed for clarity...} related to handling actions and notifying listeners:
+
+\begin{minted}{rust}
+let events = self.model.update_state(action);
+
+for event in events.iter() {
+    for listener in self.listeners.iter_mut() { 
+        listener.on_event(event);
+    }
+}
+\end{minted}
+
+That first line is the only time that the app state is borrowed mutably -- to apply actions.
+
+On the technical side: all actions being dispatched, synchronous or not, are eventually sent through a \texttt{futures::channel::mpsc} channel. The consumer on the other end of the channel is a future that will be executed by GLib. This allows Gtk to process \emph{all actions} at its own pace, as part of its main loop.
+
+Note: futures are used a lot in the code to perform asynchronous operations such as calls to the Spotify API. To ease the use of futures, the dispatcher allows working with asynchronous actions, that is, futures that output one or more actions. Again, these futures are eventually handled in the main Gtk loop.
+
+\subsection{A listener: the player subsystem}
+
+Any element that wishes to update the state or react to changes from the state has to follow that same pattern. For instance, the ``player'' part of Spot receives \texttt{Commands} (mapped from events by a \texttt{PlayerNotifier}) to start playing music, and dispatches actions back the app through a \texttt{SpotifyPlayerDelegate} (see figure \ref{fig:player}). 
+
+These two extra elements add some indirection so that the player is not too strongly coupled to the rest of the app (it does not and should not care about most events, afterall!). Moreover, those commands are handled in a separate thread where the player lives.
+
+\begin{figure}[!ht]
+    \centering
+    
+    \begin{tikzpicture}
+
+    \node[box, fill=spotifygreen, minimum height=2cm] (model) at (0, 0) {\ttfamily AppModel};
+
+    \draw[smalllink] (-5, -3) node[sizedbox] (listeners) {Components}  
+        -- +(0, -1.5) node[right] {update}
+        -- +(0, -2) node[sizedbox] (ui) {Gtk widgets};
+
+    \draw[smalllink] (5, -3) node[sizedbox, fill=gray] (notifier) {\ttfamily PlayerNotifier}
+        -- +(0, -1.5) node[right] {command}
+        -- +(0, -2) node[sizedbox, fill=gray] (player) {\ttfamily SpotifyPlayer}
+        -- +(0, -3.5) node[right] {calls}
+        -- +(0, -4) node[sizedbox, fill=gray] (delegate) {\parbox{\textwidth}{\ttfamily SpotifyPlayer Delegate}};
+
+    \draw[link] (ui) edge[bend right=32] node[below, sloped] {\footnotesize actions} (model);
+    \draw[link] (model) edge[bend right=10] node[above, sloped] {\footnotesize events} (listeners);
+
+    \draw[link] (model) edge[bend left=10] node[above, sloped] {\footnotesize events} (notifier);
+    \draw[link] (delegate) edge[bend left=32] node[below, sloped] {\footnotesize actions} (model);
+
+    \draw[dashed, gray] ($(notifier.north west) + (-0.25, 0.25)$) rectangle ($(delegate.south east) + (0.25, -0.25)$);
+
+    \draw[dashed, gray] ($(listeners.north west) + (-0.25, 0.25)$) rectangle ($(ui.south east) + (0.25, -0.25)$);
+
+
+    \end{tikzpicture}
+
+    \caption{The player subsystem}
+    \label{fig:player}
+
+\end{figure}
+
+
+\subsection{Another listener: the MPRIS subsystem}
+
+Similarly, the MPRIS subsystem follows that same pattern. It spawns a small DBUS server that translates DBUS messages to actions, and an \texttt{AppPlaybackStateListener} listens to incoming events.
+
+One major difference is that the MPRIS server maintains its own state here, since the app state cannot be accessed from outside the main thread. To make sure this local state stays in sync, DBUS messages should not alter the local state directly -- instead, we should wait for a roundtrip through the app and incoming events.
+
+\section{Components}
+
+\subsection{Overview}
+
+Components are thin wrappers around Gtk widgets, dedicated to binding them so that they produce the right actions, and updating them when specific events occur by conforming to \texttt{EventListener}. 
+
+\subsection{Modeling interactions}
+
+Components should have some associated \texttt{struct} to model the interactions with the rest of the app. Let's consider the play/pause button as an example. Its behavior is defined in the \texttt{PlaybackModel}:
+
+\begin{minted}{rust}
+impl PlaybackModel {
+    fn is_playing(&self) -> bool { /**/ }
+    fn toggle_playback(&self) { /**/ }
+}
+\end{minted}
+
+What we need to make our button work is a way to know its current state (is a song playing?) and a way to change that state (toggling on activation). Note that it would be tempting to simply query the widget's state, which \emph{should} be in sync with the actual playback state, but what we should really do instead is query the app state, which is the one source of truth for anything state-related. 
+
+Why do this? First, toggling the playback might fail (e.g. if no song is playing), but more importantly something else could alter the playback state (e.g. a DBUS query).
+
+\begin{minted}{rust}
+fn is_playing(&self) -> bool { 
+    self.app_model.get_state().playback.is_playing()
+}
+\end{minted}
+
+As for toggling the playback, remember that we can only mutate the state through actions (the \mintinline{rust}|get_state| call above returns some \mintinline{rust}|Deref<Target = AppState>|). In other words, we express what kind of action we want to perform, with no guarantee that it'll succeed.
+
+\begin{minted}{rust}
+fn toggle_playback(&self) {
+    self.dispatcher.dispatch(PlaybackAction::TogglePlay.into());
+}
+\end{minted}
+
+\subsection{Binding the widget}
+
+All that's left is binding the widget to our model. By wrapping our model in an \texttt{Rc}, it becomes easy to clone it into the kind of \texttt{'static} closure Gtk needs.
+
+\begin{minted}{rust}
+// model is an Rc<PlaybackModel>
+widget.connect_play_pause(clone!(@weak model => move || model.toggle_playback()));
+\end{minted}
+
+Finally, we need our component to listen to relevant events, and update our widget accordingly.
+
+\begin{minted}{rust}
+impl EventListener for PlaybackControl {
+    fn on_event(&mut self, event: &AppEvent) {
+        match event {
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackPaused)
+            | AppEvent::PlaybackEvent(PlaybackEvent::PlaybackResumed) => {
+                let is_playing = self.model.is_playing();
+                self.widget.set_playing(is_playing);
+            }
+            /**/
+        }
+    }
+}
+\end{minted}
+
+\end{document}
