@@ -4,6 +4,7 @@ use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
+use crate::api::SpotifyApiError;
 use crate::app::components::labels;
 use crate::app::components::HeaderBarModel;
 use crate::app::components::PlaylistModel;
@@ -56,9 +57,15 @@ impl DetailsModel {
         let api = self.app_model.get_spotify();
         self.dispatcher
             .call_spotify_and_dispatch(move || async move {
-                api.get_album(&id)
-                    .await
-                    .map(|album| BrowserAction::SetAlbumDetails(Box::new(album)).into())
+                let album = api.get_album(&id).await;
+                match album {
+                    Ok(album) => Ok(BrowserAction::SetAlbumDetails(Box::new(album)).into()),
+                    Err(SpotifyApiError::BadStatus(400, _))
+                    | Err(SpotifyApiError::BadStatus(404, _)) => {
+                        Ok(BrowserAction::NavigationPop.into())
+                    }
+                    Err(e) => Err(e),
+                }
             });
     }
 

@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::app::state::{
     browser_state::{BrowserAction, BrowserEvent, BrowserState},
     login_state::{LoginAction, LoginEvent, LoginState},
@@ -28,6 +30,30 @@ pub enum AppAction {
 }
 
 impl AppAction {
+    #[allow(non_snake_case)]
+    pub fn OpenURI(uri: String) -> Option<Self> {
+        debug!("parsing {}", &uri);
+        let mut parts = uri.split(':');
+        if parts.next()? != "spotify" {
+            return None;
+        }
+
+        // Might start with /// because of https://gitlab.gnome.org/GNOME/glib/-/issues/1886/
+        let action = parts
+            .next()?
+            .strip_prefix("///")
+            .filter(|p| !p.is_empty())?;
+        let data = parts.next()?;
+
+        match action {
+            "album" => Some(Self::ViewAlbum(data.to_string())),
+            "artist" => Some(Self::ViewArtist(data.to_string())),
+            "playlist" => Some(Self::ViewPlaylist(data.to_string())),
+            "user" => Some(Self::ViewUser(data.to_string())),
+            _ => None,
+        }
+    }
+
     #[allow(non_snake_case)]
     pub fn ViewAlbum(id: String) -> Self {
         BrowserAction::NavigationPush(ScreenName::AlbumDetails(id)).into()
@@ -67,6 +93,7 @@ pub enum AppEvent {
 }
 
 pub struct AppState {
+    started: bool,
     pub playback: PlaybackState,
     pub browser: BrowserState,
     pub selection: SelectionState,
@@ -76,6 +103,7 @@ pub struct AppState {
 impl AppState {
     pub fn new() -> Self {
         Self {
+            started: false,
             playback: Default::default(),
             browser: BrowserState::new(),
             selection: Default::default(),
@@ -85,7 +113,10 @@ impl AppState {
 
     pub fn update_state(&mut self, message: AppAction) -> Vec<AppEvent> {
         match message {
-            AppAction::Start => vec![AppEvent::Started],
+            AppAction::Start if !self.started => {
+                self.started = true;
+                vec![AppEvent::Started]
+            }
             AppAction::ShowNotification(c) => vec![AppEvent::NotificationShown(c)],
             AppAction::ViewNowPlaying => vec![AppEvent::NowPlayingShown],
             AppAction::Raise => vec![AppEvent::Raised],
@@ -130,15 +161,10 @@ impl AppState {
             }
             AppAction::SaveSelection => {
                 let tracks = self.selection.take_selection();
-                let mut events: Vec<AppEvent> = self
-                    .browser
-                    .home_state_mut()
-                    .into_iter()
-                    .flat_map(move |home| {
-                        home.update_with(BrowserAction::SaveTracks(tracks.clone()))
-                    })
-                    .map(AppEvent::BrowserEvent)
-                    .collect();
+                let mut events: Vec<AppEvent> = forward_action(
+                    BrowserAction::SaveTracks(tracks),
+                    self.browser.home_state_mut().unwrap(),
+                );
                 events.push(SelectionEvent::SelectionModeChanged(false).into());
                 events
             }
@@ -149,15 +175,10 @@ impl AppState {
                     .into_iter()
                     .map(|s| s.id)
                     .collect();
-                let mut events: Vec<AppEvent> = self
-                    .browser
-                    .home_state_mut()
-                    .into_iter()
-                    .flat_map(move |home| {
-                        home.update_with(BrowserAction::RemoveSavedTracks(tracks.clone()))
-                    })
-                    .map(AppEvent::BrowserEvent)
-                    .collect();
+                let mut events: Vec<AppEvent> = forward_action(
+                    BrowserAction::RemoveSavedTracks(tracks),
+                    self.browser.home_state_mut().unwrap(),
+                );
                 events.push(SelectionEvent::SelectionModeChanged(false).into());
                 events
             }
@@ -175,25 +196,26 @@ impl AppState {
                     vec![]
                 }
             }
-            AppAction::PlaybackAction(a) => self
-                .playback
-                .update_with(a)
-                .into_iter()
-                .map(AppEvent::PlaybackEvent)
-                .collect(),
-            AppAction::BrowserAction(a) => self
-                .browser
-                .update_with(a)
-                .into_iter()
-                .map(AppEvent::BrowserEvent)
-                .collect(),
-            AppAction::SelectionAction(a) => self
-                .selection
-                .update_with(a)
-                .into_iter()
-                .map(AppEvent::SelectionEvent)
-                .collect(),
-            AppAction::LoginAction(a) => self.logged_user.update_with(a).into_iter().collect(),
+            AppAction::PlaybackAction(a) => forward_action(a, &mut self.playback),
+            AppAction::BrowserAction(a) => forward_action(a, &mut self.browser),
+            AppAction::SelectionAction(a) => forward_action(a, &mut self.selection),
+            AppAction::LoginAction(a) => forward_action(a, &mut self.logged_user),
+            _ => vec![],
         }
     }
+}
+
+fn forward_action<A, E>(
+    action: A,
+    target: &mut impl UpdatableState<Action = A, Event = E>,
+) -> Vec<AppEvent>
+where
+    A: Clone,
+    E: Into<AppEvent>,
+{
+    target
+        .update_with(Cow::Owned(action))
+        .into_iter()
+        .map(|e| e.into())
+        .collect()
 }

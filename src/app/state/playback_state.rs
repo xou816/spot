@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::app::models::{SongBatch, SongDescription, SongListModel, SongListModelPending};
 use crate::app::state::{AppAction, AppEvent, UpdatableState};
 use crate::app::{BatchQuery, LazyRandomIndex, SongsSource};
@@ -278,8 +280,8 @@ impl UpdatableState for PlaybackState {
     type Action = PlaybackAction;
     type Event = PlaybackEvent;
 
-    fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
-        match action {
+    fn update_with(&mut self, action: Cow<Self::Action>) -> Vec<Self::Event> {
+        match action.into_owned() {
             PlaybackAction::TogglePlay => {
                 if let Some(playing) = self.toggle_play() {
                     if playing {

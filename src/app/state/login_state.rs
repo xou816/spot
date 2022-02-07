@@ -1,4 +1,5 @@
 use gettextrs::*;
+use std::borrow::Cow;
 use std::time::SystemTime;
 
 use crate::app::credentials::Credentials;
@@ -79,8 +80,8 @@ impl UpdatableState for LoginState {
     type Action = LoginAction;
     type Event = AppEvent;
 
-    fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
-        match action {
+    fn update_with(&mut self, action: Cow<Self::Action>) -> Vec<Self::Event> {
+        match action.into_owned() {
             LoginAction::TryLogin(TryLoginAction::Password { username, password }) => {
                 vec![
                     LoginEvent::LoginStarted(LoginStartedEvent::Password { username, password })
