@@ -16,14 +16,17 @@ enum CurrentlyPlaying {
         offset: usize,
         song: String,
     },
-    Song(String),
+    Songs {
+        songs: Vec<String>,
+        offset: usize,
+    },
 }
 
 impl CurrentlyPlaying {
     fn song_id(&self) -> &String {
         match self {
             Self::WithSource { song, .. } => song,
-            Self::Song(s) => s,
+            Self::Songs { songs, offset } => &songs[*offset],
         }
     }
 }
@@ -57,19 +60,22 @@ impl PlayerNotifier {
     fn currently_playing(&self) -> Option<CurrentlyPlaying> {
         let state = self.app_model.get_state();
         let song = state.playback.current_song_id()?;
-        let offset = state.playback.current_song_index();
+        let offset = state.playback.current_song_index()?;
         let context = state
             .playback
             .current_source()
             .and_then(SongsSource::spotify_uri);
-        Some(if let (Some(offset), Some(context)) = (offset, context) {
+        Some(if let Some(context) = context {
             CurrentlyPlaying::WithSource {
                 context,
                 offset,
                 song,
             }
         } else {
-            CurrentlyPlaying::Song(song)
+            CurrentlyPlaying::Songs {
+                songs: state.playback.songs().map_collect(|s| s.id),
+                offset,
+            }
         })
     }
 
@@ -116,7 +122,9 @@ impl PlayerNotifier {
                         offset,
                         song,
                     }),
-                    Some(CurrentlyPlaying::Song(id)) => Some(ConnectCommand::PlayerLoad(id)),
+                    Some(CurrentlyPlaying::Songs { songs, offset }) => {
+                        Some(ConnectCommand::PlayerLoad { songs, offset })
+                    }
                     None => None,
                 }
             }

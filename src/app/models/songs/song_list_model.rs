@@ -98,6 +98,13 @@ impl SongListModel {
         self.inner().iter().map(|s| s.into_description()).collect()
     }
 
+    pub fn map_collect<T>(&self, map: impl Fn(SongDescription) -> T) -> Vec<T> {
+        self.inner()
+            .iter()
+            .map(|s| map(s.into_description()))
+            .collect()
+    }
+
     pub fn add(&mut self, song_batch: SongBatch) -> SongListModelPending {
         let range = self.inner_mut().add(song_batch);
         SongListModelPending::new(range, self)

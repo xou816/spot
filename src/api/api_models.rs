@@ -32,6 +32,7 @@ pub enum PlayRequest {
     },
     Uris {
         uris: Vec<String>,
+        offset: PlayOffset,
     },
 }
 

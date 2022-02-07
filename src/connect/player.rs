@@ -16,7 +16,10 @@ pub enum ConnectCommand {
         offset: usize,
         song: String,
     },
-    PlayerLoad(String),
+    PlayerLoad {
+        songs: Vec<String>,
+        offset: usize,
+    },
     PlayerResume,
     PlayerPause,
     PlayerStop,
@@ -118,11 +121,18 @@ impl ConnectPlayer {
                     self.api.player_resume(device_id).await
                 }
             }
-            ConnectCommand::PlayerLoad(song) => {
-                let should_play = self.should_play(song.as_str()).await;
+            ConnectCommand::PlayerLoad { songs, offset } => {
+                let should_play = self.should_play(songs[offset].as_str()).await;
                 if should_play {
                     self.api
-                        .player_play_no_context(device_id, vec![format!("spotify:track:{}", song)])
+                        .player_play_no_context(
+                            device_id,
+                            songs
+                                .into_iter()
+                                .map(|s| format!("spotify:track:{}", s))
+                                .collect(),
+                            offset,
+                        )
                         .await
                 } else {
                     self.api.player_resume(device_id).await
