@@ -53,12 +53,3 @@ pub fn album_by_artist_label(album: &str, artist: &str) -> String {
         glib::markup_escape_text(artist)
     )
 }
-
-pub fn playing_on(device: &str) -> String {
-    // this is just to fool xgettext, it doesn't like macros (or rust for that matter) :(
-    if cfg!(debug_assertions) {
-        // translators: This is part of a contextual menu attached to a single track; the full text is "More from <artist>".
-        gettext("Playing on {}");
-    }
-    gettext!("Playing on {}", glib::markup_escape_text(device))
-}

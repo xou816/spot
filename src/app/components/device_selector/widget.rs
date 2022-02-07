@@ -1,4 +1,3 @@
-use crate::app::components::labels;
 use crate::app::models::{ConnectDevice, ConnectDeviceKind};
 use crate::app::state::Device;
 use gettextrs::gettext;
@@ -135,8 +134,8 @@ impl DeviceSelectorWidget {
             action.change_state(&device_id.to_variant());
         }
         let label = match device {
-            Device::Local => gettext("Playing on this device"),
-            Device::Connect(connect) => labels::playing_on(&connect.label),
+            Device::Local => gettext("This device"),
+            Device::Connect(connect) => connect.label.clone(),
         };
         let icon = match device {
             Device::Local => "audio-x-generic-symbolic",
