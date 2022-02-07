@@ -55,7 +55,7 @@ impl UserDetailsModel {
             .call_spotify_and_dispatch(move || async move {
                 api.get_user_playlists(&id, offset, batch_size)
                     .await
-                    .map(|playlists| BrowserAction::AppendUserPlaylists(playlists).into())
+                    .map(|playlists| BrowserAction::AppendUserPlaylists(id, playlists).into())
             });
 
         Some(())

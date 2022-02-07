@@ -124,7 +124,7 @@ impl SelectionToolbarModel {
             .call_spotify_and_dispatch_many(move || async move {
                 api.remove_from_playlist(&id, uris.clone()).await?;
                 Ok(vec![
-                    BrowserAction::RemoveTracksFromPlaylist(uris).into(),
+                    BrowserAction::RemoveTracksFromPlaylist(id, uris).into(),
                     SelectionAction::Clear.into(),
                 ])
             })

@@ -71,7 +71,7 @@ impl ArtistDetailsModel {
             .call_spotify_and_dispatch(move || async move {
                 api.get_artist_albums(&id, offset, batch_size)
                     .await
-                    .map(|albums| BrowserAction::AppendArtistReleases(albums).into())
+                    .map(|albums| BrowserAction::AppendArtistReleases(id, albums).into())
             });
 
         Some(())

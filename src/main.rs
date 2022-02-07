@@ -66,8 +66,8 @@ fn main() {
         } else {
             window.set_application(Some(gtk_app));
             gtk_app.add_window(&window);
+            sender_clone.unbounded_send(AppAction::Start).unwrap();
         }
-        sender_clone.unbounded_send(AppAction::Start).unwrap();
     });
 
     gtk_app.connect_open(move |gtk_app, targets, _| {
@@ -76,9 +76,8 @@ fn main() {
         // There should only be one target because %u is used in desktop file
         let target = &targets[0];
         let uri = target.uri().to_string();
-        let action = AppAction::OpenURI(uri).unwrap_or_else(|| {
-            AppAction::ShowNotification(gettext("Failed to open link!").to_string())
-        });
+        let action = AppAction::OpenURI(uri)
+            .unwrap_or_else(|| AppAction::ShowNotification(gettext("Failed to open link!")));
         sender.unbounded_send(action).unwrap();
     });
 

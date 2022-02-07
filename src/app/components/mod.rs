@@ -103,7 +103,8 @@ impl dyn ActionDispatcher {
     {
         self.dispatch_many_async(Box::pin(async move {
             let first_call = call.clone();
-            match first_call().await {
+            let result = first_call().await;
+            match result {
                 Ok(actions) => actions,
                 Err(SpotifyApiError::NoToken) => vec![],
                 Err(SpotifyApiError::InvalidToken) => {
