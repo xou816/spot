@@ -24,12 +24,13 @@ impl HomeModel {
                     .await
                     .map(|p| {
                         vec![
-                            BrowserAction::PrependPlaylistsContent(vec![p]).into(),
-                            AppAction::ShowNotification(gettext!(
+                            BrowserAction::PrependPlaylistsContent(vec![p.clone()]).into(),
+                            AppAction::ShowPlaylistCreatedNotification(
                                 // translators: This is a notification that pop ups when a new playlist is created. It includes the name of that playlist.
-                                "New playlist '{}' created.",
-                                name
-                            )),
+                                gettext("New playlist created."),
+                                name,
+                                p.id,
+                            ),
                         ]
                     })
             })

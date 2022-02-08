@@ -114,6 +114,7 @@ sources = files(
 './app/components/navigation/mod.rs',
 './app/components/navigation/factory.rs',
 './app/components/navigation/create_playlist.rs',
+'./app/components/navigation/home_model.rs',
 './app/components/user_details/user_details_model.rs',
 './app/components/user_details/mod.rs',
 './app/components/user_details/user_details.rs',
