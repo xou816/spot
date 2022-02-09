@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <template class="SettingsWindow" parent="AdwPreferencesWindow" id="settings">
+    <property name="default-width">600</property>
+    <property name="default-height">400</property>
+    <child>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes" comments="todo">Audio</property>
+        <child>
+          <object class="AdwComboRow" id="audio_backend">
+            <property name="title" translatable="yes" comments="todo">Audio
+              Backend</property>
+            <property name="subtitle" translatable="yes" comments="todo"></property>
+          </object>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes" comments="todo">ALSA Backend</property>
+            <property name="subtitle" translatable="yes" comments="todo">todo</property>
+            <child>
+              <object class="GtkEntry" id="alsa_backend">
+              </object>
+            </child>
+          </object>
+          <object class="AdwComboRow" id="player_bitrate">
+            <property name="title" translatable="yes" comments="todo">Player bitrate</property>
+            <property name="subtitle" translatable="yes" comments="todo">todo</property>
+          </object>
+        </child>
+      </object>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes" comments="todo">Appearance</property>
+        <child>
+          <object class="AdwComboRow" id="theme">
+            <property name="title" translatable="yes" comments="todo">Theme</property>
+            <property name="subtitle" translatable="yes" comments="todo"></property>
+            <property name="model">
+            </property>
+          </object>
+        </child>
+      </object>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes" comments="todo">Access Point Port</property>
+        <child>
+          <object class="GtkEntry" id="ap_port">
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>
+

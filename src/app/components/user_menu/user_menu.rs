@@ -4,7 +4,7 @@ use gtk::prelude::*;
 use std::rc::Rc;
 
 use super::UserMenuModel;
-use crate::app::components::EventListener;
+use crate::app::components::{EventListener, Settings};
 use crate::app::{state::LoginEvent, AppEvent};
 
 pub struct UserMenu {
@@ -15,6 +15,7 @@ pub struct UserMenu {
 impl UserMenu {
     pub fn new(
         user_button: gtk::MenuButton,
+        settings: Settings,
         about: gtk::AboutDialog,
         model: UserMenuModel,
     ) -> Self {
@@ -38,6 +39,14 @@ impl UserMenu {
         });
 
         action_group.add_action(&{
+            let settings_action = SimpleAction::new("settings", None);
+            settings_action.connect_activate(clone!(@weak model => move |_, _| {
+                settings.show_self();
+            }));
+            settings_action
+        });
+
+        action_group.add_action(&{
             let about_action = SimpleAction::new("about", None);
             about_action.connect_activate(clone!(@weak about => move |_, _| {
                 about.present();
@@ -52,6 +61,8 @@ impl UserMenu {
 
     fn update_menu(&self) {
         let menu = gio::Menu::new();
+        // translators: This is a menu entry.
+        menu.append(Some(&gettext("Settings")), Some("menu.settings"));
         // translators: This is a menu entry.
         menu.append(Some(&gettext("About")), Some("menu.about"));
         // translators: This is a menu entry.
