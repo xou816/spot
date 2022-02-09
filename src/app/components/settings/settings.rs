@@ -93,11 +93,7 @@ impl Settings {
     pub fn show_self(&self) {
         self.window().set_transient_for(Some(&self.parent));
         self.window().set_modal(true);
-        //self.window().show();
-        let pref_window = self
-            .settings_window
-            .upcast_ref::<libadwaita::PreferencesWindow>();
-        pref_window.show();
+        self.window().show();
     }
 }
 
