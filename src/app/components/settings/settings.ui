@@ -1,52 +1,89 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <requires lib="gtk" version="4.0"/>
-  <requires lib="libadwaita" version="1.0"/>
-  <template class="SettingsWindow" parent="AdwPreferencesWindow" id="settings">
+  <requires lib="gtk" version="4.0" />
+  <requires lib="libadwaita" version="1.0" />
+  <template class="SettingsWindow" parent="AdwPreferencesWindow">
     <property name="default-width">600</property>
     <property name="default-height">400</property>
     <child>
-      <object class="AdwPreferencesGroup">
-        <property name="title" translatable="yes" comments="todo">Audio</property>
+      <object class="AdwPreferencesPage">
         <child>
-          <object class="AdwComboRow" id="audio_backend">
-            <property name="title" translatable="yes" comments="todo">Audio
-              Backend</property>
-            <property name="subtitle" translatable="yes" comments="todo"></property>
-          </object>
-          <object class="AdwActionRow">
-            <property name="title" translatable="yes" comments="todo">ALSA Backend</property>
-            <property name="subtitle" translatable="yes" comments="todo">todo</property>
+          <object class="AdwPreferencesGroup">
+            <property name="title" translatable="yes" comments="todo">Audio</property>
             <child>
-              <object class="GtkEntry" id="alsa_backend">
+              <object class="AdwComboRow" id="audio_backend">
+                <property name="title" translatable="yes" comments="todo">Audio Backend</property>
+                <property name="subtitle" translatable="yes" comments="todo"></property>
+                <property name="model">
+                  <object class="GtkStringList">
+                    <items>
+                      <item>PulseAudio</item>
+                      <item>ALSA</item>
+                    </items>
+                  </object>
+                </property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes" comments="todo">ALSA Device</property>
+                <property name="subtitle" translatable="yes" comments="todo">Applied only if audio backend is ALSA</property>
+                <child>
+                  <object class="GtkEntry" id="alsa_device"></object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwComboRow" id="player_bitrate">
+                <property name="title" translatable="yes" comments="todo">Player bitrate</property>
+                <property name="subtitle" translatable="yes" comments="todo"></property>
+                <property name="model">
+                  <object class="GtkStringList">
+                    <items>
+                      <item translatable="yes">96kbps</item>
+                      <item translatable="yes">160kbps</item>
+                      <item translatable="yes">320kbps</item>
+                    </items>
+                  </object>
+                </property>
               </object>
             </child>
           </object>
-          <object class="AdwComboRow" id="player_bitrate">
-            <property name="title" translatable="yes" comments="todo">Player bitrate</property>
-            <property name="subtitle" translatable="yes" comments="todo">todo</property>
+        </child>
+        <child>
+          <object class="AdwPreferencesGroup">
+            <property name="title" translatable="yes" comments="todo">Appearance</property>
+            <child>
+              <object class="AdwComboRow" id="theme">
+                <property name="title" translatable="yes" comments="todo">Theme</property>
+                <property name="subtitle" translatable="yes" comments="todo"></property>
+                <property name="model">
+                  <object class="GtkStringList">
+                    <items>
+                      <item translatable="yes">Light</item>
+                      <item translatable="yes">Dark</item>
+                    </items>
+                  </object>
+                </property>
+              </object>
+            </child>
           </object>
         </child>
-      </object>
-      <object class="AdwPreferencesGroup">
-        <property name="title" translatable="yes" comments="todo">Appearance</property>
         <child>
-          <object class="AdwComboRow" id="theme">
-            <property name="title" translatable="yes" comments="todo">Theme</property>
-            <property name="subtitle" translatable="yes" comments="todo"></property>
-            <property name="model">
-            </property>
-          </object>
-        </child>
-      </object>
-      <object class="AdwPreferencesGroup">
-        <property name="title" translatable="yes" comments="todo">Access Point Port</property>
-        <child>
-          <object class="GtkEntry" id="ap_port">
+          <object class="AdwPreferencesGroup">
+            <property name="title" translatable="yes" comments="todo">Network</property>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes" comments="todo">Access Point Port</property>
+                <property name="subtitle" translatable="yes" comments="todo"></property>
+                <child>
+                  <object class="GtkEntry" id="ap_port"></object>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
       </object>
     </child>
   </template>
 </interface>
-

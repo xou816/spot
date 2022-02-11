@@ -5,6 +5,8 @@
     <file>app.css</file>
     <!-- login -->
     <file alias="components/login.ui">app/components/login/login.ui</file>
+    <!-- settings -->
+    <file alias="components/settings.ui">app/components/settings/settings.ui</file>
     <!-- search -->
     <file alias="components/search.ui">app/components/search/search.ui</file>
     <!-- album -->
