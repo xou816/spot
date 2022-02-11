@@ -7,7 +7,9 @@ use super::album_header::AlbumHeaderWidget;
 use super::release_details::ReleaseDetailsWindow;
 use super::DetailsModel;
 
-use crate::app::components::{Component, EventListener, Playlist};
+use crate::app::components::{
+    Component, EventListener, HeaderBarComponent, HeaderBarWidget, Playlist,
+};
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
 use crate::app::{AppEvent, BrowserEvent};
@@ -23,6 +25,9 @@ mod imp {
     pub struct AlbumDetailsWidget {
         #[template_child]
         pub scrolled_window: TemplateChild<gtk::ScrolledWindow>,
+
+        #[template_child]
+        pub headerbar: TemplateChild<HeaderBarWidget>,
 
         #[template_child]
         pub header_revealer: TemplateChild<gtk::Revealer>,
@@ -56,6 +61,7 @@ mod imp {
         fn constructed(&self, obj: &Self::Type) {
             self.parent_constructed(obj);
             self.header_mobile.set_centered();
+            self.headerbar.add_classes(&["details__headerbar"]);
         }
     }
 
@@ -81,25 +87,34 @@ impl AlbumDetailsWidget {
         let is_up_to_date = widget.header_revealer.reveals_child() == visible;
         if !is_up_to_date {
             widget.header_revealer.set_reveal_child(visible);
+            widget.headerbar.set_title_visible(true);
+            if visible {
+                widget.headerbar.add_classes(&["flat"]);
+            } else {
+                widget.headerbar.remove_classes(&["flat"]);
+            }
         }
         is_up_to_date
     }
 
-    fn connect_header(&self) {
+    fn connect_header_visibility(&self) {
         self.set_header_visible(true);
 
         let scroll_controller =
             gtk::EventControllerScroll::new(gtk::EventControllerScrollFlags::VERTICAL);
         scroll_controller.connect_scroll(
             clone!(@weak self as _self => @default-return gtk::Inhibit(false), move |_, _, dy| {
-                gtk::Inhibit(!_self.set_header_visible(dy < 0f64))
+                let visible = dy < 0f64;
+                gtk::Inhibit(!_self.set_header_visible(visible))
             }),
         );
 
         let swipe_controller = gtk::GestureSwipe::new();
+        swipe_controller.set_touch_only(true);
         swipe_controller.set_propagation_phase(gtk::PropagationPhase::Capture);
         swipe_controller.connect_swipe(clone!(@weak self as _self => move |_, _, dy| {
-            _self.set_header_visible(dy >= 0f64);
+            let visible = dy >= 0f64;
+            _self.set_header_visible(visible);
         }));
 
         self.widget()
@@ -119,6 +134,10 @@ impl AlbumDetailsWidget {
                     f()
                 }
             });
+    }
+
+    fn headerbar_widget(&self) -> &HeaderBarWidget {
+        self.widget().headerbar.as_ref()
     }
 
     fn album_tracks_widget(&self) -> &gtk::ListView {
@@ -158,6 +177,9 @@ impl AlbumDetailsWidget {
         self.widget()
             .header_mobile
             .set_album_and_artist_and_year(album, artist, year);
+        self.widget()
+            .headerbar
+            .set_title_and_subtitle(album, artist);
     }
 
     fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {
@@ -196,14 +218,19 @@ impl Details {
             widget.album_tracks_widget().clone(),
             model.clone(),
             worker.clone(),
-            false,
+        ));
+
+        let headerbar_widget = widget.headerbar_widget();
+        let headerbar = Box::new(HeaderBarComponent::new(
+            headerbar_widget.clone(),
+            model.to_headerbar_model(),
         ));
 
         let modal = ReleaseDetailsWindow::new();
 
         widget.connect_liked(clone!(@weak model => move || model.toggle_save_album()));
 
-        widget.connect_header();
+        widget.connect_header_visibility();
 
         widget.connect_bottom_edge(clone!(@weak model => move || {
             model.load_more();
@@ -226,7 +253,7 @@ impl Details {
             worker,
             widget,
             modal,
-            children: vec![playlist],
+            children: vec![playlist, headerbar],
         }
     }
 
@@ -260,8 +287,7 @@ impl Details {
                 &album.artists_name(),
                 &details.label,
                 album.release_date.as_ref().unwrap(),
-                album.songs.len(),
-                &album.formatted_time(),
+                details.total_tracks,
                 &details.copyright_text,
             );
 

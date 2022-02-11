@@ -75,7 +75,7 @@ impl ArtistWidget {
                 if let Some(avatar) = avatar.upgrade() {
                     let loader = ImageLoader::new();
                     let pixbuf = loader.load_remote(&url, "jpg", 200, 200).await;
-                    let texture = pixbuf.as_ref().map(|p| gdk::Texture::for_pixbuf(p));
+                    let texture = pixbuf.as_ref().map(gdk::Texture::for_pixbuf);
                     avatar.set_custom_image(texture.as_ref());
                 }
             });

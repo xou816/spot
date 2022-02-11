@@ -1,23 +1,23 @@
 [package]
 name = "spot"
-version = "0.2.2"
+version = "0.3.1"
 edition = "2018"
 license = "MIT"
 
 [dependencies.gtk]
-version = "^0.3.0"
+version = "^0.4.1"
 package = "gtk4"
 
 [dependencies.gdk]
-version = "^0.3.0"
+version = "^0.4.0"
 package = "gdk4"
 
 [dependencies.gio]
-version = "^0.14.8"
+version = "^0.15.5"
 features = ["v2_60"]
 
 [dependencies.glib]
-version = "^0.14.8"
+version = "^0.15.2"
 features = ["v2_60"]
 
 [dependencies.librespot]
@@ -37,11 +37,11 @@ package = "futures"
 version = "0.3.18"
 
 [dependencies.serde]
-version = "^1.0.130"
+version = "^1.0.136"
 features = ["derive"]
 
 [dependencies.serde_json]
-version = "^1.0.72"
+version = "^1.0.78"
 
 [dependencies.isahc]
 version = "^1.2.0"
@@ -57,16 +57,16 @@ features = ["gettext-system"]
 
 [dependencies]
 secret-service = "^2.0.1"
-gdk-pixbuf = "^0.14.0"
+gdk-pixbuf = "^0.15.4"
 libadwaita = "^0.1.0-beta-1"
 ref_filter_map = "^1.0.1"
 regex = "^1.4.6"
 async-std = "^1.10.0"
 form_urlencoded = "^1.0.1"
-zbus = "^2.0.0-beta.3"
-zvariant = "^2.10.0"
-zvariant_derive = "^2.5.0"
+zbus = "^2.0.1"
+zvariant = "^3.1.2"
 thiserror = "^1.0.30"
 lazy_static = "^1.4.0"
 log = "0.4.14"
 env_logger = "0.9.0"
+percent-encoding = "2.1.0"

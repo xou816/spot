@@ -30,9 +30,7 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkListView" id="top_tracks">
-                    <property name="margin-top">12</property>
-                  </object>
+                  <object class="GtkListView" id="top_tracks"/>
                 </child>
               </object>
             </child>

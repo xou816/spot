@@ -4,16 +4,17 @@ use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
+use crate::api::SpotifyApiError;
 use crate::app::components::labels;
+use crate::app::components::HeaderBarModel;
 use crate::app::components::PlaylistModel;
-use crate::app::components::SimpleScreenModel;
+use crate::app::components::SimpleHeaderBarModel;
+use crate::app::components::SimpleHeaderBarModelWrapper;
 use crate::app::dispatch::ActionDispatcher;
 use crate::app::models::*;
 use crate::app::state::SelectionContext;
-use crate::app::state::{
-    BrowserAction, BrowserEvent, PlaybackAction, SelectionAction, SelectionState,
-};
-use crate::app::{AppAction, AppEvent, AppModel, AppState, BatchQuery, ListDiff, SongsSource};
+use crate::app::state::{BrowserAction, PlaybackAction, SelectionAction, SelectionState};
+use crate::app::{AppAction, AppEvent, AppModel, AppState, BatchQuery, SongsSource};
 
 pub struct DetailsModel {
     pub id: String,
@@ -32,19 +33,6 @@ impl DetailsModel {
 
     fn state(&self) -> Ref<'_, AppState> {
         self.app_model.get_state()
-    }
-
-    fn songs_ref(&self) -> Option<impl Deref<Target = SongList> + '_> {
-        self.app_model.map_state_opt(|s| {
-            Some(
-                &s.browser
-                    .details_state(&self.id)?
-                    .content
-                    .as_ref()?
-                    .description
-                    .songs,
-            )
-        })
     }
 
     pub fn get_album_info(&self) -> Option<impl Deref<Target = AlbumFullDescription> + '_> {
@@ -69,9 +57,15 @@ impl DetailsModel {
         let api = self.app_model.get_spotify();
         self.dispatcher
             .call_spotify_and_dispatch(move || async move {
-                api.get_album(&id)
-                    .await
-                    .map(|album| BrowserAction::SetAlbumDetails(Box::new(album)).into())
+                let album = api.get_album(&id).await;
+                match album {
+                    Ok(album) => Ok(BrowserAction::SetAlbumDetails(Box::new(album)).into()),
+                    Err(SpotifyApiError::BadStatus(400, _))
+                    | Err(SpotifyApiError::BadStatus(404, _)) => {
+                        Ok(BrowserAction::NavigationPop.into())
+                    }
+                    Err(e) => Err(e),
+                }
             });
     }
 
@@ -106,7 +100,7 @@ impl DetailsModel {
     }
 
     pub fn load_more(&self) -> Option<()> {
-        let last_batch = self.songs_ref()?.last_batch()?;
+        let last_batch = self.song_list_model().last_batch()?;
         let query = BatchQuery {
             source: SongsSource::Album(self.id.clone()),
             batch: last_batch,
@@ -127,14 +121,36 @@ impl DetailsModel {
 
         Some(())
     }
+
+    pub fn to_headerbar_model(self: &Rc<Self>) -> Rc<impl HeaderBarModel> {
+        Rc::new(SimpleHeaderBarModelWrapper::new(
+            self.clone(),
+            self.app_model.clone(),
+            self.dispatcher.box_clone(),
+        ))
+    }
 }
 
 impl PlaylistModel for DetailsModel {
+    fn song_list_model(&self) -> SongListModel {
+        self.app_model
+            .get_state()
+            .browser
+            .details_state(&self.id)
+            .expect("illegal attempt to read details_state")
+            .songs
+            .clone()
+    }
+
+    fn show_song_covers(&self) -> bool {
+        false
+    }
+
     fn select_song(&self, id: &str) {
-        let song = self.songs_ref().and_then(|songs| songs.get(id).cloned());
-        if let Some(song) = song {
+        let songs = self.song_list_model();
+        if let Some(song) = songs.get(id) {
             self.dispatcher
-                .dispatch(SelectionAction::Select(vec![song]).into());
+                .dispatch(SelectionAction::Select(vec![song.description().clone()]).into());
         }
     }
 
@@ -154,12 +170,12 @@ impl PlaylistModel for DetailsModel {
     }
 
     fn current_song_id(&self) -> Option<String> {
-        self.state().playback.current_song_id().cloned()
+        self.state().playback.current_song_id()
     }
 
     fn play_song_at(&self, pos: usize, id: &str) {
         let source = SongsSource::Album(self.id.clone());
-        let batch = self.songs_ref().and_then(|songs| songs.song_batch_for(pos));
+        let batch = self.song_list_model().song_batch_for(pos);
         if let Some(batch) = batch {
             self.dispatcher
                 .dispatch(PlaybackAction::LoadPagedSongs(source, batch).into());
@@ -168,27 +184,9 @@ impl PlaylistModel for DetailsModel {
         }
     }
 
-    fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>> {
-        match event {
-            AppEvent::BrowserEvent(BrowserEvent::AlbumDetailsLoaded(id)) if id == &self.id => {
-                let songs = self.songs_ref()?;
-                Some(ListDiff::Set(songs.iter().map(|s| s.into()).collect()))
-            }
-            AppEvent::BrowserEvent(BrowserEvent::AlbumTracksAppended(id, index))
-                if id == &self.id =>
-            {
-                let songs = self.songs_ref()?;
-                Some(ListDiff::Append(
-                    songs.iter().skip(*index).map(|s| s.into()).collect(),
-                ))
-            }
-            _ => None,
-        }
-    }
-
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
-        let songs = self.songs_ref()?;
-        let song = songs.get(id)?;
+        let song = self.song_list_model().get(id)?;
+        let song = song.description();
 
         let group = SimpleActionGroup::new();
 
@@ -202,8 +200,8 @@ impl PlaylistModel for DetailsModel {
     }
 
     fn menu_for(&self, id: &str) -> Option<gio::MenuModel> {
-        let songs = self.songs_ref()?;
-        let song = songs.get(id)?;
+        let song = self.song_list_model().get(id)?;
+        let song = song.description();
 
         let menu = gio::Menu::new();
         for artist in song.artists.iter() {
@@ -219,7 +217,7 @@ impl PlaylistModel for DetailsModel {
     }
 }
 
-impl SimpleScreenModel for DetailsModel {
+impl SimpleHeaderBarModel for DetailsModel {
     fn title(&self) -> Option<String> {
         None
     }
@@ -233,10 +231,8 @@ impl SimpleScreenModel for DetailsModel {
     }
 
     fn select_all(&self) {
-        if let Some(songs) = self.songs_ref() {
-            let songs: Vec<SongDescription> = songs.iter().cloned().collect();
-            self.dispatcher
-                .dispatch(SelectionAction::Select(songs).into());
-        }
+        let songs: Vec<SongDescription> = self.song_list_model().collect();
+        self.dispatcher
+            .dispatch(SelectionAction::Select(songs).into());
     }
 }

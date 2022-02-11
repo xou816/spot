@@ -77,9 +77,14 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkStackSidebar" id="home_stack_sidebar">
-                        <property name="width-request">200</property>
-                        <property name="vexpand">1</property>
+                      <object class="GtkScrolledWindow">
+                        <property name="hscrollbar-policy">never</property>
+                        <property name="child">
+                          <object class="GtkListBox" id="home_listbox">
+                            <property name="width-request">200</property>
+                            <property name="vexpand">1</property>
+                          </object>
+                        </property>
                       </object>
                     </child>
                   </object>
@@ -103,36 +108,12 @@
                   <object class="GtkBox">
                     <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkOverlay" id="main">
+                      <object class="AdwToastOverlay" id="main">
                         <property name="hexpand">1</property>
                         <property name="vexpand">1</property>
                         <child>
                           <object class="GtkStack" id="navigation_stack">
                             <property name="transition-type">slide-left-right</property>
-                          </object>
-                        </child>
-                        <child type="overlay">
-                          <object class="GtkBox" id="notification">
-                            <property name="halign">center</property>
-                            <property name="valign">start</property>
-                            <property name="margin-top">50</property>
-                            <property name="spacing">10</property>
-                            <child>
-                              <object class="GtkLabel" id="notification_content">
-                                <property name="label">Information</property>
-                                <property name="wrap">1</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkButton" id="close_notification">
-                                <property name="receives-default">1</property>
-                                <property name="icon-name">window-close-symbolic</property>
-                              </object>
-                            </child>
-                            <style>
-                              <class name="app-notification" />
-                              <class name="notification" />
-                            </style>
                           </object>
                         </child>
                       </object>

@@ -11,25 +11,25 @@ glib::wrapper! {
 // initial values for our two properties and then returns the new instance
 impl AlbumModel {
     pub fn new(
-        artist: &str,
-        album: &str,
+        artist: &String,
+        album: &String,
         year: Option<u32>,
-        cover: &Option<String>,
-        uri: &str,
+        cover: Option<&String>,
+        uri: &String,
     ) -> AlbumModel {
-        let year = year.unwrap_or(0);
+        let year = &year.unwrap_or(0);
         glib::Object::new::<AlbumModel>(&[
-            ("artist", &artist),
-            ("album", &album),
-            ("year", &year),
-            ("cover", cover),
-            ("uri", &uri),
+            ("artist", artist),
+            ("album", album),
+            ("year", year),
+            ("cover", &cover),
+            ("uri", uri),
         ])
         .expect("Failed to create")
     }
 
     pub fn year(&self) -> Option<u32> {
-        match self.property("year").unwrap().get::<u32>().unwrap() {
+        match self.property::<u32>("year") {
             0 => None,
             year => Some(year),
         }
@@ -37,18 +37,14 @@ impl AlbumModel {
 
     pub fn cover_url(&self) -> Option<String> {
         self.property("cover")
-            .unwrap()
-            .get::<&str>()
-            .ok()
-            .map(|s| s.to_string())
     }
 
-    pub fn uri(&self) -> Option<String> {
+    pub fn uri(&self) -> String {
         self.property("uri")
-            .unwrap()
-            .get::<&str>()
-            .ok()
-            .map(|s| s.to_string())
+    }
+
+    pub fn album_title(&self) -> String {
+        self.property("album")
     }
 }
 
@@ -56,28 +52,29 @@ mod imp {
 
     use super::*;
 
-    use std::cell::RefCell;
+    use std::cell::{Cell, RefCell};
 
     // Static array for defining the properties of the new type.
     lazy_static! {
         static ref PROPERTIES: [glib::ParamSpec; 5] = [
-            glib::ParamSpec::new_string("artist", "Artist", "", None, glib::ParamFlags::READWRITE),
-            glib::ParamSpec::new_string("album", "Album", "", None, glib::ParamFlags::READWRITE),
-            glib::ParamSpec::new_uint("year", "Year", "", 0, 9999, 0, glib::ParamFlags::READWRITE),
-            glib::ParamSpec::new_string("cover", "Cover", "", None, glib::ParamFlags::READWRITE),
-            glib::ParamSpec::new_string("uri", "URI", "", None, glib::ParamFlags::READWRITE),
+            glib::ParamSpecString::new("artist", "Artist", "", None, glib::ParamFlags::READWRITE),
+            glib::ParamSpecString::new("album", "Album", "", None, glib::ParamFlags::READWRITE),
+            glib::ParamSpecUInt::new("year", "Year", "", 0, 9999, 0, glib::ParamFlags::READWRITE),
+            glib::ParamSpecString::new("cover", "Cover", "", None, glib::ParamFlags::READWRITE),
+            glib::ParamSpecString::new("uri", "URI", "", None, glib::ParamFlags::READWRITE),
         ];
     }
 
     // This is the struct containing all state carried with
     // the new type. Generally this has to make use of
     // interior mutability.
+    #[derive(Default)]
     pub struct AlbumModel {
-        album: RefCell<Option<String>>,
-        artist: RefCell<Option<String>>,
-        year: RefCell<Option<u32>>,
+        album: RefCell<String>,
+        artist: RefCell<String>,
+        year: Cell<u32>,
         cover: RefCell<Option<String>>,
-        uri: RefCell<Option<String>>,
+        uri: RefCell<String>,
     }
 
     // ObjectSubclass is the trait that defines the new type and
@@ -92,21 +89,6 @@ mod imp {
 
         // The parent type this one is inheriting from.
         type ParentType = glib::Object;
-
-        // Interfaces this type implements
-        type Interfaces = ();
-
-        // Called every time a new instance is created. This should return
-        // a new instance of our type with its basic values.
-        fn new() -> Self {
-            Self {
-                album: RefCell::new(None),
-                artist: RefCell::new(None),
-                year: RefCell::new(None),
-                cover: RefCell::new(None),
-                uri: RefCell::new(None),
-            }
-        }
     }
 
     // Trait that is used to override virtual methods of glib::Object.
@@ -141,13 +123,10 @@ mod imp {
                     let year = value
                         .get()
                         .expect("type conformity checked by `Object::set_property`");
-                    match year {
-                        0 => self.year.replace(None),
-                        y => self.year.replace(Some(y)),
-                    };
+                    self.year.replace(year);
                 }
                 "cover" => {
-                    let cover = value
+                    let cover: Option<String> = value
                         .get()
                         .expect("type conformity checked by `Object::set_property`");
                     self.cover.replace(cover);
@@ -168,7 +147,7 @@ mod imp {
             match pspec.name() {
                 "album" => self.album.borrow().to_value(),
                 "artist" => self.artist.borrow().to_value(),
-                "year" => self.year.borrow().unwrap_or(0).to_value(),
+                "year" => self.year.get().to_value(),
                 "cover" => self.cover.borrow().to_value(),
                 "uri" => self.uri.borrow().to_value(),
                 _ => unimplemented!(),

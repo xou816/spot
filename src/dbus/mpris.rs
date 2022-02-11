@@ -1,12 +1,13 @@
 #![allow(non_snake_case)]
 #![allow(unused_variables)]
 
+use std::collections::HashMap;
+use std::convert::TryInto;
+
 use futures::channel::mpsc::UnboundedSender;
-use std::convert::{Into, TryInto};
-use zbus::dbus_interface;
 use zbus::fdo::{Error, Result};
-use zbus::ObjectServer;
-use zvariant::ObjectPath;
+use zbus::{dbus_interface, Interface, SignalContext};
+use zvariant::{ObjectPath, Value};
 
 use super::types::*;
 use crate::app::state::RepeatMode;
@@ -71,21 +72,63 @@ impl SpotMpris {
     }
 }
 
-#[derive(Clone)]
 pub struct SpotMprisPlayer {
-    pub state: SharedMprisState,
+    state: MprisState,
     sender: UnboundedSender<AppAction>,
 }
 
 impl SpotMprisPlayer {
-    pub fn new(state: SharedMprisState, sender: UnboundedSender<AppAction>) -> Self {
-        Self { state, sender }
+    pub fn new(sender: UnboundedSender<AppAction>) -> Self {
+        Self {
+            state: MprisState::new(),
+            sender,
+        }
+    }
+
+    pub fn state_mut(&mut self) -> &mut MprisState {
+        &mut self.state
+    }
+
+    pub async fn notify_current_track_changed(&self, ctxt: &SignalContext<'_>) -> zbus::Result<()> {
+        let metadata = Value::from(self.metadata());
+        let can_go_next = Value::from(self.can_go_next());
+        let can_go_previous = Value::from(self.can_go_previous());
+
+        zbus::fdo::Properties::properties_changed(
+            ctxt,
+            Self::name(),
+            &HashMap::from([
+                ("Metadata", &metadata),
+                ("CanGoNext", &can_go_next),
+                ("CanGoPrevious", &can_go_previous),
+            ]),
+            &[],
+        )
+        .await
+    }
+
+    pub async fn notify_loop_status(&self, ctxt: &SignalContext<'_>) -> zbus::Result<()> {
+        let loop_status = Value::from(self.loop_status());
+        let can_go_next = Value::from(self.can_go_next());
+        let can_go_previous = Value::from(self.can_go_previous());
+
+        zbus::fdo::Properties::properties_changed(
+            ctxt,
+            Self::name(),
+            &HashMap::from([
+                ("LoopStatus", &loop_status),
+                ("CanGoNext", &can_go_next),
+                ("CanGoPrevious", &can_go_previous),
+            ]),
+            &[],
+        )
+        .await
     }
 }
 
 #[dbus_interface(interface = "org.mpris.MediaPlayer2.Player")]
 impl SpotMprisPlayer {
-    pub fn next(&mut self) -> Result<()> {
+    pub fn next(&self) -> Result<()> {
         self.sender
             .unbounded_send(PlaybackAction::Next.into())
             .map_err(|_| Error::Failed("Could not send action".to_string()))
@@ -107,48 +150,16 @@ impl SpotMprisPlayer {
             .map_err(|_| Error::Failed("Could not send action".to_string()))
     }
 
-    pub fn play_pause(&mut self) -> Result<()> {
+    pub fn play_pause(&self) -> Result<()> {
         self.sender
             .unbounded_send(PlaybackAction::TogglePlay.into())
             .map_err(|_| Error::Failed("Could not send action".to_string()))
     }
 
-    pub fn notify_playback_status(&self) -> zbus::Result<()> {
-        let invalidated: Vec<String> = vec![];
-        let mut changed = std::collections::HashMap::new();
-        changed.insert(
-            "PlaybackStatus",
-            zvariant::Value::from(self.playback_status()),
-        );
-        ObjectServer::local_node_emit_signal(
-            None,
-            "org.freedesktop.DBus.Properties",
-            "PropertiesChanged",
-            &("org.mpris.MediaPlayer2.Player", changed, invalidated),
-        )
-    }
-
-    pub fn notify_metadata_and_prev_next(&self) -> zbus::Result<()> {
-        let invalidated: Vec<String> = vec![];
-        let mut changed = std::collections::HashMap::new();
-        changed.insert("Metadata", zvariant::Value::from(self.metadata()));
-        changed.insert("CanGoNext", zvariant::Value::from(self.can_go_next()));
-        changed.insert(
-            "CanGoPrevious",
-            zvariant::Value::from(self.can_go_previous()),
-        );
-        ObjectServer::local_node_emit_signal(
-            None,
-            "org.freedesktop.DBus.Properties",
-            "PropertiesChanged",
-            &("org.mpris.MediaPlayer2.Player", changed, invalidated),
-        )
-    }
-
-    fn previous(&mut self) -> Result<()> {
+    pub fn previous(&self) -> Result<()> {
         self.sender
             .unbounded_send(PlaybackAction::Previous.into())
-            .map_err(|_| zbus::fdo::Error::Failed("Could not send action".to_string()))
+            .map_err(|_| Error::Failed("Could not send action".to_string()))
     }
 
     pub fn seek(&self, Offset: i64) -> Result<()> {
@@ -164,7 +175,7 @@ impl SpotMprisPlayer {
 
         let new_pos: u32 = (new_pos)
             .try_into()
-            .map_err(|_| zbus::fdo::Error::Failed("Could not parse position".to_string()))?;
+            .map_err(|_| Error::Failed("Could not parse position".to_string()))?;
 
         // As per spec, if new position is past the length of the song skip to
         // the next song
@@ -175,7 +186,7 @@ impl SpotMprisPlayer {
         } else {
             self.sender
                 .unbounded_send(PlaybackAction::Seek(new_pos).into())
-                .map_err(|_| zbus::fdo::Error::Failed("Could not send action".to_string()))
+                .map_err(|_| Error::Failed("Could not send action".to_string()))
         }
     }
 
@@ -188,9 +199,11 @@ impl SpotMprisPlayer {
             return Ok(());
         }
 
-        let length: i64 = self.metadata().length.try_into().map_err(|_| {
-            zbus::fdo::Error::Failed("Could not cast length (too large)".to_string())
-        })?;
+        let length: i64 = self
+            .metadata()
+            .length
+            .try_into()
+            .map_err(|_| Error::Failed("Could not cast length (too large)".to_string()))?;
 
         if Position > length {
             return Ok(());
@@ -198,11 +211,11 @@ impl SpotMprisPlayer {
 
         let pos: u32 = (Position / 1000)
             .try_into()
-            .map_err(|_| zbus::fdo::Error::Failed("Could not parse position".to_string()))?;
+            .map_err(|_| Error::Failed("Could not parse position".to_string()))?;
 
         self.sender
             .unbounded_send(PlaybackAction::Seek(pos).into())
-            .map_err(|_| zbus::fdo::Error::Failed("Could not send action".to_string()))
+            .map_err(|_| Error::Failed("Could not send action".to_string()))
     }
 
     pub fn stop(&self) -> Result<()> {
@@ -210,8 +223,7 @@ impl SpotMprisPlayer {
     }
 
     #[dbus_interface(signal)]
-    #[rustfmt::skip]
-    pub fn seeked(&self, Position: i64) -> zbus::Result<()>;
+    pub async fn seeked(ctxt: &SignalContext<'_>, Position: i64) -> zbus::Result<()>;
 
     #[dbus_interface(property)]
     pub fn can_control(&self) -> bool {
@@ -250,14 +262,17 @@ impl SpotMprisPlayer {
 
     #[dbus_interface(property)]
     pub fn metadata(&self) -> TrackMetadata {
-        self.state.current_track().unwrap_or(TrackMetadata {
-            id: String::new(),
-            length: 0,
-            title: "Not playing".to_string(),
-            artist: vec![],
-            album: String::new(),
-            art: None,
-        })
+        self.state
+            .current_track()
+            .cloned()
+            .unwrap_or_else(|| TrackMetadata {
+                id: String::new(),
+                length: 0,
+                title: "Not playing".to_string(),
+                artist: vec![],
+                album: String::new(),
+                art: None,
+            })
     }
 
     #[dbus_interface(property)]
@@ -276,7 +291,7 @@ impl SpotMprisPlayer {
     }
 
     #[dbus_interface(property)]
-    pub fn set_loop_status(&self, value: LoopStatus) -> Result<()> {
+    pub fn set_loop_status(&self, value: LoopStatus) -> zbus::Result<()> {
         let mode = match value {
             LoopStatus::None => RepeatMode::None,
             LoopStatus::Track => RepeatMode::Song,
@@ -284,7 +299,8 @@ impl SpotMprisPlayer {
         };
         self.sender
             .unbounded_send(PlaybackAction::SetRepeatMode(mode).into())
-            .map_err(|_| zbus::fdo::Error::Failed("Could not send action".to_string()))
+            .map_err(|_| Error::Failed("Could not send action".to_string()))?;
+        Ok(())
     }
 
     #[dbus_interface(property)]
@@ -306,17 +322,26 @@ impl SpotMprisPlayer {
     }
 
     #[dbus_interface(property)]
-    pub fn set_shuffle(&self, value: bool) -> Result<()> {
+    pub fn set_shuffle(&self, value: bool) -> zbus::Result<()> {
         self.sender
             .unbounded_send(PlaybackAction::ToggleShuffle.into())
-            .map_err(|_| zbus::fdo::Error::Failed("Could not send action".to_string()))
+            .map_err(|_| Error::Failed("Could not send action".to_string()))?;
+        Ok(())
     }
 
     #[dbus_interface(property)]
     pub fn volume(&self) -> f64 {
-        0f64
+        self.state.volume()
     }
 
     #[dbus_interface(property)]
-    pub fn set_volume(&self, value: f64) {}
+    pub fn set_volume(&self, value: f64) -> zbus::Result<()> {
+        // As per spec, if new volume less than 0 round to 0
+        // also, we don't support volume higher than 100% at the moment.
+        let volume = value.clamp(0.0, 1.0);
+        self.sender
+            .unbounded_send(PlaybackAction::SetVolume(value).into())
+            .map_err(|_| Error::Failed("Could not send action".to_string()))?;
+        Ok(())
+    }
 }

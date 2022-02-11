@@ -2,6 +2,7 @@ use form_urlencoded::Serializer;
 use isahc::config::Configurable;
 use isahc::http::{method::Method, request::Builder, StatusCode, Uri};
 use isahc::{AsyncReadResponseExt, HttpClient, Request};
+use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
 use serde::{de::Deserialize, Serialize};
 use serde_json::from_str;
 use std::convert::Into;
@@ -14,6 +15,18 @@ pub use super::api_models::*;
 use super::cache::CacheError;
 
 const SPOTIFY_HOST: &str = "api.spotify.com";
+
+// https://url.spec.whatwg.org/#path-percent-encode-set
+const PATH_ENCODE_SET: &AsciiSet = &CONTROLS
+    .add(b' ')
+    .add(b'"')
+    .add(b'#')
+    .add(b'<')
+    .add(b'>')
+    .add(b'?')
+    .add(b'`')
+    .add(b'{')
+    .add(b'}');
 
 fn make_query_params<'a>() -> Serializer<'a, String> {
     Serializer::new(String::new())
@@ -139,8 +152,8 @@ pub enum SpotifyApiError {
     NoToken,
     #[error("No content from request")]
     NoContent,
-    #[error("Request failed with status {0}")]
-    BadStatus(u16),
+    #[error("Request failed ({0}): {1}")]
+    BadStatus(u16, String),
     #[error(transparent)]
     ClientError(#[from] isahc::Error),
     #[error(transparent)]
@@ -223,7 +236,7 @@ impl SpotifyClient {
             .headers()
             .get("cache-control")
             .and_then(|header| header.to_str().ok())
-            .and_then(|s| Self::parse_cache_control(s));
+            .and_then(Self::parse_cache_control);
 
         match result.status() {
             s if s.is_success() => Ok(SpotifyResponse {
@@ -240,7 +253,13 @@ impl SpotifyClient {
                 max_age: cache_control.unwrap_or(10),
                 etag,
             }),
-            s => Err(SpotifyApiError::BadStatus(s.as_u16())),
+            s => Err(SpotifyApiError::BadStatus(
+                s.as_u16(),
+                result
+                    .text()
+                    .await
+                    .unwrap_or_else(|_| "(no details available)".to_string()),
+            )),
         }
     }
 
@@ -248,7 +267,7 @@ impl SpotifyClient {
     where
         B: Into<isahc::AsyncBody>,
     {
-        let result = self.client.send_async(request).await?;
+        let mut result = self.client.send_async(request).await?;
         match result.status() {
             StatusCode::UNAUTHORIZED => {
                 self.clear_token();
@@ -256,7 +275,13 @@ impl SpotifyClient {
             }
             StatusCode::NOT_MODIFIED => Ok(()),
             s if s.is_success() => Ok(()),
-            s => Err(SpotifyApiError::BadStatus(s.as_u16())),
+            s => Err(SpotifyApiError::BadStatus(
+                s.as_u16(),
+                result
+                    .text()
+                    .await
+                    .unwrap_or_else(|_| "(no details available)".to_string()),
+            )),
         }
     }
 }
@@ -310,11 +335,25 @@ impl SpotifyClient {
             .uri("/v1/me/albums".to_string(), Some(&query))
     }
 
+    pub(crate) fn save_tracks(&self, ids: Vec<String>) -> SpotifyRequest<'_, Vec<u8>, ()> {
+        self.request()
+            .method(Method::PUT)
+            .uri("/v1/me/tracks".to_string(), None)
+            .json_body(Ids { ids })
+    }
+
     pub(crate) fn remove_saved_album(&self, id: &str) -> SpotifyRequest<'_, (), ()> {
         let query = make_query_params().append_pair("ids", id).finish();
         self.request()
             .method(Method::DELETE)
             .uri("/v1/me/albums".to_string(), Some(&query))
+    }
+
+    pub(crate) fn remove_saved_tracks(&self, ids: Vec<String>) -> SpotifyRequest<'_, Vec<u8>, ()> {
+        self.request()
+            .method(Method::DELETE)
+            .uri("/v1/me/tracks".to_string(), None)
+            .json_body(Ids { ids })
     }
 
     pub(crate) fn get_album(&self, id: &str) -> SpotifyRequest<'_, (), FullAlbum> {
@@ -453,6 +492,7 @@ impl SpotifyClient {
     }
 
     pub(crate) fn get_user(&self, id: &str) -> SpotifyRequest<'_, (), User> {
+        let id = utf8_percent_encode(id, PATH_ENCODE_SET);
         self.request()
             .method(Method::GET)
             .uri(format!("/v1/users/{}", id), None)
@@ -464,6 +504,7 @@ impl SpotifyClient {
         offset: usize,
         limit: usize,
     ) -> SpotifyRequest<'_, (), Page<Playlist>> {
+        let id = utf8_percent_encode(id, PATH_ENCODE_SET);
         let query = make_query_params()
             .append_pair("offset", &offset.to_string()[..])
             .append_pair("limit", &limit.to_string()[..])
@@ -479,6 +520,21 @@ impl SpotifyClient {
 pub mod tests {
 
     use super::*;
+
+    #[test]
+    fn test_username_encoding() {
+        let username = "anna.lafuente❤";
+        let client = SpotifyClient::new();
+        let req = client.get_user(username);
+        assert_eq!(
+            req.request
+                .uri_ref()
+                .and_then(|u| u.path_and_query())
+                .unwrap()
+                .as_str(),
+            "/v1/users/anna.lafuente%E2%9D%A4"
+        );
+    }
 
     #[test]
     fn test_search_query() {

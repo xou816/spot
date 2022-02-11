@@ -1,0 +1,7 @@
+.item_sidebar {
+    margin: 12px 6px;
+}
+
+.listbox_sidebar {
+    background-color: @view_bg_color;
+}

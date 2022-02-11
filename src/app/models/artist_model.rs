@@ -17,18 +17,10 @@ impl ArtistModel {
 
     pub fn image_url(&self) -> Option<String> {
         self.property("image")
-            .unwrap()
-            .get::<&str>()
-            .ok()
-            .map(|s| s.to_string())
     }
 
-    pub fn id(&self) -> Option<String> {
+    pub fn id(&self) -> String {
         self.property("id")
-            .unwrap()
-            .get::<&str>()
-            .ok()
-            .map(|s| s.to_string())
     }
 }
 
@@ -40,19 +32,20 @@ mod imp {
     // Static array for defining the properties of the new type.
     lazy_static! {
         static ref PROPERTIES: [glib::ParamSpec; 3] = [
-            glib::ParamSpec::new_string("artist", "Artist", "", None, glib::ParamFlags::READWRITE),
-            glib::ParamSpec::new_string("image", "Image", "", None, glib::ParamFlags::READWRITE),
-            glib::ParamSpec::new_string("id", "id", "", None, glib::ParamFlags::READWRITE),
+            glib::ParamSpecString::new("artist", "Artist", "", None, glib::ParamFlags::READWRITE),
+            glib::ParamSpecString::new("image", "Image", "", None, glib::ParamFlags::READWRITE),
+            glib::ParamSpecString::new("id", "id", "", None, glib::ParamFlags::READWRITE),
         ];
     }
 
     // This is the struct containing all state carried with
     // the new type. Generally this has to make use of
     // interior mutability.
+    #[derive(Default)]
     pub struct ArtistModel {
-        artist: RefCell<Option<String>>,
+        artist: RefCell<String>,
         image: RefCell<Option<String>>,
-        id: RefCell<Option<String>>,
+        id: RefCell<String>,
     }
 
     // ObjectSubclass is the trait that defines the new type and
@@ -67,19 +60,6 @@ mod imp {
 
         // The parent type this one is inheriting from.
         type ParentType = glib::Object;
-
-        // Interfaces this type implements
-        type Interfaces = ();
-
-        // Called every time a new instance is created. This should return
-        // a new instance of our type with its basic values.
-        fn new() -> Self {
-            Self {
-                artist: RefCell::new(None),
-                image: RefCell::new(None),
-                id: RefCell::new(None),
-            }
-        }
     }
 
     // Trait that is used to override virtual methods of glib::Object.
@@ -129,15 +109,6 @@ mod imp {
                 "id" => self.id.borrow().to_value(),
                 _ => unimplemented!(),
             }
-        }
-
-        // Called right after construction of the instance.
-        fn constructed(&self, obj: &Self::Type) {
-            // Chain up to the parent type's implementation of this virtual
-            // method.
-            self.parent_constructed(obj);
-
-            // And here we could do our own initialization.
         }
     }
 }

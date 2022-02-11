@@ -95,7 +95,7 @@ impl SearchResultsWidget {
 
     fn bind_albums_results<F>(&self, worker: Worker, store: &gio::ListStore, on_album_pressed: F)
     where
-        F: Fn(&String) + Clone + 'static,
+        F: Fn(String) + Clone + 'static,
     {
         self.widget()
             .albums_results
@@ -104,9 +104,7 @@ impl SearchResultsWidget {
                     let f = on_album_pressed.clone();
                     let album = AlbumWidget::for_model(album_model, worker.clone());
                     album.connect_album_pressed(clone!(@weak album_model => move |_| {
-                        if let Some(id) = album_model.uri().as_ref() {
-                            f(id);
-                        }
+                        f(album_model.uri());
                     }));
                     album
                 })
@@ -115,7 +113,7 @@ impl SearchResultsWidget {
 
     fn bind_artists_results<F>(&self, worker: Worker, store: &gio::ListStore, on_artist_pressed: F)
     where
-        F: Fn(&String) + Clone + 'static,
+        F: Fn(String) + Clone + 'static,
     {
         self.widget()
             .artist_results
@@ -124,9 +122,7 @@ impl SearchResultsWidget {
                     let f = on_artist_pressed.clone();
                     let artist = ArtistWidget::for_model(artist_model, worker.clone());
                     artist.connect_artist_pressed(clone!(@weak artist_model => move |_| {
-                        if let Some(id) = artist_model.id().as_ref() {
-                            f(id);
-                        }
+                        f(artist_model.id());
                     }));
                     artist
                 })
@@ -191,7 +187,7 @@ impl SearchResults {
                     &album.artists_name(),
                     &album.title,
                     album.year(),
-                    &album.art,
+                    album.art.as_ref(),
                     &album.id,
                 ));
             }

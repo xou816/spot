@@ -8,6 +8,7 @@ extern crate log;
 use futures::channel::mpsc::UnboundedSender;
 use gettextrs::*;
 use gio::prelude::*;
+use gio::ApplicationFlags;
 use gio::SimpleAction;
 use gtk::prelude::*;
 use libadwaita::ColorScheme;
@@ -33,7 +34,7 @@ fn main() {
 
     let settings = settings::SpotSettings::new_from_gsettings().unwrap_or_default();
     startup(&settings);
-    let gtk_app = gtk::Application::new(Some(config::APPID), Default::default());
+    let gtk_app = gtk::Application::new(Some(config::APPID), ApplicationFlags::HANDLES_OPEN);
     expose_widgets();
     let builder = gtk::Builder::from_resource("/dev/alextren/Spot/window.ui");
     let window: libadwaita::ApplicationWindow = builder.object("window").unwrap();
@@ -44,7 +45,6 @@ fn main() {
     }
 
     let context = glib::MainContext::default();
-    context.push_thread_default();
 
     let dispatch_loop = DispatchLoop::new();
     let sender = dispatch_loop.make_dispatcher();
@@ -58,14 +58,27 @@ fn main() {
     );
     context.spawn_local(app.attach(dispatch_loop));
 
+    let sender_clone = sender.clone();
     gtk_app.connect_activate(move |gtk_app| {
+        debug!("activate");
         if let Some(existing_window) = gtk_app.active_window() {
             existing_window.present();
         } else {
             window.set_application(Some(gtk_app));
             gtk_app.add_window(&window);
-            sender.unbounded_send(AppAction::Start).unwrap();
+            sender_clone.unbounded_send(AppAction::Start).unwrap();
         }
+    });
+
+    gtk_app.connect_open(move |gtk_app, targets, _| {
+        gtk_app.activate();
+
+        // There should only be one target because %u is used in desktop file
+        let target = &targets[0];
+        let uri = target.uri().to_string();
+        let action = AppAction::OpenURI(uri)
+            .unwrap_or_else(|| AppAction::ShowNotification(gettext("Failed to open link!")));
+        sender.unbounded_send(action).unwrap();
     });
 
     context.invoke_local(move || {
@@ -78,7 +91,7 @@ fn main() {
 fn startup(settings: &settings::SpotSettings) {
     gtk::init().unwrap_or_else(|_| panic!("Failed to initialize GTK"));
     libadwaita::init();
-    let manager = libadwaita::StyleManager::default().unwrap();
+    let manager = libadwaita::StyleManager::default();
 
     let res = gio::Resource::load(config::PKGDATADIR.to_owned() + "/spot.gresource")
         .expect("Could not load resources");

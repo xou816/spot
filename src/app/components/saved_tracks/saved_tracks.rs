@@ -3,11 +3,11 @@ use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use std::rc::Rc;
 
+use super::SavedTracksModel;
 use crate::app::components::{Component, EventListener, Playlist};
 use crate::app::state::LoginEvent;
 use crate::app::{AppEvent, Worker};
-
-use super::SavedTracksModel;
+use libadwaita::subclass::prelude::BinImpl;
 
 mod imp {
 
@@ -27,7 +27,7 @@ mod imp {
     impl ObjectSubclass for SavedTracksWidget {
         const NAME: &'static str = "SavedTracksWidget";
         type Type = super::SavedTracksWidget;
-        type ParentType = gtk::Box;
+        type ParentType = libadwaita::Bin;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
@@ -40,11 +40,11 @@ mod imp {
 
     impl ObjectImpl for SavedTracksWidget {}
     impl WidgetImpl for SavedTracksWidget {}
-    impl BoxImpl for SavedTracksWidget {}
+    impl BinImpl for SavedTracksWidget {}
 }
 
 glib::wrapper! {
-    pub struct SavedTracksWidget(ObjectSubclass<imp::SavedTracksWidget>) @extends gtk::Widget, gtk::Box;
+    pub struct SavedTracksWidget(ObjectSubclass<imp::SavedTracksWidget>) @extends gtk::Widget, libadwaita::Bin;
 }
 
 impl SavedTracksWidget {
@@ -86,12 +86,7 @@ impl SavedTracks {
             model.load_more();
         }));
 
-        let playlist = Playlist::new(
-            widget.song_list_widget().clone(),
-            model.clone(),
-            worker,
-            true,
-        );
+        let playlist = Playlist::new(widget.song_list_widget().clone(), model.clone(), worker);
 
         Self {
             widget,

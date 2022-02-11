@@ -1,21 +1,17 @@
-.song__index {
+.playlist .song__index {
   transition: opacity 150ms ease;
-  font-size: 0.85rem;
-  margin: 4px 12px;
+  margin: 6px 12px;
   padding: 0;
   opacity: 1;
+  min-width: 1.5em;
 }
 
-.song--cover .song__index {
-  opacity: 0;
+.song__cover {
+  border-radius: 6px;
+  border: 1px solid @card_shade_color;
 }
 
-.song__icon, .song__checkbox {
-  transition: opacity 150ms ease;
-  opacity: 0;
-}
-
-.song--playing .song__index {
+.album__tracks .song__cover {
   opacity: 0;
 }
 
@@ -23,36 +19,36 @@
   opacity: 1;
 }
 
-.playlist--selectable .song__index, .playlist--selectable .song__icon {
+.song__icon,
+.song__checkbox,
+.song--playing .song__index,
+.song--playing .song__cover,
+.playlist--selectable .song__index,
+.playlist--selectable .song__cover,
+.playlist--selectable .song__icon {
+  transition: opacity 150ms ease;
   opacity: 0;
 }
 
-.playlist--selectable .song__checkbox, .playlist--selectable .song__checkbox check {
+
+.playlist--selectable .song__checkbox,
+.playlist--selectable .song__checkbox check {
   opacity: 1;
   filter: none;
 }
 
-.song__title {
-  font-size: 1.15rem;
+
+row:hover .song__menu--enabled, .song__menu--enabled:checked {
+  opacity: 1;
 }
 
-row {
-  transition: background-color 150ms ease;
-}
 
-.song--playing label.song__title, .song--playing label.song__index {
+/* Song Labels */
+.song--playing label.title {
   font-weight: bold;
 }
 
-.song label.song__artist {
-  font-size: 0.85rem;
-}
-
-.song label.song__duration {
-  font-size: 1rem;
-  color: @insensitive_fg_color;
-}
-
+/* "Context Menu" */
 .song__menu {
   opacity: 0;
 }
@@ -61,10 +57,44 @@ row {
   opacity: 0.2;
 }
 
-row:hover .song__menu--enabled, .song__menu--enabled:checked {
-  opacity: 1;
+
+/* Song boxed list styling */
+
+.playlist {
+  background: transparent;
 }
 
-.song--playing .song__cover, .playlist--selectable .song__cover {
-  opacity: 0.2;
+.playlist row {
+  background: @card_bg_color;
+  margin-left:12px;
+  margin-right:12px;
+  box-shadow: 1px 0px 3px rgba(0, 0, 0, 0.07), -1px 0px 3px rgba(0, 0, 0, 0.07);
+  transition: background-color 150ms ease;
 }
+
+.playlist row:hover {
+background-image: image(alpha(currentColor,0.03));
+}
+.playlist row:active {
+background-image: image(alpha(currentColor,0.08));
+}
+
+
+.playlist row:first-child {
+ margin-top: 12px;
+ border-radius: 12px 12px 0 0;
+}
+
+.playlist row:last-child {
+ margin-bottom: 12px;
+ border-bottom-color:rgba(0, 0, 0, 0);
+ border-radius: 0 0 12px 12px;
+ box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.21);
+}
+
+.playlist row:only-child {
+ margin-top: 12px;
+ margin-bottom: 12px;
+ border-radius: 12px 12px 12px 12px;
+}
+

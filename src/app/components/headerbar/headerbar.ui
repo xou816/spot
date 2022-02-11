@@ -3,7 +3,7 @@
   <requires lib="gtk" version="4.0" />
   <requires lib="libadwaita" version="1.0" />
   <template class="HeaderBarWidget" parent="AdwBin">
-    <child>
+    <child type="root">
       <object class="GtkOverlay" id="overlay">
         <property name="hexpand">1</property>
         <child>
@@ -20,7 +20,7 @@
             </child>
             <child type="title">
               <object class="AdwWindowTitle" id="title">
-                <property name="visible">0</property>
+                <property name="visible">1</property>
                 <property name="title" translatable="no">Spot</property>
               </object>
             </child>

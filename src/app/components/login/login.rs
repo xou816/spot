@@ -88,8 +88,8 @@ impl LoginWindow {
         controller.set_propagation_phase(gtk::PropagationPhase::Capture);
         controller.connect_key_pressed(
             clone!(@weak self as _self => @default-return gtk::Inhibit(false), move |_, key, _, modifier| {
-                _self.show_caps_lock_info((modifier == gdk::ModifierType::LOCK_MASK) ^ (key == gdk::keys::constants::Caps_Lock));
-                if key == gdk::keys::constants::Return {
+                _self.show_caps_lock_info((modifier == gdk::ModifierType::LOCK_MASK) ^ (key == gdk::Key::Caps_Lock));
+                if key == gdk::Key::Return {
                     _self.submit(&on_submit_clone);
                     gtk::Inhibit(true)
                 } else {

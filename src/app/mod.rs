@@ -1,4 +1,6 @@
 use crate::api::CachedSpotifyClient;
+use crate::app::components::sidebar_listbox::{build_sidebar_listbox, SideBarItem};
+use crate::glib::StaticType;
 use crate::settings::SpotSettings;
 use futures::channel::mpsc::UnboundedSender;
 use std::rc::Rc;
@@ -86,8 +88,8 @@ impl App {
                 worker.clone(),
             ),
             App::make_search_button(builder, dispatcher.box_clone()),
-            App::make_user_menu(builder, Rc::clone(model), dispatcher.box_clone()),
-            App::make_notification(builder, dispatcher),
+            App::make_user_menu(builder, Rc::clone(model), dispatcher),
+            App::make_notification(builder),
         ];
 
         self.components.append(&mut components);
@@ -107,7 +109,7 @@ impl App {
         app_model: Rc<AppModel>,
         sender: UnboundedSender<AppAction>,
     ) -> Box<impl EventListener> {
-        Box::new(crate::dbus::start_dbus_server(app_model, sender).expect("could not start server"))
+        Box::new(crate::dbus::start_dbus_server(app_model, sender))
     }
 
     fn make_window(
@@ -127,8 +129,8 @@ impl App {
     ) -> Box<Navigation> {
         let leaflet: libadwaita::Leaflet = builder.object("leaflet").unwrap();
         let navigation_stack: gtk::Stack = builder.object("navigation_stack").unwrap();
-        let home_stack_sidebar: gtk::StackSidebar = builder.object("home_stack_sidebar").unwrap();
-
+        let home_list_store = gio::ListStore::new(SideBarItem::static_type());
+        let home_listbox = build_sidebar_listbox(builder, &home_list_store);
         let model = NavigationModel::new(Rc::clone(&app_model), dispatcher.box_clone());
         let screen_factory =
             ScreenFactory::new(Rc::clone(&app_model), dispatcher.box_clone(), worker);
@@ -136,7 +138,8 @@ impl App {
             model,
             leaflet,
             navigation_stack,
-            home_stack_sidebar,
+            home_listbox,
+            home_list_store,
             screen_factory,
         ))
     }
@@ -197,23 +200,19 @@ impl App {
         Box::new(user_menu)
     }
 
-    fn make_notification(
-        builder: &gtk::Builder,
-        dispatcher: Box<dyn ActionDispatcher>,
-    ) -> Box<Notification> {
-        let root: gtk::Box = builder.object("notification").unwrap();
-        let content: gtk::Label = builder.object("notification_content").unwrap();
-        let close: gtk::Button = builder.object("close_notification").unwrap();
-        let model = NotificationModel::new(dispatcher);
-        Box::new(Notification::new(model, root, content, close))
+    fn make_notification(builder: &gtk::Builder) -> Box<Notification> {
+        let toast_overlay: libadwaita::ToastOverlay = builder.object("main").unwrap();
+        Box::new(Notification::new(toast_overlay))
     }
 
     fn handle(&mut self, message: AppAction) {
-        if let AppAction::Start = message {
-            self.add_ui_components();
-        }
+        let starting = matches!(&message, &AppAction::Start);
 
         let events = self.model.update_state(message);
+
+        if !events.is_empty() && starting {
+            self.add_ui_components();
+        }
 
         for event in events.iter() {
             for component in self.components.iter_mut() {

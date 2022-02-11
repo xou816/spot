@@ -1,5 +1,4 @@
 use std::convert::{Into, TryFrom};
-use std::sync::{Arc, Mutex};
 use std::time::Instant;
 use zvariant::Type;
 use zvariant::{Dict, Signature, Str, Value};
@@ -82,6 +81,7 @@ impl PositionMicros {
             rate,
         }
     }
+
     fn current(&self) -> u128 {
         let current_progress = self.last_resume_instant.map(|ri| {
             let elapsed = ri.elapsed().as_micros() as f32;
@@ -106,7 +106,7 @@ impl PositionMicros {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct TrackMetadata {
     pub id: String,
     pub length: u64,
@@ -144,9 +144,10 @@ impl From<TrackMetadata> for Value<'_> {
     }
 }
 
-struct MprisState {
+pub struct MprisState {
     status: PlaybackStatus,
     loop_status: LoopStatus,
+    volume: f64,
     shuffled: bool,
     position: PositionMicros,
     metadata: Option<TrackMetadata>,
@@ -154,12 +155,9 @@ struct MprisState {
     has_next: bool,
 }
 
-#[derive(Clone)]
-pub struct SharedMprisState(Arc<Mutex<MprisState>>);
-
-impl SharedMprisState {
+impl MprisState {
     pub fn new() -> Self {
-        Self(Arc::new(Mutex::new(MprisState {
+        Self {
             status: PlaybackStatus::Stopped,
             loop_status: LoopStatus::None,
             shuffled: false,
@@ -167,99 +165,84 @@ impl SharedMprisState {
             metadata: None,
             has_prev: false,
             has_next: false,
-        })))
+            volume: 1f64,
+        }
+    }
+
+    pub fn volume(&self) -> f64 {
+        self.volume
+    }
+
+    pub fn set_volume(&mut self, volume: f64) {
+        self.volume = volume;
     }
 
     pub fn status(&self) -> PlaybackStatus {
-        self.0
-            .lock()
-            .map(|s| s.status)
-            .unwrap_or(PlaybackStatus::Stopped)
+        self.status
     }
 
     pub fn loop_status(&self) -> LoopStatus {
-        self.0
-            .lock()
-            .map(|s| s.loop_status)
-            .unwrap_or(LoopStatus::None)
+        self.loop_status
     }
 
     pub fn is_shuffled(&self) -> bool {
-        self.0.lock().ok().map(|s| s.shuffled).unwrap_or(false)
+        self.shuffled
     }
 
-    pub fn current_track(&self) -> Option<TrackMetadata> {
-        self.0.lock().ok().and_then(|s| s.metadata.clone())
+    pub fn current_track(&self) -> Option<&TrackMetadata> {
+        self.metadata.as_ref()
     }
 
     pub fn has_prev(&self) -> bool {
-        self.0.lock().ok().map(|s| s.has_prev).unwrap_or(false)
+        self.has_prev
     }
 
     pub fn has_next(&self) -> bool {
-        self.0.lock().ok().map(|s| s.has_next).unwrap_or(false)
+        self.has_next
     }
 
-    pub fn set_has_prev(&self, has_prev: bool) {
-        if let Ok(mut state) = self.0.lock() {
-            (*state).has_prev = has_prev;
-        }
+    pub fn set_has_prev(&mut self, has_prev: bool) {
+        self.has_prev = has_prev;
     }
 
-    pub fn set_has_next(&self, has_next: bool) {
-        if let Ok(mut state) = self.0.lock() {
-            (*state).has_next = has_next;
-        }
+    pub fn set_has_next(&mut self, has_next: bool) {
+        self.has_next = has_next;
     }
 
-    pub fn set_current_track(&self, track: Option<TrackMetadata>) {
-        if let Ok(mut state) = self.0.lock() {
-            let playing = state.status == PlaybackStatus::Playing;
-            (*state).metadata = track;
-            (*state).position.set(0, playing);
-        }
+    pub fn set_current_track(&mut self, track: Option<TrackMetadata>) {
+        let playing = self.status == PlaybackStatus::Playing;
+        self.metadata = track;
+        self.position.set(0, playing);
     }
 
     pub fn position(&self) -> u128 {
-        self.0
-            .lock()
-            .ok()
-            .map(|s| s.position.current())
-            .unwrap_or(0)
+        self.position.current()
     }
 
-    pub fn set_position(&self, position: u128) {
-        if let Ok(mut state) = self.0.lock() {
-            let playing = state.status == PlaybackStatus::Playing;
-            (*state).position.set(position, playing);
-        }
+    pub fn set_position(&mut self, position: u128) {
+        let playing = self.status == PlaybackStatus::Playing;
+        self.position.set(position, playing);
     }
 
-    pub fn set_loop_status(&self, loop_status: LoopStatus) {
-        if let Ok(mut state) = self.0.lock() {
-            (*state).loop_status = loop_status;
-        }
+    pub fn set_loop_status(&mut self, loop_status: LoopStatus) {
+        self.loop_status = loop_status;
     }
 
-    pub fn set_shuffled(&self, shuffled: bool) {
-        if let Ok(mut state) = self.0.lock() {
-            (*state).shuffled = shuffled;
-        }
+    pub fn set_shuffled(&mut self, shuffled: bool) {
+        self.shuffled = shuffled;
     }
 
-    pub fn set_playing(&self, status: PlaybackStatus) {
-        if let Ok(mut state) = self.0.lock() {
-            (*state).status = status;
-            match status {
-                PlaybackStatus::Playing => {
-                    (*state).position.resume();
-                }
-                PlaybackStatus::Paused => {
-                    (*state).position.pause();
-                }
-                PlaybackStatus::Stopped => {
-                    (*state).position.set(0, false);
-                }
+    pub fn set_playing(&mut self, status: PlaybackStatus) {
+        self.status = status;
+        match status {
+            PlaybackStatus::Playing => {
+                self.position.resume();
+            }
+            PlaybackStatus::Paused => {
+                self.position.pause();
+            }
+            PlaybackStatus::Stopped => {
+                self.position.set(0, false);
             }
         }
     }

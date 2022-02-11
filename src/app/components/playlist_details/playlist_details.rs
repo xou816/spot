@@ -10,6 +10,7 @@ use crate::app::components::{Component, EventListener, Playlist};
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
 use crate::app::{AppEvent, BrowserEvent};
+use libadwaita::subclass::prelude::BinImpl;
 
 mod imp {
 
@@ -38,7 +39,7 @@ mod imp {
     impl ObjectSubclass for PlaylistDetailsWidget {
         const NAME: &'static str = "PlaylistDetailsWidget";
         type Type = super::PlaylistDetailsWidget;
-        type ParentType = gtk::Box;
+        type ParentType = libadwaita::Bin;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
@@ -59,11 +60,11 @@ mod imp {
     }
 
     impl WidgetImpl for PlaylistDetailsWidget {}
-    impl BoxImpl for PlaylistDetailsWidget {}
+    impl BinImpl for PlaylistDetailsWidget {}
 }
 
 glib::wrapper! {
-    pub struct PlaylistDetailsWidget(ObjectSubclass<imp::PlaylistDetailsWidget>) @extends gtk::Widget, gtk::Box;
+    pub struct PlaylistDetailsWidget(ObjectSubclass<imp::PlaylistDetailsWidget>) @extends gtk::Widget, libadwaita::Bin;
 }
 
 impl PlaylistDetailsWidget {
@@ -163,7 +164,6 @@ impl PlaylistDetails {
             widget.playlist_tracks_widget().clone(),
             model.clone(),
             worker.clone(),
-            true,
         ));
 
         widget.connect_header();

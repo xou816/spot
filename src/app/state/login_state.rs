@@ -1,4 +1,5 @@
 use gettextrs::*;
+use std::borrow::Cow;
 use std::time::SystemTime;
 
 use crate::app::credentials::Credentials;
@@ -69,26 +70,18 @@ impl From<LoginEvent> for AppEvent {
     }
 }
 
+#[derive(Default)]
 pub struct LoginState {
     pub user: Option<String>,
     pub playlists: Vec<PlaylistSummary>,
-}
-
-impl Default for LoginState {
-    fn default() -> Self {
-        Self {
-            user: None,
-            playlists: vec![],
-        }
-    }
 }
 
 impl UpdatableState for LoginState {
     type Action = LoginAction;
     type Event = AppEvent;
 
-    fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
-        match action {
+    fn update_with(&mut self, action: Cow<Self::Action>) -> Vec<Self::Event> {
+        match action.into_owned() {
             LoginAction::TryLogin(TryLoginAction::Password { username, password }) => {
                 vec![
                     LoginEvent::LoginStarted(LoginStartedEvent::Password { username, password })
