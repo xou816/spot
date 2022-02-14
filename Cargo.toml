@@ -48,7 +48,7 @@ version = "^1.2.0"
 features = ["json"]
 
 [dependencies.rand]
-version = "^0.8.4"
+version = "^0.8.5"
 features = ["small_rng"]
 
 [dependencies.gettext-rs]
