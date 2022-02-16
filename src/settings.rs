@@ -4,7 +4,7 @@ use librespot::playback::config::Bitrate;
 
 const SETTINGS: &str = "dev.alextren.Spot";
 
-#[derive(Clone, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct WindowGeometry {
     pub width: i32,
     pub height: i32,
@@ -71,6 +71,7 @@ impl SpotifyPlayerSettings {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct SpotSettings {
     pub prefers_dark_theme: bool,
     pub player_settings: SpotifyPlayerSettings,

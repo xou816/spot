@@ -1,4 +1,6 @@
-use crate::{app::ActionDispatcher, settings::SpotSettings};
+use crate::app::state::SettingsAction;
+use crate::app::ActionDispatcher;
+use crate::player::SpotifyPlayerSettings;
 
 pub struct SettingsModel {
     dispatcher: Box<dyn ActionDispatcher>,
@@ -9,5 +11,8 @@ impl SettingsModel {
         Self { dispatcher }
     }
 
-    pub fn save(&self, settings: SpotSettings) {}
+    pub fn set_player_settings(&self, settings: SpotifyPlayerSettings) {
+        self.dispatcher
+            .dispatch(SettingsAction::ChangePlayerSettings(settings).into());
+    }
 }

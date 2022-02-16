@@ -5,9 +5,9 @@ use crate::app::AppEvent;
 use crate::player::{AudioBackend, SpotifyPlayerSettings};
 use crate::settings::{SpotSettings, WindowGeometry};
 
+use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
-use gtk::{prelude::*, Inhibit};
 use libadwaita::prelude::*;
 use librespot::playback::config::Bitrate;
 
@@ -71,6 +71,7 @@ impl SettingsWindow {
         let window: Self =
             glib::Object::new(&[]).expect("Failed to create an instance of SettingsWindow");
         window.bind_settings();
+        window.connect_theme_select();
         window
     }
 
@@ -158,46 +159,64 @@ impl SettingsWindow {
             .build();
     }
 
+    fn connect_theme_select(&self) {
+        let widget = imp::SettingsWindow::from_instance(self);
+        let theme = widget.theme.downcast_ref::<libadwaita::ComboRow>().unwrap();
+        theme.connect_selected_notify(|theme| {
+            let prefers_dark_theme = theme.selected() == 1;
+            let manager = libadwaita::StyleManager::default();
+
+            manager.set_color_scheme(if prefers_dark_theme {
+                libadwaita::ColorScheme::PreferDark
+            } else {
+                libadwaita::ColorScheme::PreferLight
+            });
+        });
+    }
+
     fn connect_close<F>(&self, on_close: F)
     where
         F: Fn(SpotSettings) + 'static,
     {
-        let widget = imp::SettingsWindow::from_instance(self);
-
-        let bitrate = match widget.player_bitrate.selected() {
-            0 => Bitrate::Bitrate96,
-            1 => Bitrate::Bitrate160,
-            2 => Bitrate::Bitrate320,
-            _ => unreachable!(),
-        };
-        let alsa_device = widget.alsa_device.text();
-        let backend = match widget.audio_backend.selected() {
-            0 => AudioBackend::PulseAudio,
-            1 => AudioBackend::Alsa(alsa_device.as_str().into()),
-            _ => unreachable!(),
-        };
-        let ap_port = widget.ap_port.text().parse().ok();
-        let prefers_dark_theme = widget.theme.selected() == 1;
-
-        let player_settings = SpotifyPlayerSettings {
-            bitrate,
-            backend,
-            ap_port,
-        };
-        let window_geometry = WindowGeometry::new_from_gsettings();
-        let settings = SpotSettings {
-            prefers_dark_theme,
-            player_settings,
-            window: window_geometry,
-        };
-
         let pref_window = self.upcast_ref::<libadwaita::PreferencesWindow>();
         let window = pref_window.upcast_ref::<libadwaita::Window>();
 
-        window.connect_close_request(move |_| {
-            //on_close(settings);
-            Inhibit(false)
-        });
+        window.connect_close_request(
+            clone!(@weak self as _self => @default-return gtk::Inhibit(false), move |_| {
+                let widget = imp::SettingsWindow::from_instance(&_self);
+
+                let bitrate = match widget.player_bitrate.selected() {
+                    0 => Bitrate::Bitrate96,
+                    1 => Bitrate::Bitrate160,
+                    2 => Bitrate::Bitrate320,
+                    _ => unreachable!(),
+                };
+                let alsa_device = widget.alsa_device.text();
+                let backend = match widget.audio_backend.selected() {
+                    0 => AudioBackend::PulseAudio,
+                    1 => AudioBackend::Alsa(alsa_device.as_str().into()),
+                    _ => unreachable!(),
+                };
+                let ap_port = widget.ap_port.text().parse().ok();
+                let prefers_dark_theme = widget.theme.selected() == 1;
+
+                let player_settings = SpotifyPlayerSettings {
+                    bitrate,
+                    backend,
+                    ap_port,
+                };
+                let window_geometry = WindowGeometry::new_from_gsettings();
+                let settings = SpotSettings {
+                    prefers_dark_theme,
+                    player_settings,
+                    window: window_geometry,
+                };
+
+
+                on_close(settings);
+                gtk::Inhibit(false)
+            }),
+        );
     }
 }
 
@@ -213,7 +232,7 @@ impl Settings {
         let model = Rc::new(model);
 
         settings_window.connect_close(clone!(@weak model => move |settings| {
-            model.save(settings);
+            model.set_player_settings(settings.player_settings);
         }));
 
         Self {

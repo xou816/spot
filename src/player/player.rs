@@ -51,13 +51,13 @@ pub trait SpotifyPlayerDelegate {
     fn notify_playback_state(&self, position: u32);
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum AudioBackend {
     PulseAudio,
     Alsa(String),
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct SpotifyPlayerSettings {
     pub bitrate: Bitrate,
     pub backend: AudioBackend,
@@ -75,7 +75,7 @@ impl Default for SpotifyPlayerSettings {
 }
 
 pub struct SpotifyPlayer {
-    settings: SpotifyPlayerSettings,
+    settings: RefCell<SpotifyPlayerSettings>,
     player: RefCell<Option<Player>>,
     mixer: RefCell<Option<Box<dyn Mixer>>>,
     session: RefCell<Option<Session>>,
@@ -85,7 +85,7 @@ pub struct SpotifyPlayer {
 impl SpotifyPlayer {
     pub fn new(settings: SpotifyPlayerSettings, delegate: Rc<dyn SpotifyPlayerDelegate>) -> Self {
         Self {
-            settings,
+            settings: RefCell::new(settings),
             mixer: RefCell::new(None),
             player: RefCell::new(None),
             session: RefCell::new(None),
@@ -144,7 +144,8 @@ impl SpotifyPlayer {
             }
             Command::PasswordLogin { username, password } => {
                 let credentials = Credentials::with_password(username, password.clone());
-                let new_session = create_session(credentials, self.settings.ap_port).await?;
+                let new_session =
+                    create_session(credentials, self.settings.borrow().ap_port).await?;
                 let (token, token_expiry_time) =
                     get_access_token_and_expiry_time(&new_session).await?;
                 let credentials = credentials::Credentials {
@@ -169,7 +170,8 @@ impl SpotifyPlayer {
                     auth_type: AuthenticationType::AUTHENTICATION_SPOTIFY_TOKEN,
                     auth_data: token.clone().into_bytes(),
                 };
-                let new_session = create_session(credentials, self.settings.ap_port).await?;
+                let new_session =
+                    create_session(credentials, self.settings.borrow().ap_port).await?;
                 self.delegate
                     .token_login_successful(new_session.username(), token);
 
@@ -180,14 +182,25 @@ impl SpotifyPlayer {
 
                 Ok(())
             }
+            Command::ReloadSettings(settings) => {
+                self.settings.replace(settings);
+
+                let session = session.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
+                let (new_player, channel) = self.create_player(session.clone());
+                tokio::task::spawn_local(player_setup_delegate(channel, Rc::clone(&self.delegate)));
+                player.replace(new_player);
+
+                Ok(())
+            }
         }
     }
 
     fn create_player(&self, session: Session) -> (Player, PlayerEventChannel) {
-        let backend = self.settings.backend.clone();
+        let settings = self.settings.borrow();
+        let backend = settings.backend.clone();
 
         let player_config = PlayerConfig {
-            bitrate: self.settings.bitrate,
+            bitrate: settings.bitrate,
             ..Default::default()
         };
         info!("bitrate: {:?}", &player_config.bitrate);
