@@ -183,6 +183,9 @@ impl SpotifyPlayer {
                 Ok(())
             }
             Command::ReloadSettings(settings) => {
+                let player_ = player.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
+                player_.stop();
+
                 self.settings.replace(settings);
 
                 let session = session.as_ref().ok_or(SpotifyError::PlayerNotReady)?;

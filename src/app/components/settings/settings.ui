@@ -4,16 +4,15 @@
   <requires lib="libadwaita" version="1.0" />
   <template class="SettingsWindow" parent="AdwPreferencesWindow">
     <property name="default-width">600</property>
-    <property name="default-height">400</property>
+    <property name="hide-on-close">1</property>
     <child>
       <object class="AdwPreferencesPage">
         <child>
           <object class="AdwPreferencesGroup">
-            <property name="title" translatable="yes" comments="todo">Audio</property>
+            <property name="title" translatable="yes" comments="Header for a group of preference items regarding audio">Audio</property>
             <child>
               <object class="AdwComboRow" id="audio_backend">
-                <property name="title" translatable="yes" comments="todo">Audio Backend</property>
-                <property name="subtitle" translatable="yes" comments="todo"></property>
+                <property name="title" translatable="yes" comments="Title for an item in preferences">Audio Backend</property>
                 <property name="model">
                   <object class="GtkStringList">
                     <items>
@@ -26,8 +25,8 @@
             </child>
             <child>
               <object class="AdwActionRow">
-                <property name="title" translatable="yes" comments="todo">ALSA Device</property>
-                <property name="subtitle" translatable="yes" comments="todo">Applied only if audio backend is ALSA</property>
+                <property name="title" translatable="yes" comments="Title for an item in preferences">ALSA Device</property>
+                <property name="subtitle" translatable="yes" comments="Description for the item (ALSA Device) in preferences">Applied only if audio backend is ALSA</property>
                 <child>
                   <object class="GtkEntry" id="alsa_device"></object>
                 </child>
@@ -35,8 +34,7 @@
             </child>
             <child>
               <object class="AdwComboRow" id="player_bitrate">
-                <property name="title" translatable="yes" comments="todo">Player bitrate</property>
-                <property name="subtitle" translatable="yes" comments="todo"></property>
+                <property name="title" translatable="yes" comments="Title for an item in preferences">Player bitrate</property>
                 <property name="model">
                   <object class="GtkStringList">
                     <items>
@@ -52,11 +50,10 @@
         </child>
         <child>
           <object class="AdwPreferencesGroup">
-            <property name="title" translatable="yes" comments="todo">Appearance</property>
+            <property name="title" translatable="yes" comments="Header for a group of preference items regarding the application's appearance">Appearance</property>
             <child>
               <object class="AdwComboRow" id="theme">
-                <property name="title" translatable="yes" comments="todo">Theme</property>
-                <property name="subtitle" translatable="yes" comments="todo"></property>
+                <property name="title" translatable="yes" comments="Title for an item in preferences">Theme</property>
                 <property name="model">
                   <object class="GtkStringList">
                     <items>
@@ -71,11 +68,11 @@
         </child>
         <child>
           <object class="AdwPreferencesGroup">
-            <property name="title" translatable="yes" comments="todo">Network</property>
+            <property name="title" translatable="yes" comments="Header for a group of preference items regarding network">Network</property>
             <child>
               <object class="AdwActionRow">
-                <property name="title" translatable="yes" comments="todo">Access Point Port</property>
-                <property name="subtitle" translatable="yes" comments="todo"></property>
+                <property name="title" translatable="yes" comments="">Access Point Port</property>
+                <property name="subtitle" translatable="yes" comments="Longer description for an item (Access Point Port) in preferences">Port used for connections to Spotify's Access Point. Set to 0 if any port is fine.</property>
                 <child>
                   <object class="GtkEntry" id="ap_port"></object>
                 </child>
