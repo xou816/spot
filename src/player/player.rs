@@ -51,13 +51,13 @@ pub trait SpotifyPlayerDelegate {
     fn notify_playback_state(&self, position: u32);
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum AudioBackend {
     PulseAudio,
     Alsa(String),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SpotifyPlayerSettings {
     pub bitrate: Bitrate,
     pub backend: AudioBackend,
@@ -183,9 +183,6 @@ impl SpotifyPlayer {
                 Ok(())
             }
             Command::ReloadSettings(settings) => {
-                let player_ = player.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
-                player_.stop();
-
                 self.settings.replace(settings);
 
                 let session = session.as_ref().ok_or(SpotifyError::PlayerNotReady)?;

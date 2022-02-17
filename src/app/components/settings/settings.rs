@@ -1,6 +1,7 @@
+use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::app::components::{display_add_css_provider, EventListener};
+use crate::app::components::EventListener;
 use crate::app::AppEvent;
 use crate::player::{AudioBackend, SpotifyPlayerSettings};
 use crate::settings::{SpotSettings, WindowGeometry};
@@ -18,7 +19,6 @@ const SETTINGS: &str = "dev.alextren.Spot";
 mod imp {
 
     use super::*;
-    use libadwaita::prelude::*;
     use libadwaita::subclass::prelude::*;
 
     #[derive(Debug, Default, CompositeTemplate)]
@@ -197,7 +197,10 @@ impl SettingsWindow {
                     1 => AudioBackend::Alsa(alsa_device.as_str().into()),
                     _ => unreachable!(),
                 };
-                let ap_port = widget.ap_port.text().parse().ok();
+                let ap_port = widget.ap_port.text().parse().ok().and_then(|port| match port {
+                    0 => None,
+                    port => Some(port),
+                });
                 let prefers_dark_theme = widget.theme.selected() == 1;
 
                 let player_settings = SpotifyPlayerSettings {
@@ -212,7 +215,6 @@ impl SettingsWindow {
                     window: window_geometry,
                 };
 
-
                 on_close(settings);
                 gtk::Inhibit(false)
             }),
@@ -223,22 +225,30 @@ impl SettingsWindow {
 pub struct Settings {
     parent: gtk::Window,
     settings_window: SettingsWindow,
-    model: Rc<SettingsModel>,
+    settings: Rc<RefCell<SpotSettings>>,
 }
 
 impl Settings {
     pub fn new(parent: gtk::Window, model: SettingsModel) -> Self {
         let settings_window = SettingsWindow::new();
-        let model = Rc::new(model);
+        let settings = Rc::new(RefCell::new(
+            SpotSettings::new_from_gsettings().unwrap_or_default(),
+        ));
 
-        settings_window.connect_close(clone!(@weak model => move |settings| {
-            model.set_player_settings(settings.player_settings);
+        settings_window.connect_close(clone!(@weak settings => move |new_settings| {
+            if settings.borrow().player_settings != new_settings.player_settings {
+                model.set_player_settings(new_settings.player_settings);
+            }
+        }));
+
+        settings_window.connect_show(clone!(@weak settings => move |_| {
+            settings.replace(SpotSettings::new_from_gsettings().unwrap_or_default());
         }));
 
         Self {
             parent,
-            model,
             settings_window,
+            settings,
         }
     }
 

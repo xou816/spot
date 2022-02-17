@@ -1,4 +1,4 @@
-use crate::app::state::SettingsAction;
+use crate::app::state::{PlaybackAction, SettingsAction};
 use crate::app::ActionDispatcher;
 use crate::player::SpotifyPlayerSettings;
 
@@ -12,6 +12,7 @@ impl SettingsModel {
     }
 
     pub fn set_player_settings(&self, settings: SpotifyPlayerSettings) {
+        self.dispatcher.dispatch(PlaybackAction::Stop.into());
         self.dispatcher
             .dispatch(SettingsAction::ChangePlayerSettings(settings).into());
     }
