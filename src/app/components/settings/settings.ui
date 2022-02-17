@@ -71,7 +71,7 @@
             <property name="title" translatable="yes" comments="Header for a group of preference items regarding network">Network</property>
             <child>
               <object class="AdwActionRow">
-                <property name="title" translatable="yes" comments="">Access Point Port</property>
+                <property name="title" translatable="yes" comments="Title for an item in preferences">Access Point Port</property>
                 <property name="subtitle" translatable="yes" comments="Longer description for an item (Access Point Port) in preferences">Port used for connections to Spotify's Access Point. Set to 0 if any port is fine.</property>
                 <child>
                   <object class="GtkEntry" id="ap_port"></object>
