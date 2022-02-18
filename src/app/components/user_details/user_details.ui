@@ -30,13 +30,11 @@
               </object>
             </child>
             <child>
-              <object class="GtkFlowBox" id="user_playlists">
+              <object class="GtkGridView" id="user_playlists">
                 <property name="height-request">100</property>
                 <property name="valign">start</property>
                 <property name="hexpand">1</property>
-                <property name="min-children-per-line">1</property>
-                <property name="selection-mode">none</property>
-                <property name="activate-on-single-click">0</property>
+                <property name="min-columns">1</property>
               </object>
             </child>
           </object>
