@@ -21,7 +21,8 @@ mod imp {
         pub scrolled_window: TemplateChild<gtk::ScrolledWindow>,
 
         #[template_child]
-        pub flowbox: TemplateChild<gtk::FlowBox>,
+        pub gridview: TemplateChild<gtk::GridView>,
+
         #[template_child]
         pub status_page: TemplateChild<libadwaita::StatusPage>,
     }
@@ -68,26 +69,31 @@ impl SavedPlaylistsWidget {
             });
     }
 
-    fn bind_albums<F>(&self, worker: Worker, store: &ListStore<AlbumModel>, on_album_pressed: F)
+    fn set_model<F>(&self, store: &ListStore<AlbumModel>, worker: Worker, on_clicked: F)
     where
-        F: Fn(String) + Clone + 'static,
+        F: Fn(String) + Clone + 'static
     {
-        imp::SavedPlaylistsWidget::from_instance(self)
-            .flowbox
-            .bind_model(Some(store.unsafe_store()), move |item| {
-                let album_model = item.downcast_ref::<AlbumModel>().unwrap();
-                let child = gtk::FlowBoxChild::new();
-                let album = AlbumWidget::for_model(album_model, worker.clone());
+        let gridview = &imp::SavedPlaylistsWidget::from_instance(self).gridview;
 
-                let f = on_album_pressed.clone();
-                album.connect_album_pressed(clone!(@weak album_model => move |_| {
-                    f(album_model.uri());
-                }));
+        let factory = gtk::SignalListItemFactory::new();
+        factory.connect_setup(|_, list_item| {
+            list_item.set_child(Some(&AlbumWidget::new()));
+            // Onclick is handled by album and this causes two layers of highlight on hover
+            list_item.set_activatable(false);
+        });
 
-                child.set_child(Some(&album));
-                child.upcast::<gtk::Widget>()
-            });
+        factory.connect_bind(move |factory, list_item| {
+            AlbumWidget::bind_list_item(factory, list_item, worker.clone(), on_clicked.clone());
+        });
+
+        factory.connect_unbind(move |factory, list_item| {
+            AlbumWidget::unbind_list_item(factory, list_item);
+        });
+
+        gridview.set_factory(Some(&factory));
+        gridview.set_model(Some(&gtk::NoSelection::new(Some(store.unsafe_store()))));
     }
+
     pub fn get_status_page(&self) -> &libadwaita::StatusPage {
         &imp::SavedPlaylistsWidget::from_instance(self).status_page
     }
@@ -95,35 +101,29 @@ impl SavedPlaylistsWidget {
 
 pub struct SavedPlaylists {
     widget: SavedPlaylistsWidget,
-    worker: Worker,
     model: Rc<SavedPlaylistsModel>,
 }
 
 impl SavedPlaylists {
     pub fn new(worker: Worker, model: SavedPlaylistsModel) -> Self {
         let model = Rc::new(model);
-
         let widget = SavedPlaylistsWidget::new();
 
         widget.connect_bottom_edge(clone!(@weak model => move || {
             model.load_more_playlists();
         }));
+        widget.set_model(
+            &model.get_list_store().unwrap(),
+            worker.clone(),
+            clone!(@weak model => move |uri| {
+                model.open_playlist(uri);
+            })
+        );
 
         Self {
             widget,
-            worker,
             model,
         }
-    }
-
-    fn bind_flowbox(&self) {
-        self.widget.bind_albums(
-            self.worker.clone(),
-            &*self.model.get_list_store().unwrap(),
-            clone!(@weak self.model as model => move |id| {
-                model.open_playlist(id);
-            }),
-        );
     }
 }
 
@@ -132,7 +132,6 @@ impl EventListener for SavedPlaylists {
         match event {
             AppEvent::Started => {
                 let _ = self.model.refresh_saved_playlists();
-                self.bind_flowbox();
             }
             AppEvent::LoginEvent(LoginEvent::LoginCompleted(_)) => {
                 let _ = self.model.refresh_saved_playlists();
