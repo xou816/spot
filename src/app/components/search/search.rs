@@ -30,7 +30,7 @@ mod imp {
         pub search_results: TemplateChild<gtk::Widget>,
 
         #[template_child]
-        pub albums_results: TemplateChild<gtk::FlowBox>,
+        pub albums_results: TemplateChild<gtk::GridView>,
 
         #[template_child]
         pub artist_results: TemplateChild<gtk::FlowBox>,
@@ -98,22 +98,29 @@ impl SearchResultsWidget {
             }));
     }
 
-    fn bind_albums_results<F>(&self, worker: Worker, store: &gio::ListStore, on_album_pressed: F)
+    fn set_album_model<F>(&self, store: &gio::ListStore, worker: Worker, on_clicked: F)
     where
-        F: Fn(String) + Clone + 'static,
+        F: Fn(String) + Clone + 'static
     {
-        self.widget()
-            .albums_results
-            .bind_model(Some(store), move |item| {
-                wrap_flowbox_item(item, |album_model| {
-                    let f = on_album_pressed.clone();
-                    let album = AlbumWidget::for_model(album_model, worker.clone());
-                    album.connect_album_pressed(clone!(@weak album_model => move |_| {
-                        f(album_model.uri());
-                    }));
-                    album
-                })
-            });
+        let gridview = &imp::SearchResultsWidget::from_instance(self).albums_results;
+
+        let factory = gtk::SignalListItemFactory::new();
+        factory.connect_setup(|_, list_item| {
+            list_item.set_child(Some(&AlbumWidget::new()));
+            // Onclick is handled by album and this causes two layers of highlight on hover
+            list_item.set_activatable(false);
+        });
+
+        factory.connect_bind(move |factory, list_item| {
+            AlbumWidget::bind_list_item(factory, list_item, worker.clone(), on_clicked.clone());
+        });
+
+        factory.connect_unbind(move |factory, list_item| {
+            AlbumWidget::unbind_list_item(factory, list_item);
+        });
+
+        gridview.set_factory(Some(&factory));
+        gridview.set_model(Some(&gtk::NoSelection::new(Some(store))));
     }
 
     fn bind_artists_results<F>(&self, worker: Worker, store: &gio::ListStore, on_artist_pressed: F)
@@ -159,12 +166,12 @@ impl SearchResults {
             model.search(q);
         }));
 
-        widget.bind_albums_results(
-            worker.clone(),
+        widget.set_album_model(
             &album_results_model,
+            worker.clone(),
             clone!(@weak model => move |uri| {
                 model.open_album(uri);
-            }),
+            })
         );
 
         widget.bind_artists_results(
