@@ -116,6 +116,9 @@ fn startup(settings: &settings::SpotSettings) {
 fn register_actions(app: &gtk::Application, sender: UnboundedSender<AppAction>) {
     let quit = SimpleAction::new("quit", None);
     quit.connect_activate(clone!(@weak app => move |_, _| {
+        if let Some(existing_window) = app.active_window() {
+            existing_window.close();
+        }
         app.quit();
     }));
     app.add_action(&quit);

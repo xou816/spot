@@ -40,6 +40,7 @@ impl MainWindow {
         window.connect_maximized_notify(Self::save_window_geometry);
 
         window.connect_unrealize(|_| {
+            debug!("saving geometry");
             WINDOW_GEOMETRY.with(|g| g.borrow().save());
         });
 
