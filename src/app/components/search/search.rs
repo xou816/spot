@@ -52,8 +52,13 @@ mod imp {
     }
 
     impl ObjectImpl for SearchResultsWidget {}
-    impl WidgetImpl for SearchResultsWidget {}
     impl BoxImpl for SearchResultsWidget {}
+
+    impl WidgetImpl for SearchResultsWidget {
+        fn grab_focus(&self, _: &Self::Type) -> bool {
+            self.search_entry.grab_focus()
+        }
+    }
 }
 
 glib::wrapper! {
@@ -222,6 +227,7 @@ impl EventListener for SearchResults {
     fn on_event(&mut self, app_event: &AppEvent) {
         match app_event {
             AppEvent::BrowserEvent(BrowserEvent::SearchUpdated) => {
+                self.get_root_widget().grab_focus();
                 self.update_search_query();
             }
             AppEvent::BrowserEvent(BrowserEvent::SearchResultsUpdated) => {

@@ -5,6 +5,7 @@ extern crate lazy_static;
 #[macro_use]
 extern crate log;
 
+use app::state::ScreenName;
 use futures::channel::mpsc::UnboundedSender;
 use gettextrs::*;
 use gio::prelude::*;
@@ -144,6 +145,12 @@ fn register_actions(app: &gtk::Application, sender: UnboundedSender<AppAction>) 
     app.add_action(&make_action(
         "nav_pop",
         AppAction::BrowserAction(BrowserAction::NavigationPop),
+        sender.clone(),
+    ));
+
+    app.add_action(&make_action(
+        "search",
+        AppAction::BrowserAction(BrowserAction::NavigationPush(ScreenName::Search)),
         sender,
     ));
 }

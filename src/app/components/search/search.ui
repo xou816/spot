@@ -3,6 +3,7 @@
   <requires lib="gtk" version="4.0" />
   <template class="SearchResultsWidget" parent="GtkBox">
     <property name="orientation">vertical</property>
+    <property name="can-focus">1</property>
     <child>
       <object class="AdwHeaderBar" id="main_header">
         <property name="show-end-title-buttons">1</property>
@@ -17,6 +18,7 @@
         <child type="title">
           <object class="GtkSearchEntry" id="search_entry">
             <property name="receives-default">1</property>
+            <property name="can-focus">1</property>
           </object>
         </child>
       </object>

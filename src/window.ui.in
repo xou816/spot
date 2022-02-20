@@ -25,13 +25,13 @@
             </child>
             <child>
               <object class="GtkShortcut">
-                <property name="trigger">&lt;Alt&gt;P</property>
+                <property name="trigger">P</property>
                 <property name="action">action(app.player_prev)</property>
               </object>
             </child>
             <child>
               <object class="GtkShortcut">
-                <property name="trigger">&lt;Alt&gt;N</property>
+                <property name="trigger">N</property>
                 <property name="action">action(app.player_next)</property>
               </object>
             </child>
@@ -39,6 +39,12 @@
               <object class="GtkShortcut">
                 <property name="trigger">&lt;Alt&gt;Left</property>
                 <property name="action">action(app.nav_pop)</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkShortcut">
+                <property name="trigger">&lt;Ctrl&gt;F</property>
+                <property name="action">action(app.search)</property>
               </object>
             </child>
           </object>
@@ -59,7 +65,6 @@
                         </binding>
                         <child>
                           <object class="GtkButton" id="search_button">
-                            <property name="receives-default">1</property>
                             <property name="icon-name">system-search-symbolic</property>
                           </object>
                         </child>
@@ -70,7 +75,6 @@
                         </child>
                         <child type="end">
                           <object class="GtkMenuButton" id="user">
-                            <property name="receives-default">1</property>
                             <property name="icon-name">open-menu-symbolic</property>
                           </object>
                         </child>

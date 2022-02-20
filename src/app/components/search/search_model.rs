@@ -30,7 +30,7 @@ impl SearchResultsModel {
 
     fn get_query(&self) -> Option<impl Deref<Target = String> + '_> {
         self.app_model
-            .map_state_opt(|s| Some(&s.browser.search_state()?.query))
+            .map_state_opt(|s| Some(&s.browser.search_state()?.query).filter(|s| !s.is_empty()))
     }
 
     pub fn fetch_results(&self) {
