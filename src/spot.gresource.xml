@@ -51,6 +51,8 @@
     <!-- sidebar -->
     <file alias="sidebar/sidebar_row.ui">app/components/sidebar/sidebar_row.ui</file>
     <file alias="components/create_playlist.ui">app/components/sidebar/create_playlist.ui</file>
+    <!-- scrolling_header -->
+    <file alias="components/scrolling_header.ui">app/components/scrolling_header/scrolling_header.ui</file>
   </gresource>
   <gresource prefix="/dev/alextren/Spot/icons/scalable/actions/">
     <file compressed="true" preprocess="xml-stripblanks" alias="music-queue-symbolic.svg">app/components/selection/icons/music-queue-symbolic.svg</file>

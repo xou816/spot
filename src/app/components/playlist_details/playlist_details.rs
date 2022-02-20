@@ -4,7 +4,7 @@ use gtk::CompositeTemplate;
 use std::rc::Rc;
 
 use super::PlaylistDetailsModel;
-use crate::app::components::AlbumHeaderWidget;
+use crate::app::components::{AlbumHeaderWidget, ScrollingHeaderWidget};
 
 use crate::app::components::{Component, EventListener, Playlist};
 use crate::app::dispatch::Worker;
@@ -20,10 +20,7 @@ mod imp {
     #[template(resource = "/dev/alextren/Spot/components/playlist_details.ui")]
     pub struct PlaylistDetailsWidget {
         #[template_child]
-        pub scrolled_window: TemplateChild<gtk::ScrolledWindow>,
-
-        #[template_child]
-        pub header_revealer: TemplateChild<gtk::Revealer>,
+        pub scrolling_header: TemplateChild<ScrollingHeaderWidget>,
 
         #[template_child]
         pub header_widget: TemplateChild<AlbumHeaderWidget>,
@@ -80,41 +77,17 @@ impl PlaylistDetailsWidget {
     where
         F: Fn() + 'static,
     {
-        self.imp()
-            .scrolled_window
-            .connect_edge_reached(move |_, pos| {
-                if let gtk::PositionType::Bottom = pos {
-                    f()
-                }
-            });
-    }
-
-    fn set_header_visible(&self, visible: bool) -> bool {
-        let widget = self.imp();
-        let is_up_to_date = widget.header_revealer.reveals_child() == visible;
-        if !is_up_to_date {
-            widget.header_revealer.set_reveal_child(visible);
-        }
-        is_up_to_date
+        self.imp().scrolling_header.connect_bottom_edge(f);
     }
 
     fn connect_header(&self) {
-        self.set_header_visible(true);
-
-        let scroll_controller =
-            gtk::EventControllerScroll::new(gtk::EventControllerScrollFlags::VERTICAL);
-        scroll_controller.connect_scroll(
-            clone!(@weak self as _self => @default-return gtk::Inhibit(false), move |_, _, dy| {
-                gtk::Inhibit(!_self.set_header_visible(dy < 0f64))
-            }),
-        );
-
-        let widget = self.imp();
-        widget.scrolled_window.add_controller(scroll_controller);
+        self.imp()
+            .scrolling_header
+            .connect_header_visibility(|_| {});
     }
 
     fn set_loaded(&self) {
-        let context = self.style_context();
+        let context = self.widget().scrolling_header.style_context();
         context.add_class("container--loaded");
     }
 

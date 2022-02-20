@@ -79,6 +79,9 @@ pub use selection::*;
 mod headerbar;
 pub use headerbar::*;
 
+mod scrolling_header;
+pub use scrolling_header::*;
+
 pub mod utils;
 
 pub mod labels;
@@ -89,6 +92,7 @@ pub fn expose_widgets() {
     playback::expose_widgets();
     selection::expose_widgets();
     headerbar::expose_widgets();
+    scrolling_header::expose_widgets();
 }
 
 impl dyn ActionDispatcher {

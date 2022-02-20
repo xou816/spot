@@ -12,13 +12,12 @@
           <object class="HeaderBarWidget" id="headerbar"></object>
         </child>
         <child>
-          <object class="GtkWindowHandle">
-            <child>
-              <object class="AdwClamp">
-                <property name="maximum-size">900</property>
+          <object class="ScrollingHeaderWidget" id="scrolling_header">
+            <child type="header">
+              <object class="GtkWindowHandle">
                 <child>
-                  <object class="GtkRevealer" id="header_revealer">
-                    <property name="transition-type">slide-up</property>
+                  <object class="AdwClamp">
+                    <property name="maximum-size">900</property>
                     <child>
                       <object class="AdwSqueezer">
                         <property name="switch-threshold-policy">natural</property>
@@ -43,21 +42,13 @@
                         </child>
                       </object>
                     </child>
+                    <style>
+                      <class name="details__clamp" />
+                    </style>
                   </object>
                 </child>
-                <style>
-                  <class name="details__clamp" />
-                </style>
               </object>
             </child>
-          </object>
-        </child>
-        <child>
-          <object class="GtkScrolledWindow" id="scrolled_window">
-            <property name="hscrollbar-policy">never</property>
-            <property name="propagate-natural-width">1</property>
-            <property name="hexpand">1</property>
-            <property name="vexpand">1</property>
             <child>
               <object class="AdwClampScrollable">
                 <property name="maximum-size">900</property>
@@ -70,12 +61,12 @@
                 </child>
               </object>
             </child>
+            <style>
+              <class name="container" />
+            </style>
           </object>
         </child>
       </object>
     </child>
-    <style>
-      <class name="container" />
-    </style>
   </template>
 </interface>
