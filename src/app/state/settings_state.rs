@@ -6,6 +6,7 @@ use crate::{
 #[derive(Clone, Debug)]
 pub enum SettingsAction {
     ChangePlayerSettings,
+    ChangeSettings,
 }
 
 impl From<SettingsAction> for AppAction {
@@ -17,6 +18,7 @@ impl From<SettingsAction> for AppAction {
 #[derive(Clone, Debug)]
 pub enum SettingsEvent {
     PlayerSettingsChanged,
+    SettingsChanged,
 }
 
 impl From<SettingsEvent> for AppEvent {
@@ -27,7 +29,7 @@ impl From<SettingsEvent> for AppEvent {
 
 #[derive(Default)]
 pub struct SettingsState {
-    settings: SpotSettings,
+    pub settings: SpotSettings,
 }
 
 impl UpdatableState for SettingsState {
@@ -39,6 +41,10 @@ impl UpdatableState for SettingsState {
             SettingsAction::ChangePlayerSettings => {
                 self.settings = SpotSettings::new_from_gsettings().unwrap_or_default();
                 vec![SettingsEvent::PlayerSettingsChanged.into()]
+            }
+            SettingsAction::ChangeSettings => {
+                self.settings = SpotSettings::new_from_gsettings().unwrap_or_default();
+                vec![SettingsEvent::SettingsChanged.into()]
             }
         }
     }

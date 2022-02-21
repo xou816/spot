@@ -219,31 +219,23 @@ impl SettingsWindow {
 pub struct Settings {
     parent: gtk::Window,
     settings_window: SettingsWindow,
-    settings: Rc<RefCell<SpotSettings>>,
 }
 
 impl Settings {
     pub fn new(parent: gtk::Window, model: SettingsModel) -> Self {
         let settings_window = SettingsWindow::new();
-        let settings = Rc::new(RefCell::new(
-            SpotSettings::new_from_gsettings().unwrap_or_default(),
-        ));
 
-        settings_window.connect_close(clone!(@weak settings => move || {
+        settings_window.connect_close(move || {
             let new_settings = SpotSettings::new_from_gsettings().unwrap_or_default();
-            if settings.borrow().player_settings != new_settings.player_settings {
+            if model.settings().player_settings != new_settings.player_settings {
                 model.set_player_settings();
             }
-        }));
-
-        settings_window.connect_show(clone!(@weak settings => move |_| {
-            settings.replace(SpotSettings::new_from_gsettings().unwrap_or_default());
-        }));
+            model.set_settings();
+        });
 
         Self {
             parent,
             settings_window,
-            settings,
         }
     }
 

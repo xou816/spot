@@ -190,7 +190,7 @@ impl App {
         dispatcher: Box<dyn ActionDispatcher>,
     ) -> Box<UserMenu> {
         let parent: gtk::Window = builder.object("window").unwrap();
-        let settings_model = SettingsModel::new(dispatcher.box_clone());
+        let settings_model = SettingsModel::new(app_model.clone(), dispatcher.box_clone());
         let settings = Settings::new(parent, settings_model);
 
         let button: gtk::MenuButton = builder.object("user").unwrap();
