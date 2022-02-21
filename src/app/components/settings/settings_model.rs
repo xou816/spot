@@ -11,9 +11,9 @@ impl SettingsModel {
         Self { dispatcher }
     }
 
-    pub fn set_player_settings(&self, settings: SpotifyPlayerSettings) {
+    pub fn set_player_settings(&self) {
         self.dispatcher.dispatch(PlaybackAction::Stop.into());
         self.dispatcher
-            .dispatch(SettingsAction::ChangePlayerSettings(settings).into());
+            .dispatch(SettingsAction::ChangePlayerSettings.into());
     }
 }

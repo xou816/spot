@@ -54,8 +54,8 @@ impl EventListener for PlayerNotifier {
             }),
             AppEvent::LoginEvent(LoginEvent::FreshTokenRequested) => Some(Command::RefreshToken),
             AppEvent::LoginEvent(LoginEvent::LogoutCompleted) => Some(Command::Logout),
-            AppEvent::SettingsEvent(SettingsEvent::PlayerSettingsChanged(settings)) => {
-                Some(Command::ReloadSettings(settings.clone()))
+            AppEvent::SettingsEvent(SettingsEvent::PlayerSettingsChanged) => {
+                Some(Command::ReloadSettings)
             }
             _ => None,
         };

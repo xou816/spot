@@ -22,6 +22,7 @@ use std::time::{Duration, SystemTime};
 
 use super::Command;
 use crate::app::credentials;
+use crate::settings::SpotSettings;
 
 #[derive(Debug)]
 pub enum SpotifyError {
@@ -182,8 +183,9 @@ impl SpotifyPlayer {
 
                 Ok(())
             }
-            Command::ReloadSettings(settings) => {
-                self.settings.replace(settings);
+            Command::ReloadSettings => {
+                let settings = SpotSettings::new_from_gsettings().unwrap_or_default();
+                self.settings.replace(settings.player_settings);
 
                 let session = session.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
                 let (new_player, channel) = self.create_player(session.clone());

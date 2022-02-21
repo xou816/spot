@@ -24,7 +24,7 @@ pub enum Command {
     PlayerSeek(u32),
     PlayerSetVolume(f64),
     RefreshToken,
-    ReloadSettings(SpotifyPlayerSettings),
+    ReloadSettings,
 }
 
 struct AppPlayerDelegate {

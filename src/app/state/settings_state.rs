@@ -1,9 +1,11 @@
-use crate::app::state::{AppAction, AppEvent, UpdatableState};
-use crate::player::SpotifyPlayerSettings;
+use crate::{
+    app::state::{AppAction, AppEvent, UpdatableState},
+    settings::SpotSettings,
+};
 
 #[derive(Clone, Debug)]
 pub enum SettingsAction {
-    ChangePlayerSettings(SpotifyPlayerSettings),
+    ChangePlayerSettings,
 }
 
 impl From<SettingsAction> for AppAction {
@@ -14,7 +16,7 @@ impl From<SettingsAction> for AppAction {
 
 #[derive(Clone, Debug)]
 pub enum SettingsEvent {
-    PlayerSettingsChanged(SpotifyPlayerSettings),
+    PlayerSettingsChanged,
 }
 
 impl From<SettingsEvent> for AppEvent {
@@ -24,7 +26,9 @@ impl From<SettingsEvent> for AppEvent {
 }
 
 #[derive(Default)]
-pub struct SettingsState {}
+pub struct SettingsState {
+    settings: SpotSettings,
+}
 
 impl UpdatableState for SettingsState {
     type Action = SettingsAction;
@@ -32,8 +36,9 @@ impl UpdatableState for SettingsState {
 
     fn update_with(&mut self, action: std::borrow::Cow<Self::Action>) -> Vec<Self::Event> {
         match action.into_owned() {
-            SettingsAction::ChangePlayerSettings(settings) => {
-                vec![SettingsEvent::PlayerSettingsChanged(settings).into()]
+            SettingsAction::ChangePlayerSettings => {
+                self.settings = SpotSettings::new_from_gsettings().unwrap_or_default();
+                vec![SettingsEvent::PlayerSettingsChanged.into()]
             }
         }
     }

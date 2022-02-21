@@ -66,7 +66,7 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct SettingsWindow(ObjectSubclass<imp::SettingsWindow>) @extends gtk::Widget, libadwaita::PreferencesWindow;
+    pub struct SettingsWindow(ObjectSubclass<imp::SettingsWindow>) @extends gtk::Widget, gtk::Window, libadwaita::Window, libadwaita::PreferencesWindow;
 }
 
 impl SettingsWindow {
@@ -203,46 +203,13 @@ impl SettingsWindow {
 
     fn connect_close<F>(&self, on_close: F)
     where
-        F: Fn(SpotSettings) + 'static,
+        F: Fn() + 'static,
     {
-        let pref_window = self.upcast_ref::<libadwaita::PreferencesWindow>();
-        let window = pref_window.upcast_ref::<libadwaita::Window>();
+        let window = self.upcast_ref::<libadwaita::Window>();
 
         window.connect_close_request(
             clone!(@weak self as _self => @default-return gtk::Inhibit(false), move |_| {
-                let widget = imp::SettingsWindow::from_instance(&_self);
-
-                let bitrate = match widget.player_bitrate.selected() {
-                    0 => Bitrate::Bitrate96,
-                    1 => Bitrate::Bitrate160,
-                    2 => Bitrate::Bitrate320,
-                    _ => unreachable!(),
-                };
-                let alsa_device = widget.alsa_device.text();
-                let backend = match widget.audio_backend.selected() {
-                    0 => AudioBackend::PulseAudio,
-                    1 => AudioBackend::Alsa(alsa_device.as_str().into()),
-                    _ => unreachable!(),
-                };
-                let ap_port = widget.ap_port.text().parse().ok().and_then(|port| match port {
-                    0 => None,
-                    port => Some(port),
-                });
-                let prefers_dark_theme = widget.theme.selected() == 1;
-
-                let player_settings = SpotifyPlayerSettings {
-                    bitrate,
-                    backend,
-                    ap_port,
-                };
-                let window_geometry = WindowGeometry::new_from_gsettings();
-                let settings = SpotSettings {
-                    prefers_dark_theme,
-                    player_settings,
-                    window: window_geometry,
-                };
-
-                on_close(settings);
+                on_close();
                 gtk::Inhibit(false)
             }),
         );
@@ -262,9 +229,10 @@ impl Settings {
             SpotSettings::new_from_gsettings().unwrap_or_default(),
         ));
 
-        settings_window.connect_close(clone!(@weak settings => move |new_settings| {
+        settings_window.connect_close(clone!(@weak settings => move || {
+            let new_settings = SpotSettings::new_from_gsettings().unwrap_or_default();
             if settings.borrow().player_settings != new_settings.player_settings {
-                model.set_player_settings(new_settings.player_settings);
+                model.set_player_settings();
             }
         }));
 
@@ -280,10 +248,7 @@ impl Settings {
     }
 
     fn window(&self) -> &libadwaita::Window {
-        let pref_window = self
-            .settings_window
-            .upcast_ref::<libadwaita::PreferencesWindow>();
-        pref_window.upcast_ref::<libadwaita::Window>()
+        self.settings_window.upcast_ref::<libadwaita::Window>()
     }
 
     pub fn show_self(&self) {
