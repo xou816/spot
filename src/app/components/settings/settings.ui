@@ -5,6 +5,7 @@
   <template class="SettingsWindow" parent="AdwPreferencesWindow">
     <property name="default-width">600</property>
     <property name="hide-on-close">1</property>
+    <property name="search-enabled">0</property>
     <child>
       <object class="AdwPreferencesPage">
         <child>
@@ -24,23 +25,25 @@
               </object>
             </child>
             <child>
-              <object class="AdwActionRow">
+              <object class="AdwActionRow" id="alsa_device_row">
                 <property name="title" translatable="yes" comments="Title for an item in preferences">ALSA Device</property>
                 <property name="subtitle" translatable="yes" comments="Description for the item (ALSA Device) in preferences">Applied only if audio backend is ALSA</property>
                 <child>
-                  <object class="GtkEntry" id="alsa_device"></object>
+                  <object class="GtkEntry" id="alsa_device">
+                    <property name="valign">center</property>
+                  </object>
                 </child>
               </object>
             </child>
             <child>
               <object class="AdwComboRow" id="player_bitrate">
-                <property name="title" translatable="yes" comments="Title for an item in preferences">Player bitrate</property>
+                <property name="title" translatable="yes" comments="Title for an item in preferences">Audio Quality</property>
                 <property name="model">
                   <object class="GtkStringList">
                     <items>
-                      <item translatable="yes">96kbps</item>
-                      <item translatable="yes">160kbps</item>
-                      <item translatable="yes">320kbps</item>
+                      <item translatable="yes">Normal</item>
+                      <item translatable="yes">High</item>
+                      <item translatable="yes">Very high</item>
                     </items>
                   </object>
                 </property>
@@ -74,7 +77,9 @@
                 <property name="title" translatable="yes" comments="Title for an item in preferences">Access Point Port</property>
                 <property name="subtitle" translatable="yes" comments="Longer description for an item (Access Point Port) in preferences">Port used for connections to Spotify's Access Point. Set to 0 if any port is fine.</property>
                 <child>
-                  <object class="GtkEntry" id="ap_port"></object>
+                  <object class="GtkEntry" id="ap_port">
+                    <property name="valign">center</property>
+                  </object>
                 </child>
               </object>
             </child>

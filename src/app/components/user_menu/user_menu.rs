@@ -62,7 +62,7 @@ impl UserMenu {
     fn update_menu(&self) {
         let menu = gio::Menu::new();
         // translators: This is a menu entry.
-        menu.append(Some(&gettext("Settings")), Some("menu.settings"));
+        menu.append(Some(&gettext("Preferences")), Some("menu.settings"));
         // translators: This is a menu entry.
         menu.append(Some(&gettext("About")), Some("menu.about"));
         // translators: This is a menu entry.

@@ -31,6 +31,9 @@ mod imp {
         pub alsa_device: TemplateChild<gtk::Entry>,
 
         #[template_child]
+        pub alsa_device_row: TemplateChild<libadwaita::ActionRow>,
+
+        #[template_child]
         pub audio_backend: TemplateChild<libadwaita::ComboRow>,
 
         #[template_child]
@@ -70,9 +73,33 @@ impl SettingsWindow {
     pub fn new() -> Self {
         let window: Self =
             glib::Object::new(&[]).expect("Failed to create an instance of SettingsWindow");
+
+        window.bind_backend_and_device();
         window.bind_settings();
         window.connect_theme_select();
         window
+    }
+
+    fn bind_backend_and_device(&self) {
+        let widget = imp::SettingsWindow::from_instance(self);
+
+        let audio_backend = widget
+            .audio_backend
+            .downcast_ref::<libadwaita::ComboRow>()
+            .unwrap();
+        let alsa_device_row = widget
+            .alsa_device_row
+            .downcast_ref::<libadwaita::ActionRow>()
+            .unwrap();
+
+        audio_backend
+            .bind_property("selected", alsa_device_row, "visible")
+            .transform_to(|_, value| value.get::<u32>().ok().map(|u| (u == 1).to_value()))
+            .build();
+
+        if audio_backend.selected() == 0 {
+            alsa_device_row.set_visible(false);
+        }
     }
 
     fn bind_settings(&self) {
