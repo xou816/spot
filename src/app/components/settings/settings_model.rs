@@ -16,10 +16,8 @@ impl SettingsModel {
         }
     }
 
-    pub fn set_player_settings(&self) {
+    pub fn stop_player(&self) {
         self.dispatcher.dispatch(PlaybackAction::Stop.into());
-        self.dispatcher
-            .dispatch(SettingsAction::ChangePlayerSettings.into());
     }
 
     pub fn set_settings(&self) {

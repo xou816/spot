@@ -228,7 +228,7 @@ impl Settings {
         settings_window.connect_close(move || {
             let new_settings = SpotSettings::new_from_gsettings().unwrap_or_default();
             if model.settings().player_settings != new_settings.player_settings {
-                model.set_player_settings();
+                model.stop_player();
             }
             model.set_settings();
         });
