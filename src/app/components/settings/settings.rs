@@ -1,16 +1,11 @@
-use std::cell::RefCell;
-use std::rc::Rc;
-
 use crate::app::components::EventListener;
 use crate::app::AppEvent;
-use crate::player::{AudioBackend, SpotifyPlayerSettings};
-use crate::settings::{SpotSettings, WindowGeometry};
+use crate::settings::SpotSettings;
 
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use libadwaita::prelude::*;
-use librespot::playback::config::Bitrate;
 
 use super::SettingsModel;
 

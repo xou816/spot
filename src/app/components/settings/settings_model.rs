@@ -1,4 +1,4 @@
-use crate::app::state::{PlaybackAction, SettingsAction, SettingsState};
+use crate::app::state::{PlaybackAction, SettingsAction};
 use crate::app::{ActionDispatcher, AppModel};
 use crate::settings::SpotSettings;
 use std::rc::Rc;
