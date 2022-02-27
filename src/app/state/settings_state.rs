@@ -37,12 +37,15 @@ impl UpdatableState for SettingsState {
     fn update_with(&mut self, action: std::borrow::Cow<Self::Action>) -> Vec<Self::Event> {
         match action.into_owned() {
             SettingsAction::ChangeSettings => {
-                let old_settings = self.settings.clone();
-                self.settings = SpotSettings::new_from_gsettings().unwrap_or_default();
-                if self.settings.player_settings == old_settings.player_settings {
-                    vec![]
-                } else {
+                let old_settings = &self.settings;
+                let new_settings = SpotSettings::new_from_gsettings().unwrap_or_default();
+                let player_settings_changed =
+                    new_settings.player_settings != old_settings.player_settings;
+                self.settings = new_settings;
+                if player_settings_changed {
                     vec![SettingsEvent::PlayerSettingsChanged.into()]
+                } else {
+                    vec![]
                 }
             }
         }
