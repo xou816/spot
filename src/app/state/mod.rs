@@ -6,6 +6,7 @@ mod pagination;
 mod playback_state;
 mod screen_states;
 mod selection_state;
+mod settings_state;
 
 use std::borrow::Cow;
 
@@ -17,6 +18,7 @@ pub use pagination::*;
 pub use playback_state::*;
 pub use screen_states::*;
 pub use selection_state::*;
+pub use settings_state::*;
 
 pub trait UpdatableState {
     type Action: Clone;

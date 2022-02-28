@@ -5,6 +5,7 @@ use crate::app::state::{
     login_state::{LoginAction, LoginEvent, LoginState},
     playback_state::{PlaybackAction, PlaybackEvent, PlaybackState},
     selection_state::{SelectionAction, SelectionContext, SelectionEvent, SelectionState},
+    settings_state::{SettingsAction, SettingsEvent, SettingsState},
     ScreenName, UpdatableState,
 };
 
@@ -14,6 +15,7 @@ pub enum AppAction {
     BrowserAction(BrowserAction),
     SelectionAction(SelectionAction),
     LoginAction(LoginAction),
+    SettingsAction(SettingsAction),
     Start,
     Raise,
     ShowNotification(String),
@@ -90,6 +92,7 @@ pub enum AppEvent {
     Raised,
     NotificationShown(String),
     NowPlayingShown,
+    SettingsEvent(SettingsEvent),
 }
 
 pub struct AppState {
@@ -98,6 +101,7 @@ pub struct AppState {
     pub browser: BrowserState,
     pub selection: SelectionState,
     pub logged_user: LoginState,
+    pub settings: SettingsState,
 }
 
 impl AppState {
@@ -108,6 +112,7 @@ impl AppState {
             browser: BrowserState::new(),
             selection: Default::default(),
             logged_user: Default::default(),
+            settings: Default::default(),
         }
     }
 
@@ -200,6 +205,7 @@ impl AppState {
             AppAction::BrowserAction(a) => forward_action(a, &mut self.browser),
             AppAction::SelectionAction(a) => forward_action(a, &mut self.selection),
             AppAction::LoginAction(a) => forward_action(a, &mut self.logged_user),
+            AppAction::SettingsAction(a) => forward_action(a, &mut self.settings),
             _ => vec![],
         }
     }
