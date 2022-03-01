@@ -59,6 +59,7 @@ pub struct HomePane<F> {
     user_id: Option<String>,
     listbox_fun: F,
     row_activated_handler: Option<glib::SignalHandlerId>,
+    row_selected_handler: Option<glib::SignalHandlerId>,
 }
 
 impl<F: Clone + Fn() + 'static> HomePane<F> {
@@ -133,6 +134,7 @@ impl<F: Clone + Fn() + 'static> HomePane<F> {
         );
         let user_id = Option::None;
         let row_activated_handler = Option::None;
+        let row_selected_handler = Option::None;
         Self {
             model,
             stack,
@@ -148,6 +150,7 @@ impl<F: Clone + Fn() + 'static> HomePane<F> {
             user_id,
             listbox_fun,
             row_activated_handler,
+            row_selected_handler,
         }
     }
 
@@ -159,15 +162,36 @@ impl<F: Clone + Fn() + 'static> HomePane<F> {
                 let id = row.downcast_ref::<SideBarRow>().unwrap().id();
                 match id.as_str() {
                     LIBRARY | SAVED_TRACKS | NOW_PLAYING | SAVED_PLAYLISTS => {
+                        model.sidebar_item_activated(id.clone(), row.index());
                         stack.set_visible_child_name(&id);
                         f();
                     },
                     NEW_PLAYLIST => new_playlist_clicked(row, user_id.clone(), Rc::clone(&model)),
-                    _ => playlist_model.open_playlist(id),
+                    _ => {
+                        model.sidebar_item_activated(id.clone(), row.index());
+                        playlist_model.open_playlist(id);
+                    },
                 }
             }),
         );
         self.row_activated_handler = Option::from(handler_id);
+    }
+
+    pub fn connect_selected(&mut self) {
+        let handler_id = self.listbox.connect_row_selected(
+            clone!(@weak self.listbox as listbox @strong self.model as model => move |_, row| {
+                let id = row.unwrap().downcast_ref::<SideBarRow>().unwrap().id();
+                match id.as_str() {
+                    SAVED_PLAYLISTS => {
+                        if model.previously_selected_sidebar_item() != SAVED_PLAYLISTS {
+                            model.reselect_currently_selected_row(listbox);
+                        }
+                    }
+                    _ => {}
+                }
+            }),
+        );
+        self.row_selected_handler = Option::from(handler_id);
     }
 
     fn update_playlists_in_sidebar(&mut self) {
@@ -219,7 +243,11 @@ impl<F: Clone + Fn() + 'static> EventListener for HomePane<F> {
                 if let Some(handler_id) = self.row_activated_handler.borrow_mut().take() {
                     self.listbox.disconnect(handler_id);
                 }
+                if let Some(handler_id) = self.row_selected_handler.borrow_mut().take() {
+                    self.listbox.disconnect(handler_id);
+                }
                 self.connect_navigated();
+                self.connect_selected();
             }
             _ => {}
         }

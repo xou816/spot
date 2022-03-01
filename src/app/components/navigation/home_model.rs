@@ -1,6 +1,8 @@
+use crate::app::state::SidebarAction;
 use crate::app::{ActionDispatcher, AppModel, BrowserAction};
 use crate::AppAction;
 use gettextrs::*;
+use std::ops::Deref;
 use std::rc::Rc;
 
 pub struct HomeModel {
@@ -34,5 +36,31 @@ impl HomeModel {
                         ]
                     })
             })
+    }
+
+    pub fn previously_selected_sidebar_item(&self) -> String {
+        let item = self
+            .app_model
+            .map_state(|s| s.sidebar.get_previously_selected_item());
+        item.deref().clone()
+    }
+
+    pub fn sidebar_item_activated(&self, item: String, id: i32) {
+        self.dispatcher
+            .dispatch(AppAction::SidebarAction(SidebarAction::SelectItem(
+                item, id,
+            )));
+    }
+
+    pub fn currently_selected_sidebar_index(&self) -> i32 {
+        let i = self
+            .app_model
+            .map_state(|s| s.sidebar.get_currently_selected_index());
+        i.deref().clone()
+    }
+
+    pub fn reselect_currently_selected_row(&self, listbox: gtk::ListBox) {
+        let to_select = listbox.row_at_index(self.currently_selected_sidebar_index());
+        listbox.select_row(to_select.as_ref());
     }
 }

@@ -84,6 +84,7 @@ sources = files(
 './app/state/screen_states.rs',
 './app/state/selection_state.rs',
 './app/state/app_model.rs',
+'./app/state/sidebar_state.rs',
 './app/components/saved_playlists/saved_playlists.rs',
 './app/components/saved_playlists/saved_playlists_model.rs',
 './app/components/saved_playlists/mod.rs',

@@ -77,6 +77,7 @@ impl Navigation {
         );
 
         home.connect_navigated();
+        home.connect_selected();
 
         Box::new(home)
     }

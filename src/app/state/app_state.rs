@@ -1,11 +1,13 @@
 use std::borrow::Cow;
 
+use crate::app::state::sidebar_state::{SidebarAction, SidebarEvent};
 use crate::app::state::{
     browser_state::{BrowserAction, BrowserEvent, BrowserState},
     login_state::{LoginAction, LoginEvent, LoginState},
     playback_state::{PlaybackAction, PlaybackEvent, PlaybackState},
     selection_state::{SelectionAction, SelectionContext, SelectionEvent, SelectionState},
     settings_state::{SettingsAction, SettingsEvent, SettingsState},
+    sidebar_state::SidebarState,
     ScreenName, UpdatableState,
 };
 
@@ -30,6 +32,7 @@ pub enum AppAction {
     UnsaveSelection,
     EnableSelection(SelectionContext),
     CancelSelection,
+    SidebarAction(SidebarAction),
 }
 
 impl AppAction {
@@ -95,6 +98,7 @@ pub enum AppEvent {
     PlaylistCreatedNotificationShown(String, String, String),
     NowPlayingShown,
     SettingsEvent(SettingsEvent),
+    SidebarEvent(SidebarEvent),
 }
 
 pub struct AppState {
@@ -104,6 +108,7 @@ pub struct AppState {
     pub selection: SelectionState,
     pub logged_user: LoginState,
     pub settings: SettingsState,
+    pub sidebar: SidebarState,
 }
 
 impl AppState {
@@ -115,6 +120,7 @@ impl AppState {
             selection: Default::default(),
             logged_user: Default::default(),
             settings: Default::default(),
+            sidebar: Default::default(),
         }
     }
 
@@ -213,6 +219,7 @@ impl AppState {
                     message, label, id,
                 )]
             }
+            AppAction::SidebarAction(a) => forward_action(a, &mut self.sidebar),
             _ => vec![],
         }
     }
