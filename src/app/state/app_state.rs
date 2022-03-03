@@ -21,7 +21,7 @@ pub enum AppAction {
     Start,
     Raise,
     ShowNotification(String),
-    ShowPlaylistCreatedNotification(String, String, String),
+    ShowPlaylistCreatedNotification(String),
     ViewNowPlaying,
     // cross-state actions
     QueueSelection,
@@ -95,7 +95,7 @@ pub enum AppEvent {
     Started,
     Raised,
     NotificationShown(String),
-    PlaylistCreatedNotificationShown(String, String, String),
+    PlaylistCreatedNotificationShown(String),
     NowPlayingShown,
     SettingsEvent(SettingsEvent),
     SidebarEvent(SidebarEvent),
@@ -214,10 +214,8 @@ impl AppState {
             AppAction::SelectionAction(a) => forward_action(a, &mut self.selection),
             AppAction::LoginAction(a) => forward_action(a, &mut self.logged_user),
             AppAction::SettingsAction(a) => forward_action(a, &mut self.settings),
-            AppAction::ShowPlaylistCreatedNotification(message, label, id) => {
-                vec![AppEvent::PlaylistCreatedNotificationShown(
-                    message, label, id,
-                )]
+            AppAction::ShowPlaylistCreatedNotification(id) => {
+                vec![AppEvent::PlaylistCreatedNotificationShown(id)]
             }
             AppAction::SidebarAction(a) => forward_action(a, &mut self.sidebar),
             _ => vec![],

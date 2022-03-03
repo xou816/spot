@@ -1,7 +1,6 @@
 use crate::app::state::SidebarAction;
 use crate::app::{ActionDispatcher, AppModel, BrowserAction};
 use crate::AppAction;
-use gettextrs::*;
 use std::ops::Deref;
 use std::rc::Rc;
 
@@ -28,12 +27,7 @@ impl HomeModel {
                     .map(|p| {
                         vec![
                             BrowserAction::PrependPlaylistsContent(vec![p.clone()]).into(),
-                            AppAction::ShowPlaylistCreatedNotification(
-                                // translators: This is a notification that pop ups when a new playlist is created. It includes the name of that playlist.
-                                gettext("New playlist created."),
-                                name,
-                                p.id,
-                            ),
+                            AppAction::ShowPlaylistCreatedNotification(p.id),
                         ]
                     })
             })
