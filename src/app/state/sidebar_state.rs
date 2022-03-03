@@ -47,13 +47,6 @@ impl SidebarState {
     pub fn get_previously_selected_item(&self) -> &String {
         &self.previously_selected_item
     }
-    pub fn get_currently_selected_item(&self) -> &String {
-        &self.currently_selected_item
-    }
-
-    pub fn get_previously_selected_index(&self) -> &i32 {
-        &self.previously_selected_id
-    }
 
     pub fn get_currently_selected_index(&self) -> &i32 {
         &self.currently_selected_id
