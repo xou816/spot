@@ -42,7 +42,9 @@ fn make_playlist_item(playlist_item: AlbumModel) -> SideBarItem {
 }
 
 fn new_playlist_clicked(row: &gtk::ListBoxRow, model: Rc<HomeModel>) {
-    CreatePlaylistWidget::new(row, model);
+    let w = CreatePlaylistWidget::new(row);
+    w.connect_create(move |name| model.create_new_playlist(name));
+    w.popup();
 }
 
 pub struct HomePane {

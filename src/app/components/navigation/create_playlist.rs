@@ -1,8 +1,6 @@
-use crate::app::components::HomeModel;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
-use std::rc::Rc;
 
 mod imp {
     use super::*;
@@ -45,25 +43,25 @@ glib::wrapper! {
 }
 
 impl CreatePlaylistWidget {
-    pub fn new(parent: &gtk::ListBoxRow, model: Rc<HomeModel>) -> Self {
+    pub fn new(parent: &gtk::ListBoxRow) -> Self {
         let w: CreatePlaylistWidget =
             glib::Object::new(&[]).expect("Failed to create an instance of CreatePlaylistWidget");
-        w.connect_create(model);
         w.set_parent(parent);
-        w.popup();
         w
     }
 
-    fn connect_create(&self, model: Rc<HomeModel>) {
+    pub fn connect_create<F: Clone + Fn(String) + 'static>(&self, create_fun: F) {
         let widget = imp::CreatePlaylistWidget::from_instance(self);
         let btn = widget.button.get();
         let entry = widget.entry.get();
-        entry.connect_activate(clone!(@weak self as _self, @weak model => move |entry| {
-            model.create_new_playlist(entry.text().to_string());
-            _self.popdown();
-        }));
+        entry.connect_activate(
+            clone!(@weak self as _self @strong create_fun => move |entry| {
+                create_fun(entry.text().to_string());
+                _self.popdown();
+            }),
+        );
         btn.connect_clicked(clone!(@weak self as _self => move |_| {
-            model.create_new_playlist(entry.text().to_string());
+            create_fun(entry.text().to_string());
             _self.popdown();
         }));
     }
