@@ -18,7 +18,8 @@ impl HomeModel {
         }
     }
 
-    pub fn create_new_playlist(&self, name: String, user_id: String) {
+    pub fn create_new_playlist(&self, name: String) {
+        let user_id = self.app_model.get_state().logged_user.user.clone().unwrap();
         let api = self.app_model.get_spotify();
         self.dispatcher
             .call_spotify_and_dispatch_many(move || async move {

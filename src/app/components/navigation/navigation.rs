@@ -69,14 +69,15 @@ impl Navigation {
             self.home_listbox.clone(),
             &self.screen_factory,
             self.home_list_store.clone(),
+        );
+
+        home.connect_navigated(
             clone!(@weak self.model as model, @weak self.leaflet as leaflet => move || {
                 leaflet.navigate(NavigationDirection::Forward);
                 model.go_home();
             }
                 ),
         );
-
-        home.connect_navigated();
         home.connect_selected();
 
         Box::new(home)

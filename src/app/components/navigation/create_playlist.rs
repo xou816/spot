@@ -45,27 +45,25 @@ glib::wrapper! {
 }
 
 impl CreatePlaylistWidget {
-    pub fn new(parent: &gtk::ListBoxRow, model: Rc<HomeModel>, user: Rc<String>) -> Self {
+    pub fn new(parent: &gtk::ListBoxRow, model: Rc<HomeModel>) -> Self {
         let w: CreatePlaylistWidget =
             glib::Object::new(&[]).expect("Failed to create an instance of CreatePlaylistWidget");
-        w.connect_create(model, user);
+        w.connect_create(model);
         w.set_parent(parent);
         w.popup();
         w
     }
 
-    fn connect_create(&self, model: Rc<HomeModel>, user: Rc<String>) {
+    fn connect_create(&self, model: Rc<HomeModel>) {
         let widget = imp::CreatePlaylistWidget::from_instance(self);
         let btn = widget.button.get();
         let entry = widget.entry.get();
-        entry.connect_activate(
-            clone!(@weak self as _self, @weak user, @weak model => move |entry| {
-                model.create_new_playlist(entry.text().to_string(), user.to_string());
-                _self.popdown();
-            }),
-        );
+        entry.connect_activate(clone!(@weak self as _self, @weak model => move |entry| {
+            model.create_new_playlist(entry.text().to_string());
+            _self.popdown();
+        }));
         btn.connect_clicked(clone!(@weak self as _self => move |_| {
-            model.create_new_playlist(entry.text().to_string(), user.to_string());
+            model.create_new_playlist(entry.text().to_string());
             _self.popdown();
         }));
     }
