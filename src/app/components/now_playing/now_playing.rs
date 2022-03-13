@@ -102,7 +102,7 @@ pub struct NowPlaying {
 }
 
 impl NowPlaying {
-    pub fn new(model: Rc<NowPlayingModel>, worker: Worker) -> Self {
+    pub fn new(model: Rc<NowPlayingModel>, worker: Worker, leaflet: &libadwaita::Leaflet) -> Self {
         let widget = NowPlayingWidget::new();
 
         widget.connect_bottom_edge(clone!(@weak model => move || {
@@ -115,8 +115,10 @@ impl NowPlaying {
             worker,
         ));
 
+        let headerbar_widget = widget.headerbar_widget();
+        headerbar_widget.bind_to_leaflet(leaflet);
         let headerbar = Box::new(HeaderBarComponent::new(
-            widget.headerbar_widget().clone(),
+            headerbar_widget.clone(),
             model.to_headerbar_model(),
         ));
 

@@ -68,7 +68,7 @@ impl ScreenFactory {
             Rc::clone(&self.app_model),
             self.dispatcher.box_clone(),
         ));
-        NowPlaying::new(model, self.worker.clone())
+        NowPlaying::new(model, self.worker.clone(), &self.leaflet)
     }
 
     pub fn make_saved_tracks(&self) -> impl ListenerComponent {

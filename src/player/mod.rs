@@ -26,7 +26,6 @@ pub enum Command {
     PlayerPreload(SpotifyId),
     RefreshToken,
     ReloadSettings,
-    SwitchDevice(Device),
 }
 
 struct AppPlayerDelegate {
