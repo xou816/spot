@@ -13,11 +13,11 @@ version = "^0.4.0"
 package = "gdk4"
 
 [dependencies.gio]
-version = "^0.15.6"
+version = "^0.15.7"
 features = ["v2_60"]
 
 [dependencies.glib]
-version = "^0.15.6"
+version = "^0.15.9"
 features = ["v2_60"]
 
 [dependencies.librespot]
@@ -57,7 +57,7 @@ features = ["gettext-system"]
 
 [dependencies]
 secret-service = "^2.0.1"
-gdk-pixbuf = "^0.15.4"
+gdk-pixbuf = "^0.15.6"
 libadwaita = "^0.1.0-beta-1"
 ref_filter_map = "^1.0.1"
 regex = "^1.4.6"
