@@ -20,6 +20,7 @@ src/app/components/artist_details/artist_details.ui
 src/app/components/saved_tracks/saved_tracks.ui
 src/app/components/sidebar_listbox/sidebar_icon_widget.ui
 src/app/components/search/search.ui
+src/app/components/settings/settings.ui
 src/app/components/artist/artist.ui
 src/app/components/user_details/user_details.ui
 src/app/components/selection/selection_toolbar.ui
