@@ -13,11 +13,11 @@ version = "^0.4.0"
 package = "gdk4"
 
 [dependencies.gio]
-version = "^0.15.5"
+version = "^0.15.6"
 features = ["v2_60"]
 
 [dependencies.glib]
-version = "^0.15.2"
+version = "^0.15.6"
 features = ["v2_60"]
 
 [dependencies.librespot]
@@ -41,14 +41,14 @@ version = "^1.0.136"
 features = ["derive"]
 
 [dependencies.serde_json]
-version = "^1.0.78"
+version = "^1.0.79"
 
 [dependencies.isahc]
-version = "^1.2.0"
+version = "^1.7.0"
 features = ["json"]
 
 [dependencies.rand]
-version = "^0.8.4"
+version = "^0.8.5"
 features = ["small_rng"]
 
 [dependencies.gettext-rs]
