@@ -41,14 +41,14 @@ version = "^1.0.136"
 features = ["derive"]
 
 [dependencies.serde_json]
-version = "^1.0.78"
+version = "^1.0.79"
 
 [dependencies.isahc]
 version = "^1.2.0"
 features = ["json"]
 
 [dependencies.rand]
-version = "^0.8.4"
+version = "^0.8.5"
 features = ["small_rng"]
 
 [dependencies.gettext-rs]
