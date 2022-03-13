@@ -1,10 +1,8 @@
-name: spot-snapshots
+name: spot-development
 
 on:
-  push:
-    branches: [master]
   pull_request:
-    branches: [master]
+    branches: [development]
   workflow_dispatch:
 
 jobs:
@@ -12,13 +10,13 @@ jobs:
     name: "Flatpak Builder"
     runs-on: ubuntu-latest
     container:
-      image: bilelmoussaoui/flatpak-github-actions:gnome-40
+      image: bilelmoussaoui/flatpak-github-actions:gnome-nightly
       options: --privileged
     steps:
     - uses: actions/checkout@v2
     - uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v4
       with:
         bundle: "spot.flatpak"
-        manifest-path: "dev.alextren.Spot.snapshots.json"
+        manifest-path: "dev.alextren.Spot.development.json"
         cache-key: flatpak-builder-${{ github.sha }}
         run-tests: true
