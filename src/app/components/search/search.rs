@@ -18,6 +18,9 @@ mod imp {
     #[template(resource = "/dev/alextren/Spot/components/search.ui")]
     pub struct SearchResultsWidget {
         #[template_child]
+        pub main_header: TemplateChild<libadwaita::HeaderBar>,
+
+        #[template_child]
         pub go_back: TemplateChild<gtk::Button>,
 
         #[template_child]
@@ -72,6 +75,17 @@ impl SearchResultsWidget {
 
     fn widget(&self) -> &imp::SearchResultsWidget {
         imp::SearchResultsWidget::from_instance(self)
+    }
+
+    pub fn bind_to_leaflet(&self, leaflet: &libadwaita::Leaflet) {
+        leaflet
+            .bind_property(
+                "folded",
+                &*self.widget().main_header,
+                "show-start-title-buttons",
+            )
+            .build();
+        leaflet.notify("folded");
     }
 
     pub fn connect_go_back<F>(&self, f: F)
@@ -144,12 +158,14 @@ pub struct SearchResults {
 }
 
 impl SearchResults {
-    pub fn new(model: SearchResultsModel, worker: Worker) -> Self {
+    pub fn new(model: SearchResultsModel, worker: Worker, leaflet: &libadwaita::Leaflet) -> Self {
         let model = Rc::new(model);
         let widget = SearchResultsWidget::new();
 
         let album_results_model = gio::ListStore::new(AlbumModel::static_type());
         let artist_results_model = gio::ListStore::new(ArtistModel::static_type());
+
+        widget.bind_to_leaflet(leaflet);
 
         widget.connect_go_back(clone!(@weak model => move || {
             model.go_back();
