@@ -207,7 +207,7 @@ pub struct Details {
 }
 
 impl Details {
-    pub fn new(model: Rc<DetailsModel>, worker: Worker) -> Self {
+    pub fn new(model: Rc<DetailsModel>, worker: Worker, leaflet: &libadwaita::Leaflet) -> Self {
         if model.get_album_info().is_none() {
             model.load_album_info();
         }
@@ -221,6 +221,7 @@ impl Details {
         ));
 
         let headerbar_widget = widget.headerbar_widget();
+        headerbar_widget.bind_to_leaflet(leaflet);
         let headerbar = Box::new(HeaderBarComponent::new(
             headerbar_widget.clone(),
             model.to_headerbar_model(),

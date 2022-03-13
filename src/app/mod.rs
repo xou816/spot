@@ -132,8 +132,12 @@ impl App {
         let home_list_store = gio::ListStore::new(SideBarItem::static_type());
         let home_listbox = build_sidebar_listbox(builder, &home_list_store);
         let model = NavigationModel::new(Rc::clone(&app_model), dispatcher.box_clone());
-        let screen_factory =
-            ScreenFactory::new(Rc::clone(&app_model), dispatcher.box_clone(), worker);
+        let screen_factory = ScreenFactory::new(
+            Rc::clone(&app_model),
+            dispatcher.box_clone(),
+            worker,
+            leaflet.clone(),
+        );
         Box::new(Navigation::new(
             model,
             leaflet,
