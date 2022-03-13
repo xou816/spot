@@ -13,11 +13,11 @@ version = "^0.4.0"
 package = "gdk4"
 
 [dependencies.gio]
-version = "^0.15.5"
+version = "^0.15.6"
 features = ["v2_60"]
 
 [dependencies.glib]
-version = "^0.15.2"
+version = "^0.15.6"
 features = ["v2_60"]
 
 [dependencies.librespot]
@@ -41,14 +41,14 @@ version = "^1.0.136"
 features = ["derive"]
 
 [dependencies.serde_json]
-version = "^1.0.78"
+version = "^1.0.79"
 
 [dependencies.isahc]
 version = "^1.2.0"
 features = ["json"]
 
 [dependencies.rand]
-version = "^0.8.4"
+version = "^0.8.5"
 features = ["small_rng"]
 
 [dependencies.gettext-rs]
@@ -60,7 +60,7 @@ secret-service = "^2.0.1"
 gdk-pixbuf = "^0.15.4"
 libadwaita = "^0.1.0-beta-1"
 ref_filter_map = "^1.0.1"
-regex = "^1.4.6"
+regex = "^1.5.5"
 async-std = "^1.10.0"
 form_urlencoded = "^1.0.1"
 zbus = "^2.0.1"
