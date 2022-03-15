@@ -1,16 +1,12 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Spot\n"
-"POT-Creation-Date: \n"
-"PO-Revision-Date: \n"
-"Last-Translator: \n"
-"Language-Team: \n"
-"Language: ca\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: POEditor.com\n"
+"Project-Id-Version: Spot\n"
+"Language: ca\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.0.1\n"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
 #: src/app/components/labels.rs:5
@@ -24,7 +20,7 @@ msgstr "Copia l'enllaç"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry adds a track at the end of the play queue.
 #: src/app/components/labels.rs:11
-#: src/app/components/selection/selection_toolbar.ui:37
+#: src/app/components/selection/selection_toolbar.ui:39
 msgid "Add to queue"
 msgstr "Afegeix a la cua"
 
@@ -35,6 +31,7 @@ msgstr "Suprimeix de la cua"
 
 #. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
 #: src/app/components/labels.rs:21
+#, fuzzy
 msgid "Add to {}"
 msgstr "Afegeix a {}"
 
@@ -44,25 +41,25 @@ msgid "Could not save password. Make sure the session keyring is unlocked."
 msgstr "No s'ha pogut desar la sessió. Assegura't que l'anell de claus de la sessió està desbloquejat."
 
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/batch_loader.rs:91 src/app/components/mod.rs:117
+#: src/app/batch_loader.rs:91 src/app/components/mod.rs:122
 msgid "An error occured. Check logs for details!"
 msgstr "Ha ocorregut un error. Comprova els registres per més detalls!"
 
 #. translators: This is a sidebar entry to browse to saved albums.
-#: src/app/components/navigation/factory.rs:29
-#: src/app/components/navigation/home.rs:36
+#: src/app/components/navigation/factory.rs:32
+#: src/app/components/navigation/home.rs:68
 msgid "Library"
 msgstr "Biblioteca"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
-#: src/app/components/navigation/factory.rs:44
-#: src/app/components/navigation/home.rs:42
+#: src/app/components/navigation/factory.rs:51
+#: src/app/components/navigation/home.rs:94
 msgid "Playlists"
 msgstr "Llistes de reproducció"
 
 #. This is the visible name for the play queue. It appears in the sidebar as well.
-#: src/app/components/navigation/home.rs:53
-#: src/app/components/now_playing/now_playing_model.rs:152
+#: src/app/components/navigation/home.rs:87
+#: src/app/components/now_playing/now_playing_model.rs:134
 msgid "Now playing"
 msgstr "S'està reproduïnt"
 
@@ -74,21 +71,21 @@ msgid "No song playing"
 msgstr "Cap cançó en reproducció"
 
 #. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:56
+#: src/app/components/user_menu/user_menu.rs:67
 msgid "About"
 msgstr "Quant a"
 
 #. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:58
+#: src/app/components/user_menu/user_menu.rs:69
 msgid "Quit"
 msgstr "Surt"
 
 #. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:63
+#: src/app/components/user_menu/user_menu.rs:74
 msgid "Log out"
 msgstr "Tanca la sessió"
 
-#: src/app/state/login_state.rs:117
+#: src/app/state/login_state.rs:110
 msgid "Connection restored"
 msgstr "Connexió restablerta"
 
@@ -98,7 +95,7 @@ msgid "Top tracks"
 msgstr "Millors pistes"
 
 #. Title of the sections that contains all releases from an artist (both singles and albums).
-#: src/app/components/artist_details/artist_details.ui:55
+#: src/app/components/artist_details/artist_details.ui:53
 msgid "Releases"
 msgstr "Llançaments"
 
@@ -128,46 +125,54 @@ msgid "Log in"
 msgstr "Inicia sessió"
 
 #. This is the title of a section of the search results
-#: src/app/components/search/search.ui:70
+#: src/app/components/search/search.ui:72
 msgid "Albums"
 msgstr "Àlbums"
 
 #. This is the title of a section of the search results
-#: src/app/components/search/search.ui:103
+#: src/app/components/search/search.ui:105
 msgid "Artists"
 msgstr "Artistes"
 
-#: src/app/components/navigation/factory.rs:73
-#: src/app/components/navigation/home.rs:48
+#: src/app/components/navigation/factory.rs:82
+#: src/app/components/navigation/home.rs:78
+#, fuzzy
 msgid "Saved tracks"
 msgstr "Pistes desades"
 
 #. This information is shown when Caps Lock is enabled.
 #: src/app/components/login/login.ui:95
+#, fuzzy
 msgid "Caps Lock is enabled!"
 msgstr "Bloq Maj està habilitat!"
 
 #: src/app/components/playback/playback_controls.rs:64
+#, fuzzy
 msgid "Pause"
 msgstr "Pausa"
 
 #: src/app/components/playback/playback_controls.rs:66
+#, fuzzy
 msgid "Play"
 msgstr "Reprodueix"
 
 #: src/app/components/playback/playback_controls.ui:17
+#, fuzzy
 msgid "Shuffle"
 msgstr "Barreja"
 
 #: src/app/components/playback/playback_controls.ui:27
+#, fuzzy
 msgid "Previous"
 msgstr "Anterior"
 
 #: src/app/components/playback/playback_controls.ui:50
+#, fuzzy
 msgid "Next"
 msgstr "Següent"
 
 #: src/app/components/playback/playback_controls.ui:60
+#, fuzzy
 msgid "Repeat"
 msgstr "Repeteix"
 
@@ -191,6 +196,7 @@ msgstr "No teniu àlbums desats."
 msgid "Your library will be shown here."
 msgstr "Aquí es mostrarà la vostra biblioteca."
 
+#. translators: This shows up when in selection mode. This text should be as short as possible.
 #: src/app/components/labels.rs:30
 msgid "{} song selected"
 msgid_plural "{} songs selected"
@@ -198,31 +204,31 @@ msgstr[0] "{} cançó seleccionada"
 msgstr[1] "{} cançons seleccionades"
 
 #. Title for the empty search page (initial state).
-#: src/app/components/search/search.ui:114
+#: src/app/components/search/search.ui:116
 msgid "Search Spotify."
 msgstr "Cerca a Spotify."
 
 #. Subtitle for the empty search page (initial state).
-#: src/app/components/search/search.ui:115
+#: src/app/components/search/search.ui:117
 msgid "Type to search."
 msgstr "Escriu per començar a buscar."
 
-#: src/app/components/selection/selection_toolbar.ui:58
+#: src/app/components/selection/selection_toolbar.ui:69
 msgid "Remove"
 msgstr "Elimina"
 
 #. <property name="icon-name">playlist2-symbolic</property>
-#: src/app/components/selection/selection_toolbar.ui:47
+#: src/app/components/selection/selection_toolbar.ui:56
 msgid "Add to playlist..."
 msgstr "Afegeix a la llista..."
 
 #. Button label. Exits selection mode.
-#: src/app/components/headerbar/headerbar.ui:46
+#: src/app/components/headerbar/headerbar.ui:47
 msgid "Cancel"
 msgstr "Cancel·la"
 
 #. Button label. Selects all visible songs.
-#: src/app/components/headerbar/headerbar.ui:57
+#: src/app/components/headerbar/headerbar.ui:58
 msgid "Select all"
 msgstr "Selecciona-ho tot"
 
@@ -253,7 +259,7 @@ msgstr "Millors pistes"
 msgid "Duration"
 msgstr "Duració"
 
-#: src/app/components/details/release_details.ui:78
+#: src/app/components/details/release_details.ui:68
 msgid "Copyright"
 msgstr "Copyright"
 
@@ -261,3 +267,100 @@ msgstr "Copyright"
 #: src/app/components/labels.rs:48
 msgid "{} by {}"
 msgstr "{} per {}"
+
+#: src/app/components/navigation/home.rs:32
+msgid "Unnamed playlist"
+msgstr ""
+
+#. translators: This is a sidebar entry to browse to saved playlists.
+#: src/app/components/navigation/home.rs:104
+msgid "All Playlists"
+msgstr ""
+
+#: src/app/components/selection/component.rs:66
+msgid "Tracks saved!"
+msgstr ""
+
+#. translators: This is a menu entry.
+#: src/app/components/user_menu/user_menu.rs:65
+msgid "Preferences"
+msgstr ""
+
+#: src/main.rs:81
+msgid "Failed to open link!"
+msgstr ""
+
+#. Header for a group of preference items regarding audio
+#: src/app/components/settings/settings.ui:13
+msgid "Audio"
+msgstr ""
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:16
+msgid "Audio Backend"
+msgstr ""
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:29
+msgid "ALSA Device"
+msgstr ""
+
+#. Description for the item (ALSA Device) in preferences
+#: src/app/components/settings/settings.ui:30
+msgid "Applied only if audio backend is ALSA"
+msgstr ""
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:40
+msgid "Audio Quality"
+msgstr ""
+
+#: src/app/components/settings/settings.ui:44
+msgid "Normal"
+msgstr ""
+
+#: src/app/components/settings/settings.ui:45
+msgid "High"
+msgstr ""
+
+#: src/app/components/settings/settings.ui:46
+msgid "Very high"
+msgstr ""
+
+#. Header for a group of preference items regarding the application's appearance
+#: src/app/components/settings/settings.ui:56
+msgid "Appearance"
+msgstr ""
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:59
+msgid "Theme"
+msgstr ""
+
+#: src/app/components/settings/settings.ui:63
+msgid "Light"
+msgstr ""
+
+#: src/app/components/settings/settings.ui:64
+msgid "Dark"
+msgstr ""
+
+#. Header for a group of preference items regarding network
+#: src/app/components/settings/settings.ui:74
+msgid "Network"
+msgstr ""
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:77
+msgid "Access Point Port"
+msgstr ""
+
+#. Longer description for an item (Access Point Port) in preferences
+#: src/app/components/settings/settings.ui:78
+msgid "Port used for connections to Spotify's Access Point. Set to 0 if any port is fine."
+msgstr ""
+
+#: src/app/components/selection/selection_toolbar.ui:90
+msgid "Save to library"
+msgstr ""
+

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-19 19:46-0500\n"
+"POT-Creation-Date: 2022-03-15 15:22+0100\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/batch_loader.rs:91 src/app/components/mod.rs:117
+#: src/app/batch_loader.rs:91 src/app/components/mod.rs:122
 msgid "An error occured. Check logs for details!"
 msgstr "C'è stato un errore. Controlla i log per i dettagli!"
 
@@ -27,7 +27,7 @@ msgstr "Copia link"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry adds a track at the end of the play queue.
 #: src/app/components/labels.rs:11
-#: src/app/components/selection/selection_toolbar.ui:37
+#: src/app/components/selection/selection_toolbar.ui:39
 msgid "Add to queue"
 msgstr "Aggiungi alla coda di riproduzione"
 
@@ -66,27 +66,37 @@ msgstr ""
 "sbloccata."
 
 #. translators: This is a sidebar entry to browse to saved albums.
-#: src/app/components/navigation/factory.rs:29
-#: src/app/components/navigation/home.rs:36
+#: src/app/components/navigation/factory.rs:32
+#: src/app/components/navigation/home.rs:68
 msgid "Library"
 msgstr "Raccolta"
 
-#. translators: This is a sidebar entry to browse to saved playlists.
-#: src/app/components/navigation/factory.rs:44
-#: src/app/components/navigation/home.rs:42
+#. translators: This is a sidebar entry that marks that the entries below are playlists.
+#: src/app/components/navigation/factory.rs:51
+#: src/app/components/navigation/home.rs:94
 msgid "Playlists"
 msgstr "Playlist"
 
 #. translators: This is a sidebar entry to browse to saved tracks.
-#: src/app/components/navigation/factory.rs:73
-#: src/app/components/navigation/home.rs:48
+#: src/app/components/navigation/factory.rs:82
+#: src/app/components/navigation/home.rs:78
 msgid "Saved tracks"
 msgstr "Tracce salvate"
 
-#: src/app/components/navigation/home.rs:53
-#: src/app/components/now_playing/now_playing_model.rs:152
+#: src/app/components/navigation/home.rs:32
+msgid "Unnamed playlist"
+msgstr ""
+
+#: src/app/components/navigation/home.rs:87
+#: src/app/components/now_playing/now_playing_model.rs:134
 msgid "Now playing"
 msgstr "In riproduzione"
+
+#. translators: This is a sidebar entry to browse to saved playlists.
+#: src/app/components/navigation/home.rs:104
+#, fuzzy
+msgid "All Playlists"
+msgstr "Playlist"
 
 #: src/app/components/playback/playback_controls.rs:64
 msgid "Pause"
@@ -103,24 +113,38 @@ msgstr "Riproduci"
 msgid "No song playing"
 msgstr "Nessun brano in riproduzione"
 
+#: src/app/components/selection/component.rs:66
+#, fuzzy
+msgid "Tracks saved!"
+msgstr "Traccia"
+
 #. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:56
+#: src/app/components/user_menu/user_menu.rs:65
+msgid "Preferences"
+msgstr ""
+
+#. translators: This is a menu entry.
+#: src/app/components/user_menu/user_menu.rs:67
 msgid "About"
 msgstr "Informazioni su"
 
 #. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:58
+#: src/app/components/user_menu/user_menu.rs:69
 msgid "Quit"
 msgstr "Esci"
 
 #. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:63
+#: src/app/components/user_menu/user_menu.rs:74
 msgid "Log out"
 msgstr "Log out"
 
-#: src/app/state/login_state.rs:117
+#: src/app/state/login_state.rs:110
 msgid "Connection restored"
 msgstr "Connessione ripristinata"
+
+#: src/main.rs:81
+msgid "Failed to open link!"
+msgstr ""
 
 #. A title that is shown when the user has not saved any playlists.
 #: src/app/components/saved_playlists/saved_playlists.ui:26
@@ -138,38 +162,114 @@ msgid "Top tracks"
 msgstr "Brani più popolari"
 
 #. Title of the sections that contains all releases from an artist (both singles and albums).
-#: src/app/components/artist_details/artist_details.ui:55
+#: src/app/components/artist_details/artist_details.ui:53
 msgid "Releases"
 msgstr "Releases"
 
 #. This is the title of a section of the search results
-#: src/app/components/search/search.ui:70
+#: src/app/components/search/search.ui:72
 msgid "Albums"
 msgstr "Album"
 
 #. This is the title of a section of the search results
-#: src/app/components/search/search.ui:103
+#: src/app/components/search/search.ui:105
 msgid "Artists"
 msgstr "Artisti"
 
 #. Title for the empty search page (initial state).
-#: src/app/components/search/search.ui:114
+#: src/app/components/search/search.ui:116
 msgid "Search Spotify."
 msgstr "Cerca Spotify."
 
 #. Subtitle for the empty search page (initial state).
-#: src/app/components/search/search.ui:115
+#: src/app/components/search/search.ui:117
 msgid "Type to search."
 msgstr "Digita per cercare."
 
+#. Header for a group of preference items regarding audio
+#: src/app/components/settings/settings.ui:13
+msgid "Audio"
+msgstr ""
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:16
+msgid "Audio Backend"
+msgstr ""
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:29
+msgid "ALSA Device"
+msgstr ""
+
+#. Description for the item (ALSA Device) in preferences
+#: src/app/components/settings/settings.ui:30
+msgid "Applied only if audio backend is ALSA"
+msgstr ""
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:40
+msgid "Audio Quality"
+msgstr ""
+
+#: src/app/components/settings/settings.ui:44
+msgid "Normal"
+msgstr ""
+
+#: src/app/components/settings/settings.ui:45
+msgid "High"
+msgstr ""
+
+#: src/app/components/settings/settings.ui:46
+msgid "Very high"
+msgstr ""
+
+#. Header for a group of preference items regarding the application's appearance
+#: src/app/components/settings/settings.ui:56
+msgid "Appearance"
+msgstr ""
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:59
+msgid "Theme"
+msgstr ""
+
+#: src/app/components/settings/settings.ui:63
+msgid "Light"
+msgstr ""
+
+#: src/app/components/settings/settings.ui:64
+msgid "Dark"
+msgstr ""
+
+#. Header for a group of preference items regarding network
+#: src/app/components/settings/settings.ui:74
+msgid "Network"
+msgstr ""
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:77
+msgid "Access Point Port"
+msgstr ""
+
+#. Longer description for an item (Access Point Port) in preferences
+#: src/app/components/settings/settings.ui:78
+msgid ""
+"Port used for connections to Spotify's Access Point. Set to 0 if any port is "
+"fine."
+msgstr ""
+
 #. <property name="icon-name">playlist2-symbolic</property>
-#: src/app/components/selection/selection_toolbar.ui:47
+#: src/app/components/selection/selection_toolbar.ui:56
 msgid "Add to playlist..."
 msgstr "Aggiungi alla playlist..."
 
-#: src/app/components/selection/selection_toolbar.ui:58
+#: src/app/components/selection/selection_toolbar.ui:69
 msgid "Remove"
 msgstr "Rimuovi"
+
+#: src/app/components/selection/selection_toolbar.ui:90
+msgid "Save to library"
+msgstr ""
 
 #. This refers to a music label
 #: src/app/components/details/release_details.ui:38
@@ -186,12 +286,7 @@ msgstr "Data di uscita"
 msgid "Tracks"
 msgstr "Traccia"
 
-#. This refers to the duration of a release
 #: src/app/components/details/release_details.ui:68
-msgid "Duration"
-msgstr "Durata"
-
-#: src/app/components/details/release_details.ui:78
 msgid "Copyright"
 msgstr "Copyright"
 
@@ -226,12 +321,12 @@ msgid "Log in"
 msgstr "Log in"
 
 #. Button label. Exits selection mode.
-#: src/app/components/headerbar/headerbar.ui:46
+#: src/app/components/headerbar/headerbar.ui:47
 msgid "Cancel"
 msgstr "Annulla"
 
 #. Button label. Selects all visible songs.
-#: src/app/components/headerbar/headerbar.ui:57
+#: src/app/components/headerbar/headerbar.ui:58
 msgid "Select all"
 msgstr "Seleziona tutto"
 
@@ -260,6 +355,9 @@ msgstr "Non hai album salvati."
 #: src/app/components/library/library.ui:27
 msgid "Your library will be shown here."
 msgstr "La tua libreria verrà mostrata qui."
+
+#~ msgid "Duration"
+#~ msgstr "Durata"
 
 #~ msgid "by"
 #~ msgstr "by"
