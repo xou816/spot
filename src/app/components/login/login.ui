@@ -42,7 +42,7 @@
                       <object class="GtkLabel">
                         <property name="halign">start</property>
                         <property name="valign">start</property>
-                        <property name="label" translatable="yes" comments="Login window title -- shouldn&apos;t be too long, but must mention Premium (af premium account is required).">Login to Spotify Premium</property>
+                        <property name="label" translatable="yes" comments="Login window title -- shouldn&apos;t be too long, but must mention Premium (a premium account is required).">Login to Spotify Premium</property>
                         <property name="wrap">1</property>
                         <property name="xalign">0</property>
                         <property name="yalign">0</property>
