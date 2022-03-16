@@ -31,9 +31,6 @@ mod imp {
         pub login_button: TemplateChild<gtk::Button>,
 
         #[template_child]
-        pub caps_lock_info_container: TemplateChild<gtk::Revealer>,
-
-        #[template_child]
         pub auth_error_container: TemplateChild<gtk::Revealer>,
     }
 
@@ -88,7 +85,6 @@ impl LoginWindow {
         controller.set_propagation_phase(gtk::PropagationPhase::Capture);
         controller.connect_key_pressed(
             clone!(@weak self as _self => @default-return gtk::Inhibit(false), move |_, key, _, modifier| {
-                _self.show_caps_lock_info((modifier == gdk::ModifierType::LOCK_MASK) ^ (key == gdk::Key::Caps_Lock));
                 if key == gdk::Key::Return {
                     _self.submit(&on_submit_clone);
                     gtk::Inhibit(true)
@@ -109,11 +105,6 @@ impl LoginWindow {
     fn show_auth_error(&self, shown: bool) {
         let widget = imp::LoginWindow::from_instance(self);
         widget.auth_error_container.set_reveal_child(shown);
-    }
-
-    fn show_caps_lock_info(&self, shown: bool) {
-        let widget = imp::LoginWindow::from_instance(self);
-        widget.caps_lock_info_container.set_reveal_child(shown);
     }
 
     fn submit<SubmitFn>(&self, on_submit: &SubmitFn)

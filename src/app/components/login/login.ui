@@ -42,7 +42,7 @@
                       <object class="GtkLabel">
                         <property name="halign">start</property>
                         <property name="valign">start</property>
-                        <property name="label" translatable="yes" comments="Login window title -- shouldn&apos;t be too long, but must mention Premium (a premium account is required).">Login to Spotify Premium</property>
+                        <property name="label" translatable="yes" comments="Login window title -- shouldn&apos;t be too long, but must mention Premium (af premium account is required).">Login to Spotify Premium</property>
                         <property name="wrap">1</property>
                         <property name="xalign">0</property>
                         <property name="yalign">0</property>
@@ -59,50 +59,38 @@
                         <property name="orientation">vertical</property>
                         <property name="spacing">4</property>
                         <child>
-                          <object class="GtkEntry" id="username">
-                            <property name="primary-icon-name">avatar-default-symbolic</property>
-                            <property name="placeholder-text" translatable="yes" comments="Placeholder for the username field">Username</property>
+                          <object class="GtkBox">
+                            <property name="orientation">horizontal</property>
+                            <property name="spacing">4</property>
+                            <child>
+                              <object class="GtkImage" id="username-icon">
+                                <property name="icon-name">avatar-default-symbolic</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="username">
+                                <property name="placeholder-text" translatable="yes" comments="Placeholder for the username field">Username</property>
+                              </object>
+                            </child>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkEntry" id="password">
-                            <property name="visibility">0</property>
-                            <property name="invisible-char">●</property>
-                            <property name="primary-icon-name">dialog-password-symbolic</property>
-                            <property name="placeholder-text" translatable="yes" comments="Placeholder for the password field">Password</property>
+                          <object class="GtkBox">
+                            <property name="orientation">horizontal</property>
+                            <property name="spacing">4</property>
+                            <child>
+                              <object class="GtkImage" id="password-icon">
+                                <property name="icon-name">dialog-password-symbolic</property>
+                              </object>
+                            </child>
+                            <child>
+                             <object class="GtkPasswordEntry" id="password">
+                               <property name="show-peek-icon">1</property>
+                               <property name="placeholder-text" translatable="yes" comments="Placeholder for the password field">Password</property>
+                             </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkRevealer" id="caps_lock_info_container">
-                        <property name="vexpand">1</property>
-                        <property name="transition-type">slide-up</property>
-                        <property name="child">
-                          <object class="GtkBox">
-                            <property name="spacing">8</property>
-                            <child>
-                              <object class="GtkImage">
-                                <property name="halign">center</property>
-                                <property name="valign">start</property>
-                                <property name="margin-top">2</property>
-                                <property name="vexpand">1</property>
-                                <property name="icon-name">dialog-information-symbolic</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkLabel">
-                                <property name="label" translatable="yes" comments="This information is shown when Caps Lock is enabled.">Caps Lock is enabled!</property>
-                                <property name="wrap">1</property>
-                                <property name="xalign">0</property>
-                                <property name="yalign">0</property>
-                                <attributes>
-                                  <attribute name="weight" value="bold"></attribute>
-                                </attributes>
-                              </object>
-                            </child>
-                          </object>
-                        </property>
                       </object>
                     </child>
                     <child>
