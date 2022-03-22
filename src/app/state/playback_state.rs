@@ -1,13 +1,13 @@
-use crate::app::models::{InsertionRange, SongBatch, SongDescription, SongList};
+use std::borrow::Cow;
+
+use crate::app::models::{SongBatch, SongDescription, SongListModel, SongListModelPending};
 use crate::app::state::{AppAction, AppEvent, UpdatableState};
 use crate::app::{BatchQuery, LazyRandomIndex, SongsSource};
-
-const RANGE_SIZE: usize = 25;
 
 #[derive(Debug)]
 pub struct PlaybackState {
     index: LazyRandomIndex,
-    songs: SongList,
+    songs: SongListModel,
     position: Option<usize>,
     source: Option<SongsSource>,
     repeat: RepeatMode,
@@ -16,6 +16,10 @@ pub struct PlaybackState {
 }
 
 impl PlaybackState {
+    pub fn songs(&self) -> &SongListModel {
+        &self.songs
+    }
+
     pub fn is_playing(&self) -> bool {
         self.is_playing && self.position.is_some()
     }
@@ -44,75 +48,62 @@ impl PlaybackState {
         }
     }
 
-    pub fn song(&self, id: &str) -> Option<&SongDescription> {
-        self.songs.get(id)
-    }
-
-    pub fn len(&self) -> usize {
-        self.songs.len()
-    }
-
-    pub fn songs(&self) -> impl Iterator<Item = &'_ SongDescription> + '_ {
-        self.songs.iter()
-    }
-
-    fn index(&self, i: usize) -> Option<&SongDescription> {
-        if self.is_shuffled {
+    fn index(&self, i: usize) -> Option<SongDescription> {
+        let song = if self.is_shuffled {
             self.songs.index(self.index.get(i)?)
         } else {
             self.songs.index(i)
-        }
+        };
+        Some(song?.into_description())
     }
 
-    pub fn current_song_id(&self) -> Option<&String> {
-        Some(&self.index(self.position?).as_ref()?.id)
+    pub fn current_song_id(&self) -> Option<String> {
+        Some(self.index(self.position?)?.id)
     }
 
-    pub fn current_song(&self) -> Option<&SongDescription> {
+    pub fn current_song(&self) -> Option<SongDescription> {
         self.index(self.position?)
     }
 
-    pub fn prev_song(&self) -> Option<&SongDescription> {
-        self.prev_index().and_then(|i| self.index(i))
-    }
-
-    pub fn next_song(&self) -> Option<&SongDescription> {
-        self.next_index().and_then(|i| self.index(i))
-    }
-
-    fn set_source(&mut self, source: Option<SongsSource>) {
-        self.songs = SongList::new_sized(2 * RANGE_SIZE);
+    fn clear(&mut self, source: Option<SongsSource>) -> SongListModelPending {
         self.source = source;
         self.index = Default::default();
         self.position = None;
+        self.songs.clear()
     }
 
-    fn add_batch(&mut self, song_batch: SongBatch) -> Option<InsertionRange> {
-        let SongBatch { songs, batch } = song_batch;
-        let range = self.songs.add(SongBatch { songs, batch });
+    fn set_batch(&mut self, source: Option<SongsSource>, song_batch: SongBatch) -> bool {
+        let ok = self.clear(source).and(|s| s.add(song_batch)).commit();
         self.index.resize(self.songs.len());
-        range
+        ok
     }
 
-    pub fn queue(&mut self, track: SongDescription) {
-        self.songs.append(vec![track]);
+    fn add_batch(&mut self, song_batch: SongBatch) -> bool {
+        let ok = self.songs.add(song_batch).commit();
+        self.index.resize(self.songs.len());
+        ok
+    }
+
+    pub fn set_queue(&mut self, tracks: Vec<SongDescription>) {
+        self.clear(None).and(|s| s.append(tracks)).commit();
         self.index.grow(self.songs.len());
     }
 
-    pub fn dequeue(&mut self, id: &str) {
-        let position = self.songs.find_index(id);
-        self.songs.remove(&[id.to_string()]);
-        let new_len = self.songs.len();
-        self.position = self
-            .position
-            .filter(|_| new_len > 0)
-            .and_then(|p| Some(if p > 0 && p >= position? { p - 1 } else { p }));
-        self.index.shrink(new_len);
+    pub fn queue(&mut self, tracks: Vec<SongDescription>) {
+        self.source = None;
+        self.songs.append(tracks).commit();
+        self.index.grow(self.songs.len());
     }
 
-    fn swap(&mut self, index: usize, other_index: usize) {
+    pub fn dequeue(&mut self, ids: &[String]) {
+        let current_id = self.current_song_id();
+        self.songs.remove(ids).commit();
+        self.position = current_id.and_then(|id| self.songs.find_index(&id));
+        self.index.shrink(self.songs.len());
+    }
+
+    fn swap_pos(&mut self, index: usize, other_index: usize) {
         let len = self.songs.len();
-        self.songs.swap(index, other_index);
         self.position = self
             .position
             .map(|position| match position {
@@ -125,13 +116,15 @@ impl PlaybackState {
 
     pub fn move_down(&mut self, id: &str) -> Option<usize> {
         let index = self.songs.find_index(id)?;
-        self.swap(index, index + 1);
+        self.songs.move_down(index).commit();
+        self.swap_pos(index + 1, index);
         Some(index)
     }
 
     pub fn move_up(&mut self, id: &str) -> Option<usize> {
         let index = self.songs.find_index(id).filter(|&index| index > 0)?;
-        self.swap(index - 1, index);
+        self.songs.move_up(index).commit();
+        self.swap_pos(index - 1, index);
         Some(index)
     }
 
@@ -160,18 +153,18 @@ impl PlaybackState {
         self.is_playing = false;
     }
 
-    fn play_index(&mut self, index: usize) -> Option<&String> {
+    fn play_index(&mut self, index: usize) -> Option<String> {
         self.is_playing = true;
         self.position.replace(index);
         self.index.next_until(index + 1);
         self.current_song_id()
     }
 
-    fn play_next(&mut self) -> Option<&String> {
+    fn play_next(&mut self) -> Option<String> {
         self.next_index().and_then(move |i| self.play_index(i))
     }
 
-    fn next_index(&self) -> Option<usize> {
+    pub fn next_index(&self) -> Option<usize> {
         let len = self.songs.len();
         self.position.and_then(|p| match self.repeat {
             RepeatMode::Song => Some(p),
@@ -181,11 +174,11 @@ impl PlaybackState {
         })
     }
 
-    fn play_prev(&mut self) -> Option<&String> {
+    fn play_prev(&mut self) -> Option<String> {
         self.prev_index().and_then(move |i| self.play_index(i))
     }
 
-    fn prev_index(&self) -> Option<usize> {
+    pub fn prev_index(&self) -> Option<usize> {
         let len = self.songs.len();
         self.position.and_then(|p| match self.repeat {
             RepeatMode::Song => Some(p),
@@ -215,7 +208,7 @@ impl Default for PlaybackState {
     fn default() -> Self {
         Self {
             index: LazyRandomIndex::default(),
-            songs: SongList::new_sized(2 * RANGE_SIZE),
+            songs: SongListModel::new(50),
             position: None,
             source: None,
             repeat: RepeatMode::None,
@@ -253,15 +246,6 @@ impl From<PlaybackAction> for AppAction {
 }
 
 #[derive(Clone, Debug)]
-pub enum PlaylistChange {
-    Reset,
-    InsertedAt(usize, usize),
-    AppendedAt(usize),
-    MovedUp(usize),
-    MovedDown(usize),
-}
-
-#[derive(Clone, Debug)]
 pub enum PlaybackEvent {
     PlaybackPaused,
     PlaybackResumed,
@@ -271,7 +255,7 @@ pub enum PlaybackEvent {
     VolumeSet(f64),
     TrackChanged(String),
     ShuffleChanged,
-    PlaylistChanged(PlaylistChange),
+    PlaylistChanged,
     PlaybackStopped,
 }
 
@@ -296,8 +280,8 @@ impl UpdatableState for PlaybackState {
     type Action = PlaybackAction;
     type Event = PlaybackEvent;
 
-    fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
-        match action {
+    fn update_with(&mut self, action: Cow<Self::Action>) -> Vec<Self::Event> {
+        match action.into_owned() {
             PlaybackAction::TogglePlay => {
                 if let Some(playing) = self.toggle_play() {
                     if playing {
@@ -340,7 +324,7 @@ impl UpdatableState for PlaybackState {
                 vec![PlaybackEvent::ShuffleChanged]
             }
             PlaybackAction::Next => {
-                if let Some(id) = self.play_next().cloned() {
+                if let Some(id) = self.play_next() {
                     make_events(vec![
                         Some(PlaybackEvent::TrackChanged(id)),
                         Some(PlaybackEvent::PlaybackResumed),
@@ -355,7 +339,7 @@ impl UpdatableState for PlaybackState {
                 vec![PlaybackEvent::PlaybackStopped]
             }
             PlaybackAction::Previous => {
-                if let Some(id) = self.play_prev().cloned() {
+                if let Some(id) = self.play_prev() {
                     make_events(vec![
                         Some(PlaybackEvent::TrackChanged(id)),
                         Some(PlaybackEvent::PlaybackResumed),
@@ -374,20 +358,11 @@ impl UpdatableState for PlaybackState {
                     vec![]
                 }
             }
-            PlaybackAction::LoadSongs(tracks) => {
-                self.set_source(None);
-                for track in tracks {
-                    self.queue(track);
-                }
-                vec![PlaybackEvent::PlaylistChanged(PlaylistChange::Reset)]
-            }
             PlaybackAction::LoadPagedSongs(source, batch)
                 if Some(&source) == self.source.as_ref() =>
             {
-                if let Some(InsertionRange(a, b)) = self.add_batch(batch) {
-                    vec![PlaybackEvent::PlaylistChanged(PlaylistChange::InsertedAt(
-                        a, b,
-                    ))]
+                if self.add_batch(batch) {
+                    vec![PlaybackEvent::PlaylistChanged]
                 } else {
                     vec![]
                 }
@@ -395,23 +370,20 @@ impl UpdatableState for PlaybackState {
             PlaybackAction::LoadPagedSongs(source, batch)
                 if Some(&source) != self.source.as_ref() =>
             {
-                self.set_source(Some(source));
-                self.add_batch(batch);
-                vec![PlaybackEvent::PlaylistChanged(PlaylistChange::Reset)]
+                self.set_batch(Some(source), batch);
+                vec![PlaybackEvent::PlaylistChanged]
+            }
+            PlaybackAction::LoadSongs(tracks) => {
+                self.set_queue(tracks);
+                vec![PlaybackEvent::PlaylistChanged]
             }
             PlaybackAction::Queue(tracks) => {
-                let append_at = self.songs.partial_len();
-                self.source = None;
-                for track in tracks {
-                    self.queue(track);
-                }
-                vec![PlaybackEvent::PlaylistChanged(PlaylistChange::AppendedAt(
-                    append_at,
-                ))]
+                self.queue(tracks);
+                vec![PlaybackEvent::PlaylistChanged]
             }
             PlaybackAction::Dequeue(id) => {
-                self.dequeue(&id);
-                vec![PlaybackEvent::PlaylistChanged(PlaylistChange::Reset)]
+                self.dequeue(&[id]);
+                vec![PlaybackEvent::PlaylistChanged]
             }
             PlaybackAction::Seek(pos) => vec![PlaybackEvent::TrackSeeked(pos)],
             PlaybackAction::SyncSeek(pos) => vec![PlaybackEvent::SeekSynced(pos)],
@@ -448,12 +420,22 @@ mod tests {
             self.position
         }
 
-        fn song_ids(&self) -> Vec<&str> {
-            self.songs().map(|s| &s.id[..]).collect()
+        fn prev_id(&self) -> Option<String> {
+            self.prev_index()
+                .and_then(|i| Some(self.songs().index(i)?.description().id.clone()))
         }
 
-        fn song_id(&self) -> Option<&str> {
-            self.current_song().map(|s| &s.id[..])
+        fn next_id(&self) -> Option<String> {
+            self.next_index()
+                .and_then(|i| Some(self.songs().index(i)?.description().id.clone()))
+        }
+
+        fn song_ids(&self) -> Vec<String> {
+            self.songs()
+                .collect()
+                .iter()
+                .map(|s| s.id.clone())
+                .collect()
         }
     }
 
@@ -463,21 +445,21 @@ mod tests {
         assert!(!state.is_playing());
         assert!(!state.is_shuffled());
         assert!(state.current_song().is_none());
-        assert!(state.prev_song().is_none());
-        assert!(state.next_song().is_none());
+        assert!(state.prev_index().is_none());
+        assert!(state.next_index().is_none());
     }
 
     #[test]
     fn test_play_one() {
         let mut state = PlaybackState::default();
-        state.queue(song("foo"));
+        state.queue(vec![song("foo")]);
 
         state.play("foo");
         assert!(state.is_playing());
 
-        assert_eq!(state.song_id(), Some("foo"));
-        assert!(state.prev_song().is_none());
-        assert!(state.next_song().is_none());
+        assert_eq!(state.current_song_id(), Some("foo".to_string()));
+        assert!(state.prev_index().is_none());
+        assert!(state.next_index().is_none());
 
         state.toggle_play();
         assert!(!state.is_playing());
@@ -486,33 +468,29 @@ mod tests {
     #[test]
     fn test_queue() {
         let mut state = PlaybackState::default();
-        state.queue(song("1"));
-        state.queue(song("2"));
-        state.queue(song("3"));
+        state.queue(vec![song("1"), song("2"), song("3")]);
 
-        assert_eq!(state.songs().count(), 3);
+        assert_eq!(state.songs().len(), 3);
 
         state.play("2");
 
-        state.queue(song("4"));
-        assert_eq!(state.songs().count(), 4);
+        state.queue(vec![song("4")]);
+        assert_eq!(state.songs().len(), 4);
     }
 
     #[test]
     fn test_play_multiple() {
         let mut state = PlaybackState::default();
-        state.queue(song("1"));
-        state.queue(song("2"));
-        state.queue(song("3"));
-        assert_eq!(state.songs().count(), 3);
+        state.queue(vec![song("1"), song("2"), song("3")]);
+        assert_eq!(state.songs().len(), 3);
 
         state.play("2");
         assert!(state.is_playing());
 
         assert_eq!(state.current_position(), Some(1));
-        assert_eq!(state.prev_song().map(|s| &s.id[..]), Some("1"));
-        assert_eq!(state.song_id(), Some("2"));
-        assert_eq!(state.next_song().map(|s| &s.id[..]), Some("3"));
+        assert_eq!(state.prev_id(), Some("1".to_string()));
+        assert_eq!(state.current_song_id(), Some("2".to_string()));
+        assert_eq!(state.next_id(), Some("3".to_string()));
 
         state.toggle_play();
         assert!(!state.is_playing());
@@ -520,38 +498,35 @@ mod tests {
         state.play_next();
         assert!(state.is_playing());
         assert_eq!(state.current_position(), Some(2));
-        assert_eq!(state.prev_song().map(|s| &s.id[..]), Some("2"));
-        assert_eq!(state.song_id(), Some("3"));
-        assert!(state.next_song().is_none());
+        assert_eq!(state.prev_id(), Some("2".to_string()));
+        assert_eq!(state.current_song_id(), Some("3".to_string()));
+        assert!(state.next_index().is_none());
 
         state.play_next();
         assert!(state.is_playing());
         assert_eq!(state.current_position(), Some(2));
-        assert_eq!(state.song_id(), Some("3"));
+        assert_eq!(state.current_song_id(), Some("3".to_string()));
 
         state.play_prev();
         state.play_prev();
         assert!(state.is_playing());
         assert_eq!(state.current_position(), Some(0));
-        assert!(state.prev_song().is_none());
-        assert_eq!(state.song_id(), Some("1"));
-        assert_eq!(state.next_song().map(|s| &s.id[..]), Some("2"));
+        assert!(state.prev_index().is_none());
+        assert_eq!(state.current_song_id(), Some("1".to_string()));
+        assert_eq!(state.next_id(), Some("2".to_string()));
 
         state.play_prev();
         assert!(state.is_playing());
         assert_eq!(state.current_position(), Some(0));
-        assert_eq!(state.song_id(), Some("1"));
+        assert_eq!(state.current_song_id(), Some("1".to_string()));
     }
 
     #[test]
     fn test_shuffle() {
         let mut state = PlaybackState::default();
-        state.queue(song("1"));
-        state.queue(song("2"));
-        state.queue(song("3"));
-        state.queue(song("4"));
+        state.queue(vec![song("1"), song("2"), song("3"), song("4")]);
 
-        assert_eq!(state.songs().count(), 4);
+        assert_eq!(state.songs().len(), 4);
 
         state.play("2");
         assert_eq!(state.current_position(), Some(1));
@@ -567,103 +542,113 @@ mod tests {
         assert!(!state.is_shuffled());
 
         let ids = state.song_ids();
-        assert_eq!(ids, vec!["1", "2", "3", "4"]);
+        assert_eq!(
+            ids,
+            vec![
+                "1".to_string(),
+                "2".to_string(),
+                "3".to_string(),
+                "4".to_string()
+            ]
+        );
     }
 
     #[test]
     fn test_shuffle_queue() {
         let mut state = PlaybackState::default();
-        state.queue(song("1"));
-        state.queue(song("2"));
-        state.queue(song("3"));
+        state.queue(vec![song("1"), song("2"), song("3")]);
 
         state.toggle_shuffle();
         assert!(state.is_shuffled());
 
-        state.queue(song("4"));
+        state.queue(vec![song("4")]);
 
         state.toggle_shuffle();
         assert!(!state.is_shuffled());
 
         let ids = state.song_ids();
-        assert_eq!(ids, vec!["1", "2", "3", "4"]);
+        assert_eq!(
+            ids,
+            vec![
+                "1".to_string(),
+                "2".to_string(),
+                "3".to_string(),
+                "4".to_string()
+            ]
+        );
     }
 
     #[test]
     fn test_move() {
         let mut state = PlaybackState::default();
-        state.queue(song("1"));
-        state.queue(song("2"));
-        state.queue(song("3"));
+        state.queue(vec![song("1"), song("2"), song("3")]);
 
         state.play("2");
         assert!(state.is_playing());
 
         state.move_down("1");
-        assert_eq!(state.song_id(), Some("2"));
+        assert_eq!(state.current_song_id(), Some("2".to_string()));
         let ids = state.song_ids();
-        assert_eq!(ids, vec!["2", "1", "3"]);
+        assert_eq!(ids, vec!["2".to_string(), "1".to_string(), "3".to_string()]);
 
         state.move_down("2");
         state.move_down("2");
-        assert_eq!(state.song_id(), Some("2"));
+        assert_eq!(state.current_song_id(), Some("2".to_string()));
         let ids = state.song_ids();
-        assert_eq!(ids, vec!["1", "3", "2"]);
+        assert_eq!(ids, vec!["1".to_string(), "3".to_string(), "2".to_string()]);
 
         state.move_down("2");
-        assert_eq!(state.song_id(), Some("2"));
+        assert_eq!(state.current_song_id(), Some("2".to_string()));
         let ids = state.song_ids();
-        assert_eq!(ids, vec!["1", "3", "2"]);
+        assert_eq!(ids, vec!["1".to_string(), "3".to_string(), "2".to_string()]);
 
         state.move_up("2");
 
-        assert_eq!(state.song_id(), Some("2"));
+        assert_eq!(state.current_song_id(), Some("2".to_string()));
         let ids = state.song_ids();
-        assert_eq!(ids, vec!["1", "2", "3"]);
+        assert_eq!(ids, vec!["1".to_string(), "2".to_string(), "3".to_string()]);
     }
 
     #[test]
     fn test_dequeue_last() {
         let mut state = PlaybackState::default();
-        state.queue(song("1"));
-        state.queue(song("2"));
-        state.queue(song("3"));
+        state.queue(vec![song("1"), song("2"), song("3")]);
 
         state.play("3");
         assert!(state.is_playing());
 
-        state.dequeue("3");
-        assert_eq!(state.song_id(), Some("2"));
+        state.dequeue(&["3".to_string()]);
+        assert_eq!(state.current_song_id(), None);
     }
 
     #[test]
     fn test_dequeue_a_few_songs() {
         let mut state = PlaybackState::default();
-        state.queue(song("1"));
-        state.queue(song("2"));
-        state.queue(song("3"));
-        state.queue(song("4"));
-        state.queue(song("5"));
-        state.queue(song("6"));
+        state.queue(vec![
+            song("1"),
+            song("2"),
+            song("3"),
+            song("4"),
+            song("5"),
+            song("6"),
+        ]);
 
         state.play("5");
         assert!(state.is_playing());
 
-        state.dequeue("1");
-        state.dequeue("2");
-        state.dequeue("3");
-        assert_eq!(state.song_id(), Some("5"));
+        state.dequeue(&["1".to_string(), "2".to_string(), "3".to_string()]);
+        assert_eq!(state.current_song_id(), Some("5".to_string()));
     }
 
     #[test]
     fn test_dequeue_all() {
         let mut state = PlaybackState::default();
-        state.queue(song("3"));
+        state.queue(vec![song("3")]);
 
         state.play("3");
         assert!(state.is_playing());
 
-        state.dequeue("3");
-        assert_eq!(state.song_id(), None);
+        state.dequeue(&["3".to_string()]);
+        assert_eq!(state.current_song_id(), None);
     }
 }

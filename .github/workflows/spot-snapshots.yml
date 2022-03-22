@@ -2,9 +2,9 @@ name: spot-snapshots
 
 on:
   push:
-    branches: [master, gtk4/main]
+    branches: [master]
   pull_request:
-    branches: [master, gtk4/main]
+    branches: [master]
   workflow_dispatch:
 
 jobs:
@@ -16,7 +16,7 @@ jobs:
       options: --privileged
     steps:
     - uses: actions/checkout@v2
-    - uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v3
+    - uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v4
       with:
         bundle: "spot.flatpak"
         manifest-path: "dev.alextren.Spot.snapshots.json"

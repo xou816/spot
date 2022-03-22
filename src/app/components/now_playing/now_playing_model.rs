@@ -1,20 +1,16 @@
 use gettextrs::gettext;
 use gio::prelude::*;
 use gio::SimpleActionGroup;
-use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
 use crate::app::components::SimpleHeaderBarModel;
 use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::SongDescription;
-use crate::app::models::SongModel;
-use crate::app::state::PlaylistChange;
+use crate::app::models::SongListModel;
 use crate::app::state::SelectionContext;
-use crate::app::state::{
-    PlaybackAction, PlaybackEvent, PlaybackState, SelectionAction, SelectionState,
-};
-use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, AppState, ListDiff};
+use crate::app::state::{PlaybackAction, PlaybackState, SelectionAction, SelectionState};
+use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel};
 
 pub struct NowPlayingModel {
     app_model: Rc<AppModel>,
@@ -29,18 +25,15 @@ impl NowPlayingModel {
         }
     }
 
-    fn state(&self) -> Ref<'_, AppState> {
-        self.app_model.get_state()
-    }
-
-    fn queue(&self) -> Ref<'_, PlaybackState> {
-        Ref::map(self.state(), |s| &s.playback)
+    fn queue(&self) -> impl Deref<Target = PlaybackState> + '_ {
+        self.app_model.map_state(|s| &s.playback)
     }
 
     pub fn load_more(&self) -> Option<()> {
         let queue = self.queue();
         let loader = self.app_model.get_batch_loader();
         let query = queue.next_query()?;
+        debug!("next_query = {:?}", &query);
 
         self.dispatcher.dispatch_async(Box::pin(async move {
             let source = query.source.clone();
@@ -57,8 +50,12 @@ impl NowPlayingModel {
 }
 
 impl PlaylistModel for NowPlayingModel {
+    fn song_list_model(&self) -> SongListModel {
+        self.queue().songs().clone()
+    }
+
     fn current_song_id(&self) -> Option<String> {
-        self.queue().current_song_id().cloned()
+        self.queue().current_song_id()
     }
 
     fn play_song_at(&self, _pos: usize, id: &str) {
@@ -66,31 +63,14 @@ impl PlaylistModel for NowPlayingModel {
             .dispatch(PlaybackAction::Load(id.to_string()).into());
     }
 
-    fn diff_for_event(&self, event: &AppEvent) -> Option<ListDiff<SongModel>> {
-        let queue = self.queue();
-        let songs = queue.songs().map(|s| s.into());
-
-        match event {
-            AppEvent::PlaybackEvent(PlaybackEvent::PlaylistChanged(change)) => match change {
-                PlaylistChange::Reset => Some(ListDiff::Set(songs.collect())),
-                PlaylistChange::InsertedAt(i, n) => {
-                    Some(ListDiff::Insert(*i, songs.skip(*i).take(*n).collect()))
-                }
-                PlaylistChange::AppendedAt(i) => Some(ListDiff::Append(songs.skip(*i).collect())),
-                PlaylistChange::MovedDown(i) => Some(ListDiff::MoveDown(*i)),
-                PlaylistChange::MovedUp(i) => Some(ListDiff::MoveUp(*i)),
-            },
-            _ => None,
-        }
-    }
-
     fn autoscroll_to_playing(&self) -> bool {
-        true
+        false // too buggy for now
     }
 
     fn actions_for(&self, id: &str) -> Option<gio::ActionGroup> {
         let queue = self.queue();
-        let song = queue.song(id)?;
+        let song = queue.songs().get(id)?;
+        let song = song.description();
         let group = SimpleActionGroup::new();
 
         for view_artist in song.make_artist_actions(self.dispatcher.box_clone(), None) {
@@ -105,7 +85,8 @@ impl PlaylistModel for NowPlayingModel {
 
     fn menu_for(&self, id: &str) -> Option<gio::MenuModel> {
         let queue = self.queue();
-        let song = queue.song(id)?;
+        let song = queue.songs().get(id)?;
+        let song = song.description();
 
         let menu = gio::Menu::new();
         menu.append(Some(&*labels::VIEW_ALBUM), Some("song.view_album"));
@@ -124,9 +105,10 @@ impl PlaylistModel for NowPlayingModel {
 
     fn select_song(&self, id: &str) {
         let queue = self.queue();
-        if let Some(song) = queue.song(id) {
+        if let Some(song) = queue.songs().get(id) {
+            let song = song.description().clone();
             self.dispatcher
-                .dispatch(SelectionAction::Select(vec![song.clone()]).into());
+                .dispatch(SelectionAction::Select(vec![song]).into());
         }
     }
 
@@ -161,7 +143,7 @@ impl SimpleHeaderBarModel for NowPlayingModel {
     }
 
     fn select_all(&self) {
-        let songs: Vec<SongDescription> = self.queue().songs().cloned().collect();
+        let songs: Vec<SongDescription> = self.queue().songs().collect();
         self.dispatcher
             .dispatch(SelectionAction::Select(songs).into());
     }

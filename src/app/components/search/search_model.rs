@@ -30,7 +30,7 @@ impl SearchResultsModel {
 
     fn get_query(&self) -> Option<impl Deref<Target = String> + '_> {
         self.app_model
-            .map_state_opt(|s| Some(&s.browser.search_state()?.query))
+            .map_state_opt(|s| Some(&s.browser.search_state()?.query).filter(|s| !s.is_empty()))
     }
 
     pub fn fetch_results(&self) {
@@ -56,13 +56,11 @@ impl SearchResultsModel {
             .map_state_opt(|s| Some(&s.browser.search_state()?.artist_results))
     }
 
-    pub fn open_album(&self, id: &str) {
-        self.dispatcher
-            .dispatch(AppAction::ViewAlbum(id.to_string()));
+    pub fn open_album(&self, id: String) {
+        self.dispatcher.dispatch(AppAction::ViewAlbum(id));
     }
 
-    pub fn open_artist(&self, id: &str) {
-        self.dispatcher
-            .dispatch(AppAction::ViewArtist(id.to_string()));
+    pub fn open_artist(&self, id: String) {
+        self.dispatcher.dispatch(AppAction::ViewArtist(id));
     }
 }

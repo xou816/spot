@@ -72,7 +72,7 @@ impl LibraryWidget {
 
     fn bind_albums<F>(&self, worker: Worker, store: &ListStore<AlbumModel>, on_album_pressed: F)
     where
-        F: Fn(&String) + Clone + 'static,
+        F: Fn(String) + Clone + 'static,
     {
         imp::LibraryWidget::from_instance(self).flowbox.bind_model(
             Some(store.unsafe_store()),
@@ -81,9 +81,7 @@ impl LibraryWidget {
                     let f = on_album_pressed.clone();
                     let album = AlbumWidget::for_model(album_model, worker.clone());
                     album.connect_album_pressed(clone!(@weak album_model => move |_| {
-                        if let Some(id) = album_model.uri().as_ref() {
-                            f(id);
-                        }
+                        f(album_model.uri());
                     }));
                     album
                 })
@@ -122,7 +120,7 @@ impl Library {
             self.worker.clone(),
             &*self.model.get_list_store().unwrap(),
             clone!(@weak self.model as model => move |id| {
-                model.open_album(id.clone());
+                model.open_album(id);
             }),
         );
     }

@@ -82,7 +82,7 @@ impl UserDetailsWidget {
 
     fn bind_user_playlists<F>(&self, worker: Worker, store: &ListStore<AlbumModel>, on_pressed: F)
     where
-        F: Fn(&String) + Clone + 'static,
+        F: Fn(String) + Clone + 'static,
     {
         self.widget()
             .user_playlists
@@ -91,9 +91,7 @@ impl UserDetailsWidget {
                     let f = on_pressed.clone();
                     let album = AlbumWidget::for_model(item, worker.clone());
                     album.connect_album_pressed(clone!(@weak item => move |_| {
-                        if let Some(id) = item.uri().as_ref() {
-                            f(id);
-                        }
+                        f(item.uri());
                     }));
                     album
                 })

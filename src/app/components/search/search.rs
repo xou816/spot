@@ -18,6 +18,9 @@ mod imp {
     #[template(resource = "/dev/alextren/Spot/components/search.ui")]
     pub struct SearchResultsWidget {
         #[template_child]
+        pub main_header: TemplateChild<libadwaita::HeaderBar>,
+
+        #[template_child]
         pub go_back: TemplateChild<gtk::Button>,
 
         #[template_child]
@@ -52,8 +55,13 @@ mod imp {
     }
 
     impl ObjectImpl for SearchResultsWidget {}
-    impl WidgetImpl for SearchResultsWidget {}
     impl BoxImpl for SearchResultsWidget {}
+
+    impl WidgetImpl for SearchResultsWidget {
+        fn grab_focus(&self, _: &Self::Type) -> bool {
+            self.search_entry.grab_focus()
+        }
+    }
 }
 
 glib::wrapper! {
@@ -67,6 +75,17 @@ impl SearchResultsWidget {
 
     fn widget(&self) -> &imp::SearchResultsWidget {
         imp::SearchResultsWidget::from_instance(self)
+    }
+
+    pub fn bind_to_leaflet(&self, leaflet: &libadwaita::Leaflet) {
+        leaflet
+            .bind_property(
+                "folded",
+                &*self.widget().main_header,
+                "show-start-title-buttons",
+            )
+            .build();
+        leaflet.notify("folded");
     }
 
     pub fn connect_go_back<F>(&self, f: F)
@@ -95,7 +114,7 @@ impl SearchResultsWidget {
 
     fn bind_albums_results<F>(&self, worker: Worker, store: &gio::ListStore, on_album_pressed: F)
     where
-        F: Fn(&String) + Clone + 'static,
+        F: Fn(String) + Clone + 'static,
     {
         self.widget()
             .albums_results
@@ -104,9 +123,7 @@ impl SearchResultsWidget {
                     let f = on_album_pressed.clone();
                     let album = AlbumWidget::for_model(album_model, worker.clone());
                     album.connect_album_pressed(clone!(@weak album_model => move |_| {
-                        if let Some(id) = album_model.uri().as_ref() {
-                            f(id);
-                        }
+                        f(album_model.uri());
                     }));
                     album
                 })
@@ -115,7 +132,7 @@ impl SearchResultsWidget {
 
     fn bind_artists_results<F>(&self, worker: Worker, store: &gio::ListStore, on_artist_pressed: F)
     where
-        F: Fn(&String) + Clone + 'static,
+        F: Fn(String) + Clone + 'static,
     {
         self.widget()
             .artist_results
@@ -124,9 +141,7 @@ impl SearchResultsWidget {
                     let f = on_artist_pressed.clone();
                     let artist = ArtistWidget::for_model(artist_model, worker.clone());
                     artist.connect_artist_pressed(clone!(@weak artist_model => move |_| {
-                        if let Some(id) = artist_model.id().as_ref() {
-                            f(id);
-                        }
+                        f(artist_model.id());
                     }));
                     artist
                 })
@@ -143,12 +158,14 @@ pub struct SearchResults {
 }
 
 impl SearchResults {
-    pub fn new(model: SearchResultsModel, worker: Worker) -> Self {
+    pub fn new(model: SearchResultsModel, worker: Worker, leaflet: &libadwaita::Leaflet) -> Self {
         let model = Rc::new(model);
         let widget = SearchResultsWidget::new();
 
         let album_results_model = gio::ListStore::new(AlbumModel::static_type());
         let artist_results_model = gio::ListStore::new(ArtistModel::static_type());
+
+        widget.bind_to_leaflet(leaflet);
 
         widget.connect_go_back(clone!(@weak model => move || {
             model.go_back();
@@ -191,7 +208,7 @@ impl SearchResults {
                     &album.artists_name(),
                     &album.title,
                     album.year(),
-                    &album.art,
+                    album.art.as_ref(),
                     &album.id,
                 ));
             }
@@ -226,6 +243,7 @@ impl EventListener for SearchResults {
     fn on_event(&mut self, app_event: &AppEvent) {
         match app_event {
             AppEvent::BrowserEvent(BrowserEvent::SearchUpdated) => {
+                self.get_root_widget().grab_focus();
                 self.update_search_query();
             }
             AppEvent::BrowserEvent(BrowserEvent::SearchResultsUpdated) => {

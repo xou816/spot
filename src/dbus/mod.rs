@@ -1,213 +1,103 @@
-use futures::channel::mpsc::UnboundedSender;
+use futures::channel::mpsc::{unbounded, UnboundedReceiver, UnboundedSender};
+use futures::StreamExt;
 use std::rc::Rc;
 use std::thread;
-use zbus::fdo;
+use zbus::Connection;
 
-use crate::app::components::EventListener;
-use crate::app::state::{PlaybackEvent, RepeatMode};
-use crate::app::{models::SongDescription, AppAction, AppEvent, AppModel};
+use crate::app::{AppAction, AppModel};
 
 mod mpris;
 pub use mpris::*;
 
 mod types;
-use types::*;
 
-// This one wraps a connection and reads the app state
-pub struct AppPlaybackStateListener {
-    object_server: zbus::ObjectServer,
-    app_model: Rc<AppModel>,
-}
+mod listener;
+use listener::*;
 
-impl AppPlaybackStateListener {
-    fn new(
-        connection: zbus::Connection,
-        mpris: SpotMpris,
-        player: SpotMprisPlayer,
-        app_model: Rc<AppModel>,
-    ) -> Result<Self, zbus::Error> {
-        let object_server = register_mpris(&connection, mpris, player)?;
-        Ok(Self {
-            object_server,
-            app_model,
-        })
-    }
-
-    fn with_player<F: Fn(&SpotMprisPlayer) -> zbus::Result<()>>(&self, f: F) -> zbus::Result<()> {
-        self.object_server
-            .with("/org/mpris/MediaPlayer2", |iface: &SpotMprisPlayer| {
-                f(iface)
-            })
-    }
-
-    fn make_track_meta(&self) -> Option<TrackMetadata> {
-        self.app_model
-            .get_state()
-            .playback
-            .current_song()
-            .cloned()
-            .map(
-                |SongDescription {
-                     id,
-                     title,
-                     artists,
-                     album,
-                     duration,
-                     art,
-                     ..
-                 }| TrackMetadata {
-                    id: format!("/dev/alextren/Spot/Track/{}", id),
-                    length: 1000 * duration as u64,
-                    title,
-                    album: album.name,
-                    artist: artists.into_iter().map(|a| a.name).collect(),
-                    art,
-                },
-            )
-    }
-
-    fn has_prev_next(&self) -> (bool, bool) {
-        let state = self.app_model.get_state();
-        (
-            state.playback.prev_song().is_some(),
-            state.playback.next_song().is_some(),
-        )
-    }
-
-    fn is_shuffled(&self) -> bool {
-        let state = self.app_model.get_state();
-        state.playback.is_shuffled()
-    }
-
-    fn loop_status(&self) -> LoopStatus {
-        let state = self.app_model.get_state();
-        match state.playback.repeat_mode() {
-            RepeatMode::None => LoopStatus::None,
-            RepeatMode::Song => LoopStatus::Track,
-            RepeatMode::Playlist => LoopStatus::Playlist,
-        }
-    }
-}
-
-impl EventListener for AppPlaybackStateListener {
-    fn on_event(&mut self, event: &AppEvent) {
-        match event {
-            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackPaused) => {
-                self.with_player(|player| {
-                    player.state.set_playing(PlaybackStatus::Paused);
-                    player.notify_playback_status()?;
-                    Ok(())
-                })
-                .unwrap();
-            }
-            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackResumed) => {
-                self.with_player(|player| {
-                    player.state.set_playing(PlaybackStatus::Playing);
-                    player.notify_playback_status()?;
-                    Ok(())
-                })
-                .unwrap();
-            }
-            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackStopped) => {
-                self.with_player(|player| {
-                    player.state.set_playing(PlaybackStatus::Stopped);
-                    player.notify_playback_status()?;
-                    Ok(())
-                })
-                .unwrap();
-            }
-            AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
-                self.with_player(|player| {
-                    let meta = self.make_track_meta();
-                    let (has_prev, has_next) = self.has_prev_next();
-                    player.state.set_current_track(meta);
-                    player.state.set_has_prev(has_prev);
-                    player.state.set_has_next(has_next);
-                    player.notify_metadata_and_prev_next()?;
-                    Ok(())
-                })
-                .unwrap();
-            }
-            AppEvent::PlaybackEvent(PlaybackEvent::RepeatModeChanged(_)) => {
-                self.with_player(|player| {
-                    let (has_prev, has_next) = self.has_prev_next();
-                    player.state.set_loop_status(self.loop_status());
-                    player.loop_status_changed()?;
-                    player.state.set_has_prev(has_prev);
-                    player.state.set_has_next(has_next);
-                    player.notify_metadata_and_prev_next()?;
-                    Ok(())
-                })
-                .unwrap();
-            }
-            AppEvent::PlaybackEvent(PlaybackEvent::ShuffleChanged) => {
-                self.with_player(|player| {
-                    player.state.set_shuffled(self.is_shuffled());
-                    player.shuffle_changed()?;
-                    Ok(())
-                })
-                .unwrap();
-            }
-            AppEvent::PlaybackEvent(PlaybackEvent::TrackSeeked(pos))
-            | AppEvent::PlaybackEvent(PlaybackEvent::SeekSynced(pos)) => {
-                self.with_player(|player| {
-                    let pos = 1000 * (*pos as u128);
-                    player.state.set_position(pos);
-                    player.seeked(pos as i64)?;
-                    Ok(())
-                })
-                .unwrap();
-            }
-            AppEvent::PlaybackEvent(PlaybackEvent::VolumeSet(vol)) => {
-                self.with_player(|player| {
-                    player.state.set_volume(*vol);
-                    Ok(())
-                })
-                .unwrap();
-            }
-            _ => {}
-        }
-    }
-}
-
-fn register_mpris(
-    connection: &zbus::Connection,
+#[tokio::main]
+async fn dbus_server(
     mpris: SpotMpris,
     player: SpotMprisPlayer,
-) -> Result<zbus::ObjectServer, zbus::Error> {
-    let mut object_server = zbus::ObjectServer::new(connection);
-    object_server.at("/org/mpris/MediaPlayer2", mpris)?;
-    object_server.at("/org/mpris/MediaPlayer2", player)?;
-    Ok(object_server)
+    receiver: UnboundedReceiver<MprisStateUpdate>,
+) -> zbus::Result<()> {
+    let connection = Connection::session().await?;
+    connection
+        .object_server()
+        .at("/org/mpris/MediaPlayer2", mpris)
+        .await?;
+    connection
+        .object_server()
+        .at("/org/mpris/MediaPlayer2", player)
+        .await?;
+    connection
+        .request_name("org.mpris.MediaPlayer2.Spot")
+        .await?;
+
+    receiver
+        .for_each(|update| async {
+            if let Ok(player_ref) = connection
+                .object_server()
+                .interface::<_, SpotMprisPlayer>("/org/mpris/MediaPlayer2")
+                .await
+            {
+                let mut player = player_ref.get_mut().await;
+                let ctxt = player_ref.signal_context();
+                let res: zbus::Result<()> = match update {
+                    MprisStateUpdate::SetVolume(volume) => {
+                        player.state_mut().set_volume(volume);
+                        player.volume_changed(ctxt).await
+                    }
+                    MprisStateUpdate::SetCurrentTrack {
+                        has_prev,
+                        has_next,
+                        current,
+                    } => {
+                        player.state_mut().set_has_prev(has_prev);
+                        player.state_mut().set_has_next(has_next);
+                        player.state_mut().set_current_track(current);
+                        player.notify_current_track_changed(ctxt).await
+                    }
+                    MprisStateUpdate::SetPositionMs(position) => {
+                        player.state_mut().set_position(position);
+                        Ok(())
+                    }
+                    MprisStateUpdate::SetLoopStatus {
+                        has_prev,
+                        has_next,
+                        loop_status,
+                    } => {
+                        player.state_mut().set_has_prev(has_prev);
+                        player.state_mut().set_has_next(has_next);
+                        player.state_mut().set_loop_status(loop_status);
+                        player.notify_loop_status(ctxt).await
+                    }
+                    MprisStateUpdate::SetShuffled(shuffled) => {
+                        player.state_mut().set_shuffled(shuffled);
+                        player.shuffle_changed(ctxt).await
+                    }
+                    MprisStateUpdate::SetPlaying(status) => {
+                        player.state_mut().set_playing(status);
+                        player.playback_status_changed(ctxt).await
+                    }
+                };
+                res.expect("Signal emission failed");
+            }
+        })
+        .await;
+
+    Ok(())
 }
 
 pub fn start_dbus_server(
     app_model: Rc<AppModel>,
     sender: UnboundedSender<AppAction>,
-) -> Result<AppPlaybackStateListener, zbus::Error> {
-    let state = SharedMprisState::new();
-
-    let connection = zbus::Connection::new_session()?;
-    fdo::DBusProxy::new(&connection)?.request_name(
-        "org.mpris.MediaPlayer2.Spot",
-        fdo::RequestNameFlags::AllowReplacement.into(),
-    )?;
-
+) -> AppPlaybackStateListener {
     let mpris = SpotMpris::new(sender.clone());
-    let player = SpotMprisPlayer::new(state, sender);
+    let player = SpotMprisPlayer::new(sender);
 
-    let mpris_clone = mpris.clone();
-    let player_clone = player.clone();
-    let conn_clone = connection.clone();
+    let (sender, receiver) = unbounded();
 
-    thread::spawn(move || {
-        let mut object_server = register_mpris(&conn_clone, mpris_clone, player_clone).unwrap();
-        loop {
-            if let Err(err) = object_server.try_handle_next() {
-                error!("{}", err);
-            }
-        }
-    });
+    thread::spawn(move || dbus_server(mpris, player, receiver));
 
-    AppPlaybackStateListener::new(connection, mpris, player, app_model)
+    AppPlaybackStateListener::new(app_model, sender)
 }

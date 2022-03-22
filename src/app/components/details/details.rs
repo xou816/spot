@@ -207,7 +207,7 @@ pub struct Details {
 }
 
 impl Details {
-    pub fn new(model: Rc<DetailsModel>, worker: Worker) -> Self {
+    pub fn new(model: Rc<DetailsModel>, worker: Worker, leaflet: &libadwaita::Leaflet) -> Self {
         if model.get_album_info().is_none() {
             model.load_album_info();
         }
@@ -218,10 +218,10 @@ impl Details {
             widget.album_tracks_widget().clone(),
             model.clone(),
             worker.clone(),
-            false,
         ));
 
         let headerbar_widget = widget.headerbar_widget();
+        headerbar_widget.bind_to_leaflet(leaflet);
         let headerbar = Box::new(HeaderBarComponent::new(
             headerbar_widget.clone(),
             model.to_headerbar_model(),
@@ -288,8 +288,7 @@ impl Details {
                 &album.artists_name(),
                 &details.label,
                 album.release_date.as_ref().unwrap(),
-                album.songs.len(),
-                &album.formatted_time(),
+                details.total_tracks,
                 &details.copyright_text,
             );
 

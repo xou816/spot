@@ -1,3 +1,4 @@
+use gtk::traits::WidgetExt;
 use libadwaita::NavigationDirection;
 use std::rc::Rc;
 
@@ -92,14 +93,18 @@ impl Navigation {
             ScreenName::User(id) => Box::new(self.screen_factory.make_user_details(id.to_owned())),
         };
 
-        let widget = component.get_root_widget();
+        let widget = component.get_root_widget().clone();
+        self.children.push(component);
 
         self.leaflet.navigate(NavigationDirection::Forward);
         self.navigation_stack
-            .add_named(widget, Some(name.identifier().as_ref()));
-        self.children.push(component);
+            .add_named(&widget, Some(name.identifier().as_ref()));
         self.navigation_stack
             .set_visible_child_name(name.identifier().as_ref());
+
+        glib::source::idle_add_local_once(move || {
+            widget.grab_focus();
+        });
     }
 
     fn pop(&mut self) {

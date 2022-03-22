@@ -29,11 +29,7 @@ impl SideBarRow {
     }
 
     pub fn id(&self) -> String {
-        self.property("id")
-            .unwrap()
-            .get::<&str>()
-            .unwrap()
-            .to_string()
+        self.property::<String>("id")
     }
 }
 
@@ -61,7 +57,7 @@ mod imp {
     }
 
     lazy_static! {
-        static ref PROPERTIES: [glib::ParamSpec; 1] = [glib::ParamSpec::new_string(
+        static ref PROPERTIES: [glib::ParamSpec; 1] = [glib::ParamSpecString::new(
             "id",
             "ID",
             "",

@@ -42,14 +42,15 @@
             "builddir": true,
             "buildsystem": "meson",
             "config-opts": [
-                "-Doffline=false",
+                "-Doffline=true",
                 "-Dbuildtype=debug"
             ],
             "sources": [
                 {
                     "type": "dir",
                     "path": "."
-                }
+                },
+                "cargo-sources.json"
             ]
         }
     ]

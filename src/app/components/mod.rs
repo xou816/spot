@@ -25,6 +25,9 @@ pub use playlist::*;
 mod login;
 pub use login::*;
 
+mod settings;
+pub use settings::*;
+
 mod player_notifier;
 pub use player_notifier::PlayerNotifier;
 
@@ -103,7 +106,8 @@ impl dyn ActionDispatcher {
     {
         self.dispatch_many_async(Box::pin(async move {
             let first_call = call.clone();
-            match first_call().await {
+            let result = first_call().await;
+            match result {
                 Ok(actions) => actions,
                 Err(SpotifyApiError::NoToken) => vec![],
                 Err(SpotifyApiError::InvalidToken) => {
@@ -112,7 +116,7 @@ impl dyn ActionDispatcher {
                     retried
                 }
                 Err(err) => {
-                    error!("Error: {:?}", err);
+                    error!("Spotify API error: {}", err);
                     vec![AppAction::ShowNotification(gettext(
                         // translators: This notification is the default message for unhandled errors. Logs refer to console output.
                         "An error occured. Check logs for details!",
