@@ -119,7 +119,7 @@ impl<T> IntoIterator for Page<T> {
     type IntoIter = IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.items.unwrap_or_else(Vec::new).into_iter()
+        self.items.unwrap_or_default().into_iter()
     }
 }
 

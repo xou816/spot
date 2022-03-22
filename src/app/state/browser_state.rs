@@ -249,7 +249,7 @@ impl BrowserState {
     }
 
     pub fn home_state(&self) -> Option<&HomeState> {
-        extract_state!(&self, BrowserScreen::Home(s) => s)
+        extract_state!(self, BrowserScreen::Home(s) => s)
     }
 
     pub fn home_state_mut(&mut self) -> Option<&mut HomeState> {
@@ -260,23 +260,23 @@ impl BrowserState {
     }
 
     pub fn details_state(&self, id: &str) -> Option<&DetailsState> {
-        extract_state!(&self, BrowserScreen::AlbumDetails(state) if state.id == id => state)
+        extract_state!(self, BrowserScreen::AlbumDetails(state) if state.id == id => state)
     }
 
     pub fn search_state(&self) -> Option<&SearchState> {
-        extract_state!(&self, BrowserScreen::Search(s) => s)
+        extract_state!(self, BrowserScreen::Search(s) => s)
     }
 
     pub fn artist_state(&self, id: &str) -> Option<&ArtistState> {
-        extract_state!(&self, BrowserScreen::Artist(state) if state.id == id => state)
+        extract_state!(self, BrowserScreen::Artist(state) if state.id == id => state)
     }
 
     pub fn playlist_details_state(&self, id: &str) -> Option<&PlaylistDetailsState> {
-        extract_state!(&self, BrowserScreen::PlaylistDetails(state) if state.id == id => state)
+        extract_state!(self, BrowserScreen::PlaylistDetails(state) if state.id == id => state)
     }
 
     pub fn user_state(&self, id: &str) -> Option<&UserState> {
-        extract_state!(&self, BrowserScreen::User(state) if state.id == id => state)
+        extract_state!(self, BrowserScreen::User(state) if state.id == id => state)
     }
 
     fn push_if_needed(&mut self, name: ScreenName) -> Vec<BrowserEvent> {
