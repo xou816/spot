@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::collections::HashSet;
 
 use crate::app::models::SongDescription;
@@ -33,6 +34,7 @@ pub enum SelectionContext {
     Queue,
     Playlist,
     EditablePlaylist(String),
+    SavedTracks,
     Default,
 }
 
@@ -116,8 +118,8 @@ impl UpdatableState for SelectionState {
     type Action = SelectionAction;
     type Event = SelectionEvent;
 
-    fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
-        match action {
+    fn update_with(&mut self, action: Cow<Self::Action>) -> Vec<Self::Event> {
+        match action.into_owned() {
             SelectionAction::Select(tracks) => {
                 let changed = tracks
                     .into_iter()

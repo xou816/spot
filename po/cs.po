@@ -20,7 +20,7 @@ msgstr "Zkopírovat odkaz"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry adds a track at the end of the play queue.
 #: src/app/components/labels.rs:11
-#: src/app/components/selection/selection_toolbar.ui:37
+#: src/app/components/selection/selection_toolbar.ui:39
 msgid "Add to queue"
 msgstr "Přidat do fronty"
 
@@ -40,25 +40,25 @@ msgid "Could not save password. Make sure the session keyring is unlocked."
 msgstr "Heslo nelze uložit. Zkontrolujte, že je klíčenka (session keyring) odemčená."
 
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/batch_loader.rs:91 src/app/components/mod.rs:117
+#: src/app/batch_loader.rs:91 src/app/components/mod.rs:122
 msgid "An error occured. Check logs for details!"
 msgstr "Došlo k chybě. Podrobnosti najdete v protokolu."
 
 #. translators: This is a sidebar entry to browse to saved albums.
-#: src/app/components/navigation/factory.rs:29
-#: src/app/components/navigation/home.rs:36
+#: src/app/components/navigation/factory.rs:32
+#: src/app/components/navigation/home.rs:68
 msgid "Library"
 msgstr "Knihovna"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
-#: src/app/components/navigation/factory.rs:44
-#: src/app/components/navigation/home.rs:42
+#: src/app/components/navigation/factory.rs:51
+#: src/app/components/navigation/home.rs:94
 msgid "Playlists"
 msgstr "Playlisty"
 
 #. This is the visible name for the play queue. It appears in the sidebar as well.
-#: src/app/components/navigation/home.rs:53
-#: src/app/components/now_playing/now_playing_model.rs:152
+#: src/app/components/navigation/home.rs:87
+#: src/app/components/now_playing/now_playing_model.rs:134
 msgid "Now playing"
 msgstr "Právě hraje"
 
@@ -70,21 +70,21 @@ msgid "No song playing"
 msgstr "Nic nehraje"
 
 #. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:56
+#: src/app/components/user_menu/user_menu.rs:67
 msgid "About"
 msgstr "O aplikaci"
 
 #. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:58
+#: src/app/components/user_menu/user_menu.rs:69
 msgid "Quit"
 msgstr "Konec"
 
 #. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:63
+#: src/app/components/user_menu/user_menu.rs:74
 msgid "Log out"
 msgstr "Odhlásit se"
 
-#: src/app/state/login_state.rs:117
+#: src/app/state/login_state.rs:110
 msgid "Connection restored"
 msgstr "Připojení obnoveno"
 
@@ -94,7 +94,7 @@ msgid "Top tracks"
 msgstr "Populární"
 
 #. Title of the sections that contains all releases from an artist (both singles and albums).
-#: src/app/components/artist_details/artist_details.ui:55
+#: src/app/components/artist_details/artist_details.ui:53
 msgid "Releases"
 msgstr "Diskografie"
 
@@ -124,20 +124,20 @@ msgid "Log in"
 msgstr "Přihlásit se"
 
 #. This is the title of a section of the search results
-#: src/app/components/search/search.ui:70
+#: src/app/components/search/search.ui:72
 msgid "Albums"
 msgstr "Alba"
 
 #. This is the title of a section of the search results
-#: src/app/components/search/search.ui:103
+#: src/app/components/search/search.ui:105
 msgid "Artists"
 msgstr "Umělci"
 
 #. Where is this text displayed?
 #. I see it is supposed to be in `src/app/components/navigation/home.rs:47`, but that does not seem to be the case: https://github.com/xou816/spot/blob/1b96cd07129f27c7f3f3a2e66299c44a52e489d4/src/app/components/navigation/home.rs
 #. Maybe it is something that has not been commited yet (2021-10-02T10:42:52+02:00), but @xou816 has it locally and has generated pot / po files from it in https://github.com/xou816/spot/commit/86414c03d207cdf4e2c1cbddd47c7ca5629d1303
-#: src/app/components/navigation/factory.rs:73
-#: src/app/components/navigation/home.rs:48
+#: src/app/components/navigation/factory.rs:82
+#: src/app/components/navigation/home.rs:78
 msgid "Saved tracks"
 msgstr "Uložené skladby"
 
@@ -190,6 +190,7 @@ msgstr "Nemáte žádná uložená alba."
 msgid "Your library will be shown here."
 msgstr "Tady bude zobrazena vaše knihovna."
 
+#. translators: This shows up when in selection mode. This text should be as short as possible.
 #: src/app/components/labels.rs:30
 msgid "{} song selected"
 msgid_plural "{} songs selected"
@@ -198,31 +199,31 @@ msgstr[1] "{} skladby vybrány"
 msgstr[2] "{} skladeb vybráno"
 
 #. Title for the empty search page (initial state).
-#: src/app/components/search/search.ui:114
+#: src/app/components/search/search.ui:116
 msgid "Search Spotify."
 msgstr "Hledat na Spotify."
 
 #. Subtitle for the empty search page (initial state).
-#: src/app/components/search/search.ui:115
+#: src/app/components/search/search.ui:117
 msgid "Type to search."
 msgstr "Zadejte a vyhledejte."
 
-#: src/app/components/selection/selection_toolbar.ui:58
+#: src/app/components/selection/selection_toolbar.ui:69
 msgid "Remove"
 msgstr "Odstranit"
 
 #. <property name="icon-name">playlist2-symbolic</property>
-#: src/app/components/selection/selection_toolbar.ui:47
+#: src/app/components/selection/selection_toolbar.ui:56
 msgid "Add to playlist..."
 msgstr "Přidat do playlistu..."
 
 #. Button label. Exits selection mode.
-#: src/app/components/headerbar/headerbar.ui:46
+#: src/app/components/headerbar/headerbar.ui:47
 msgid "Cancel"
 msgstr "Zrušit"
 
 #. Button label. Selects all visible songs.
-#: src/app/components/headerbar/headerbar.ui:57
+#: src/app/components/headerbar/headerbar.ui:58
 msgid "Select all"
 msgstr "Vybrat vše"
 
@@ -251,7 +252,7 @@ msgstr "Počet skladeb"
 msgid "Duration"
 msgstr "Délka"
 
-#: src/app/components/details/release_details.ui:78
+#: src/app/components/details/release_details.ui:68
 msgid "Copyright"
 msgstr "Copyright"
 
@@ -259,4 +260,100 @@ msgstr "Copyright"
 #: src/app/components/labels.rs:48
 msgid "{} by {}"
 msgstr "{} od {}"
+
+#: src/app/components/navigation/home.rs:32
+msgid "Unnamed playlist"
+msgstr "Playlist bez názvu"
+
+#. translators: This is a sidebar entry to browse to saved playlists.
+#: src/app/components/navigation/home.rs:104
+msgid "All Playlists"
+msgstr "Všechny playlisty"
+
+#: src/app/components/selection/component.rs:66
+msgid "Tracks saved!"
+msgstr "Skladby uloženy!"
+
+#. translators: This is a menu entry.
+#: src/app/components/user_menu/user_menu.rs:65
+msgid "Preferences"
+msgstr "Nastavení"
+
+#: src/main.rs:81
+msgid "Failed to open link!"
+msgstr "Nepodařilo se otevřít odkaz!"
+
+#. Header for a group of preference items regarding audio
+#: src/app/components/settings/settings.ui:13
+msgid "Audio"
+msgstr "Zvuk"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:16
+msgid "Audio Backend"
+msgstr "Zvukový backend"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:29
+msgid "ALSA Device"
+msgstr "ALSA zařízení"
+
+#. Description for the item (ALSA Device) in preferences
+#: src/app/components/settings/settings.ui:30
+msgid "Applied only if audio backend is ALSA"
+msgstr "Použito pouze pokud zvukový backend je ALSA"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:40
+msgid "Audio Quality"
+msgstr "Kvalita zvuku"
+
+#: src/app/components/settings/settings.ui:44
+msgid "Normal"
+msgstr "Normální"
+
+#: src/app/components/settings/settings.ui:45
+msgid "High"
+msgstr "Vysoká"
+
+#: src/app/components/settings/settings.ui:46
+msgid "Very high"
+msgstr "Velmi vysoká"
+
+#. Header for a group of preference items regarding the application's appearance
+#: src/app/components/settings/settings.ui:56
+msgid "Appearance"
+msgstr "Vzhled"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:59
+msgid "Theme"
+msgstr "Téma"
+
+#: src/app/components/settings/settings.ui:63
+msgid "Light"
+msgstr "Světlé"
+
+#: src/app/components/settings/settings.ui:64
+msgid "Dark"
+msgstr "Tmavé"
+
+#. Header for a group of preference items regarding network
+#: src/app/components/settings/settings.ui:74
+msgid "Network"
+msgstr "Síť"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:77
+msgid "Access Point Port"
+msgstr "Port Access Pointu"
+
+#. Longer description for an item (Access Point Port) in preferences
+#: src/app/components/settings/settings.ui:78
+msgid "Port used for connections to Spotify's Access Point. Set to 0 if any port is fine."
+msgstr "Port používaný pro připojení ke Spotify Access Point. Nastavte na 0 pokud lze použít libovolný port."
+
+#: src/app/components/selection/selection_toolbar.ui:90
+msgid "Save to library"
+msgstr "Uložit do knihovny"
 

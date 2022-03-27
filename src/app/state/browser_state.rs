@@ -1,9 +1,10 @@
 use super::{
-    ArtistState, DetailsState, HomeState, PlaylistDetailsState, ScreenName, SearchState,
+    AppEvent, ArtistState, DetailsState, HomeState, PlaylistDetailsState, ScreenName, SearchState,
     UpdatableState, UserState,
 };
 use crate::app::models::*;
 use crate::app::state::AppAction;
+use std::borrow::Cow;
 use std::iter::Iterator;
 
 #[derive(Clone, Debug)]
@@ -13,7 +14,7 @@ pub enum BrowserAction {
     AppendLibraryContent(Vec<AlbumDescription>),
     SetPlaylistsContent(Vec<PlaylistDescription>),
     AppendPlaylistsContent(Vec<PlaylistDescription>),
-    RemoveTracksFromPlaylist(Vec<String>),
+    RemoveTracksFromPlaylist(String, Vec<String>),
     SetAlbumDetails(Box<AlbumFullDescription>),
     AppendAlbumTracks(String, Box<SongBatch>),
     SetPlaylistDetails(Box<PlaylistDescription>),
@@ -21,32 +22,23 @@ pub enum BrowserAction {
     Search(String),
     SetSearchResults(Box<SearchResults>),
     SetArtistDetails(Box<ArtistDescription>),
-    AppendArtistReleases(Vec<AlbumDescription>),
+    AppendArtistReleases(String, Vec<AlbumDescription>),
     NavigationPush(ScreenName),
     NavigationPop,
     NavigationPopTo(ScreenName),
     SaveAlbum(Box<AlbumDescription>),
     UnsaveAlbum(String),
     SetUserDetails(Box<UserDescription>),
-    AppendUserPlaylists(Vec<PlaylistDescription>),
+    AppendUserPlaylists(String, Vec<PlaylistDescription>),
+    SetSavedTracks(Box<SongBatch>),
     AppendSavedTracks(Box<SongBatch>),
+    SaveTracks(Vec<SongDescription>),
+    RemoveSavedTracks(Vec<String>),
 }
 
 impl From<BrowserAction> for AppAction {
     fn from(browser_action: BrowserAction) -> Self {
         Self::BrowserAction(browser_action)
-    }
-}
-
-impl BrowserAction {
-    // additional screen names that should handle this action
-    fn additional_targets(&self) -> Vec<ScreenName> {
-        match self {
-            BrowserAction::SaveAlbum(_) | BrowserAction::UnsaveAlbum(_) => {
-                vec![ScreenName::Home]
-            }
-            _ => vec![],
-        }
     }
 }
 
@@ -56,10 +48,10 @@ pub enum BrowserEvent {
     LibraryUpdated,
     SavedPlaylistsUpdated,
     AlbumDetailsLoaded(String),
-    AlbumTracksAppended(String, usize),
+    AlbumTracksAppended(String),
     PlaylistDetailsLoaded(String),
-    PlaylistTracksAppended(String, usize),
-    PlaylistTracksRemoved(String, Vec<String>),
+    PlaylistTracksAppended(String),
+    PlaylistTracksRemoved(String),
     SearchUpdated,
     SearchResultsUpdated,
     ArtistDetailsUpdated(String),
@@ -69,7 +61,13 @@ pub enum BrowserEvent {
     AlbumSaved(String),
     AlbumUnsaved(String),
     UserDetailsUpdated(String),
-    SavedTracksAppended(usize),
+    SavedTracksUpdated,
+}
+
+impl From<BrowserEvent> for AppEvent {
+    fn from(browser_event: BrowserEvent) -> Self {
+        Self::BrowserEvent(browser_event)
+    }
 }
 
 pub enum BrowserScreen {
@@ -148,8 +146,8 @@ where
         Self(vec![initial])
     }
 
-    fn iter_mut(&mut self) -> std::slice::IterMut<'_, Screen> {
-        self.0.iter_mut()
+    fn iter_mut(&mut self) -> impl Iterator<Item = &mut Screen> {
+        self.0.iter_mut().rev()
     }
 
     fn iter_rev(&self) -> impl Iterator<Item = &Screen> {
@@ -242,10 +240,6 @@ impl BrowserState {
         self.navigation.current().name()
     }
 
-    pub fn find_screen_mut(&mut self, name: &ScreenName) -> Option<&mut BrowserScreen> {
-        self.navigation.iter_mut().find(|s| s.name() == name)
-    }
-
     pub fn can_pop(&self) -> bool {
         self.navigation.can_pop() || self.navigation_hidden
     }
@@ -255,27 +249,34 @@ impl BrowserState {
     }
 
     pub fn home_state(&self) -> Option<&HomeState> {
-        extract_state!(&self, BrowserScreen::Home(s) => s)
+        extract_state!(self, BrowserScreen::Home(s) => s)
+    }
+
+    pub fn home_state_mut(&mut self) -> Option<&mut HomeState> {
+        self.navigation.iter_mut().find_map(|screen| match screen {
+            BrowserScreen::Home(s) => Some(&mut **s),
+            _ => None,
+        })
     }
 
     pub fn details_state(&self, id: &str) -> Option<&DetailsState> {
-        extract_state!(&self, BrowserScreen::AlbumDetails(state) if state.id == id => state)
+        extract_state!(self, BrowserScreen::AlbumDetails(state) if state.id == id => state)
     }
 
     pub fn search_state(&self) -> Option<&SearchState> {
-        extract_state!(&self, BrowserScreen::Search(s) => s)
+        extract_state!(self, BrowserScreen::Search(s) => s)
     }
 
     pub fn artist_state(&self, id: &str) -> Option<&ArtistState> {
-        extract_state!(&self, BrowserScreen::Artist(state) if state.id == id => state)
+        extract_state!(self, BrowserScreen::Artist(state) if state.id == id => state)
     }
 
     pub fn playlist_details_state(&self, id: &str) -> Option<&PlaylistDetailsState> {
-        extract_state!(&self, BrowserScreen::PlaylistDetails(state) if state.id == id => state)
+        extract_state!(self, BrowserScreen::PlaylistDetails(state) if state.id == id => state)
     }
 
     pub fn user_state(&self, id: &str) -> Option<&UserState> {
-        extract_state!(&self, BrowserScreen::User(state) if state.id == id => state)
+        extract_state!(self, BrowserScreen::User(state) if state.id == id => state)
     }
 
     fn push_if_needed(&mut self, name: ScreenName) -> Vec<BrowserEvent> {
@@ -300,8 +301,9 @@ impl UpdatableState for BrowserState {
     type Action = BrowserAction;
     type Event = BrowserEvent;
 
-    fn update_with(&mut self, action: Self::Action) -> Vec<Self::Event> {
+    fn update_with(&mut self, action: Cow<Self::Action>) -> Vec<Self::Event> {
         let can_pop = self.navigation.can_pop();
+        let action = action.into_owned();
 
         match action {
             BrowserAction::SetNavigationHidden(navigation_hidden) => {
@@ -311,7 +313,11 @@ impl UpdatableState for BrowserState {
             BrowserAction::Search(_) => {
                 let mut events = self.push_if_needed(ScreenName::Search);
 
-                let mut update_events = self.navigation.current_mut().state().update_with(action);
+                let mut update_events = self
+                    .navigation
+                    .current_mut()
+                    .state()
+                    .update_with(Cow::Owned(action));
                 events.append(&mut update_events);
                 events
             }
@@ -328,25 +334,11 @@ impl UpdatableState for BrowserState {
                 self.navigation_hidden = false;
                 vec![BrowserEvent::NavigationHidden(false)]
             }
-            _ => {
-                let mut events: Vec<Self::Event> = vec![];
-                events.extend(
-                    action
-                        .additional_targets()
-                        .iter()
-                        .filter_map(|name| {
-                            Some(
-                                self.find_screen_mut(name)?
-                                    .state()
-                                    .update_with(action.clone()),
-                            )
-                        })
-                        .flatten()
-                        .collect::<Vec<Self::Event>>(),
-                );
-                events.extend(self.navigation.current_mut().state().update_with(action));
-                events
-            }
+            _ => self
+                .navigation
+                .iter_mut()
+                .flat_map(|s| s.state().update_with(Cow::Borrowed(&action)))
+                .collect(),
         }
     }
 }
@@ -364,7 +356,9 @@ pub mod tests {
         assert_eq!(state.count(), 1);
 
         let new_screen = ScreenName::Artist("some_id".to_string());
-        state.update_with(BrowserAction::NavigationPush(new_screen.clone()));
+        state.update_with(Cow::Owned(BrowserAction::NavigationPush(
+            new_screen.clone(),
+        )));
 
         assert_eq!(state.current_screen(), &new_screen);
         assert_eq!(state.count(), 2);
@@ -375,16 +369,18 @@ pub mod tests {
     fn test_navigation_pop() {
         let mut state = BrowserState::new();
         let new_screen = ScreenName::Artist("some_id".to_string());
-        state.update_with(BrowserAction::NavigationPush(new_screen.clone()));
+        state.update_with(Cow::Owned(BrowserAction::NavigationPush(
+            new_screen.clone(),
+        )));
 
         assert_eq!(state.current_screen(), &new_screen);
         assert_eq!(state.count(), 2);
 
-        state.update_with(BrowserAction::NavigationPop);
+        state.update_with(Cow::Owned(BrowserAction::NavigationPop));
         assert_eq!(state.current_screen(), &ScreenName::Home);
         assert_eq!(state.count(), 1);
 
-        let events = state.update_with(BrowserAction::NavigationPop);
+        let events = state.update_with(Cow::Owned(BrowserAction::NavigationPop));
         assert_eq!(state.current_screen(), &ScreenName::Home);
         assert_eq!(state.count(), 1);
         assert_eq!(events, vec![]);
@@ -394,12 +390,16 @@ pub mod tests {
     fn test_navigation_push_same_screen() {
         let mut state = BrowserState::new();
         let new_screen = ScreenName::Artist("some_id".to_string());
-        state.update_with(BrowserAction::NavigationPush(new_screen.clone()));
+        state.update_with(Cow::Owned(BrowserAction::NavigationPush(
+            new_screen.clone(),
+        )));
 
         assert_eq!(state.current_screen(), &new_screen);
         assert_eq!(state.count(), 2);
 
-        let events = state.update_with(BrowserAction::NavigationPush(new_screen.clone()));
+        let events = state.update_with(Cow::Owned(BrowserAction::NavigationPush(
+            new_screen.clone(),
+        )));
         assert_eq!(state.current_screen(), &new_screen);
         assert_eq!(state.count(), 2);
         assert_eq!(events, vec![]);
@@ -409,13 +409,19 @@ pub mod tests {
     fn test_navigation_push_same_screen_will_pop() {
         let mut state = BrowserState::new();
         let new_screen = ScreenName::Artist("some_id".to_string());
-        state.update_with(BrowserAction::NavigationPush(new_screen.clone()));
-        state.update_with(BrowserAction::NavigationPush(ScreenName::Search));
+        state.update_with(Cow::Owned(BrowserAction::NavigationPush(
+            new_screen.clone(),
+        )));
+        state.update_with(Cow::Owned(BrowserAction::NavigationPush(
+            ScreenName::Search,
+        )));
 
         assert_eq!(state.current_screen(), &ScreenName::Search);
         assert_eq!(state.count(), 3);
 
-        let events = state.update_with(BrowserAction::NavigationPush(new_screen.clone()));
+        let events = state.update_with(Cow::Owned(BrowserAction::NavigationPush(
+            new_screen.clone(),
+        )));
         assert_eq!(state.current_screen(), &new_screen);
         assert_eq!(state.count(), 2);
         assert_eq!(events, vec![BrowserEvent::NavigationPoppedTo(new_screen)]);

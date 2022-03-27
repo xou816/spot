@@ -40,14 +40,14 @@ impl Clock {
             },
         ));
         if let Some(previous_source) = self.source.replace(new_source) {
-            glib::source_remove(previous_source);
+            previous_source.remove();
         }
     }
 
     pub fn stop(&self) {
         let new_source = None;
         if let Some(previous_source) = self.source.replace(new_source) {
-            glib::source_remove(previous_source);
+            previous_source.remove();
         }
     }
 }
@@ -71,7 +71,7 @@ impl Debouncer {
                 glib::Continue(false)
             });
         if let Some(previous_source) = self.0.replace(Some(new_source)) {
-            glib::source_remove(previous_source);
+            previous_source.remove();
         }
     }
 }
@@ -122,6 +122,19 @@ where
             glib::Continue(continue_)
         });
     }
+}
+
+pub fn ancestor<Current, Ancestor>(widget: &Current) -> Option<Ancestor>
+where
+    Current: IsA<gtk::Widget>,
+    Ancestor: IsA<gtk::Widget>,
+{
+    widget.parent().and_then(|p| {
+        p.clone()
+            .downcast::<Ancestor>()
+            .ok()
+            .or_else(|| ancestor(&p))
+    })
 }
 
 pub fn wrap_flowbox_item<

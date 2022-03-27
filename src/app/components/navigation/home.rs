@@ -27,12 +27,12 @@ fn add_to_stack_and_listbox(
 }
 
 fn make_playlist_item(playlist_item: AlbumModel) -> SideBarItem {
-    let mut title = playlist_item.album_title().unwrap();
+    let mut title = playlist_item.album_title();
     if title.is_empty() {
         title = gettext("Unnamed playlist");
     }
 
-    let id = playlist_item.uri().unwrap();
+    let id = playlist_item.uri();
 
     SideBarItem::new(id.as_str(), &title, "playlist2-symbolic", false)
 }
@@ -136,14 +136,12 @@ impl HomePane {
     }
 
     fn update_playlists_in_sidebar(&mut self) {
-        let mut vec = Vec::new();
         let playlists = self.saved_playlists_model.get_playlists();
-        for (i, playlist_item) in playlists.iter().enumerate() {
-            if i == NUM_PLAYLISTS {
-                break;
-            }
-            vec.push(make_playlist_item(playlist_item).upcast());
-        }
+        let vec: Vec<SideBarItem> = playlists
+            .iter()
+            .take(NUM_PLAYLISTS)
+            .map(make_playlist_item)
+            .collect();
         self.list_store.splice(
             NUM_FIXED_ENTRIES,
             self.list_store.n_items() - NUM_FIXED_ENTRIES,

@@ -1,0 +1,22 @@
+name: spot-development
+
+on:
+  pull_request:
+    branches: [development]
+  workflow_dispatch:
+
+jobs:
+  flatpak-builder:
+    name: "Flatpak Builder"
+    runs-on: ubuntu-latest
+    container:
+      image: bilelmoussaoui/flatpak-github-actions:gnome-nightly
+      options: --privileged
+    steps:
+    - uses: actions/checkout@v2
+    - uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v4
+      with:
+        bundle: "spot.flatpak"
+        manifest-path: "dev.alextren.Spot.development.json"
+        cache-key: flatpak-builder-${{ github.sha }}
+        run-tests: true

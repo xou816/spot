@@ -41,8 +41,8 @@ impl PlaybackModel {
         self.state().playback.is_shuffled()
     }
 
-    fn current_song(&self) -> Option<impl Deref<Target = SongDescription> + '_> {
-        self.app_model.map_state_opt(|s| s.playback.current_song())
+    fn current_song(&self) -> Option<SongDescription> {
+        self.app_model.get_state().playback.current_song()
     }
 
     fn play_next_song(&self) {
@@ -116,7 +116,7 @@ impl PlaybackControl {
             self.widget
                 .set_title_and_artist(&song.title, &song.artists_name());
             self.widget.set_song_duration(Some(song.duration as f64));
-            if let Some(url) = song.art.clone() {
+            if let Some(url) = song.art {
                 self.widget.set_artwork_from_url(url, &self.worker);
             }
         } else {

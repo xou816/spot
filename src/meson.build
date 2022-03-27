@@ -25,6 +25,11 @@ authors = run_command(
 ).stdout().strip()
 conf.set('AUTHORS', authors)
 
+artists = run_command(
+  'cat', meson.source_root() / 'ARTISTS',
+).stdout().strip()
+conf.set('ARTISTS', artists)
+
 if get_option('buildtype') == 'debug'
   conf.set_quoted('APPID', 'dev.alextren.Spot.Devel')
   conf.set('VERSION', meson.project_version() + '-dev')
@@ -70,12 +75,14 @@ sources = files(
 './api/cache.rs',
 './dbus/types.rs',
 './dbus/mpris.rs',
+'./dbus/listener.rs',
 './dbus/mod.rs',
 './config.rs',
 './app/rng.rs',
 './app/state/pagination.rs',
 './app/state/app_state.rs',
 './app/state/login_state.rs',
+'./app/state/settings_state.rs',
 './app/state/browser_state.rs',
 './app/state/playback_state.rs',
 './app/state/mod.rs',
@@ -95,7 +102,12 @@ sources = files(
 './app/components/saved_tracks/saved_tracks.rs',
 './app/components/saved_tracks/saved_tracks_model.rs',
 './app/components/saved_tracks/mod.rs',
+'./app/components/sidebar_listbox/sidebar_item.rs',
+'./app/components/sidebar_listbox/sidebar_row.rs',
+'./app/components/sidebar_listbox/mod.rs',
+'./app/components/sidebar_listbox/sidebar_icon_widget.rs',
 './app/components/search/search_model.rs',
+'./app/components/search/search_button.rs',
 './app/components/search/mod.rs',
 './app/components/search/search.rs',
 './app/components/artist/mod.rs',
@@ -112,12 +124,9 @@ sources = files(
 './app/components/selection/widget.rs',
 './app/components/selection/component.rs',
 './app/components/selection/mod.rs',
-'./app/components/sidebar_listbox/mod.rs',
-'./app/components/sidebar_listbox/sidebar_item.rs',
-'./app/components/sidebar_listbox/sidebar_row.rs',
 './app/components/mod.rs',
-'./app/components/details/release_details.rs',
 './app/components/details/album_header.rs',
+'./app/components/details/release_details.rs',
 './app/components/details/mod.rs',
 './app/components/details/details.rs',
 './app/components/details/details_model.rs',
@@ -128,6 +137,9 @@ sources = files(
 './app/components/login/login.rs',
 './app/components/login/mod.rs',
 './app/components/login/login_model.rs',
+'./app/components/settings/mod.rs',
+'./app/components/settings/settings_model.rs',
+'./app/components/settings/settings.rs',
 './app/components/playlist_details/playlist_details_model.rs',
 './app/components/playlist_details/mod.rs',
 './app/components/playlist_details/playlist_details.rs',
@@ -150,11 +162,12 @@ sources = files(
 './app/components/library/mod.rs',
 './app/components/library/library_model.rs',
 './app/loader.rs',
-'./app/models/core.rs',
-'./app/models/gtypes/artist_model.rs',
-'./app/models/gtypes/song_model.rs',
-'./app/models/gtypes/album_model.rs',
-'./app/models/gtypes/mod.rs',
+'./app/models/songs/support.rs',
+'./app/models/songs/song_list_model.rs',
+'./app/models/songs/song_model.rs',
+'./app/models/songs/mod.rs',
+'./app/models/artist_model.rs',
+'./app/models/album_model.rs',
 './app/models/main.rs',
 './app/models/mod.rs',
 './app/dispatch.rs',

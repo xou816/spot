@@ -1,3 +1,4 @@
+use gettextrs::gettext;
 use gtk::prelude::*;
 use std::ops::Deref;
 use std::rc::Rc;
@@ -42,10 +43,44 @@ impl SelectionToolbarModel {
 
     pub fn remove_selection(&self) {
         match &self.selection().context {
+            SelectionContext::SavedTracks => self.remove_saved_tracks(),
             SelectionContext::Queue => self.dequeue_selection(),
             SelectionContext::EditablePlaylist(id) => self.remove_from_playlist(id),
             _ => {}
         }
+    }
+
+    pub fn save_selection(&self) {
+        let api = self.app_model.get_spotify();
+        let ids: Vec<String> = self
+            .selection()
+            .peek_selection()
+            .map(|s| &s.id)
+            .cloned()
+            .collect();
+        self.dispatcher
+            .call_spotify_and_dispatch_many(move || async move {
+                api.save_tracks(ids).await?;
+                Ok(vec![
+                    AppAction::SaveSelection,
+                    AppAction::ShowNotification(gettext("Tracks saved!")),
+                ])
+            })
+    }
+
+    fn remove_saved_tracks(&self) {
+        let api = self.app_model.get_spotify();
+        let ids: Vec<String> = self
+            .selection()
+            .peek_selection()
+            .map(|s| &s.id)
+            .cloned()
+            .collect();
+        self.dispatcher
+            .call_spotify_and_dispatch_many(move || async move {
+                api.remove_saved_tracks(ids).await?;
+                Ok(vec![AppAction::UnsaveSelection])
+            })
     }
 
     fn selection(&self) -> impl Deref<Target = SelectionState> + '_ {
@@ -89,7 +124,7 @@ impl SelectionToolbarModel {
             .call_spotify_and_dispatch_many(move || async move {
                 api.remove_from_playlist(&id, uris.clone()).await?;
                 Ok(vec![
-                    BrowserAction::RemoveTracksFromPlaylist(uris).into(),
+                    BrowserAction::RemoveTracksFromPlaylist(id, uris).into(),
                     SelectionAction::Clear.into(),
                 ])
             })
@@ -108,6 +143,7 @@ impl SelectionToolbar {
         widget.connect_move_down(clone!(@weak model => move || model.move_down_selection()));
         widget.connect_queue(clone!(@weak model => move || model.queue_selection()));
         widget.connect_remove(clone!(@weak model => move || model.remove_selection()));
+        widget.connect_save(clone!(@weak model => move || model.save_selection()));
         Self { model, widget }
     }
 
@@ -120,6 +156,16 @@ impl SelectionToolbar {
                     .set_queue(SelectionToolState::Visible(count > 0));
                 self.widget.set_add(SelectionToolState::Visible(count > 0));
                 self.widget.set_remove(SelectionToolState::Hidden);
+                self.widget.set_save(SelectionToolState::Visible(count > 0));
+            }
+            SelectionContext::SavedTracks => {
+                self.widget.set_move(SelectionToolState::Hidden);
+                self.widget
+                    .set_queue(SelectionToolState::Visible(count > 0));
+                self.widget.set_add(SelectionToolState::Visible(count > 0));
+                self.widget
+                    .set_remove(SelectionToolState::Visible(count > 0));
+                self.widget.set_save(SelectionToolState::Hidden);
             }
             SelectionContext::Queue => {
                 self.widget
@@ -128,6 +174,7 @@ impl SelectionToolbar {
                 self.widget.set_add(SelectionToolState::Hidden);
                 self.widget
                     .set_remove(SelectionToolState::Visible(count > 0));
+                self.widget.set_save(SelectionToolState::Visible(count > 0));
             }
             SelectionContext::Playlist => {
                 self.widget.set_move(SelectionToolState::Hidden);
@@ -135,6 +182,7 @@ impl SelectionToolbar {
                     .set_queue(SelectionToolState::Visible(count > 0));
                 self.widget.set_add(SelectionToolState::Hidden);
                 self.widget.set_remove(SelectionToolState::Hidden);
+                self.widget.set_save(SelectionToolState::Hidden);
             }
             SelectionContext::EditablePlaylist(_) => {
                 self.widget.set_move(SelectionToolState::Hidden);
@@ -143,6 +191,7 @@ impl SelectionToolbar {
                 self.widget.set_add(SelectionToolState::Hidden);
                 self.widget
                     .set_remove(SelectionToolState::Visible(count > 0));
+                self.widget.set_save(SelectionToolState::Hidden);
             }
         };
     }

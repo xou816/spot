@@ -50,6 +50,23 @@
       <image>https://raw.githubusercontent.com/xou816/spot/master/data/appstream/3.png</image>
     </screenshot>
   </screenshots>
+  <release version="0.3.2" date="2022-03-27">
+    <description>
+      <p>
+        New features:
+      </p>
+      <ul>
+        <li>save tracks to library</li>
+        <li>basic Spotify URI handling (thanks @bbb651!)</li>
+        <li>settings dialog (thanks @sei0o!)</li>
+        <li>brand new icon (thanks @bertob!)</li>
+        <li>bug fixes</li>
+      </ul>
+      <p>
+        Thank you to everyone involved in this release!
+      </p>
+    </description>
+  </release>
   <releases>
     <release version="0.3.1" date="2022-01-23">
       <description>

@@ -39,9 +39,8 @@ impl UserDetailsModel {
             });
     }
 
-    pub fn open_playlist(&self, id: &str) {
-        self.dispatcher
-            .dispatch(AppAction::ViewPlaylist(id.to_string()));
+    pub fn open_playlist(&self, id: String) {
+        self.dispatcher.dispatch(AppAction::ViewPlaylist(id));
     }
 
     pub fn load_more(&self) -> Option<()> {
@@ -56,7 +55,7 @@ impl UserDetailsModel {
             .call_spotify_and_dispatch(move || async move {
                 api.get_user_playlists(&id, offset, batch_size)
                     .await
-                    .map(|playlists| BrowserAction::AppendUserPlaylists(playlists).into())
+                    .map(|playlists| BrowserAction::AppendUserPlaylists(id, playlists).into())
             });
 
         Some(())

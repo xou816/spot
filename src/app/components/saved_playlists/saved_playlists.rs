@@ -70,7 +70,7 @@ impl SavedPlaylistsWidget {
 
     fn bind_albums<F>(&self, worker: Worker, store: &ListStore<AlbumModel>, on_album_pressed: F)
     where
-        F: Fn(&String) + Clone + 'static,
+        F: Fn(String) + Clone + 'static,
     {
         imp::SavedPlaylistsWidget::from_instance(self)
             .flowbox
@@ -81,9 +81,7 @@ impl SavedPlaylistsWidget {
 
                 let f = on_album_pressed.clone();
                 album.connect_album_pressed(clone!(@weak album_model => move |_| {
-                    if let Some(id) = album_model.uri().as_ref() {
-                        f(id);
-                    }
+                    f(album_model.uri());
                 }));
 
                 child.set_child(Some(&album));
@@ -123,7 +121,7 @@ impl SavedPlaylists {
             self.worker.clone(),
             &*self.model.get_list_store().unwrap(),
             clone!(@weak self.model as model => move |id| {
-                model.open_playlist(id.clone());
+                model.open_playlist(id);
             }),
         );
     }

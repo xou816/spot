@@ -85,7 +85,7 @@ impl BatchLoader {
         match result {
             Ok(batch) => create_action(batch),
             Err(err) => {
-                error!("Error: {:?}", err);
+                error!("Spotify API error: {}", err);
                 AppAction::ShowNotification(gettext(
                     // translators: This notification is the default message for unhandled errors. Logs refer to console output.
                     "An error occured. Check logs for details!",

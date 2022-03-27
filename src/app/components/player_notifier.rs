@@ -2,7 +2,7 @@ use futures::channel::mpsc::UnboundedSender;
 use librespot::core::spotify_id::SpotifyId;
 
 use crate::app::components::EventListener;
-use crate::app::state::{LoginAction, LoginEvent, LoginStartedEvent, PlaybackEvent};
+use crate::app::state::{LoginAction, LoginEvent, LoginStartedEvent, PlaybackEvent, SettingsEvent};
 use crate::app::{AppAction, AppEvent};
 use crate::player::Command;
 
@@ -54,6 +54,9 @@ impl EventListener for PlayerNotifier {
             }),
             AppEvent::LoginEvent(LoginEvent::FreshTokenRequested) => Some(Command::RefreshToken),
             AppEvent::LoginEvent(LoginEvent::LogoutCompleted) => Some(Command::Logout),
+            AppEvent::SettingsEvent(SettingsEvent::PlayerSettingsChanged) => {
+                Some(Command::ReloadSettings)
+            }
             _ => None,
         };
 
