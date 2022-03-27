@@ -21,6 +21,8 @@
     <file alias="components/release_details.ui">app/components/details/release_details.ui</file>
     <!-- playlist details -->
     <file alias="components/playlist_details.ui">app/components/playlist_details/playlist_details.ui</file>
+    <file alias="components/playlist_header.ui">app/components/playlist_details/playlist_header.ui</file>
+    <file alias="components/playlist_header.css">app/components/playlist_details/playlist_header.css</file>
     <!-- artist details -->
     <file alias="components/artist_details.css">app/components/artist_details/artist_details.css</file>
     <file alias="components/artist_details.ui">app/components/artist_details/artist_details.ui</file>

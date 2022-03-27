@@ -22,14 +22,10 @@
                         <property name="transition-type">crossfade</property>
                         <property name="switch-threshold-policy">natural</property>
                         <child>
-                          <object class="AlbumHeaderWidget" id="header_widget">
-                            <style>
-                              <class name="album__header" />
-                            </style>
-                          </object>
+                          <object class="PlaylistHeaderWidget" id="header_widget"></object>
                         </child>
                         <child>
-                          <object class="AlbumHeaderWidget" id="header_mobile">
+                          <object class="PlaylistHeaderWidget" id="header_mobile">
                             <property name="orientation">vertical</property>
                             <property name="spacing">12</property>
                             <style>

@@ -3,9 +3,10 @@ use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use std::rc::Rc;
 
+use super::playlist_header::PlaylistHeaderWidget;
 use super::PlaylistDetailsModel;
-use crate::app::components::{AlbumHeaderWidget, ScrollingHeaderWidget};
 
+use crate::app::components::ScrollingHeaderWidget;
 use crate::app::components::{Component, EventListener, Playlist};
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
@@ -23,10 +24,10 @@ mod imp {
         pub scrolling_header: TemplateChild<ScrollingHeaderWidget>,
 
         #[template_child]
-        pub header_widget: TemplateChild<AlbumHeaderWidget>,
+        pub header_widget: TemplateChild<PlaylistHeaderWidget>,
 
         #[template_child]
-        pub header_mobile: TemplateChild<AlbumHeaderWidget>,
+        pub header_mobile: TemplateChild<PlaylistHeaderWidget>,
 
         #[template_child]
         pub tracks: TemplateChild<gtk::ListView>,
@@ -51,8 +52,6 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
             self.header_mobile.set_centered();
-            self.header_mobile.hide_actions();
-            self.header_widget.hide_actions();
         }
     }
 

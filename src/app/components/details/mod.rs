@@ -1,8 +1,7 @@
 mod album_header;
 mod details;
 mod details_model;
+mod release_details;
 
-pub use album_header::AlbumHeaderWidget;
 pub use details::Details;
 pub use details_model::DetailsModel;
-mod release_details;

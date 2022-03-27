@@ -25,11 +25,7 @@
                         <property name="homogeneous">0</property>
                         <property name="transition-type">crossfade</property>
                         <child>
-                          <object class="AlbumHeaderWidget" id="header_widget">
-                            <style>
-                              <class name="album__header" />
-                            </style>
-                          </object>
+                          <object class="AlbumHeaderWidget" id="header_widget"></object>
                         </child>
                         <child>
                           <object class="AlbumHeaderWidget" id="header_mobile">

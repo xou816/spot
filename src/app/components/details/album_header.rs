@@ -118,9 +118,4 @@ impl AlbumHeaderWidget {
         widget.artist_button.set_halign(gtk::Align::Center);
         widget.year_label.set_halign(gtk::Align::Center);
     }
-
-    pub fn hide_actions(&self) {
-        self.imp().like_button.set_visible(false);
-        self.imp().info_button.set_visible(false);
-    }
 }
