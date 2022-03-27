@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-13 13:00-0400\n"
+"POT-Creation-Date: 2022-03-28 00:21+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -300,27 +300,22 @@ msgid "Login to Spotify Premium"
 msgstr ""
 
 #. Placeholder for the username field
-#: src/app/components/login/login.ui:64
+#: src/app/components/login/login.ui:72
 msgid "Username"
 msgstr ""
 
 #. Placeholder for the password field
-#: src/app/components/login/login.ui:72
+#: src/app/components/login/login.ui:89
 msgid "Password"
 msgstr ""
 
-#. This information is shown when Caps Lock is enabled.
-#: src/app/components/login/login.ui:95
-msgid "Caps Lock is enabled!"
-msgstr ""
-
 #. This error is shown when authentication fails.
-#: src/app/components/login/login.ui:126
+#: src/app/components/login/login.ui:114
 msgid "Authentication failed!"
 msgstr ""
 
 #. Log in button label
-#: src/app/components/login/login.ui:141
+#: src/app/components/login/login.ui:129
 msgid "Log in"
 msgstr ""
 
