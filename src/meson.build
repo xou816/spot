@@ -25,6 +25,11 @@ authors = run_command(
 ).stdout().strip()
 conf.set('AUTHORS', authors)
 
+artists = run_command(
+  'cat', meson.source_root() / 'ARTISTS',
+).stdout().strip()
+conf.set('ARTISTS', artists)
+
 if get_option('buildtype') == 'debug'
   conf.set_quoted('APPID', 'dev.alextren.Spot.Devel')
   conf.set('VERSION', meson.project_version() + '-dev')
