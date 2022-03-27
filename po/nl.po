@@ -20,7 +20,7 @@ msgstr "Link kopiëren"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry adds a track at the end of the play queue.
 #: src/app/components/labels.rs:11
-#: src/app/components/selection/selection_toolbar.ui:37
+#: src/app/components/selection/selection_toolbar.ui:39
 msgid "Add to queue"
 msgstr "Toevoegen aan wachtrij"
 
@@ -40,25 +40,25 @@ msgid "Could not save password. Make sure the session keyring is unlocked."
 msgstr "Het wachtwoord kan niet worden opgeslagen - zorg dat de sessiesleutelhanger ontgrendeld is."
 
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/batch_loader.rs:91 src/app/components/mod.rs:117
+#: src/app/batch_loader.rs:91 src/app/components/mod.rs:122
 msgid "An error occured. Check logs for details!"
 msgstr "Er is een fout opgetreden - bekijk het logboek!"
 
 #. translators: This is a sidebar entry to browse to saved albums.
-#: src/app/components/navigation/factory.rs:29
-#: src/app/components/navigation/home.rs:36
+#: src/app/components/navigation/factory.rs:32
+#: src/app/components/navigation/home.rs:68
 msgid "Library"
 msgstr "Verzameling"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
-#: src/app/components/navigation/factory.rs:44
-#: src/app/components/navigation/home.rs:42
+#: src/app/components/navigation/factory.rs:51
+#: src/app/components/navigation/home.rs:94
 msgid "Playlists"
 msgstr "Afspeellijsten"
 
 #. This is the visible name for the play queue. It appears in the sidebar as well.
-#: src/app/components/navigation/home.rs:53
-#: src/app/components/now_playing/now_playing_model.rs:152
+#: src/app/components/navigation/home.rs:87
+#: src/app/components/now_playing/now_playing_model.rs:134
 msgid "Now playing"
 msgstr "Je luistert naar"
 
@@ -70,21 +70,21 @@ msgid "No song playing"
 msgstr "Er wordt niks afgespeeld"
 
 #. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:56
+#: src/app/components/user_menu/user_menu.rs:67
 msgid "About"
 msgstr "Over"
 
 #. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:58
+#: src/app/components/user_menu/user_menu.rs:69
 msgid "Quit"
 msgstr "Afsluiten"
 
 #. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:63
+#: src/app/components/user_menu/user_menu.rs:74
 msgid "Log out"
 msgstr "Uitloggen"
 
-#: src/app/state/login_state.rs:117
+#: src/app/state/login_state.rs:110
 msgid "Connection restored"
 msgstr "De verbinding is hersteld"
 
@@ -94,7 +94,7 @@ msgid "Top tracks"
 msgstr "Topnummers"
 
 #. Title of the sections that contains all releases from an artist (both singles and albums).
-#: src/app/components/artist_details/artist_details.ui:55
+#: src/app/components/artist_details/artist_details.ui:53
 msgid "Releases"
 msgstr "Uitgaven"
 
@@ -124,17 +124,17 @@ msgid "Log in"
 msgstr "Inloggen"
 
 #. This is the title of a section of the search results
-#: src/app/components/search/search.ui:70
+#: src/app/components/search/search.ui:72
 msgid "Albums"
 msgstr "Albums"
 
 #. This is the title of a section of the search results
-#: src/app/components/search/search.ui:103
+#: src/app/components/search/search.ui:105
 msgid "Artists"
 msgstr "Artiesten"
 
-#: src/app/components/navigation/factory.rs:73
-#: src/app/components/navigation/home.rs:48
+#: src/app/components/navigation/factory.rs:82
+#: src/app/components/navigation/home.rs:78
 msgid "Saved tracks"
 msgstr "Opgeslagen nummers"
 
@@ -187,6 +187,7 @@ msgstr "Je hebt nog geen opgeslagen albums."
 msgid "Your library will be shown here."
 msgstr "Je verzameling wordt hier getoond."
 
+#. translators: This shows up when in selection mode. This text should be as short as possible.
 #: src/app/components/labels.rs:30
 msgid "{} song selected"
 msgid_plural "{} songs selected"
@@ -194,31 +195,31 @@ msgstr[0] "{} nummer geselecteerd"
 msgstr[1] "{} nummers geselecteerd"
 
 #. Title for the empty search page (initial state).
-#: src/app/components/search/search.ui:114
+#: src/app/components/search/search.ui:116
 msgid "Search Spotify."
 msgstr "Doorzoek Spotify."
 
 #. Subtitle for the empty search page (initial state).
-#: src/app/components/search/search.ui:115
+#: src/app/components/search/search.ui:117
 msgid "Type to search."
 msgstr "Typ om te zoeken"
 
-#: src/app/components/selection/selection_toolbar.ui:58
+#: src/app/components/selection/selection_toolbar.ui:69
 msgid "Remove"
 msgstr "Verwijderen"
 
 #. <property name="icon-name">playlist2-symbolic</property>
-#: src/app/components/selection/selection_toolbar.ui:47
+#: src/app/components/selection/selection_toolbar.ui:56
 msgid "Add to playlist..."
 msgstr "Toevoegen aan afspeellijst…"
 
 #. Button label. Exits selection mode.
-#: src/app/components/headerbar/headerbar.ui:46
+#: src/app/components/headerbar/headerbar.ui:47
 msgid "Cancel"
 msgstr "Annuleren"
 
 #. Button label. Selects all visible songs.
-#: src/app/components/headerbar/headerbar.ui:57
+#: src/app/components/headerbar/headerbar.ui:58
 msgid "Select all"
 msgstr "Alles selecteren"
 
@@ -247,7 +248,7 @@ msgstr "Nummers"
 msgid "Duration"
 msgstr "Duur"
 
-#: src/app/components/details/release_details.ui:78
+#: src/app/components/details/release_details.ui:68
 msgid "Copyright"
 msgstr "Copyright"
 
@@ -255,4 +256,100 @@ msgstr "Copyright"
 #: src/app/components/labels.rs:48
 msgid "{} by {}"
 msgstr "{} van {}"
+
+#: src/app/components/navigation/home.rs:32
+msgid "Unnamed playlist"
+msgstr "Naamloze afspeellijst"
+
+#. translators: This is a sidebar entry to browse to saved playlists.
+#: src/app/components/navigation/home.rs:104
+msgid "All Playlists"
+msgstr "Alle afspeellijsten"
+
+#: src/app/components/selection/component.rs:66
+msgid "Tracks saved!"
+msgstr "De nummers zijn opgeslagen!"
+
+#. translators: This is a menu entry.
+#: src/app/components/user_menu/user_menu.rs:65
+msgid "Preferences"
+msgstr "Voorkeuren"
+
+#: src/main.rs:81
+msgid "Failed to open link!"
+msgstr "De link kan niet worden geopend!"
+
+#. Header for a group of preference items regarding audio
+#: src/app/components/settings/settings.ui:13
+msgid "Audio"
+msgstr "Audio"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:16
+msgid "Audio Backend"
+msgstr "Audiobackend"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:29
+msgid "ALSA Device"
+msgstr "ALSA-apparaat"
+
+#. Description for the item (ALSA Device) in preferences
+#: src/app/components/settings/settings.ui:30
+msgid "Applied only if audio backend is ALSA"
+msgstr "Alleen van toepassing als het audiobackend is ingesteld op ALSA"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:40
+msgid "Audio Quality"
+msgstr "Audiokwaliteit"
+
+#: src/app/components/settings/settings.ui:44
+msgid "Normal"
+msgstr "Normaal"
+
+#: src/app/components/settings/settings.ui:45
+msgid "High"
+msgstr "Hoog"
+
+#: src/app/components/settings/settings.ui:46
+msgid "Very high"
+msgstr "Hoogst"
+
+#. Header for a group of preference items regarding the application's appearance
+#: src/app/components/settings/settings.ui:56
+msgid "Appearance"
+msgstr "Vormgeving"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:59
+msgid "Theme"
+msgstr "Thema"
+
+#: src/app/components/settings/settings.ui:63
+msgid "Light"
+msgstr "Licht"
+
+#: src/app/components/settings/settings.ui:64
+msgid "Dark"
+msgstr "Donker"
+
+#. Header for a group of preference items regarding network
+#: src/app/components/settings/settings.ui:74
+msgid "Network"
+msgstr "Netwerk"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:77
+msgid "Access Point Port"
+msgstr "Poort van toegangspunt"
+
+#. Longer description for an item (Access Point Port) in preferences
+#: src/app/components/settings/settings.ui:78
+msgid "Port used for connections to Spotify's Access Point. Set to 0 if any port is fine."
+msgstr "De poort die wordt gebruikt om verbinding te maken met Spotify's toegangspunt. 0 = elke poort."
+
+#: src/app/components/selection/selection_toolbar.ui:90
+msgid "Save to library"
+msgstr "Opslaan in verzameling"
 
