@@ -84,7 +84,7 @@ impl LoginWindow {
         let controller = gtk::EventControllerKey::new();
         controller.set_propagation_phase(gtk::PropagationPhase::Capture);
         controller.connect_key_pressed(
-            clone!(@weak self as _self => @default-return gtk::Inhibit(false), move |_, key, _, modifier| {
+            clone!(@weak self as _self => @default-return gtk::Inhibit(false), move |_, key, _, _| {
                 if key == gdk::Key::Return {
                     _self.submit(&on_submit_clone);
                     gtk::Inhibit(true)
