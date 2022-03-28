@@ -4,7 +4,6 @@ use gtk::CompositeTemplate;
 use std::rc::Rc;
 
 use super::LibraryModel;
-use crate::app::components::utils::wrap_flowbox_item;
 use crate::app::components::{AlbumWidget, Component, EventListener};
 use crate::app::dispatch::Worker;
 use crate::app::models::AlbumModel;
@@ -22,7 +21,7 @@ mod imp {
         pub scrolled_window: TemplateChild<gtk::ScrolledWindow>,
 
         #[template_child]
-        pub flowbox: TemplateChild<gtk::FlowBox>,
+        pub gridview: TemplateChild<gtk::GridView>,
 
         #[template_child]
         pub status_page: TemplateChild<libadwaita::StatusPage>,
@@ -70,23 +69,29 @@ impl LibraryWidget {
             });
     }
 
-    fn bind_albums<F>(&self, worker: Worker, store: &ListStore<AlbumModel>, on_album_pressed: F)
+    fn set_model<F>(&self, store: &ListStore<AlbumModel>, worker: Worker, on_clicked: F)
     where
-        F: Fn(String) + Clone + 'static,
+        F: Fn(String) + Clone + 'static
     {
-        imp::LibraryWidget::from_instance(self).flowbox.bind_model(
-            Some(store.unsafe_store()),
-            move |item| {
-                wrap_flowbox_item(item, |album_model| {
-                    let f = on_album_pressed.clone();
-                    let album = AlbumWidget::for_model(album_model, worker.clone());
-                    album.connect_album_pressed(clone!(@weak album_model => move |_| {
-                        f(album_model.uri());
-                    }));
-                    album
-                })
-            },
-        );
+        let gridview = &imp::LibraryWidget::from_instance(self).gridview;
+
+        let factory = gtk::SignalListItemFactory::new();
+        factory.connect_setup(|_, list_item| {
+            list_item.set_child(Some(&AlbumWidget::new()));
+            // Onclick is handled by album and this causes two layers of highlight on hover
+            list_item.set_activatable(false);
+        });
+
+        factory.connect_bind(move |factory, list_item| {
+            AlbumWidget::bind_list_item(factory, list_item, worker.clone(), on_clicked.clone());
+        });
+
+        factory.connect_unbind(move |factory, list_item| {
+            AlbumWidget::unbind_list_item(factory, list_item);
+        });
+
+        gridview.set_factory(Some(&factory));
+        gridview.set_model(Some(&gtk::NoSelection::new(Some(store.unsafe_store()))));
     }
 
     pub fn status_page(&self) -> &libadwaita::StatusPage {
@@ -96,7 +101,6 @@ impl LibraryWidget {
 
 pub struct Library {
     widget: LibraryWidget,
-    worker: Worker,
     model: Rc<LibraryModel>,
 }
 
@@ -104,25 +108,22 @@ impl Library {
     pub fn new(worker: Worker, model: LibraryModel) -> Self {
         let model = Rc::new(model);
         let widget = LibraryWidget::new();
+
         widget.connect_bottom_edge(clone!(@weak model => move || {
             model.load_more_albums();
         }));
+        widget.set_model(
+            &model.get_list_store().unwrap(),
+            worker.clone(),
+            clone!(@weak model => move |uri| {
+                model.open_album(uri);
+            })
+        );
 
         Self {
             widget,
-            worker,
             model,
         }
-    }
-
-    fn bind_flowbox(&self) {
-        self.widget.bind_albums(
-            self.worker.clone(),
-            &*self.model.get_list_store().unwrap(),
-            clone!(@weak self.model as model => move |id| {
-                model.open_album(id);
-            }),
-        );
     }
 }
 
@@ -131,7 +132,6 @@ impl EventListener for Library {
         match event {
             AppEvent::Started => {
                 let _ = self.model.refresh_saved_albums();
-                self.bind_flowbox();
             }
             AppEvent::LoginEvent(LoginEvent::LoginCompleted(_)) => {
                 let _ = self.model.refresh_saved_albums();

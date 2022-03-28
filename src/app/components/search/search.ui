@@ -54,15 +54,13 @@
                         <property name="vscrollbar-policy">never</property>
                         <property name="propagate-natural-height">0</property>
                         <property name="child">
-                          <object class="GtkFlowBox" id="albums_results">
+                          <object class="GtkGridView" id="albums_results">
                             <property name="halign">start</property>
                             <property name="hexpand">1</property>
                             <property name="vexpand">0</property>
                             <property name="valign">start</property>
                             <property name="orientation">vertical</property>
-                            <property name="max-children-per-line">1</property>
-                            <property name="selection-mode">none</property>
-                            <property name="activate-on-single-click">0</property>
+                            <property name="min-columns">1</property>
                           </object>
                         </property>
                       </object>

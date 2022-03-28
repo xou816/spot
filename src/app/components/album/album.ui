@@ -9,12 +9,12 @@
       <property name="halign">center</property>
         <child>
           <object class="GtkBox">
-					<property name="halign">center</property>
-					<property name="valign">start</property>
-					<property name="margin-top">6</property>
-					<property name="margin-bottom">6</property>
-					<property name="orientation">vertical</property>
-					<property name="spacing">6</property>
+            <property name="halign">center</property>
+            <property name="valign">start</property>
+            <property name="margin-top">6</property>
+            <property name="margin-bottom">6</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">6</property>
             <child>
             <object class="GtkImage" id="cover_image">
               <property name="icon-name">media-playback-start-symbolic</property>
@@ -65,13 +65,13 @@
         </child>
         </object>
         </child>
-				<style>
-					<class name="flat"/>
-			  </style>
+          <style>
+            <class name="flat"/>
+        </style>
       </object>
     </child>
     <style>
-			<class name="container"/>
+      <class name="container"/>
       <class name="album"/>
     </style>
   </template>

@@ -7,6 +7,7 @@ use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use libadwaita::subclass::prelude::BinImpl;
+use std::cell::RefCell;
 
 mod imp {
 
@@ -15,6 +16,8 @@ mod imp {
     #[derive(Debug, Default, CompositeTemplate)]
     #[template(resource = "/dev/alextren/Spot/components/album.ui")]
     pub struct AlbumWidget {
+        pub clicked_sig_handle: RefCell<Option<glib::SignalHandlerId>>,
+
         #[template_child]
         pub album_label: TemplateChild<gtk::Label>,
 
@@ -59,6 +62,76 @@ impl AlbumWidget {
     pub fn new() -> Self {
         display_add_css_provider(resource!("/components/album.css"));
         glib::Object::new(&[]).expect("Failed to create an instance of AlbumWidget")
+    }
+
+    /// Binds a ListItem widget to an item in a model.
+    ///
+    /// Has to be unbound due to connected signals,
+    pub fn bind_list_item<F>(_factory: &gtk::SignalListItemFactory, list_item: &gtk::ListItem, worker: Worker, f: F)
+    where
+        F: Fn(String) + 'static
+    {
+        let album_model = list_item.item().unwrap().downcast::<AlbumModel>().unwrap();
+
+        let imp = list_item.child().unwrap().downcast::<AlbumWidget>().unwrap();
+        let widget = imp::AlbumWidget::from_instance(&imp);
+
+        // TODO: Get rid of this (maybe XML?)
+        widget.cover_image.set_overflow(gtk::Overflow::Hidden);
+
+        if let Some(url) = album_model.cover_url() {
+            let _imp = imp.downgrade();
+            worker.send_local_task(async move {
+                if let Some(_imp) = _imp.upgrade() {
+                    let loader = ImageLoader::new();
+                    let result = loader.load_remote(&url, "jpg", 200, 200).await;
+                    _imp.set_image(result.as_ref());
+                    _imp.set_loaded();
+                }
+            });
+        } else {
+            imp.set_loaded();
+        }
+
+        album_model
+            .bind_property("album", &*widget.album_label, "label")
+            .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+            .build();
+
+        album_model
+            .bind_property("artist", &*widget.artist_label, "label")
+            .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+            .build();
+
+        match album_model.year() {
+            Some(_) => {
+                album_model
+                    .bind_property("year", &*widget.year_label, "label")
+                    .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                    .build();
+            }
+            None => {
+                widget.year_label.hide();
+            }
+        }
+
+        widget.clicked_sig_handle.replace(Some(
+            widget.cover_btn.connect_clicked(clone!(@weak album_model => move |_| {
+                f(album_model.uri())
+            }))
+        ));
+    }
+
+    /// Unbinds a ListItem widget from an item in a model
+    pub fn unbind_list_item(_factory: &gtk::SignalListItemFactory, list_item: &gtk::ListItem) {
+        let imp = list_item.child().unwrap().downcast::<AlbumWidget>().unwrap();
+        let widget = imp::AlbumWidget::from_instance(&imp);
+        let sig_handle = widget.clicked_sig_handle.take().unwrap();
+
+        glib::Object::disconnect(
+            &imp.upcast::<glib::Object>(),
+            sig_handle
+        );
     }
 
     pub fn for_model(album_model: &AlbumModel, worker: Worker) -> Self {

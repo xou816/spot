@@ -25,7 +25,7 @@ mod imp {
         pub top_tracks: TemplateChild<gtk::ListView>,
 
         #[template_child]
-        pub artist_releases: TemplateChild<gtk::FlowBox>,
+        pub artist_releases: TemplateChild<gtk::GridView>,
     }
 
     #[glib::object_subclass]
@@ -84,27 +84,29 @@ impl ArtistDetailsWidget {
             });
     }
 
-    fn bind_artist_releases<F>(
-        &self,
-        worker: Worker,
-        store: &ListStore<AlbumModel>,
-        on_album_pressed: F,
-    ) where
-        F: Fn(String) + Clone + 'static,
+    fn set_model<F>(&self, store: &ListStore<AlbumModel>, worker: Worker, on_clicked: F)
+    where
+        F: Fn(String) + Clone + 'static
     {
-        self.widget()
-            .artist_releases
-            .bind_model(Some(store.unsafe_store()), move |item| {
-                let item = item.downcast_ref::<AlbumModel>().unwrap();
-                let child = gtk::FlowBoxChild::new();
-                let album = AlbumWidget::for_model(item, worker.clone());
-                let f = on_album_pressed.clone();
-                album.connect_album_pressed(clone!(@weak item => move |_| {
-                    f(item.uri());
-                }));
-                child.set_child(Some(&album));
-                child.upcast::<gtk::Widget>()
-            });
+        let gridview = &imp::ArtistDetailsWidget::from_instance(self).artist_releases;
+
+        let factory = gtk::SignalListItemFactory::new();
+        factory.connect_setup(|_, list_item| {
+            list_item.set_child(Some(&AlbumWidget::new()));
+            // Onclick is handled by album and this causes two layers of highlight on hover
+            list_item.set_activatable(false);
+        });
+
+        factory.connect_bind(move |factory, list_item| {
+            AlbumWidget::bind_list_item(factory, list_item, worker.clone(), on_clicked.clone());
+        });
+
+        factory.connect_unbind(move |factory, list_item| {
+            AlbumWidget::unbind_list_item(factory, list_item);
+        });
+
+        gridview.set_factory(Some(&factory));
+        gridview.set_model(Some(&gtk::NoSelection::new(Some(store.unsafe_store()))));
     }
 }
 
@@ -125,12 +127,12 @@ impl ArtistDetails {
         }));
 
         if let Some(store) = model.get_list_store() {
-            widget.bind_artist_releases(
-                worker.clone(),
+            widget.set_model(
                 &*store,
-                clone!(@weak model => move |id| {
-                    model.open_album(id);
-                }),
+                worker.clone(),
+                clone!(@weak model => move |uri| {
+                    model.open_album(uri);
+                })
             );
         }
 

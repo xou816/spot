@@ -3,7 +3,6 @@ use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use std::rc::Rc;
 
-use crate::app::components::utils::wrap_flowbox_item;
 use crate::app::components::{display_add_css_provider, AlbumWidget, Component, EventListener};
 use crate::app::{models::*, ListStore};
 use crate::app::{AppEvent, BrowserEvent, Worker};
@@ -24,7 +23,7 @@ mod imp {
         pub user_name: TemplateChild<gtk::Label>,
 
         #[template_child]
-        pub user_playlists: TemplateChild<gtk::FlowBox>,
+        pub user_playlists: TemplateChild<gtk::GridView>,
     }
 
     #[glib::object_subclass]
@@ -80,22 +79,29 @@ impl UserDetailsWidget {
             });
     }
 
-    fn bind_user_playlists<F>(&self, worker: Worker, store: &ListStore<AlbumModel>, on_pressed: F)
+    fn set_model<F>(&self, store: &ListStore<AlbumModel>, worker: Worker, on_clicked: F)
     where
-        F: Fn(String) + Clone + 'static,
+        F: Fn(String) + Clone + 'static
     {
-        self.widget()
-            .user_playlists
-            .bind_model(Some(store.unsafe_store()), move |item| {
-                wrap_flowbox_item(item, |item: &AlbumModel| {
-                    let f = on_pressed.clone();
-                    let album = AlbumWidget::for_model(item, worker.clone());
-                    album.connect_album_pressed(clone!(@weak item => move |_| {
-                        f(item.uri());
-                    }));
-                    album
-                })
-            });
+        let gridview = &imp::UserDetailsWidget::from_instance(self).user_playlists;
+
+        let factory = gtk::SignalListItemFactory::new();
+        factory.connect_setup(|_, list_item| {
+            list_item.set_child(Some(&AlbumWidget::new()));
+            // Onclick is handled by album and this causes two layers of highlight on hover
+            list_item.set_activatable(false);
+        });
+
+        factory.connect_bind(move |factory, list_item| {
+            AlbumWidget::bind_list_item(factory, list_item, worker.clone(), on_clicked.clone());
+        });
+
+        factory.connect_unbind(move |factory, list_item| {
+            AlbumWidget::unbind_list_item(factory, list_item);
+        });
+
+        gridview.set_factory(Some(&factory));
+        gridview.set_model(Some(&gtk::NoSelection::new(Some(store.unsafe_store()))));
     }
 }
 
@@ -116,12 +122,12 @@ impl UserDetails {
         }));
 
         if let Some(store) = model.get_list_store() {
-            widget.bind_user_playlists(
-                worker,
+            widget.set_model(
                 &*store,
+                worker.clone(),
                 clone!(@weak model => move |uri| {
                     model.open_playlist(uri);
-                }),
+                })
             );
         }
 
