@@ -259,97 +259,97 @@ msgstr "{} de {}"
 
 #: src/app/components/navigation/home.rs:32
 msgid "Unnamed playlist"
-msgstr ""
+msgstr "Liste de lecture sans titre"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
 #: src/app/components/navigation/home.rs:104
 msgid "All Playlists"
-msgstr ""
+msgstr "Toutes les listes de lecture"
 
 #: src/app/components/selection/component.rs:66
 msgid "Tracks saved!"
-msgstr ""
+msgstr "Pistes enregistrées !"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:65
 msgid "Preferences"
-msgstr ""
+msgstr "Préférences"
 
 #: src/main.rs:81
 msgid "Failed to open link!"
-msgstr ""
+msgstr "Échec de l'ouverture du lien."
 
 #. Header for a group of preference items regarding audio
 #: src/app/components/settings/settings.ui:13
 msgid "Audio"
-msgstr ""
+msgstr "Audio"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:16
 msgid "Audio Backend"
-msgstr ""
+msgstr "Gestionnaire de l'audio"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:29
 msgid "ALSA Device"
-msgstr ""
+msgstr "Appareil ALSA"
 
 #. Description for the item (ALSA Device) in preferences
 #: src/app/components/settings/settings.ui:30
 msgid "Applied only if audio backend is ALSA"
-msgstr ""
+msgstr "Ne s'applique que si ALSA est sélectionné"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:40
 msgid "Audio Quality"
-msgstr ""
+msgstr "Qualité du flux audio"
 
 #: src/app/components/settings/settings.ui:44
 msgid "Normal"
-msgstr ""
+msgstr "Normale"
 
 #: src/app/components/settings/settings.ui:45
 msgid "High"
-msgstr ""
+msgstr "Élevée"
 
 #: src/app/components/settings/settings.ui:46
 msgid "Very high"
-msgstr ""
+msgstr "Très élevée"
 
 #. Header for a group of preference items regarding the application's appearance
 #: src/app/components/settings/settings.ui:56
 msgid "Appearance"
-msgstr ""
+msgstr "Apparence"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:59
 msgid "Theme"
-msgstr ""
+msgstr "Thème"
 
 #: src/app/components/settings/settings.ui:63
 msgid "Light"
-msgstr ""
+msgstr "Clair"
 
 #: src/app/components/settings/settings.ui:64
 msgid "Dark"
-msgstr ""
+msgstr "Sombre"
 
 #. Header for a group of preference items regarding network
 #: src/app/components/settings/settings.ui:74
 msgid "Network"
-msgstr ""
+msgstr "Réseau"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:77
 msgid "Access Point Port"
-msgstr ""
+msgstr "Port du point d'accès"
 
 #. Longer description for an item (Access Point Port) in preferences
 #: src/app/components/settings/settings.ui:78
 msgid "Port used for connections to Spotify's Access Point. Set to 0 if any port is fine."
-msgstr ""
+msgstr "Port utilisé pour se connecter au point d'accès de Spotify. Laisser la valeur à 0 pour gérer ce paramètre automatiquement. "
 
 #: src/app/components/selection/selection_toolbar.ui:90
 msgid "Save to library"
-msgstr ""
+msgstr "Enregistrer dans la bibliothèque"
 

@@ -8,12 +8,7 @@ Based on [librespot](https://github.com/librespot-org/librespot/).
 
 ## Installing
 
-| Package | Maintainer | Repo |
-| ------- | ---------- | ---- |
-| <a href='https://flathub.org/apps/details/dev.alextren.Spot'><img width='130' alt='Download on Flathub' src='https://flathub.org/assets/badges/flathub-badge-en.png'/></a> | xou816 | https://github.com/flathub/dev.alextren.Spot |
-| <a href='https://snapcraft.io/spot'><img width='130' alt="Get it from the Snap Store" src="https://snapcraft.io/static/images/badges/en/snap-store-black.svg"></a> | popey | https://github.com/popey/spot-snap |
-| <a href='https://aur.archlinux.org/packages/spot-client/'><img alt="AUR version" src="https://img.shields.io/aur/version/spot-client"></a> | dpeukert | https://gitlab.com/dpeukert/pkgbuilds/tree/main/spot-client |
-
+<a href='https://flathub.org/apps/details/dev.alextren.Spot'><img width='130' alt='Download on Flathub' src='https://flathub.org/assets/badges/flathub-badge-en.png'/></a>
 
 ## Usage notes
 
