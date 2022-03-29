@@ -50,6 +50,17 @@
       <image>https://raw.githubusercontent.com/xou816/spot/master/data/appstream/3.png</image>
     </screenshot>
   </screenshots>
+  <release version="0.3.3" date="2022-03-29">
+    <description>
+      <p>
+        What's new:
+      </p>
+      <ul>
+        <li>login dialog now uses a password entry (thanks @Toorero!)</li>
+        <li>fix a startup crash with some locales</li>
+      </ul>
+    </description>
+  </release>
   <release version="0.3.2" date="2022-03-27">
     <description>
       <p>
