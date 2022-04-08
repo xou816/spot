@@ -18,6 +18,11 @@ pub struct Ids {
     pub ids: Vec<String>,
 }
 
+#[derive(Serialize)]
+pub struct Name<'a> {
+    pub name: &'a str,
+}
+
 pub enum SearchType {
     Artist,
     Album,

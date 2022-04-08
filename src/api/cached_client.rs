@@ -57,6 +57,12 @@ pub trait SpotifyApiClient {
 
     fn add_to_playlist(&self, id: &str, uris: Vec<String>) -> BoxFuture<SpotifyResult<()>>;
 
+    fn create_new_playlist(
+        &self,
+        name: &str,
+        user_id: &str,
+    ) -> BoxFuture<SpotifyResult<PlaylistDescription>>;
+
     fn remove_from_playlist(&self, id: &str, uris: Vec<String>) -> BoxFuture<SpotifyResult<()>>;
 
     fn search(
@@ -308,6 +314,27 @@ impl SpotifyApiClient for CachedSpotifyClient {
                 .send_no_response()
                 .await?;
             Ok(())
+        })
+    }
+
+    fn create_new_playlist(
+        &self,
+        name: &str,
+        user_id: &str,
+    ) -> BoxFuture<SpotifyResult<PlaylistDescription>> {
+        let name = name.to_owned();
+        let user_id = user_id.to_owned();
+
+        Box::pin(async move {
+            let playlist = self
+                .client
+                .create_new_playlist(&name, &user_id)
+                .send()
+                .await?
+                .deserialize()
+                .unwrap();
+
+            Ok(playlist.into())
         })
     }
 

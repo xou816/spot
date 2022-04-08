@@ -417,6 +417,17 @@ impl SpotifyClient {
             .json_body(Uris { uris })
     }
 
+    pub(crate) fn create_new_playlist(
+        &self,
+        name: &str,
+        user_id: &str,
+    ) -> SpotifyRequest<'_, Vec<u8>, Playlist> {
+        self.request()
+            .method(Method::POST)
+            .uri(format!("/v1/users/{}/playlists", user_id), None)
+            .json_body(Name { name })
+    }
+
     pub(crate) fn remove_from_playlist(
         &self,
         playlist: &str,

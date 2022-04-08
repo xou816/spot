@@ -28,6 +28,11 @@ where
         &self.store
     }
 
+    pub fn prepend(&mut self, elements: impl Iterator<Item = GType>) {
+        let upcast_vec: Vec<glib::Object> = elements.map(|e| e.upcast::<glib::Object>()).collect();
+        self.store.splice(0, 0, &upcast_vec[..]);
+    }
+
     pub fn extend(&mut self, elements: impl Iterator<Item = GType>) {
         let upcast_vec: Vec<glib::Object> = elements.map(|e| e.upcast::<glib::Object>()).collect();
         self.store.splice(self.store.n_items(), 0, &upcast_vec[..]);
