@@ -261,7 +261,8 @@ user-top-read,\
 user-read-recently-played,\
 playlist-modify-public,\
 playlist-modify-private,\
-streaming";
+streaming,\
+playlist-modify-public";
 
 const KNOWN_AP_PORTS: [Option<u16>; 4] = [None, Some(80), Some(443), Some(4070)];
 
