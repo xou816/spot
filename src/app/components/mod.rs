@@ -82,7 +82,8 @@ pub use headerbar::*;
 pub mod utils;
 
 pub mod labels;
-pub mod sidebar_listbox;
+
+pub mod sidebar;
 
 pub fn expose_widgets() {
     playback::expose_widgets();

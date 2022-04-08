@@ -192,6 +192,7 @@ impl UpdatableState for ArtistState {
 
 pub struct HomeState {
     pub name: ScreenName,
+    pub visible_page: &'static str,
     pub next_albums_page: Pagination<()>,
     pub albums: ListStore<AlbumModel>,
     pub next_playlists_page: Pagination<()>,
@@ -203,6 +204,7 @@ impl Default for HomeState {
     fn default() -> Self {
         Self {
             name: ScreenName::Home,
+            visible_page: "library",
             next_albums_page: Pagination::new((), 30),
             albums: ListStore::new(),
             next_playlists_page: Pagination::new((), 30),
@@ -218,6 +220,10 @@ impl UpdatableState for HomeState {
 
     fn update_with(&mut self, action: Cow<Self::Action>) -> Vec<Self::Event> {
         match action.as_ref() {
+            BrowserAction::SetHomeVisiblePage(page) => {
+                self.visible_page = *page;
+                vec![BrowserEvent::HomeVisiblePageChanged(*page)]
+            }
             BrowserAction::SetLibraryContent(content) => {
                 if !self.albums.eq(content, |a, b| a.uri() == b.id) {
                     self.albums.replace_all(content.iter().map(|a| a.into()));
