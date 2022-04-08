@@ -1,5 +1,6 @@
 use std::rc::Rc;
 
+use crate::app::components::sidebar::{Sidebar, SidebarModel};
 use crate::app::components::*;
 use crate::app::state::SelectionContext;
 use crate::app::{ActionDispatcher, AppModel, Worker};
@@ -41,12 +42,14 @@ impl ScreenFactory {
         )
     }
 
-    pub fn make_saved_playlists_model(&self) -> SavedPlaylistsModel {
-        SavedPlaylistsModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone())
+    pub fn make_sidebar(&self, listbox: gtk::ListBox) -> impl ListenerComponent {
+        let model = SidebarModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
+        Sidebar::new(listbox, Rc::new(model))
     }
 
     pub fn make_saved_playlists(&self) -> impl ListenerComponent {
-        let model = self.make_saved_playlists_model();
+        let model =
+            SavedPlaylistsModel::new(Rc::clone(&self.app_model), self.dispatcher.box_clone());
         let screen_model = DefaultHeaderBarModel::new(
             Some(gettext("Playlists")),
             None,

@@ -87,6 +87,9 @@
                           <object class="GtkListBox" id="home_listbox">
                             <property name="width-request">200</property>
                             <property name="vexpand">1</property>
+                            <style>
+                              <class name="navigation-sidebar" />
+                            </style>
                           </object>
                         </property>
                       </object>
