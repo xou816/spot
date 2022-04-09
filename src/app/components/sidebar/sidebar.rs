@@ -2,14 +2,18 @@ use gettextrs::gettext;
 use gtk::prelude::*;
 use std::rc::Rc;
 
-use super::{sidebar_row::SidebarRow, SidebarDestination, SidebarItem, SAVED_PLAYLISTS_SECTION};
+use super::create_playlist::CreatePlaylistPopover;
+use super::{
+    sidebar_row::SidebarRow, SidebarDestination, SidebarItem, CREATE_PLAYLIST_ITEM,
+    SAVED_PLAYLISTS_SECTION,
+};
 use crate::app::models::{AlbumModel, PlaylistSummary};
 use crate::app::{
     ActionDispatcher, AppAction, AppEvent, AppModel, BrowserAction, BrowserEvent, Component,
     EventListener,
 };
 
-const NUM_FIXED_ENTRIES: u32 = 5;
+const NUM_FIXED_ENTRIES: u32 = 6;
 const NUM_PLAYLISTS: usize = 20;
 
 pub struct SidebarModel {
@@ -46,6 +50,22 @@ impl SidebarModel {
         SidebarDestination::Playlist(PlaylistSummary { id, title })
     }
 
+    fn create_new_playlist(&self, name: String) {
+        let user_id = self.app_model.get_state().logged_user.user.clone().unwrap();
+        let api = self.app_model.get_spotify();
+        self.dispatcher
+            .call_spotify_and_dispatch_many(move || async move {
+                api.create_new_playlist(name.as_str(), user_id.as_str())
+                    .await
+                    .map(|p| {
+                        vec![
+                            BrowserAction::PrependPlaylistsContent(vec![p.clone()]).into(),
+                            AppAction::ShowPlaylistCreatedNotification(p.id),
+                        ]
+                    })
+            })
+    }
+
     fn navigate(&self, dest: SidebarDestination) {
         let action = match dest {
             SidebarDestination::Library
@@ -68,6 +88,9 @@ pub struct Sidebar {
 
 impl Sidebar {
     pub fn new(listbox: gtk::ListBox, model: Rc<SidebarModel>) -> Self {
+        let popover = CreatePlaylistPopover::new();
+        popover.connect_create(clone!(@weak model => move |t| model.create_new_playlist(t)));
+
         let list_store = gio::ListStore::new(SidebarItem::static_type());
 
         list_store.append(&SidebarItem::for_destination(SidebarDestination::Library));
@@ -78,26 +101,36 @@ impl Sidebar {
             SidebarDestination::NowPlaying,
         ));
         list_store.append(&SidebarItem::playlists_section());
+        list_store.append(&SidebarItem::create_playlist_item());
         list_store.append(&SidebarItem::for_destination(
             SidebarDestination::SavedPlaylists,
         ));
 
-        listbox.bind_model(Some(&list_store), move |obj| {
-            let item = obj.downcast_ref::<SidebarItem>().unwrap();
-            if item.navigatable() {
-                Self::make_navigatable(item)
-            } else {
-                match item.id().as_str() {
-                    SAVED_PLAYLISTS_SECTION => Self::make_section_label(item),
-                    _ => unimplemented!(),
+        listbox.bind_model(
+            Some(&list_store),
+            clone!(@weak popover => @default-panic, move |obj| {
+                let item = obj.downcast_ref::<SidebarItem>().unwrap();
+                if item.navigatable() {
+                    Self::make_navigatable(item)
+                } else {
+                    match item.id().as_str() {
+                        SAVED_PLAYLISTS_SECTION => Self::make_section_label(item),
+                        CREATE_PLAYLIST_ITEM => Self::make_create_playlist(item, popover),
+                        _ => unimplemented!(),
+                    }
                 }
-            }
-        });
+            }),
+        );
 
-        listbox.connect_row_activated(clone!(@weak model => move |_, row| {
+        listbox.connect_row_activated(clone!(@weak popover, @weak model => move |_, row| {
             if let Some(row) = row.downcast_ref::<SidebarRow>() {
                 if let Some(dest) = row.item().destination() {
                     model.navigate(dest);
+                } else {
+                    match row.item().id().as_str() {
+                        CREATE_PLAYLIST_ITEM => popover.popup(),
+                        _ => unimplemented!()
+                    }
                 }
             }
         }));
@@ -111,6 +144,7 @@ impl Sidebar {
 
     fn make_navigatable(item: &SidebarItem) -> gtk::Widget {
         let row = SidebarRow::new();
+        row.set_selectable(false);
         row.set_item(item);
         row.upcast()
     }
@@ -127,12 +161,22 @@ impl Sidebar {
         row.upcast()
     }
 
+    fn make_create_playlist(item: &SidebarItem, popover: CreatePlaylistPopover) -> gtk::Widget {
+        let row = SidebarRow::new();
+        row.set_activatable(true);
+        row.set_selectable(false);
+        row.set_sensitive(true);
+        row.set_item(item);
+        popover.set_parent(&row);
+        row.upcast()
+    }
+
     fn update_playlists_in_sidebar(&self) {
         let playlists: Vec<SidebarItem> = self
             .model
             .get_playlists()
             .into_iter()
-            .map(|d| SidebarItem::for_destination(d))
+            .map(SidebarItem::for_destination)
             .collect();
         self.list_store.splice(
             NUM_FIXED_ENTRIES,
@@ -150,11 +194,8 @@ impl Component for Sidebar {
 
 impl EventListener for Sidebar {
     fn on_event(&mut self, event: &AppEvent) {
-        match event {
-            AppEvent::BrowserEvent(BrowserEvent::SavedPlaylistsUpdated) => {
-                self.update_playlists_in_sidebar();
-            }
-            _ => {}
+        if let AppEvent::BrowserEvent(BrowserEvent::SavedPlaylistsUpdated) = event {
+            self.update_playlists_in_sidebar();
         }
     }
 }

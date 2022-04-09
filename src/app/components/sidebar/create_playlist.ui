@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <requires lib="gtk" version="4.0"/>
-  <template class="CreatePlaylistWidget" parent="GtkPopover">
-      <property name="position">right</property>
+  <requires lib="gtk" version="4.0" />
+  <template class="CreatePlaylistPopover" parent="GtkPopover">
+    <property name="position">right</property>
     <child>
       <object class="GtkBox" id="box">
         <child>
@@ -12,7 +12,7 @@
         </child>
         <child>
           <object class="GtkEntry" id="entry">
-            <property name="focusable">True</property>
+            <property name="focusable">1</property>
             <property name="margin-start">12</property>
             <property name="margin-end">12</property>
           </object>
@@ -22,7 +22,7 @@
             <property name="child">
               <object class="GtkLabel" id="error_label">
                 <property name="max-width-chars">0</property>
-                <property name="wrap">True</property>
+                <property name="wrap">1</property>
                 <property name="xalign">0</property>
               </object>
             </property>
@@ -31,11 +31,11 @@
         <child>
           <object class="GtkButton" id="button">
             <property name="label" translatable="yes" comments="Button that creates a new playlist">Create</property>
-            <property name="focusable">True</property>
+            <property name="focusable">1</property>
             <property name="halign">end</property>
-            <property name="use-underline">True</property>
+            <property name="use-underline">1</property>
             <style>
-              <class name="suggested-action"/>
+              <class name="suggested-action" />
             </style>
           </object>
         </child>

@@ -8,8 +8,9 @@ const LIBRARY: &str = "library";
 const SAVED_TRACKS: &str = "saved_tracks";
 const NOW_PLAYING: &str = "now_playing";
 const SAVED_PLAYLISTS: &str = "saved_playlists";
-pub const SAVED_PLAYLISTS_SECTION: &str = "saved_playlists_section";
 const PLAYLIST: &str = "playlist";
+pub const SAVED_PLAYLISTS_SECTION: &str = "saved_playlists_section";
+pub const CREATE_PLAYLIST_ITEM: &str = "create_playlist";
 
 #[derive(Debug)]
 pub enum SidebarDestination {
@@ -66,7 +67,7 @@ impl SidebarItem {
         };
         glib::Object::new::<SidebarItem>(&[
             ("id", &id),
-            ("data", &data.unwrap_or_else(String::new)),
+            ("data", &data.unwrap_or_default()),
             ("title", &title),
             ("navigatable", &true),
         ])
@@ -83,12 +84,22 @@ impl SidebarItem {
         .expect("Failed to create")
     }
 
+    pub fn create_playlist_item() -> Self {
+        glib::Object::new::<SidebarItem>(&[
+            ("id", &CREATE_PLAYLIST_ITEM),
+            ("data", &String::new()),
+            ("title", &gettext("New Playlist")),
+            ("navigatable", &false),
+        ])
+        .expect("Failed to create")
+    }
+
     pub fn destination(&self) -> Option<SidebarDestination> {
         let navigatable = self.property::<bool>("navigatable");
         if navigatable {
-            let id = self.property::<String>("id");
+            let id = self.id();
             let data = self.property::<String>("data");
-            let title = self.property::<String>("title");
+            let title = self.title();
             match id.as_str() {
                 LIBRARY => Some(SidebarDestination::Library),
                 SAVED_TRACKS => Some(SidebarDestination::SavedTracks),
@@ -114,7 +125,10 @@ impl SidebarItem {
     }
 
     pub fn icon(&self) -> Option<&str> {
-        self.destination().map(|d| d.icon())
+        match self.id().as_str() {
+            CREATE_PLAYLIST_ITEM => Some("list-add-symbolic"),
+            _ => self.destination().map(|d| d.icon()),
+        }
     }
 
     pub fn navigatable(&self) -> bool {
