@@ -144,6 +144,7 @@ sources = files(
 './app/components/headerbar/mod.rs',
 './app/components/sidebar/sidebar_item.rs',
 './app/components/sidebar/sidebar_row.rs',
+'./app/components/sidebar/create_playlist.rs',
 './app/components/sidebar/sidebar.rs',
 './app/components/sidebar/mod.rs',
 './app/components/album/album.rs',

@@ -48,10 +48,9 @@
     <file alias="components/selection_toolbar.css">app/components/selection/selection_toolbar.css</file>
     <!-- headerbar -->
     <file alias="components/headerbar.ui">app/components/headerbar/headerbar.ui</file>
-    <!-- sidebar_listbox -->
+    <!-- sidebar -->
     <file alias="sidebar/sidebar_row.ui">app/components/sidebar/sidebar_row.ui</file>
-    <!-- navigation -->
-    <file alias="components/create_playlist.ui">app/components/navigation/create_playlist.ui</file>
+    <file alias="components/create_playlist.ui">app/components/sidebar/create_playlist.ui</file>
   </gresource>
   <gresource prefix="/dev/alextren/Spot/icons/scalable/actions/">
     <file compressed="true" preprocess="xml-stripblanks" alias="music-queue-symbolic.svg">app/components/selection/icons/music-queue-symbolic.svg</file>

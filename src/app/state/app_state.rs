@@ -19,6 +19,7 @@ pub enum AppAction {
     Start,
     Raise,
     ShowNotification(String),
+    ShowPlaylistCreatedNotification(String),
     ViewNowPlaying,
     // cross-state actions
     QueueSelection,
@@ -91,6 +92,7 @@ pub enum AppEvent {
     Started,
     Raised,
     NotificationShown(String),
+    PlaylistCreatedNotificationShown(String),
     NowPlayingShown,
     SettingsEvent(SettingsEvent),
 }
@@ -123,6 +125,9 @@ impl AppState {
                 vec![AppEvent::Started]
             }
             AppAction::ShowNotification(c) => vec![AppEvent::NotificationShown(c)],
+            AppAction::ShowPlaylistCreatedNotification(c) => {
+                vec![AppEvent::PlaylistCreatedNotificationShown(c)]
+            }
             AppAction::ViewNowPlaying => vec![AppEvent::NowPlayingShown],
             AppAction::Raise => vec![AppEvent::Raised],
             AppAction::QueueSelection => {

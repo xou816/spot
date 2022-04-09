@@ -11,6 +11,7 @@ pub enum BrowserAction {
     SetNavigationHidden(bool),
     SetHomeVisiblePage(&'static str),
     SetLibraryContent(Vec<AlbumDescription>),
+    PrependPlaylistsContent(Vec<PlaylistDescription>),
     AppendLibraryContent(Vec<AlbumDescription>),
     SetPlaylistsContent(Vec<PlaylistDescription>),
     AppendPlaylistsContent(Vec<PlaylistDescription>),

@@ -233,6 +233,10 @@ impl UpdatableState for HomeState {
                     vec![]
                 }
             }
+            BrowserAction::PrependPlaylistsContent(content) => {
+                self.playlists.prepend(content.iter().map(|a| a.into()));
+                vec![BrowserEvent::SavedPlaylistsUpdated]
+            }
             BrowserAction::AppendLibraryContent(content) => {
                 self.next_albums_page.set_loaded_count(content.len());
                 self.albums.extend(content.iter().map(|a| a.into()));
