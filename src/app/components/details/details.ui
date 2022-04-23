@@ -31,9 +31,6 @@
                           <object class="AlbumHeaderWidget" id="header_mobile">
                             <property name="orientation">vertical</property>
                             <property name="spacing">12</property>
-                            <style>
-                              <class name="header__mobile" />
-                            </style>
                           </object>
                         </child>
                       </object>

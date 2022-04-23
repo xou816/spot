@@ -19,6 +19,7 @@ pub enum BrowserAction {
     SetAlbumDetails(Box<AlbumFullDescription>),
     AppendAlbumTracks(String, Box<SongBatch>),
     SetPlaylistDetails(Box<PlaylistDescription>),
+    UpdatePlaylistName(PlaylistSummary),
     AppendPlaylistTracks(String, Box<SongBatch>),
     Search(String),
     SetSearchResults(Box<SearchResults>),

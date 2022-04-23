@@ -1,5 +1,6 @@
 use std::borrow::Cow;
 
+use crate::app::models::PlaylistSummary;
 use crate::app::state::{
     browser_state::{BrowserAction, BrowserEvent, BrowserState},
     login_state::{LoginAction, LoginEvent, LoginState},
@@ -30,6 +31,7 @@ pub enum AppAction {
     UnsaveSelection,
     EnableSelection(SelectionContext),
     CancelSelection,
+    UpdatePlaylistName(PlaylistSummary),
 }
 
 impl AppAction {
@@ -205,6 +207,16 @@ impl AppState {
                 } else {
                     vec![]
                 }
+            }
+            AppAction::UpdatePlaylistName(s) => {
+                let mut events = forward_action(
+                    LoginAction::UpdateUserPlaylist(s.clone()),
+                    &mut self.logged_user,
+                );
+                let mut more_events =
+                    forward_action(BrowserAction::UpdatePlaylistName(s), &mut self.browser);
+                events.append(&mut more_events);
+                events
             }
             AppAction::PlaybackAction(a) => forward_action(a, &mut self.playback),
             AppAction::BrowserAction(a) => forward_action(a, &mut self.browser),

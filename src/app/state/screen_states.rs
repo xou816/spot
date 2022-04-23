@@ -122,6 +122,12 @@ impl UpdatableState for PlaylistDetailsState {
                 self.playlist = Some(*playlist.clone());
                 vec![BrowserEvent::PlaylistDetailsLoaded(id)]
             }
+            BrowserAction::UpdatePlaylistName(PlaylistSummary { id, title }) if id == &self.id => {
+                if let Some(p) = self.playlist.as_mut() {
+                    p.title = title.clone();
+                }
+                vec![BrowserEvent::PlaylistDetailsLoaded(self.id.clone())]
+            }
             BrowserAction::AppendPlaylistTracks(id, song_batch) if id == &self.id => {
                 self.songs.add(*song_batch.clone()).commit();
                 vec![BrowserEvent::PlaylistTracksAppended(id.clone())]
@@ -275,6 +281,12 @@ impl UpdatableState for HomeState {
             BrowserAction::AppendPlaylistsContent(content) => {
                 self.next_playlists_page.set_loaded_count(content.len());
                 self.playlists.extend(content.iter().map(|p| p.into()));
+                vec![BrowserEvent::SavedPlaylistsUpdated]
+            }
+            BrowserAction::UpdatePlaylistName(PlaylistSummary { id, title }) => {
+                if let Some(p) = self.playlists.iter().find(|p| &p.uri() == id) {
+                    p.set_album_title(title);
+                }
                 vec![BrowserEvent::SavedPlaylistsUpdated]
             }
             BrowserAction::AppendSavedTracks(song_batch) => {

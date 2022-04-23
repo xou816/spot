@@ -9,6 +9,11 @@ use std::{
 use crate::app::models::*;
 
 #[derive(Serialize)]
+pub struct PlaylistDetails {
+    pub name: String,
+}
+
+#[derive(Serialize)]
 pub struct Uris {
     pub uris: Vec<String>,
 }

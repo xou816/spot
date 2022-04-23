@@ -92,6 +92,7 @@ pub fn expose_widgets() {
     playback::expose_widgets();
     selection::expose_widgets();
     headerbar::expose_widgets();
+    playlist_details::expose_widgets();
     scrolling_header::expose_widgets();
 }
 

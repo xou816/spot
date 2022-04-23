@@ -31,16 +31,16 @@
         <property name="orientation">vertical</property>
         <property name="spacing">6</property>
         <child>
-          <object class="GtkLabel" id="playlist_label">
-            <property name="xalign">0</property>
+          <object class="GtkEntry" id="playlist_label_entry">
+            <property name="hexpand">0</property>
             <property name="halign">start</property>
-            <property name="label">Album</property>
-            <property name="wrap">1</property>
-            <property name="ellipsize">end</property>
-            <property name="max-width-chars">50</property>
-            <property name="lines">4</property>
+            <property name="editable">0</property>
+            <property name="can-focus">0</property>
+            <property name="placeholder-text" translatable="no">Playlist Title</property>
             <style>
               <class name="title-1" />
+              <class name="playlist__title-entry" />
+              <class name="playlist__title-entry--ro" />
             </style>
           </object>
         </child>

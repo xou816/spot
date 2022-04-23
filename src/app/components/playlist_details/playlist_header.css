@@ -1,15 +1,10 @@
-.playlist__header .title-4 label, .header__mobile .title-4 label {
+.playlist__header .title-4 label {
   color: @window_fg_color;
   font-weight: bold;
   text-decoration: none;
 }
 
-.playlist__header .title-4, .header__mobile .title-4 {
-  padding: 0;
-}
-
-
-.playlist__header .title-4:hover, .header__mobile .title-4:hover {
+.playlist__header .title-4:hover {
   border-radius: 6px;
   background-image: image(alpha(currentColor, 0.08));
 }
@@ -26,8 +21,4 @@
   margin-top: 18px;
   margin-left: 6px;
   margin-bottom: 6px;
-}
-
-.header__mobile .card {
-  margin-top: 12px;
 }

@@ -439,6 +439,17 @@ impl SpotifyClient {
             .json_body(Uris { uris })
     }
 
+    pub(crate) fn update_playlist_details(
+        &self,
+        playlist: &str,
+        name: String,
+    ) -> SpotifyRequest<'_, Vec<u8>, ()> {
+        self.request()
+            .method(Method::PUT)
+            .uri(format!("/v1/playlists/{}", playlist), None)
+            .json_body(PlaylistDetails { name })
+    }
+
     pub(crate) fn get_saved_albums(
         &self,
         offset: usize,
