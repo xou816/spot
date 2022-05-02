@@ -17,7 +17,7 @@ version = "^0.15.7"
 features = ["v2_60"]
 
 [dependencies.glib]
-version = "^0.15.9"
+version = "^0.15.11"
 features = ["v2_60"]
 
 [dependencies.librespot]
