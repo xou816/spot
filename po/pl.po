@@ -145,11 +145,11 @@ msgstr "Caps Lock jest włączony!"
 
 #: src/app/components/playback/playback_controls.rs:64
 msgid "Pause"
-msgstr ""
+msgstr "Wstrzymaj"
 
 #: src/app/components/playback/playback_controls.rs:66
 msgid "Play"
-msgstr ""
+msgstr "Odtwórz"
 
 #: src/app/components/playback/playback_controls.ui:17
 msgid "Shuffle"
@@ -157,15 +157,15 @@ msgstr ""
 
 #: src/app/components/playback/playback_controls.ui:27
 msgid "Previous"
-msgstr ""
+msgstr "Poprzedni"
 
 #: src/app/components/playback/playback_controls.ui:50
 msgid "Next"
-msgstr ""
+msgstr "Nazsępny"
 
 #: src/app/components/playback/playback_controls.ui:60
 msgid "Repeat"
-msgstr ""
+msgstr "Powtórz"
 
 #. A title that is shown when the user has not saved any playlists.
 #: src/app/components/saved_playlists/saved_playlists.ui:26
@@ -199,31 +199,31 @@ msgstr[3] ""
 #. Title for the empty search page (initial state).
 #: src/app/components/search/search.ui:116
 msgid "Search Spotify."
-msgstr ""
+msgstr "Wyszukaj w serwisie Spotify."
 
 #. Subtitle for the empty search page (initial state).
 #: src/app/components/search/search.ui:117
 msgid "Type to search."
-msgstr ""
+msgstr "Wpisz, aby wyszukać."
 
 #: src/app/components/selection/selection_toolbar.ui:69
 msgid "Remove"
-msgstr ""
+msgstr "Usuń"
 
 #. <property name="icon-name">playlist2-symbolic</property>
 #: src/app/components/selection/selection_toolbar.ui:56
 msgid "Add to playlist..."
-msgstr ""
+msgstr "Dodaj do listy..."
 
 #. Button label. Exits selection mode.
 #: src/app/components/headerbar/headerbar.ui:47
 msgid "Cancel"
-msgstr ""
+msgstr "Anuluj"
 
 #. Button label. Selects all visible songs.
 #: src/app/components/headerbar/headerbar.ui:58
 msgid "Select all"
-msgstr ""
+msgstr "Wybierz wszystko"
 
 #. translators: This is part of a contextual menu attached to a single track; the full text is "More from <artist>".
 #: src/app/components/labels.rs:39
@@ -261,25 +261,25 @@ msgstr ""
 
 #: src/app/components/navigation/home.rs:32
 msgid "Unnamed playlist"
-msgstr ""
+msgstr "Nienazwana lista"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
 #: src/app/components/navigation/home.rs:104
 msgid "All Playlists"
-msgstr ""
+msgstr "Wszystkie listy"
 
 #: src/app/components/selection/component.rs:66
 msgid "Tracks saved!"
-msgstr ""
+msgstr "Utwór zapisany!"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:65
 msgid "Preferences"
-msgstr ""
+msgstr "Preferencje"
 
 #: src/main.rs:81
 msgid "Failed to open link!"
-msgstr ""
+msgstr "Nie udało się otworzyć linku!"
 
 #. Header for a group of preference items regarding audio
 #: src/app/components/settings/settings.ui:13
@@ -299,59 +299,58 @@ msgstr ""
 #. Description for the item (ALSA Device) in preferences
 #: src/app/components/settings/settings.ui:30
 msgid "Applied only if audio backend is ALSA"
-msgstr ""
+msgstr "Stosuje się tylko wtedy, gdy źródłem dźwięku jest ALSA"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:40
 msgid "Audio Quality"
-msgstr ""
+msgstr "Jakość dźwięku"
 
 #: src/app/components/settings/settings.ui:44
 msgid "Normal"
-msgstr ""
+msgstr "Zwykła"
 
 #: src/app/components/settings/settings.ui:45
 msgid "High"
-msgstr ""
+msgstr "High"
 
 #: src/app/components/settings/settings.ui:46
 msgid "Very high"
-msgstr ""
+msgstr "Bardzo wysoka"
 
 #. Header for a group of preference items regarding the application's appearance
 #: src/app/components/settings/settings.ui:56
 msgid "Appearance"
-msgstr ""
+msgstr "Wygląd"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:59
 msgid "Theme"
-msgstr ""
+msgstr "Motyw"
 
 #: src/app/components/settings/settings.ui:63
 msgid "Light"
-msgstr ""
+msgstr "Jasny"
 
 #: src/app/components/settings/settings.ui:64
 msgid "Dark"
-msgstr ""
+msgstr "Ciemny"
 
 #. Header for a group of preference items regarding network
 #: src/app/components/settings/settings.ui:74
 msgid "Network"
-msgstr ""
+msgstr "Sieć"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:77
 msgid "Access Point Port"
-msgstr ""
+msgstr "Port punktu dostępowego"
 
 #. Longer description for an item (Access Point Port) in preferences
 #: src/app/components/settings/settings.ui:78
 msgid "Port used for connections to Spotify's Access Point. Set to 0 if any port is fine."
-msgstr ""
+msgstr "Port używany do połączeń z punktem dostępowym Spotify. Ustaw na 0, jeśli dowolny port jest w porządku."
 
 #: src/app/components/selection/selection_toolbar.ui:90
 msgid "Save to library"
-msgstr ""
-
+msgstr "Zapisz do biblioteki"
