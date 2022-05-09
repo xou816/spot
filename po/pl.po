@@ -312,7 +312,7 @@ msgstr "Zwykła"
 
 #: src/app/components/settings/settings.ui:45
 msgid "High"
-msgstr "High"
+msgstr "Wysoka"
 
 #: src/app/components/settings/settings.ui:46
 msgid "Very high"
