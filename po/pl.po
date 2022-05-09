@@ -161,7 +161,7 @@ msgstr "Poprzedni"
 
 #: src/app/components/playback/playback_controls.ui:50
 msgid "Next"
-msgstr "Nazsępny"
+msgstr "Następny"
 
 #: src/app/components/playback/playback_controls.ui:60
 msgid "Repeat"
