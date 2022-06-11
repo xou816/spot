@@ -136,6 +136,12 @@ impl PlaybackWidget {
         self.set_seek_position(value);
     }
 
+    pub fn set_volume(&self, volume: f64) {
+        let widget = imp::PlaybackWidget::from_instance(self);
+        widget.controls.set_volume(volume);
+        widget.controls_mobile.set_volume(volume);
+    }
+
     pub fn connect_now_playing_clicked<F>(&self, f: F)
     where
         F: Fn() + Clone + 'static,
@@ -238,5 +244,14 @@ impl PlaybackWidget {
         let widget = self.imp();
         widget.controls.connect_repeat(f.clone());
         widget.controls_mobile.connect_repeat(f);
+    }
+
+    pub fn connect_volume_changed<F>(&self, f: F)
+    where
+        F: Fn(f64) + Clone + 'static,
+    {
+        let widget = imp::PlaybackWidget::from_instance(self);
+        widget.controls.connect_volume_changed(f.clone());
+        widget.controls_mobile.connect_volume_changed(f);
     }
 }

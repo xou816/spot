@@ -26,6 +26,9 @@ mod imp {
 
         #[template_child]
         pub repeat: TemplateChild<gtk::Button>,
+
+        #[template_child]
+        pub volume_slider: TemplateChild<gtk::Scale>,
     }
 
     #[glib::object_subclass]
@@ -86,6 +89,12 @@ impl PlaybackControlsWidget {
         self.imp().repeat.set_icon_name(repeat_mode_icon);
     }
 
+    pub fn set_volume(&self, volume: f64) {
+        imp::PlaybackControlsWidget::from_instance(self)
+            .volume_slider
+            .set_value(volume)
+    }
+
     pub fn connect_play_pause<F>(&self, f: F)
     where
         F: Fn() + 'static,
@@ -119,5 +128,17 @@ impl PlaybackControlsWidget {
         F: Fn() + 'static,
     {
         self.imp().repeat.connect_clicked(move |_| f());
+    }
+
+    pub fn connect_volume_changed<F>(&self, f: F)
+    where
+        F: Fn(f64) + 'static,
+    {
+        imp::PlaybackControlsWidget::from_instance(self)
+            .volume_slider
+            .connect_change_value(move |_, _, value| {
+                f(value);
+                gtk::Inhibit(false)
+            });
     }
 }
