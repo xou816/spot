@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <requires lib="gtk" version="4.0"/>
+    <requires lib="libadwaita" version="1.0"/>
+    <template class="PlaybackInfoWidget" parent="GtkButton">
+        <property name="receives-default">1</property>
+        <property name="halign">start</property>
+        <property name="valign">center</property>
+        <property name="has-frame">0</property>
+        <layout>
+            <property name="column-span">1</property>
+            <property name="column">0</property>
+            <property name="row">0</property>
+        </layout>
+        <child>
+            <object class="GtkBox">
+                <property name="halign">center</property>
+                <child>
+                    <object class="GtkImage" id="playing_image">
+                        <property name="width-request">64</property>
+                        <property name="height-request">64</property>
+                        <property name="icon-name">emblem-music-symbolic</property>
+                    </object>
+                </child>
+                <child>
+                    <object class="GtkLabel" id="current_song_info">
+                        <property name="visible">0</property>
+                        <property name="halign">start</property>
+                        <property name="hexpand">1</property>
+                        <property name="margin-start">12</property>
+                        <property name="margin-end">12</property>
+                        <property name="label" translatable="yes" comments="Short text displayed instead of a song title when nothing plays">No song playing</property>
+                        <property name="use-markup">1</property>
+                        <property name="ellipsize">middle</property>
+                        <property name="lines">1</property>
+                    </object>
+                </child>
+            </object>
+        </child>
+        <style>
+		    <class name="body"/>
+		</style>
+    </template>
+</interface>
