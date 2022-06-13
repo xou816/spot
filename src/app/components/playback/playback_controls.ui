@@ -72,7 +72,7 @@
 <child>
           <object class="GtkScale" id="volume_slider">
             <property name="halign">fill</property>
-            <property name="tooltip-text" translatable="yes">Repeat</property>
+            <property name="tooltip-text" translatable="yes">Song volume</property>
             <property name="adjustment">
               <object class="GtkAdjustment">
                 <property name="lower">0.0</property>
