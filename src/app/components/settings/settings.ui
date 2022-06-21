@@ -49,6 +49,20 @@
                 </property>
               </object>
             </child>
+            <child>
+              <object id="gapless_playback" class="AdwActionRow">
+                <property name="title" translatable="yes" comments="Title for an item in preferences">Gapless playback</property>
+                <property name="name">gapless_playback_row</property>
+                <property name="activatable_widget">gapless_playback_switch</property>
+                <property name="visible">True</property>
+                <child>
+                  <object id="gapless_playback_switch" class="GtkSwitch">
+                    <property name="margin-top">12</property>
+                    <property name="margin-bottom">12</property>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
         <child>

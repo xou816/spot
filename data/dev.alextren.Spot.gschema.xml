@@ -34,6 +34,10 @@
       <default>'pulseaudio'</default>
       <summary>Audio backend</summary>
     </key>
+    <key name="gapless-playback" type="b">
+      <default>true</default>
+      <summary>A flag to enable gap-less playback</summary>
+    </key>
     <key name='alsa-device' type='s'>
       <default>'default'</default>
       <summary>Alsa device (if audio backend is 'alsa')</summary>

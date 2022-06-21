@@ -62,6 +62,7 @@ pub enum AudioBackend {
 pub struct SpotifyPlayerSettings {
     pub bitrate: Bitrate,
     pub backend: AudioBackend,
+    pub gapless: bool,
     pub ap_port: Option<u16>,
 }
 
@@ -69,6 +70,7 @@ impl Default for SpotifyPlayerSettings {
     fn default() -> Self {
         Self {
             bitrate: Bitrate::Bitrate160,
+            gapless: true,
             backend: AudioBackend::PulseAudio,
             ap_port: None,
         }
@@ -202,6 +204,7 @@ impl SpotifyPlayer {
         let backend = settings.backend.clone();
 
         let player_config = PlayerConfig {
+            gapless: settings.gapless,
             bitrate: settings.bitrate,
             ..Default::default()
         };
