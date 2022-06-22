@@ -65,6 +65,11 @@ impl PlaybackState {
         self.index(self.position?)
     }
 
+    fn next_id(&self) -> Option<String> {
+        self.next_index()
+            .and_then(|i| Some(self.songs().index(i)?.description().id.clone()))
+    }
+
     fn clear(&mut self, source: Option<SongsSource>) -> SongListModelPending {
         self.source = source;
         self.index = Default::default();
@@ -235,6 +240,7 @@ pub enum PlaybackAction {
     SetVolume(f64),
     Next,
     Previous,
+    Preload,
     Queue(Vec<SongDescription>),
     Dequeue(String),
 }
@@ -254,6 +260,7 @@ pub enum PlaybackEvent {
     SeekSynced(u32),
     VolumeSet(f64),
     TrackChanged(String),
+    Preload(String),
     ShuffleChanged,
     PlaylistChanged,
     PlaybackStopped,
@@ -358,6 +365,13 @@ impl UpdatableState for PlaybackState {
                     vec![]
                 }
             }
+            PlaybackAction::Preload => {
+                if let Some(id) = self.next_id() {
+                    vec![PlaybackEvent::Preload(id)]
+                } else {
+                    vec![]
+                }
+            }
             PlaybackAction::LoadPagedSongs(source, batch)
                 if Some(&source) == self.source.as_ref() =>
             {
@@ -422,11 +436,6 @@ mod tests {
 
         fn prev_id(&self) -> Option<String> {
             self.prev_index()
-                .and_then(|i| Some(self.songs().index(i)?.description().id.clone()))
-        }
-
-        fn next_id(&self) -> Option<String> {
-            self.next_index()
                 .and_then(|i| Some(self.songs().index(i)?.description().id.clone()))
         }
 

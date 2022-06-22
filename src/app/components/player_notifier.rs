@@ -35,6 +35,9 @@ impl EventListener for PlayerNotifier {
             AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(id)) => {
                 SpotifyId::from_base62(id).ok().map(Command::PlayerLoad)
             }
+            AppEvent::PlaybackEvent(PlaybackEvent::Preload(id)) => {
+                SpotifyId::from_base62(id).ok().map(Command::PlayerPreload)
+            }
             AppEvent::PlaybackEvent(PlaybackEvent::TrackSeeked(position)) => {
                 Some(Command::PlayerSeek(*position))
             }

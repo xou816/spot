@@ -50,6 +50,7 @@ pub trait SpotifyPlayerDelegate {
     fn refresh_successful(&self, token: String, token_expiry_time: SystemTime);
     fn report_error(&self, error: SpotifyError);
     fn notify_playback_state(&self, position: u32);
+    fn preload_next_track(&self);
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -129,6 +130,11 @@ impl SpotifyPlayer {
             Command::PlayerLoad(track) => {
                 let player = player.as_mut().ok_or(SpotifyError::PlayerNotReady)?;
                 player.load(track, true, 0);
+                Ok(())
+            }
+            Command::PlayerPreload(track) => {
+                let player = player.as_mut().ok_or(SpotifyError::PlayerNotReady)?;
+                player.preload(track);
                 Ok(())
             }
             Command::RefreshToken => {
@@ -330,6 +336,9 @@ async fn player_setup_delegate(
             }
             PlayerEvent::Playing { position_ms, .. } => {
                 delegate.notify_playback_state(position_ms);
+            }
+            PlayerEvent::TimeToPreloadNextTrack { .. } => {
+                delegate.preload_next_track();
             }
             _ => {}
         }
