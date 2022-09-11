@@ -1,0 +1,357 @@
+# Spot's estonian language translation.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the spot package.
+# Henri <contact@hen.ee>, 2022.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: spot\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-03-28 00:21+0200\n"
+"PO-Revision-Date: 2022-09-11 16:05+0300\n"
+"Last-Translator: Henri <contact@hen.ee>\n"
+"Language-Team: \n"
+"Language: et\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.1.1\n"
+
+#. translators: This notification is the default message for unhandled errors. Logs refer to console output.
+#: src/app/batch_loader.rs:91 src/app/components/mod.rs:122
+msgid "An error occured. Check logs for details!"
+msgstr "Tekkis viga. Vaata detaile logis."
+
+#. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
+#: src/app/components/labels.rs:5
+msgid "View album"
+msgstr "Vaata albumit"
+
+#. translators: This is part of a contextual menu attached to a single track; the intent is to copy the link (public URL) to a specific track.
+#: src/app/components/labels.rs:8
+msgid "Copy link"
+msgstr "Kopeeri link"
+
+#. translators: This is part of a contextual menu attached to a single track; this entry adds a track at the end of the play queue.
+#: src/app/components/labels.rs:11
+#: src/app/components/selection/selection_toolbar.ui:39
+msgid "Add to queue"
+msgstr "Lisa järjekorda"
+
+#. translators: This is part of a contextual menu attached to a single track; this entry removes a track from the play queue.
+#: src/app/components/labels.rs:14
+msgid "Remove from queue"
+msgstr "Eemalda järjekorrast"
+
+#. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
+#: src/app/components/labels.rs:21
+msgid "Add to {}"
+msgstr "Lisa {}"
+
+#. translators: This shows up when in selection mode. This text should be as short as possible.
+#: src/app/components/labels.rs:30
+msgid "{} song selected"
+msgid_plural "{} songs selected"
+msgstr[0] "{} lugu valitud"
+msgstr[1] "{} lugu valitud"
+
+#. translators: This is part of a contextual menu attached to a single track; the full text is "More from <artist>".
+#: src/app/components/labels.rs:39
+msgid "More from {}"
+msgstr "Rohkem esitajast {}"
+
+#. translators: This is part of a larger label that reads "<Album> by <Artist>"
+#: src/app/components/labels.rs:48
+msgid "{} by {}"
+msgstr "{} - {}"
+
+#. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
+#: src/app/components/login/login_model.rs:56
+msgid "Could not save password. Make sure the session keyring is unlocked."
+msgstr ""
+"Salasõna salvestamine ebaõnnestus. Kindel, et sessiooni võtmering on avatud?"
+
+#. translators: This is a sidebar entry to browse to saved albums.
+#: src/app/components/navigation/factory.rs:32
+#: src/app/components/navigation/home.rs:68
+msgid "Library"
+msgstr "Teek"
+
+#. translators: This is a sidebar entry that marks that the entries below are playlists.
+#: src/app/components/navigation/factory.rs:51
+#: src/app/components/navigation/home.rs:94
+msgid "Playlists"
+msgstr "Esitusloendid"
+
+#. translators: This is a sidebar entry to browse to saved tracks.
+#: src/app/components/navigation/factory.rs:82
+#: src/app/components/navigation/home.rs:78
+msgid "Saved tracks"
+msgstr "Salvestatud lood"
+
+#: src/app/components/navigation/home.rs:32
+msgid "Unnamed playlist"
+msgstr "Nimetamata esitusloend"
+
+#: src/app/components/navigation/home.rs:87
+#: src/app/components/now_playing/now_playing_model.rs:134
+msgid "Now playing"
+msgstr "Praegu mängib"
+
+#. translators: This is a sidebar entry to browse to saved playlists.
+#: src/app/components/navigation/home.rs:104
+msgid "All Playlists"
+msgstr "Kõik esitusloendid"
+
+#: src/app/components/playback/playback_controls.rs:64
+msgid "Pause"
+msgstr "Peata"
+
+#: src/app/components/playback/playback_controls.rs:66
+msgid "Play"
+msgstr "Esita"
+
+#. translators: Short text displayed instead of a song title when nothing plays
+#. Short text displayed instead of a song title when nothing plays
+#: src/app/components/playback/playback_info.rs:58
+#: src/app/components/playback/playback_info.ui:32
+msgid "No song playing"
+msgstr "Ükski laul ei mängi"
+
+#: src/app/components/selection/component.rs:66
+msgid "Tracks saved!"
+msgstr "Lugu salvestatud!"
+
+#. translators: This is a menu entry.
+#: src/app/components/user_menu/user_menu.rs:65
+msgid "Preferences"
+msgstr "Eelistused"
+
+#. translators: This is a menu entry.
+#: src/app/components/user_menu/user_menu.rs:67
+msgid "About"
+msgstr "Teave"
+
+#. translators: This is a menu entry.
+#: src/app/components/user_menu/user_menu.rs:69
+msgid "Quit"
+msgstr "Sulge"
+
+#. translators: This is a menu entry.
+#: src/app/components/user_menu/user_menu.rs:74
+msgid "Log out"
+msgstr "Logi välja"
+
+#: src/app/state/login_state.rs:110
+msgid "Connection restored"
+msgstr "Ühendus taastatud"
+
+#: src/main.rs:81
+msgid "Failed to open link!"
+msgstr "Lingi avamine ebaõnnestus!"
+
+#. A title that is shown when the user has not saved any playlists.
+#: src/app/components/saved_playlists/saved_playlists.ui:26
+msgid "You have no saved playlists."
+msgstr "Sul pole ühtegi salvestatud esitusloendit."
+
+#. A description of what happens when the user has saved playlists.
+#: src/app/components/saved_playlists/saved_playlists.ui:27
+msgid "Your playlists will be shown here."
+msgstr "Sinu esitusloendid näidatakse siin."
+
+#. Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify.
+#: src/app/components/artist_details/artist_details.ui:26
+msgid "Top tracks"
+msgstr "Populaarsemad lood"
+
+#. Title of the sections that contains all releases from an artist (both singles and albums).
+#: src/app/components/artist_details/artist_details.ui:53
+msgid "Releases"
+msgstr "Diskograafia"
+
+#. This is the title of a section of the search results
+#: src/app/components/search/search.ui:72
+msgid "Albums"
+msgstr "Albumid"
+
+#. This is the title of a section of the search results
+#: src/app/components/search/search.ui:105
+msgid "Artists"
+msgstr "Esitajad"
+
+#. Title for the empty search page (initial state).
+#: src/app/components/search/search.ui:116
+msgid "Search Spotify."
+msgstr "Otsi Spotify'st."
+
+#. Subtitle for the empty search page (initial state).
+#: src/app/components/search/search.ui:117
+msgid "Type to search."
+msgstr "Tipi, et otsida."
+
+#. Header for a group of preference items regarding audio
+#: src/app/components/settings/settings.ui:13
+msgid "Audio"
+msgstr "Heli"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:16
+msgid "Audio Backend"
+msgstr "Heli sisend"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:29
+msgid "ALSA Device"
+msgstr "ALSA heliseade"
+
+#. Description for the item (ALSA Device) in preferences
+#: src/app/components/settings/settings.ui:30
+msgid "Applied only if audio backend is ALSA"
+msgstr "Kehtib ainult, kui heli sisend on ALSA"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:40
+msgid "Audio Quality"
+msgstr "Heli kvaliteet"
+
+#: src/app/components/settings/settings.ui:44
+msgid "Normal"
+msgstr "Keskmine"
+
+#: src/app/components/settings/settings.ui:45
+msgid "High"
+msgstr "Kõrge"
+
+#: src/app/components/settings/settings.ui:46
+msgid "Very high"
+msgstr "Väga kõrge"
+
+#. Header for a group of preference items regarding the application's appearance
+#: src/app/components/settings/settings.ui:56
+msgid "Appearance"
+msgstr "Välimus"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:59
+msgid "Theme"
+msgstr "Teema"
+
+#: src/app/components/settings/settings.ui:63
+msgid "Light"
+msgstr "Hele teema"
+
+#: src/app/components/settings/settings.ui:64
+msgid "Dark"
+msgstr "Tume teema"
+
+#. Header for a group of preference items regarding network
+#: src/app/components/settings/settings.ui:74
+msgid "Network"
+msgstr "Võrk"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:77
+msgid "Access Point Port"
+msgstr "Sissepääsu port"
+
+#. Longer description for an item (Access Point Port) in preferences
+#: src/app/components/settings/settings.ui:78
+msgid ""
+"Port used for connections to Spotify's Access Point. Set to 0 if any port is "
+"fine."
+msgstr "Port Spotify ühendamiseks. Säti 0, et lubada iga port."
+
+#. <property name="icon-name">playlist2-symbolic</property>
+#: src/app/components/selection/selection_toolbar.ui:56
+msgid "Add to playlist..."
+msgstr "Lisa esitusloendisse..."
+
+#: src/app/components/selection/selection_toolbar.ui:69
+msgid "Remove"
+msgstr "Eemalda"
+
+#: src/app/components/selection/selection_toolbar.ui:90
+msgid "Save to library"
+msgstr "Salvesta teeki"
+
+#. This refers to a music label
+#: src/app/components/details/release_details.ui:38
+msgid "Label"
+msgstr "Väljaandja"
+
+#. This refers to a release date
+#: src/app/components/details/release_details.ui:48
+msgid "Released"
+msgstr "Välja antud"
+
+#. This refers to a number of tracks
+#: src/app/components/details/release_details.ui:58
+msgid "Tracks"
+msgstr "Lood"
+
+#: src/app/components/details/release_details.ui:68
+msgid "Copyright"
+msgstr "Autoriõigused"
+
+#. Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).
+#: src/app/components/login/login.ui:45
+msgid "Login to Spotify Premium"
+msgstr "Logi sisse Spotify Premiumisse"
+
+#. Placeholder for the username field
+#: src/app/components/login/login.ui:72
+msgid "Username"
+msgstr "Kasutajanimi"
+
+#. Placeholder for the password field
+#: src/app/components/login/login.ui:89
+msgid "Password"
+msgstr "Salasõna"
+
+#. This error is shown when authentication fails.
+#: src/app/components/login/login.ui:114
+msgid "Authentication failed!"
+msgstr "Autentimine ebaõnnestus!"
+
+#. Log in button label
+#: src/app/components/login/login.ui:129
+msgid "Log in"
+msgstr "Logi sisse"
+
+#. Button label. Exits selection mode.
+#: src/app/components/headerbar/headerbar.ui:47
+msgid "Cancel"
+msgstr "Loobu"
+
+#. Button label. Selects all visible songs.
+#: src/app/components/headerbar/headerbar.ui:58
+msgid "Select all"
+msgstr "Vali kõik"
+
+#: src/app/components/playback/playback_controls.ui:17
+msgid "Shuffle"
+msgstr "Juhuesitus"
+
+#: src/app/components/playback/playback_controls.ui:27
+msgid "Previous"
+msgstr "Eelmine"
+
+#: src/app/components/playback/playback_controls.ui:50
+msgid "Next"
+msgstr "Järgmine"
+
+#: src/app/components/playback/playback_controls.ui:60
+msgid "Repeat"
+msgstr "Korda"
+
+#. A title that is shown when the user has not saved any albums.
+#: src/app/components/library/library.ui:26
+msgid "You have no saved albums."
+msgstr "Sul pole ühtegi salvestatud albumit."
+
+#. A description of what happens when the user has saved albums.
+#: src/app/components/library/library.ui:27
+msgid "Your library will be shown here."
+msgstr "Sinu teeki näidatakse siin."
