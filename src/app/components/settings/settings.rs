@@ -168,15 +168,34 @@ impl SettingsWindow {
             .set_mapping(|value, _| value.get::<u32>().ok().map(|u| u.to_variant()))
             .build();
 
-        let theme = widget.theme.downcast_ref::<libadwaita::ComboRow>().unwrap();
+        let theme = widget
+            .theme
+            .downcast_ref::<libadwaita::ComboRow>()
+            .unwrap();
         settings
-            .bind("prefers-dark-theme", theme, "selected")
+            .bind("theme-preference", theme, "selected")
             .mapping(|variant, _| {
-                variant
-                    .get::<bool>()
-                    .map(|prefer_dark| if prefer_dark { 1 } else { 0 }.to_value())
+                variant.str().map(|s| {
+                    match s {
+                        "light" => 0,
+                        "dark" => 1,
+                        "system" => 2,
+                        _ => unreachable!(),
+                    }
+                    .to_value()
+                })
             })
-            .set_mapping(|value, _| value.get::<u32>().ok().map(|u| (u == 1).to_variant()))
+            .set_mapping(|value, _| {
+                value.get::<u32>().ok().map(|u| {
+                    match u {
+                        0 => "light",
+                        1 => "dark",
+                        2 => "system",
+                        _ => unreachable!(),
+                    }
+                    .to_variant()
+                })
+            })
             .build();
     }
 
@@ -184,14 +203,16 @@ impl SettingsWindow {
         let widget = self.imp();
         let theme = widget.theme.downcast_ref::<libadwaita::ComboRow>().unwrap();
         theme.connect_selected_notify(|theme| {
-            let prefers_dark_theme = theme.selected() == 1;
+            debug!("Theme switched! --> value: {}", theme.selected());
             let manager = libadwaita::StyleManager::default();
 
-            manager.set_color_scheme(if prefers_dark_theme {
-                libadwaita::ColorScheme::PreferDark
-            } else {
-                libadwaita::ColorScheme::PreferLight
-            });
+            let pref = match theme.selected() {
+                0 => libadwaita::ColorScheme::ForceLight,
+                1 => libadwaita::ColorScheme::ForceDark,
+                _ => libadwaita::ColorScheme::Default,
+            };
+
+            manager.set_color_scheme(pref);
         });
     }
 

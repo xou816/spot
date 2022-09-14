@@ -1,6 +1,7 @@
 use crate::player::{AudioBackend, SpotifyPlayerSettings};
 use gio::prelude::SettingsExt;
 use librespot::playback::config::Bitrate;
+use libadwaita::ColorScheme;
 
 const SETTINGS: &str = "dev.alextren.Spot";
 
@@ -73,7 +74,7 @@ impl SpotifyPlayerSettings {
 
 #[derive(Debug, Clone)]
 pub struct SpotSettings {
-    pub prefers_dark_theme: bool,
+    pub theme_preference: ColorScheme,
     pub player_settings: SpotifyPlayerSettings,
     pub window: WindowGeometry,
 }
@@ -81,9 +82,14 @@ pub struct SpotSettings {
 impl SpotSettings {
     pub fn new_from_gsettings() -> Option<Self> {
         let settings = gio::Settings::new(SETTINGS);
-        let prefers_dark_theme = settings.boolean("prefers-dark-theme");
+        let theme_preference = match settings.enum_("theme-preference") {
+            0 => Some(ColorScheme::ForceLight),
+            1 => Some(ColorScheme::ForceDark),
+            2 => Some(ColorScheme::Default),
+            _ => None,
+        }?;
         Some(Self {
-            prefers_dark_theme,
+            theme_preference,
             player_settings: SpotifyPlayerSettings::new_from_gsettings()?,
             window: WindowGeometry::new_from_gsettings(),
         })
@@ -93,7 +99,7 @@ impl SpotSettings {
 impl Default for SpotSettings {
     fn default() -> Self {
         Self {
-            prefers_dark_theme: true,
+            theme_preference: ColorScheme::PreferDark,
             player_settings: Default::default(),
             window: Default::default(),
         }

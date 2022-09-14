@@ -62,6 +62,7 @@
                     <items>
                       <item translatable="yes">Light</item>
                       <item translatable="yes">Dark</item>
+                      <item translatable="yes">System</item>
                     </items>
                   </object>
                 </property>
