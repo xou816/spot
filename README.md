@@ -22,7 +22,7 @@ Bear special attention to the fact that to enable automatic login, you might hav
 
 See [this comment](https://github.com/xou816/spot/issues/92#issuecomment-801852593) for more details!
 
-### Login in with Facebook
+### Logging in with Facebook
 
 ...is not supported. However, you can update your account in order to be able to log in with a username and password [as explained in this issue](https://github.com/xou816/spot/issues/373).
 
