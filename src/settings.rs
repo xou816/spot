@@ -1,7 +1,7 @@
 use crate::player::{AudioBackend, SpotifyPlayerSettings};
 use gio::prelude::SettingsExt;
-use librespot::playback::config::Bitrate;
 use libadwaita::ColorScheme;
+use librespot::playback::config::Bitrate;
 
 const SETTINGS: &str = "dev.alextren.Spot";
 

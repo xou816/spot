@@ -168,10 +168,7 @@ impl SettingsWindow {
             .set_mapping(|value, _| value.get::<u32>().ok().map(|u| u.to_variant()))
             .build();
 
-        let theme = widget
-            .theme
-            .downcast_ref::<libadwaita::ComboRow>()
-            .unwrap();
+        let theme = widget.theme.downcast_ref::<libadwaita::ComboRow>().unwrap();
         settings
             .bind("theme-preference", theme, "selected")
             .mapping(|variant, _| {
