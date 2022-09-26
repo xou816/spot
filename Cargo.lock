@@ -1574,10 +1574,12 @@ dependencies = [
 
 [[package]]
 name = "libadwaita"
-version = "0.1.0"
+version = "0.2.0-alpha.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d4b1d54d907dfa5d6663fdf4bdbe46c34747258b85c787adbf66187ccbaac81"
+checksum = "73815fa30ca62d1db2713fe87cfd1cea41cad076ccdece6bb8328032db152f47"
 dependencies = [
+ "bitflags",
+ "futures-channel",
  "gdk-pixbuf",
  "gdk4",
  "gio",
@@ -1591,9 +1593,9 @@ dependencies = [
 
 [[package]]
 name = "libadwaita-sys"
-version = "0.1.0"
+version = "0.2.0-alpha.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f18b6ac4cadd252a89f5cba0a5a4e99836131795d6fad37b859ac79e8cb7d2c8"
+checksum = "b91960ec236b6fecdace0491ae1e4aac938d1c6adffd5939f811f3ed6592a59e"
 dependencies = [
  "gdk4-sys",
  "gio-sys",
@@ -1601,6 +1603,7 @@ dependencies = [
  "gobject-sys",
  "gtk4-sys",
  "libc",
+ "pango-sys",
  "system-deps",
 ]
 
