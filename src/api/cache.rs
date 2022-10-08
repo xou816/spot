@@ -40,7 +40,7 @@ pub enum CachePolicy {
     Default,      // query remote cache when stale
     IgnoreExpiry, // always use cached value
     Revalidate,   // always query remote cache
-    IgnoreCached, // ignore cache alltogether
+    IgnoreCached, // ignore cache all together
 }
 
 #[derive(PartialEq, Clone, Debug)]
