@@ -116,7 +116,6 @@
         <property name="icon-name">edit-copy</property>
         <style>
           <class name="circular" />
-          <class name="like__button" />
         </style>
       </object>
     </child>
