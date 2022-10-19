@@ -150,7 +150,7 @@ impl PlaylistDetailsWidget {
     where
         F: Fn() + Clone + 'static,
     {
-        self.widget().header_widget.connect_copy(f.clone());
+        self.widget().header_widget.connect_copy(f);
     }
 
 }

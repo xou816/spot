@@ -169,7 +169,7 @@ impl AlbumDetailsWidget {
     where
         F: Fn() + Clone + 'static,
     {
-        self.widget().header_widget.connect_copy(f.clone());
+        self.widget().header_widget.connect_copy(f);
     }
 
     fn set_liked(&self, is_liked: bool) {
