@@ -165,6 +165,13 @@ impl AlbumDetailsWidget {
         self.widget().header_mobile.connect_info(f);
     }
 
+    fn connect_copy<F>(&self, f: F)
+    where
+        F: Fn() + Clone + 'static,
+    {
+        self.widget().header_widget.connect_copy(f.clone());
+    }
+
     fn set_liked(&self, is_liked: bool) {
         self.widget().header_widget.set_liked(is_liked);
         self.widget().header_mobile.set_liked(is_liked);
@@ -230,6 +237,8 @@ impl Details {
         let modal = ReleaseDetailsWindow::new();
 
         widget.connect_liked(clone!(@weak model => move || model.toggle_save_album()));
+
+        widget.connect_copy(clone!(@weak model => move || model.toggle_copy_link()));
 
         widget.connect_header_visibility();
 

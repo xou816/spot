@@ -20,6 +20,9 @@ mod imp {
         pub like_button: TemplateChild<gtk::Button>,
 
         #[template_child]
+        pub copy_button: TemplateChild<gtk::Button>,
+
+        #[template_child]
         pub info_button: TemplateChild<gtk::Button>,
 
         #[template_child]
@@ -74,6 +77,13 @@ impl AlbumHeaderWidget {
         F: Fn() + 'static,
     {
         self.widget().like_button.connect_clicked(move |_| f());
+    }
+
+    pub fn connect_copy<F>(&self, f: F)
+    where
+        F: Fn() + 'static,
+    {
+        self.widget().copy_button.connect_clicked(move |_| f());
     }
 
     pub fn connect_info<F>(&self, f: F)
