@@ -152,7 +152,6 @@ impl PlaylistDetailsWidget {
     {
         self.widget().header_widget.connect_copy(f);
     }
-
 }
 
 pub struct PlaylistDetails {
