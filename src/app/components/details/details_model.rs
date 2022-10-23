@@ -195,6 +195,7 @@ impl PlaylistModel for DetailsModel {
         }
         group.add_action(&song.make_link_action(None));
         group.add_action(&song.make_queue_action(self.dispatcher.box_clone(), None));
+        group.add_action(&song.make_like_action(self.dispatcher.box_clone(),self.app_model.clone(), None));
 
         Some(group.upcast())
     }

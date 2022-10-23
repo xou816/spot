@@ -1,9 +1,11 @@
 use gdk::prelude::*;
+use gettextrs::gettext;
 use gio::SimpleAction;
+use std::rc::Rc;
 
 use crate::app::models::SongDescription;
 use crate::app::state::{AppAction, PlaybackAction};
-use crate::app::ActionDispatcher;
+use crate::app::{ActionDispatcher, AppModel};
 
 impl SongDescription {
     pub fn make_queue_action(
@@ -78,5 +80,22 @@ impl SongDescription {
                 view_artist
             })
             .collect()
+    }
+
+    pub fn make_like_action(&self, dispatcher: Box<dyn ActionDispatcher>, app_model: Rc<AppModel>, name: Option<&str>)-> SimpleAction {
+        let track_id = self.id.clone();
+        let like_track = SimpleAction::new(name.unwrap_or("like"), None);
+        like_track.connect_activate(move |_, _| {
+            let track_id  = track_id.clone();
+            let api = app_model.get_spotify();
+            dispatcher
+            .call_spotify_and_dispatch_many(move || async move {
+                api.save_tracks(vec![track_id]).await?;
+                Ok(vec![
+                    AppAction::ShowNotification(gettext("Tracks saved!")),
+                ])
+            });
+        });
+        like_track
     }
 }
