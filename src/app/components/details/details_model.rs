@@ -213,6 +213,7 @@ impl PlaylistModel for DetailsModel {
 
         menu.append(Some(&*labels::COPY_LINK), Some("song.copy_link"));
         menu.append(Some(&*labels::ADD_TO_QUEUE), Some("song.queue"));
+        menu.append(Some(&*labels::ADD_TO_LIBRARY), Some("song.like"));
         Some(menu.upcast())
     }
 }

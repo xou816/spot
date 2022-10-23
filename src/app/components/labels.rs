@@ -12,6 +12,9 @@ lazy_static! {
 
     // translators: This is part of a contextual menu attached to a single track; this entry removes a track from the play queue.
     pub static ref REMOVE_FROM_QUEUE: String = gettext("Remove from queue");
+
+    // translators: This is part of a contextual menu attached to a single track; this entry adds a track to the library.
+    pub static ref ADD_TO_LIBRARY: String = gettext("Add to library");
 }
 
 pub fn add_to_playlist_label(playlist: &str) -> String {
