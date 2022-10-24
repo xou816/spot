@@ -82,35 +82,39 @@ impl SongDescription {
             .collect()
     }
 
-    pub fn make_like_action(&self, dispatcher: Box<dyn ActionDispatcher>, app_model: Rc<AppModel>, name: Option<&str>)-> SimpleAction {
+    pub fn make_like_action(
+        &self,
+        dispatcher: Box<dyn ActionDispatcher>,
+        app_model: Rc<AppModel>,
+        name: Option<&str>,
+    ) -> SimpleAction {
         let track_id = self.id.clone();
         let like_track = SimpleAction::new(name.unwrap_or("like"), None);
         like_track.connect_activate(move |_, _| {
-            let track_id  = track_id.clone();
+            let track_id = track_id.clone();
             let api = app_model.get_spotify();
-            dispatcher
-            .call_spotify_and_dispatch_many(move || async move {
+            dispatcher.call_spotify_and_dispatch_many(move || async move {
                 api.save_tracks(vec![track_id]).await?;
-                Ok(vec![
-                    AppAction::ShowNotification(gettext("Track saved!")),
-                ])
+                Ok(vec![AppAction::ShowNotification(gettext("Track saved!"))])
             });
         });
         like_track
     }
 
-    pub fn make_unlike_action(&self, dispatcher: Box<dyn ActionDispatcher>, app_model: Rc<AppModel>, name: Option<&str>)-> SimpleAction {
+    pub fn make_unlike_action(
+        &self,
+        dispatcher: Box<dyn ActionDispatcher>,
+        app_model: Rc<AppModel>,
+        name: Option<&str>,
+    ) -> SimpleAction {
         let track_id = self.id.clone();
         let unlike_track = SimpleAction::new(name.unwrap_or("unlike"), None);
         unlike_track.connect_activate(move |_, _| {
-            let track_id  = track_id.clone();
+            let track_id = track_id.clone();
             let api = app_model.get_spotify();
-            dispatcher
-            .call_spotify_and_dispatch_many(move || async move {
+            dispatcher.call_spotify_and_dispatch_many(move || async move {
                 api.remove_saved_tracks(vec![track_id]).await?;
-                Ok(vec![
-                    AppAction::ShowNotification(gettext("Track unsaved!")),
-                ])
+                Ok(vec![AppAction::ShowNotification(gettext("Track unsaved!"))])
             });
         });
         unlike_track

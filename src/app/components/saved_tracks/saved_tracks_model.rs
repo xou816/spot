@@ -97,6 +97,11 @@ impl PlaylistModel for SavedTracksModel {
         }
         group.add_action(&song.make_album_action(self.dispatcher.box_clone(), None));
         group.add_action(&song.make_link_action(None));
+        group.add_action(&song.make_unlike_action(
+            self.dispatcher.box_clone(),
+            self.app_model.clone(),
+            None,
+        ));
 
         Some(group.upcast())
     }
@@ -115,6 +120,7 @@ impl PlaylistModel for SavedTracksModel {
         }
 
         menu.append(Some(&*labels::COPY_LINK), Some("song.copy_link"));
+        menu.append(Some(&*labels::REMOVE_FROM_LIBRARY), Some("song.unlike"));
 
         Some(menu.upcast())
     }
