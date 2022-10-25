@@ -4,7 +4,7 @@ use gio::SimpleAction;
 use std::rc::Rc;
 
 use crate::app::models::SongDescription;
-use crate::app::state::{AppAction, PlaybackAction};
+use crate::app::state::{AppAction, PlaybackAction, SelectionAction};
 use crate::app::{ActionDispatcher, AppModel};
 
 impl SongDescription {
@@ -88,14 +88,17 @@ impl SongDescription {
         app_model: Rc<AppModel>,
         name: Option<&str>,
     ) -> SimpleAction {
-        let track_id = self.id.clone();
+        let track_id1 = self.id.clone();
+        let song = self.clone();
         let like_track = SimpleAction::new(name.unwrap_or("like"), None);
         like_track.connect_activate(move |_, _| {
-            let track_id = track_id.clone();
+            let track_id2 = track_id1.clone();
+            let song = song.clone();
             let api = app_model.get_spotify();
+            dispatcher.dispatch(SelectionAction::Select(vec![song]).into());
             dispatcher.call_spotify_and_dispatch_many(move || async move {
-                api.save_tracks(vec![track_id]).await?;
-                Ok(vec![AppAction::ShowNotification(gettext("Track saved!"))])
+                api.save_tracks(vec![track_id2]).await?;
+                Ok(vec![AppAction::SaveSelection, AppAction::ShowNotification(gettext("Track saved!"))])
             });
         });
         like_track
@@ -107,14 +110,17 @@ impl SongDescription {
         app_model: Rc<AppModel>,
         name: Option<&str>,
     ) -> SimpleAction {
-        let track_id = self.id.clone();
+        let track_id1 = self.id.clone();
+        let song = self.clone();
         let unlike_track = SimpleAction::new(name.unwrap_or("unlike"), None);
         unlike_track.connect_activate(move |_, _| {
-            let track_id = track_id.clone();
+            let track_id2 = track_id1.clone();
+            let song = song.clone();
             let api = app_model.get_spotify();
+            dispatcher.dispatch(SelectionAction::Select(vec![song]).into());
             dispatcher.call_spotify_and_dispatch_many(move || async move {
-                api.remove_saved_tracks(vec![track_id]).await?;
-                Ok(vec![AppAction::ShowNotification(gettext("Track unsaved!"))])
+                api.remove_saved_tracks(vec![track_id2]).await?;
+                Ok(vec![AppAction::UnsaveSelection, AppAction::ShowNotification(gettext("Track unsaved!"))])
             });
         });
         unlike_track
