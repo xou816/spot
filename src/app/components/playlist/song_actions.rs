@@ -98,7 +98,10 @@ impl SongDescription {
             dispatcher.dispatch(SelectionAction::Select(vec![song]).into());
             dispatcher.call_spotify_and_dispatch_many(move || async move {
                 api.save_tracks(vec![track_id2]).await?;
-                Ok(vec![AppAction::SaveSelection, AppAction::ShowNotification(gettext("Track saved!"))])
+                Ok(vec![
+                    AppAction::SaveSelection,
+                    AppAction::ShowNotification(gettext("Track saved!")),
+                ])
             });
         });
         like_track
@@ -120,7 +123,10 @@ impl SongDescription {
             dispatcher.dispatch(SelectionAction::Select(vec![song]).into());
             dispatcher.call_spotify_and_dispatch_many(move || async move {
                 api.remove_saved_tracks(vec![track_id2]).await?;
-                Ok(vec![AppAction::UnsaveSelection, AppAction::ShowNotification(gettext("Track unsaved!"))])
+                Ok(vec![
+                    AppAction::UnsaveSelection,
+                    AppAction::ShowNotification(gettext("Track unsaved!")),
+                ])
             });
         });
         unlike_track
