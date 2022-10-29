@@ -96,6 +96,18 @@
       </object>
     </child>
     <child>
+      <object class="GtkButton" id="play_button">
+        <property name="receives-default">1</property>
+        <property name="halign">center</property>
+        <property name="valign">center</property>
+        <property name="tooltip-text">Play</property>
+        <property name="icon-name">media-playback-start-symbolic</property>
+        <style>
+          <class name="circular" />
+        </style>
+      </object>
+    </child>
+    <child>
       <object class="GtkButton" id="like_button">
         <property name="receives-default">1</property>
         <property name="halign">center</property>
