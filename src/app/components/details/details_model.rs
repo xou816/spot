@@ -99,6 +99,13 @@ impl DetailsModel {
         }
     }
 
+    pub fn toggle_play_album(&self) {
+        if let Some(album) = self.get_album_description() {
+            let id_of_first_song = album.songs.songs[0].id.as_str();
+            self.play_song_at(0,id_of_first_song);
+        }
+    }
+
     pub fn load_more(&self) -> Option<()> {
         let last_batch = self.song_list_model().last_batch()?;
         let query = BatchQuery {

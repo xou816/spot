@@ -1,3 +1,4 @@
+use gettextrs::gettext;
 use crate::app::components::display_add_css_provider;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -18,6 +19,9 @@ mod imp {
 
         #[template_child]
         pub like_button: TemplateChild<gtk::Button>,
+
+        #[template_child]
+        pub play_button: TemplateChild<gtk::Button>,
 
         #[template_child]
         pub info_button: TemplateChild<gtk::Button>,
@@ -72,6 +76,13 @@ impl AlbumHeaderWidget {
         self.imp().like_button.connect_clicked(move |_| f());
     }
 
+    pub fn connect_play<F>(&self, f: F)
+    where
+        F: Fn() + 'static,
+    {
+        self.widget().play_button.connect_clicked(move |_| f());
+    }
+
     pub fn connect_info<F>(&self, f: F)
     where
         F: Fn() + 'static,
@@ -95,6 +106,27 @@ impl AlbumHeaderWidget {
         } else {
             "non-starred-symbolic"
         });
+    }
+
+    pub fn set_playing(&self, is_playing: bool) {
+        // TODO: still need to check if this particular album is playing
+        let playback_icon = if is_playing {
+            "media-playback-pause-symbolic"
+        } else {
+            "media-playback-start-symbolic"
+        };
+
+        let translated_tooltip = if is_playing {
+            gettext("Pause")
+        } else {
+            gettext("Play")
+        };
+        let tooltip_text = Some(translated_tooltip.as_str());
+
+        let playback_control = imp::AlbumHeaderWidget::from_instance(self);
+
+        playback_control.play_button.set_icon_name(playback_icon);
+        playback_control.play_button.set_tooltip_text(tooltip_text);
     }
 
     pub fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {

@@ -151,6 +151,13 @@ impl AlbumDetailsWidget {
         self.imp().header_mobile.connect_liked(f);
     }
 
+    fn connect_play<F>(&self, f: F)
+    where
+        F: Fn() + Clone + 'static,
+    {
+        self.widget().header_widget.connect_play(f.clone());
+    }
+
     fn connect_info<F>(&self, f: F)
     where
         F: Fn() + Clone + 'static,
@@ -220,6 +227,8 @@ impl Details {
         let modal = ReleaseDetailsWindow::new();
 
         widget.connect_liked(clone!(@weak model => move || model.toggle_save_album()));
+
+        widget.connect_play(clone!(@weak model => move || model.toggle_play_album()));
 
         widget.connect_header_visibility();
 
