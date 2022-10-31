@@ -101,8 +101,31 @@ impl DetailsModel {
 
     pub fn toggle_play_album(&self) {
         if let Some(album) = self.get_album_description() {
-            let id_of_first_song = album.songs.songs[0].id.as_str();
-            self.play_song_at(0,id_of_first_song);
+            let mut vec_test = Vec::new();
+            let current_song_id = self.state().playback.current_song_id();
+            let playing = self.state().playback.is_playing();
+            let mut album_playing = false;
+            if !current_song_id.is_none() {
+                for song_d in album.songs.songs.iter() {
+                    vec_test.push(song_d.id.as_str());
+                    if (current_song_id.as_ref().map(String::as_str).unwrap() == song_d.id.as_str())
+                        && playing
+                    {
+                        album_playing = true;
+                    }
+                }
+            }
+            if album_playing {
+                self.dispatcher
+                    .dispatch(AppAction::PlaybackAction(PlaybackAction::Pause));
+            } else {
+                let id_of_first_song = album.songs.songs[0].id.as_str();
+                self.play_song_at(0, id_of_first_song);
+                if !self.state().playback.is_playing() {
+                    self.dispatcher
+                        .dispatch(AppAction::PlaybackAction(PlaybackAction::Play));
+                }
+            }
         }
     }
 
@@ -221,6 +244,38 @@ impl PlaylistModel for DetailsModel {
         menu.append(Some(&*labels::COPY_LINK), Some("song.copy_link"));
         menu.append(Some(&*labels::ADD_TO_QUEUE), Some("song.queue"));
         Some(menu.upcast())
+    }
+
+    fn autoscroll_to_playing(&self) -> bool {
+        true
+    }
+
+    fn is_selection_enabled(&self) -> bool {
+        self.selection()
+            .map(|s| s.is_selection_enabled())
+            .unwrap_or(false)
+    }
+
+    fn song_state(&self, id: &str) -> SongState {
+        let is_playing = self.current_song_id().map(|s| s.eq(id)).unwrap_or(false);
+        let is_selected = self
+            .selection()
+            .map(|s| s.is_song_selected(id))
+            .unwrap_or(false);
+        SongState {
+            is_selected,
+            is_playing,
+        }
+    }
+
+    fn toggle_select(&self, id: &str) {
+        if let Some(selection) = self.selection() {
+            if selection.is_song_selected(id) {
+                self.deselect_song(id);
+            } else {
+                self.select_song(id);
+            }
+        }
     }
 }
 

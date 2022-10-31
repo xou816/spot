@@ -12,6 +12,7 @@ use crate::app::components::{
 };
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
+use crate::app::state::PlaybackEvent;
 use crate::app::{AppEvent, BrowserEvent};
 
 mod imp {
@@ -171,6 +172,10 @@ impl AlbumDetailsWidget {
         self.imp().header_mobile.set_liked(is_liked);
     }
 
+    fn set_playing(&self, is_playing: bool) {
+        self.widget().header_widget.set_playing(is_playing);
+    }
+
     fn set_album_and_artist_and_year(&self, album: &str, artist: &str, year: Option<u32>) {
         self.imp()
             .header_widget
@@ -265,6 +270,10 @@ impl Details {
         }
     }
 
+    fn update_playing(&self, is_playing: bool) {
+        self.widget.set_playing(is_playing);
+    }
+
     fn update_details(&mut self) {
         if let Some(album) = self.model.get_album_info() {
             let details = &album.release_details;
@@ -333,6 +342,12 @@ impl EventListener for Details {
                 if id == &self.model.id =>
             {
                 self.update_liked();
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackPaused) => {
+                self.update_playing(false);
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackResumed) => {
+                self.update_playing(true);
             }
             _ => {}
         }
