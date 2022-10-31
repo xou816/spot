@@ -104,6 +104,7 @@
         <property name="icon-name">media-playback-start-symbolic</property>
         <style>
           <class name="circular" />
+          <class name="play__button" />
         </style>
       </object>
     </child>

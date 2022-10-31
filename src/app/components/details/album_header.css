@@ -18,6 +18,10 @@
   margin-right: 6px;
 }
 
+.album__header .play__button {
+  margin-right: 8px;
+}
+
 .album__header .vertical {
   margin-left: 18px;
 }
