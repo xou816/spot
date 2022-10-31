@@ -30,6 +30,9 @@ impl Credentials {
     pub fn retrieve() -> Result<Self, Error> {
         let service = SecretService::new(EncryptionType::Dh)?;
         let collection = service.get_default_collection()?;
+        if collection.is_locked()? {
+            collection.unlock()?;
+        }
         let items = collection.search_items(make_attributes())?;
         let item = items.get(0).ok_or(Error::NoResult)?.get_secret()?;
         serde_json::from_slice(&item).map_err(|_| Error::Parse)
@@ -38,6 +41,9 @@ impl Credentials {
     pub fn logout() -> Result<(), Error> {
         let service = SecretService::new(EncryptionType::Dh)?;
         let collection = service.get_default_collection()?;
+        if collection.is_locked()? {
+            collection.unlock()?;
+        }
         let result = collection.search_items(make_attributes())?;
         let item = result.get(0).ok_or(Error::NoResult)?;
         item.delete()
@@ -46,6 +52,9 @@ impl Credentials {
     pub fn save(&self) -> Result<(), Error> {
         let service = SecretService::new(EncryptionType::Dh)?;
         let collection = service.get_default_collection()?;
+        if collection.is_locked()? {
+            collection.unlock()?;
+        }
         let encoded = serde_json::to_vec(&self).unwrap();
         collection.create_item(
             "Spotify Credentials",
