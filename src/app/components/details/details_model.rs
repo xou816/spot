@@ -101,30 +101,35 @@ impl DetailsModel {
 
     pub fn toggle_play_album(&self) {
         if let Some(album) = self.get_album_description() {
-            let mut vec_test = Vec::new();
+            let mut all_song_ids_album = Vec::new();
             let current_song_id = self.state().playback.current_song_id();
             let playing = self.state().playback.is_playing();
             let mut album_playing = false;
-            if !current_song_id.is_none() {
-                for song_d in album.songs.songs.iter() {
-                    vec_test.push(song_d.id.as_str());
-                    if (current_song_id.as_ref().map(String::as_str).unwrap() == song_d.id.as_str())
-                        && playing
-                    {
-                        album_playing = true;
-                    }
+            let mut album_played_before = false;
+
+            for song_d in album.songs.songs.iter(){
+                all_song_ids_album.push(song_d.id.as_str());
+            } 
+
+            if !current_song_id.is_none(){
+                let song_id = current_song_id.as_ref().map(String::as_str).unwrap();
+                let current_song_playing = self.song_state(current_song_id.as_ref().map(String::as_str).unwrap()).is_playing;
+                if (all_song_ids_album.contains(&song_id)) && current_song_playing && playing{
+                    album_playing = true;
+                }else if all_song_ids_album.contains(&song_id){
+                    album_played_before = true;
                 }
             }
-            if album_playing {
-                self.dispatcher
-                    .dispatch(AppAction::PlaybackAction(PlaybackAction::Pause));
-            } else {
+
+            if album_playing{
+                self.dispatcher.dispatch(AppAction::PlaybackAction(PlaybackAction::Pause));
+            } 
+            else if album_played_before{
+                self.dispatcher.dispatch(AppAction::PlaybackAction(PlaybackAction::Play));
+            }
+            else{
                 let id_of_first_song = album.songs.songs[0].id.as_str();
-                self.play_song_at(0, id_of_first_song);
-                if !self.state().playback.is_playing() {
-                    self.dispatcher
-                        .dispatch(AppAction::PlaybackAction(PlaybackAction::Play));
-                }
+                self.play_song_at(0,id_of_first_song);
             }
         }
     }

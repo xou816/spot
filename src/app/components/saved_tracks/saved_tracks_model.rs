@@ -82,7 +82,7 @@ impl PlaylistModel for SavedTracksModel {
                 .dispatch(PlaybackAction::Load(id.to_string()).into());
         }
     }
-    
+
     fn autoscroll_to_playing(&self) -> bool {
         true
     }
