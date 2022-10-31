@@ -92,6 +92,27 @@ impl PlaylistDetailsModel {
                 .dispatch(AppAction::ViewUser(owner.to_owned()));
         }
     }
+
+    pub fn toggle_play_playlist(&self) {
+        if let Some(playlist) = self.get_playlist_info() {
+            if !self.playlist_is_playing() {
+                if self.app_model.get_state().playback.is_shuffled() {
+                    self.dispatcher
+                        .dispatch(AppAction::PlaybackAction(PlaybackAction::ToggleShuffle));
+                }
+                let id_of_first_song = playlist.songs.songs[0].id.as_str();
+                self.play_song_at(0, id_of_first_song);
+                return;
+            }
+            if self.app_model.get_state().playback.is_playing() {
+                self.dispatcher
+                    .dispatch(AppAction::PlaybackAction(PlaybackAction::Pause));
+            } else {
+                self.dispatcher
+                    .dispatch(AppAction::PlaybackAction(PlaybackAction::Play));
+            }
+        }
+    }
 }
 
 impl PlaylistModel for PlaylistDetailsModel {
@@ -107,6 +128,34 @@ impl PlaylistModel for PlaylistDetailsModel {
 
     fn current_song_id(&self) -> Option<String> {
         self.app_model.get_state().playback.current_song_id()
+    }
+
+    fn playlist_song_ids(&self) -> Option<Vec<String>> {
+        if let Some(playlist) = self.get_playlist_info() {
+            let playlist_ids = playlist
+                .songs
+                .songs
+                .iter()
+                .map(|song_d| song_d.id.clone())
+                .collect::<Vec<_>>();
+            return Some(playlist_ids);
+        }
+        None
+    }
+
+    fn playlist_is_playing(&self) -> bool {
+        let current_song_id = self.app_model.get_state().playback.current_song_id();
+        if current_song_id.is_none() || self.playlist_song_ids().is_none() {
+            return false;
+        }
+        if self
+            .playlist_song_ids()
+            .unwrap()
+            .contains(&current_song_id.unwrap())
+        {
+            return true;
+        }
+        false
     }
 
     fn play_song_at(&self, pos: usize, id: &str) {

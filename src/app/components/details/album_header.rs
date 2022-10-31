@@ -109,7 +109,6 @@ impl AlbumHeaderWidget {
     }
 
     pub fn set_playing(&self, is_playing: bool) {
-        // TODO: still need to check if this particular album is playing
         let playback_icon = if is_playing {
             "media-playback-pause-symbolic"
         } else {

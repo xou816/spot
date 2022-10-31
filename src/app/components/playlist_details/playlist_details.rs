@@ -9,6 +9,7 @@ use crate::app::components::AlbumHeaderWidget;
 use crate::app::components::{Component, EventListener, Playlist};
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
+use crate::app::state::PlaybackEvent;
 use crate::app::{AppEvent, BrowserEvent};
 use libadwaita::subclass::prelude::BinImpl;
 
@@ -139,6 +140,17 @@ impl PlaylistDetailsWidget {
         self.imp().header_widget.connect_artist_clicked(f.clone());
         self.imp().header_mobile.connect_artist_clicked(f);
     }
+
+    fn connect_play<F>(&self, f: F)
+    where
+        F: Fn() + Clone + 'static,
+    {
+        self.widget().header_widget.connect_play(f);
+    }
+
+    fn set_playing(&self, is_playing: bool) {
+        self.widget().header_widget.set_playing(is_playing);
+    }
 }
 
 pub struct PlaylistDetails {
@@ -169,6 +181,8 @@ impl PlaylistDetails {
         widget.connect_artist_clicked(clone!(@weak model => move || {
             model.view_owner();
         }));
+
+        widget.connect_play(clone!(@weak model => move || model.toggle_play_playlist()));
 
         Self {
             model,
@@ -202,6 +216,10 @@ impl PlaylistDetails {
             }
         }
     }
+
+    fn update_playing(&self, is_playing: bool) {
+        self.widget.set_playing(is_playing);
+    }
 }
 
 impl Component for PlaylistDetails {
@@ -221,6 +239,12 @@ impl EventListener for PlaylistDetails {
                 if id == &self.model.id =>
             {
                 self.update_details()
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackPaused) => {
+                self.update_playing(false);
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackResumed) => {
+                self.update_playing(true);
             }
             _ => {}
         }
