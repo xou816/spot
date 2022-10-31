@@ -14,6 +14,14 @@ pub trait PlaylistModel {
 
     fn current_song_id(&self) -> Option<String>;
 
+    fn playlist_song_ids(&self) -> Option<Vec<String>> {
+        None
+    }
+
+    fn playlist_is_playing(&self) -> bool {
+        false
+    }
+
     fn play_song_at(&self, pos: usize, id: &str);
 
     fn autoscroll_to_playing(&self) -> bool {

@@ -156,7 +156,7 @@ impl AlbumDetailsWidget {
     where
         F: Fn() + Clone + 'static,
     {
-        self.widget().header_widget.connect_play(f.clone());
+        self.widget().header_widget.connect_play(f);
     }
 
     fn connect_info<F>(&self, f: F)
