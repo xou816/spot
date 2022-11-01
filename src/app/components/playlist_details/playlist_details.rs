@@ -4,7 +4,7 @@ use gtk::CompositeTemplate;
 use std::rc::Rc;
 
 use super::PlaylistDetailsModel;
-use crate::app::components::AlbumHeaderWidget;
+use crate::app::components::{AlbumHeaderWidget, PlaylistModel};
 
 use crate::app::components::{Component, EventListener, Playlist};
 use crate::app::dispatch::Worker;
@@ -218,6 +218,10 @@ impl PlaylistDetails {
     }
 
     fn update_playing(&self, is_playing: bool) {
+        if !self.model.playlist_is_playing() {
+            self.widget.set_playing(false);
+            return;
+        }
         self.widget.set_playing(is_playing);
     }
 }
@@ -238,7 +242,8 @@ impl EventListener for PlaylistDetails {
             AppEvent::BrowserEvent(BrowserEvent::PlaylistDetailsLoaded(id))
                 if id == &self.model.id =>
             {
-                self.update_details()
+                self.update_details();
+                self.update_playing(true);
             }
             AppEvent::PlaybackEvent(PlaybackEvent::PlaybackPaused) => {
                 self.update_playing(false);

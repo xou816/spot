@@ -8,7 +8,7 @@ use super::release_details::ReleaseDetailsWindow;
 use super::DetailsModel;
 
 use crate::app::components::{
-    Component, EventListener, HeaderBarComponent, HeaderBarWidget, Playlist,
+    Component, EventListener, HeaderBarComponent, HeaderBarWidget, Playlist, PlaylistModel,
 };
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
@@ -271,6 +271,10 @@ impl Details {
     }
 
     fn update_playing(&self, is_playing: bool) {
+        if !self.model.playlist_is_playing() {
+            self.widget.set_playing(false);
+            return;
+        }
         self.widget.set_playing(is_playing);
     }
 
@@ -336,6 +340,7 @@ impl EventListener for Details {
                 if id == &self.model.id =>
             {
                 self.update_details();
+                self.update_playing(true);
             }
             AppEvent::BrowserEvent(BrowserEvent::AlbumSaved(id))
             | AppEvent::BrowserEvent(BrowserEvent::AlbumUnsaved(id))
