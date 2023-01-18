@@ -207,7 +207,7 @@ impl SpotifyPlayer {
         };
         info!("bitrate: {:?}", &player_config.bitrate);
 
-        let filter = self
+        let soft_volume = self
             .mixer
             .borrow_mut()
             .get_or_insert_with(|| {
@@ -221,8 +221,8 @@ impl SpotifyPlayer {
                 mix.set_volume(VolumeCtrl::MAX_VOLUME);
                 mix
             })
-            .get_audio_filter();
-        Player::new(player_config, session, filter, move || match backend {
+            .get_soft_volume();
+        Player::new(player_config, session, soft_volume, move || match backend {
             AudioBackend::PulseAudio => {
                 info!("using pulseaudio");
                 let backend = audio_backend::find(Some("pulseaudio".to_string())).unwrap();
@@ -288,7 +288,7 @@ async fn create_session(
                 ap_port: Some(ap_port),
                 ..Default::default()
             };
-            let result = Session::connect(session_config, credentials, None).await;
+            let result = Session::connect(session_config, credentials, None, true).await.map(|r| r.0);
             result.map_err(|e| {
                 dbg!(e);
                 SpotifyError::LoginFailed
@@ -300,7 +300,7 @@ async fn create_session(
                     ap_port: port,
                     ..Default::default()
                 };
-                let result = Session::connect(session_config, credentials.clone(), None).await;
+                let result = Session::connect(session_config, credentials.clone(), None, true).await.map(|r| r.0);
 
                 match result {
                     Ok(session) => return Ok(session),
