@@ -359,7 +359,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
         let id = id.to_owned();
 
         Box::pin(async move {
-            let _ = self.cache.set_expired_pattern(&*ME_ALBUMS_CACHE).await;
+            let _ = self.cache.set_expired_pattern(&ME_ALBUMS_CACHE).await;
             self.client.save_album(&id).send_no_response().await?;
             self.get_album(&id[..]).await.map(|a| a.description)
         })
@@ -367,7 +367,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
 
     fn save_tracks(&self, ids: Vec<String>) -> BoxFuture<SpotifyResult<()>> {
         Box::pin(async move {
-            let _ = self.cache.set_expired_pattern(&*ME_TRACKS_CACHE).await;
+            let _ = self.cache.set_expired_pattern(&ME_TRACKS_CACHE).await;
             self.client.save_tracks(ids).send_no_response().await?;
             Ok(())
         })
@@ -377,14 +377,14 @@ impl SpotifyApiClient for CachedSpotifyClient {
         let id = id.to_owned();
 
         Box::pin(async move {
-            let _ = self.cache.set_expired_pattern(&*ME_ALBUMS_CACHE).await;
+            let _ = self.cache.set_expired_pattern(&ME_ALBUMS_CACHE).await;
             self.client.remove_saved_album(&id).send_no_response().await
         })
     }
 
     fn remove_saved_tracks(&self, ids: Vec<String>) -> BoxFuture<SpotifyResult<()>> {
         Box::pin(async move {
-            let _ = self.cache.set_expired_pattern(&*ME_TRACKS_CACHE).await;
+            let _ = self.cache.set_expired_pattern(&ME_TRACKS_CACHE).await;
             self.client
                 .remove_saved_tracks(ids)
                 .send_no_response()

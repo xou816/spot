@@ -118,7 +118,7 @@ impl UserDetails {
         if let Some(store) = model.get_list_store() {
             widget.bind_user_playlists(
                 worker,
-                &*store,
+                &store,
                 clone!(@weak model => move |uri| {
                     model.open_playlist(uri);
                 }),

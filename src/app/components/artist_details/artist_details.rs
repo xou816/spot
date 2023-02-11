@@ -127,7 +127,7 @@ impl ArtistDetails {
         if let Some(store) = model.get_list_store() {
             widget.bind_artist_releases(
                 worker.clone(),
-                &*store,
+                &store,
                 clone!(@weak model => move |id| {
                     model.open_album(id);
                 }),

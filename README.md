@@ -77,7 +77,7 @@ Similarly, snap also requires that you install the corresponding snap for your t
 
 Contributions are welcome! If you wish, add yourself to the `AUTHORS` files when submitting your contribution.
 
-For any large feature/change, please consider opening an issue first to discuss implementation and design decisions.
+For any large feature/change, please open an issue first to discuss implementation and design decisions.
 
 ### Translating
 
@@ -104,6 +104,8 @@ With meson:
 ```
 meson target -Dbuildtype=debug -Doffline=false --prefix="$HOME/.local"
 ninja install -C target
+# to run test/linter/etc
+meson test -C target
 ```
 
 This will install a `.desktop` file among other things, and the spot executable will be put in `.local/bin` (you might want to add it to your path).

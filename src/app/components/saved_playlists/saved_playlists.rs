@@ -119,7 +119,7 @@ impl SavedPlaylists {
     fn bind_flowbox(&self) {
         self.widget.bind_albums(
             self.worker.clone(),
-            &*self.model.get_list_store().unwrap(),
+            &self.model.get_list_store().unwrap(),
             clone!(@weak self.model as model => move |id| {
                 model.open_playlist(id);
             }),

@@ -99,7 +99,7 @@ impl CacheManager {
 
     fn cache_meta_path(&self, resource: &str) -> PathBuf {
         let full = resource.to_string() + EXPIRY_FILE_EXT;
-        self.root.join(&full)
+        self.root.join(full)
     }
 }
 
@@ -118,7 +118,7 @@ impl CacheManager {
                 duration.copy_from_slice(&buffer[..OFFSET]);
                 let duration = Duration::from_secs(u64::from_be_bytes(duration));
 
-                let etag = String::from_utf8((&buffer[OFFSET..]).to_vec()).ok();
+                let etag = String::from_utf8(buffer[OFFSET..].to_vec()).ok();
 
                 Ok(CacheExpiry::AtUnixTimestamp(duration, etag))
             }

@@ -81,8 +81,8 @@ impl DispatchLoop {
     pub async fn attach(self, mut handler: impl FnMut(AppAction)) {
         self.receiver
             .for_each(|action| {
-                let result = handler(action);
-                async move { result }
+                handler(action);
+                async move {}
             })
             .await;
     }
