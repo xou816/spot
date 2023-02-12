@@ -51,6 +51,8 @@ impl SpotifyPlayerSettings {
             )),
             _ => None,
         }?;
+        let gapless = settings.boolean("gapless-playback");
+
         let ap_port_val = settings.uint("ap-port");
         if ap_port_val > 65535 {
             panic!("Invalid access point port");
@@ -67,6 +69,7 @@ impl SpotifyPlayerSettings {
         Some(Self {
             bitrate,
             backend,
+            gapless,
             ap_port,
         })
     }

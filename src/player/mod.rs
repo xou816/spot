@@ -23,6 +23,7 @@ pub enum Command {
     PlayerStop,
     PlayerSeek(u32),
     PlayerSetVolume(f64),
+    PlayerPreload(SpotifyId),
     RefreshToken,
     ReloadSettings,
 }
@@ -92,6 +93,13 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
         self.sender
             .borrow_mut()
             .unbounded_send(PlaybackAction::SyncSeek(position).into())
+            .unwrap();
+    }
+
+    fn preload_next_track(&self) {
+        self.sender
+            .borrow_mut()
+            .unbounded_send(PlaybackAction::Preload.into())
             .unwrap();
     }
 }
