@@ -34,7 +34,7 @@ mod imp {
         type ParentType = gtk::Box;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -54,24 +54,20 @@ glib::wrapper! {
 impl UserDetailsWidget {
     fn new() -> Self {
         display_add_css_provider(resource!("/components/user_details.css"));
-        glib::Object::new(&[]).expect("Failed to create an instance of UserDetailsWidget")
-    }
-
-    fn widget(&self) -> &imp::UserDetailsWidget {
-        imp::UserDetailsWidget::from_instance(self)
+        glib::Object::new()
     }
 
     fn set_user_name(&self, name: &str) {
         let context = self.style_context();
         context.add_class("user__loaded");
-        self.widget().user_name.set_text(name);
+        self.imp().user_name.set_text(name);
     }
 
     fn connect_bottom_edge<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        self.widget()
+        self.imp()
             .scrolled_window
             .connect_edge_reached(move |_, pos| {
                 if let gtk::PositionType::Bottom = pos {
@@ -84,7 +80,7 @@ impl UserDetailsWidget {
     where
         F: Fn(String) + Clone + 'static,
     {
-        self.widget()
+        self.imp()
             .user_playlists
             .bind_model(Some(store.unsafe_store()), move |item| {
                 wrap_flowbox_item(item, |item: &AlbumModel| {
@@ -118,7 +114,7 @@ impl UserDetails {
         if let Some(store) = model.get_list_store() {
             widget.bind_user_playlists(
                 worker,
-                &*store,
+                &store,
                 clone!(@weak model => move |uri| {
                     model.open_playlist(uri);
                 }),

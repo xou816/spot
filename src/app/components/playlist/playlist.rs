@@ -73,7 +73,6 @@ pub trait PlaylistModel {
 pub struct Playlist<Model> {
     animator: AnimatorDefault,
     listview: gtk::ListView,
-    _press_gesture: gtk::GestureLongPress,
     model: Rc<Model>,
 }
 
@@ -83,7 +82,7 @@ where
 {
     pub fn new(listview: gtk::ListView, model: Rc<Model>, worker: Worker) -> Self {
         let list_model = model.song_list_model();
-        let selection_model = gtk::NoSelection::new(Some(&list_model));
+        let selection_model = gtk::NoSelection::new(Some(list_model.clone()));
         let factory = gtk::SignalListItemFactory::new();
 
         let style_context = listview.style_context();
@@ -129,17 +128,16 @@ where
         }));
 
         let press_gesture = gtk::GestureLongPress::new();
-        listview.add_controller(&press_gesture);
         press_gesture.set_touch_only(false);
         press_gesture.set_propagation_phase(gtk::PropagationPhase::Capture);
         press_gesture.connect_pressed(clone!(@weak model => move |_, _, _| {
             model.enable_selection();
         }));
+        listview.add_controller(press_gesture);
 
         Self {
             animator: AnimatorDefault::ease_in_out_animator(),
             listview,
-            _press_gesture: press_gesture,
             model,
         }
     }

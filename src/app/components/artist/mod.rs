@@ -30,7 +30,7 @@ mod imp {
         type ParentType = gtk::Box;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -49,7 +49,7 @@ glib::wrapper! {
 
 impl ArtistWidget {
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create an instance of ArtistWidget")
+        glib::Object::new()
     }
 
     pub fn for_model(model: &ArtistModel, worker: Worker) -> Self {
@@ -59,7 +59,7 @@ impl ArtistWidget {
     }
 
     pub fn connect_artist_pressed<F: Fn(&Self) + 'static>(&self, f: F) {
-        imp::ArtistWidget::from_instance(self)
+        self.imp()
             .avatar_btn
             .connect_clicked(clone!(@weak self as _self => move |_| {
                 f(&_self);
@@ -67,9 +67,9 @@ impl ArtistWidget {
     }
 
     fn bind(&self, model: &ArtistModel, worker: Worker) {
-        let widget = imp::ArtistWidget::from_instance(self);
+        let widget = self.imp();
 
-        if let Some(url) = model.image_url() {
+        if let Some(url) = model.image() {
             let avatar = widget.avatar.downgrade();
             worker.send_local_task(async move {
                 if let Some(avatar) = avatar.upgrade() {

@@ -35,7 +35,7 @@ mod imp {
         type ParentType = gtk::Box;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -55,15 +55,11 @@ glib::wrapper! {
 impl ArtistDetailsWidget {
     fn new() -> Self {
         display_add_css_provider(resource!("/components/artist_details.css"));
-        glib::Object::new(&[]).expect("Failed to create an instance of ArtistDetailsWidget")
-    }
-
-    fn widget(&self) -> &imp::ArtistDetailsWidget {
-        imp::ArtistDetailsWidget::from_instance(self)
+        glib::Object::new()
     }
 
     fn top_tracks_widget(&self) -> &gtk::ListView {
-        self.widget().top_tracks.as_ref()
+        self.imp().top_tracks.as_ref()
     }
 
     fn set_loaded(&self) {
@@ -75,7 +71,7 @@ impl ArtistDetailsWidget {
     where
         F: Fn() + 'static,
     {
-        self.widget()
+        self.imp()
             .scrolled_window
             .connect_edge_reached(move |_, pos| {
                 if let gtk::PositionType::Bottom = pos {
@@ -92,7 +88,7 @@ impl ArtistDetailsWidget {
     ) where
         F: Fn(String) + Clone + 'static,
     {
-        self.widget()
+        self.imp()
             .artist_releases
             .bind_model(Some(store.unsafe_store()), move |item| {
                 let item = item.downcast_ref::<AlbumModel>().unwrap();
@@ -127,7 +123,7 @@ impl ArtistDetails {
         if let Some(store) = model.get_list_store() {
             widget.bind_artist_releases(
                 worker.clone(),
-                &*store,
+                &store,
                 clone!(@weak model => move |id| {
                     model.open_album(id);
                 }),

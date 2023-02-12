@@ -23,7 +23,7 @@ mod imp {
         type ParentType = gtk::Box;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -32,8 +32,8 @@ mod imp {
     }
 
     impl ObjectImpl for SideBarItemWidgetIcon {
-        fn dispose(&self, obj: &Self::Type) {
-            while let Some(child) = obj.first_child() {
+        fn dispose(&self) {
+            while let Some(child) = self.obj().first_child() {
                 child.unparent();
             }
         }
@@ -49,15 +49,10 @@ glib::wrapper! {
 
 impl SideBarItemWidgetIcon {
     pub fn new(title: &str, iconname: Option<&str>) -> Self {
-        let s: SideBarItemWidgetIcon =
-            glib::Object::new(&[]).expect("Failed to create an instance of SideBarItemWidgetIcon");
-        s.widget().title.set_text(title);
-        s.widget().icon.set_icon_name(iconname);
+        let s: Self = glib::Object::new();
+        s.imp().title.set_text(title);
+        s.imp().icon.set_icon_name(iconname);
         s.set_tooltip_text(Option::from(title));
         s
-    }
-
-    pub fn widget(&self) -> &imp::SideBarItemWidgetIcon {
-        imp::SideBarItemWidgetIcon::from_instance(self)
     }
 }

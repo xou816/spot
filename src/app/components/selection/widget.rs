@@ -43,7 +43,7 @@ mod imp {
         type ParentType = gtk::Box;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -52,8 +52,8 @@ mod imp {
     }
 
     impl ObjectImpl for SelectionToolbarWidget {
-        fn constructed(&self, obj: &Self::Type) {
-            self.parent_constructed(obj);
+        fn constructed(&self) {
+            self.parent_constructed();
             display_add_css_provider(resource!("/components/selection_toolbar.css"));
         }
     }
@@ -83,75 +83,71 @@ impl SelectionToolState {
 }
 
 impl SelectionToolbarWidget {
-    fn widget(&self) -> &imp::SelectionToolbarWidget {
-        imp::SelectionToolbarWidget::from_instance(self)
-    }
-
     pub fn connect_move_down<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        self.widget().move_down.connect_clicked(move |_| f());
+        self.imp().move_down.connect_clicked(move |_| f());
     }
 
     pub fn connect_move_up<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        self.widget().move_up.connect_clicked(move |_| f());
+        self.imp().move_up.connect_clicked(move |_| f());
     }
 
     pub fn connect_queue<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        self.widget().queue.connect_clicked(move |_| f());
+        self.imp().queue.connect_clicked(move |_| f());
     }
 
     pub fn connect_save<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        self.widget().save.connect_clicked(move |_| f());
+        self.imp().save.connect_clicked(move |_| f());
     }
 
     pub fn connect_remove<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        self.widget().remove.connect_clicked(move |_| f());
+        self.imp().remove.connect_clicked(move |_| f());
     }
 
     pub fn set_move(&self, state: SelectionToolState) {
-        self.widget().move_up.set_sensitive(state.sensitive());
-        self.widget().move_up.set_visible(state.visible());
-        self.widget().move_down.set_sensitive(state.sensitive());
-        self.widget().move_down.set_visible(state.visible());
+        self.imp().move_up.set_sensitive(state.sensitive());
+        self.imp().move_up.set_visible(state.visible());
+        self.imp().move_down.set_sensitive(state.sensitive());
+        self.imp().move_down.set_visible(state.visible());
     }
 
     pub fn set_queue(&self, state: SelectionToolState) {
-        self.widget().queue.set_sensitive(state.sensitive());
-        self.widget().queue.set_visible(state.visible());
+        self.imp().queue.set_sensitive(state.sensitive());
+        self.imp().queue.set_visible(state.visible());
     }
 
     pub fn set_add(&self, state: SelectionToolState) {
-        self.widget().add.set_sensitive(state.sensitive());
-        self.widget().add.set_visible(state.visible());
+        self.imp().add.set_sensitive(state.sensitive());
+        self.imp().add.set_visible(state.visible());
     }
 
     pub fn set_remove(&self, state: SelectionToolState) {
-        self.widget().remove.set_sensitive(state.sensitive());
-        self.widget().remove.set_visible(state.visible());
+        self.imp().remove.set_sensitive(state.sensitive());
+        self.imp().remove.set_visible(state.visible());
     }
 
     pub fn set_save(&self, state: SelectionToolState) {
-        self.widget().save.set_sensitive(state.sensitive());
-        self.widget().save.set_visible(state.visible());
+        self.imp().save.set_sensitive(state.sensitive());
+        self.imp().save.set_visible(state.visible());
     }
 
     pub fn set_visible(&self, visible: bool) {
         gtk::Widget::set_visible(self.upcast_ref(), visible);
-        self.widget().action_bar.set_revealed(visible);
+        self.imp().action_bar.set_revealed(visible);
     }
 
     pub fn connect_playlists<F>(&self, playlists: &[PlaylistSummary], on_playlist_selected: F)
@@ -179,8 +175,8 @@ impl SelectionToolbarWidget {
         }
 
         let popover = gtk::PopoverMenu::from_model(Some(&menu));
-        self.widget().add.set_popover(Some(&popover));
-        self.widget()
+        self.imp().add.set_popover(Some(&popover));
+        self.imp()
             .add
             .insert_action_group("add_to", Some(&action_group));
     }

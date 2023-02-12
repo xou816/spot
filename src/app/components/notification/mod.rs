@@ -15,7 +15,7 @@ impl Notification {
             .title(content)
             .timeout(4)
             .build();
-        self.toast_overlay.add_toast(&toast);
+        self.toast_overlay.add_toast(toast);
     }
 }
 
