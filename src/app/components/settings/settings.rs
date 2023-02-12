@@ -169,7 +169,11 @@ impl SettingsWindow {
             .downcast_ref::<libadwaita::ActionRow>()
             .unwrap();
         settings
-            .bind("gapless-playback", &gapless_playback.activatable_widget().unwrap(), "active")
+            .bind(
+                "gapless-playback",
+                &gapless_playback.activatable_widget().unwrap(),
+                "active",
+            )
             .build();
 
         let ap_port = widget.ap_port.downcast_ref::<gtk::Entry>().unwrap();
