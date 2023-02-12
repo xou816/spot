@@ -49,7 +49,7 @@ mod imp {
         type ParentType = libadwaita::Bin;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -58,8 +58,8 @@ mod imp {
     }
 
     impl ObjectImpl for AlbumDetailsWidget {
-        fn constructed(&self, obj: &Self::Type) {
-            self.parent_constructed(obj);
+        fn constructed(&self) {
+            self.parent_constructed();
             self.header_mobile.set_centered();
             self.headerbar.add_classes(&["details__headerbar"]);
         }
@@ -75,15 +75,11 @@ glib::wrapper! {
 
 impl AlbumDetailsWidget {
     fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create an instance of AlbumDetailsWidget")
-    }
-
-    fn widget(&self) -> &imp::AlbumDetailsWidget {
-        imp::AlbumDetailsWidget::from_instance(self)
+        glib::Object::new()
     }
 
     fn set_header_visible(&self, visible: bool) -> bool {
-        let widget = self.widget();
+        let widget = self.imp();
         let is_up_to_date = widget.header_revealer.reveals_child() == visible;
         if !is_up_to_date {
             widget.header_revealer.set_reveal_child(visible);
@@ -117,17 +113,15 @@ impl AlbumDetailsWidget {
             _self.set_header_visible(visible);
         }));
 
-        self.widget()
-            .scrolled_window
-            .add_controller(&scroll_controller);
-        self.add_controller(&swipe_controller);
+        self.imp().scrolled_window.add_controller(scroll_controller);
+        self.add_controller(swipe_controller);
     }
 
     fn connect_bottom_edge<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        self.widget()
+        self.imp()
             .scrolled_window
             .connect_edge_reached(move |_, pos| {
                 if let gtk::PositionType::Bottom = pos {
@@ -137,11 +131,11 @@ impl AlbumDetailsWidget {
     }
 
     fn headerbar_widget(&self) -> &HeaderBarWidget {
-        self.widget().headerbar.as_ref()
+        self.imp().headerbar.as_ref()
     }
 
     fn album_tracks_widget(&self) -> &gtk::ListView {
-        self.widget().album_tracks.as_ref()
+        self.imp().album_tracks.as_ref()
     }
 
     fn set_loaded(&self) {
@@ -153,48 +147,44 @@ impl AlbumDetailsWidget {
     where
         F: Fn() + Clone + 'static,
     {
-        self.widget().header_widget.connect_liked(f.clone());
-        self.widget().header_mobile.connect_liked(f);
+        self.imp().header_widget.connect_liked(f.clone());
+        self.imp().header_mobile.connect_liked(f);
     }
 
     fn connect_info<F>(&self, f: F)
     where
         F: Fn() + Clone + 'static,
     {
-        self.widget().header_widget.connect_info(f.clone());
-        self.widget().header_mobile.connect_info(f);
+        self.imp().header_widget.connect_info(f.clone());
+        self.imp().header_mobile.connect_info(f);
     }
 
     fn set_liked(&self, is_liked: bool) {
-        self.widget().header_widget.set_liked(is_liked);
-        self.widget().header_mobile.set_liked(is_liked);
+        self.imp().header_widget.set_liked(is_liked);
+        self.imp().header_mobile.set_liked(is_liked);
     }
 
     fn set_album_and_artist_and_year(&self, album: &str, artist: &str, year: Option<u32>) {
-        self.widget()
+        self.imp()
             .header_widget
             .set_album_and_artist_and_year(album, artist, year);
-        self.widget()
+        self.imp()
             .header_mobile
             .set_album_and_artist_and_year(album, artist, year);
-        self.widget()
-            .headerbar
-            .set_title_and_subtitle(album, artist);
+        self.imp().headerbar.set_title_and_subtitle(album, artist);
     }
 
     fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {
-        self.widget().header_widget.set_artwork(art);
-        self.widget().header_mobile.set_artwork(art);
+        self.imp().header_widget.set_artwork(art);
+        self.imp().header_mobile.set_artwork(art);
     }
 
     fn connect_artist_clicked<F>(&self, f: F)
     where
         F: Fn() + Clone + 'static,
     {
-        self.widget()
-            .header_widget
-            .connect_artist_clicked(f.clone());
-        self.widget().header_mobile.connect_artist_clicked(f);
+        self.imp().header_widget.connect_artist_clicked(f.clone());
+        self.imp().header_mobile.connect_artist_clicked(f);
     }
 }
 

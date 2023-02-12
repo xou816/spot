@@ -82,7 +82,7 @@ impl DispatchLoop {
         self.receiver
             .for_each(|action| {
                 handler(action);
-                async move {}
+                async {}
             })
             .await;
     }

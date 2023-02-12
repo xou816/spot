@@ -105,7 +105,7 @@ With meson:
 meson target -Dbuildtype=debug -Doffline=false --prefix="$HOME/.local"
 ninja install -C target
 # to run test/linter/etc
-meson test -C target
+meson test -C target  --verbose
 ```
 
 This will install a `.desktop` file among other things, and the spot executable will be put in `.local/bin` (you might want to add it to your path).

@@ -76,77 +76,84 @@ impl Default for SpotifyPlayerSettings {
 }
 
 pub struct SpotifyPlayer {
-    settings: RefCell<SpotifyPlayerSettings>,
-    player: RefCell<Option<Player>>,
-    mixer: RefCell<Option<Box<dyn Mixer>>>,
-    session: RefCell<Option<Session>>,
+    settings: SpotifyPlayerSettings,
+    player: Option<Player>,
+    mixer: Option<Box<dyn Mixer>>,
+    session: Option<Session>,
     delegate: Rc<dyn SpotifyPlayerDelegate>,
 }
 
 impl SpotifyPlayer {
     pub fn new(settings: SpotifyPlayerSettings, delegate: Rc<dyn SpotifyPlayerDelegate>) -> Self {
         Self {
-            settings: RefCell::new(settings),
-            mixer: RefCell::new(None),
-            player: RefCell::new(None),
-            session: RefCell::new(None),
+            settings,
+            mixer: None,
+            player: None,
+            session: None,
             delegate,
         }
     }
 
-    async fn handle(&self, action: Command) -> Result<(), SpotifyError> {
-        let mut player = self.player.borrow_mut();
-        let mut session = self.session.borrow_mut();
+    async fn handle(&mut self, action: Command) -> Result<(), SpotifyError> {
         match action {
             Command::PlayerSetVolume(volume) => {
-                if let Some(mixer) = self.mixer.borrow_mut().as_mut() {
+                if let Some(mixer) = self.mixer.as_mut() {
                     mixer.set_volume((VolumeCtrl::MAX_VOLUME as f64 * volume) as u16);
                 }
                 Ok(())
             }
             Command::PlayerResume => {
-                let player = player.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
-                player.play();
+                self.player
+                    .as_ref()
+                    .ok_or(SpotifyError::PlayerNotReady)?
+                    .play();
                 Ok(())
             }
             Command::PlayerPause => {
-                let player = player.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
-                player.pause();
+                self.player
+                    .as_ref()
+                    .ok_or(SpotifyError::PlayerNotReady)?
+                    .pause();
                 Ok(())
             }
             Command::PlayerStop => {
-                let player = player.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
-                player.stop();
+                self.player
+                    .as_ref()
+                    .ok_or(SpotifyError::PlayerNotReady)?
+                    .stop();
                 Ok(())
             }
             Command::PlayerSeek(position) => {
-                let player = player.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
-                player.seek(position);
+                self.player
+                    .as_ref()
+                    .ok_or(SpotifyError::PlayerNotReady)?
+                    .seek(position);
                 Ok(())
             }
             Command::PlayerLoad(track) => {
-                let player = player.as_mut().ok_or(SpotifyError::PlayerNotReady)?;
-                player.load(track, true, 0);
+                self.player
+                    .as_mut()
+                    .ok_or(SpotifyError::PlayerNotReady)?
+                    .load(track, true, 0);
                 Ok(())
             }
             Command::RefreshToken => {
-                let session = session.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
+                let session = self.session.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
                 let (token, token_expiry_time) = get_access_token_and_expiry_time(session).await?;
                 self.delegate.refresh_successful(token, token_expiry_time);
                 Ok(())
             }
             Command::Logout => {
-                session
+                self.session
                     .take()
                     .ok_or(SpotifyError::PlayerNotReady)?
                     .shutdown();
-                let _ = player.take();
+                let _ = self.player.take();
                 Ok(())
             }
             Command::PasswordLogin { username, password } => {
                 let credentials = Credentials::with_password(username, password.clone());
-                let new_session =
-                    create_session(credentials, self.settings.borrow().ap_port).await?;
+                let new_session = create_session(credentials, self.settings.ap_port).await?;
                 let (token, token_expiry_time) =
                     get_access_token_and_expiry_time(&new_session).await?;
                 let credentials = credentials::Credentials {
@@ -160,8 +167,8 @@ impl SpotifyPlayer {
 
                 let (new_player, channel) = self.create_player(new_session.clone());
                 tokio::task::spawn_local(player_setup_delegate(channel, Rc::clone(&self.delegate)));
-                player.replace(new_player);
-                session.replace(new_session);
+                self.player.replace(new_player);
+                self.session.replace(new_session);
 
                 Ok(())
             }
@@ -171,45 +178,42 @@ impl SpotifyPlayer {
                     auth_type: AuthenticationType::AUTHENTICATION_SPOTIFY_TOKEN,
                     auth_data: token.clone().into_bytes(),
                 };
-                let new_session =
-                    create_session(credentials, self.settings.borrow().ap_port).await?;
+                let new_session = create_session(credentials, self.settings.ap_port).await?;
                 self.delegate
                     .token_login_successful(new_session.username(), token);
 
                 let (new_player, channel) = self.create_player(new_session.clone());
                 tokio::task::spawn_local(player_setup_delegate(channel, Rc::clone(&self.delegate)));
-                player.replace(new_player);
-                session.replace(new_session);
+                self.player.replace(new_player);
+                self.session.replace(new_session);
 
                 Ok(())
             }
             Command::ReloadSettings => {
                 let settings = SpotSettings::new_from_gsettings().unwrap_or_default();
-                self.settings.replace(settings.player_settings);
+                self.settings = settings.player_settings;
 
-                let session = session.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
-                let (new_player, channel) = self.create_player(session.clone());
+                let session = self.session.take().ok_or(SpotifyError::PlayerNotReady)?;
+                let (new_player, channel) = self.create_player(session);
                 tokio::task::spawn_local(player_setup_delegate(channel, Rc::clone(&self.delegate)));
-                player.replace(new_player);
+                self.player.replace(new_player);
 
                 Ok(())
             }
         }
     }
 
-    fn create_player(&self, session: Session) -> (Player, PlayerEventChannel) {
-        let settings = self.settings.borrow();
-        let backend = settings.backend.clone();
+    fn create_player(&mut self, session: Session) -> (Player, PlayerEventChannel) {
+        let backend = self.settings.backend.clone();
 
         let player_config = PlayerConfig {
-            bitrate: settings.bitrate,
+            bitrate: self.settings.bitrate,
             ..Default::default()
         };
         info!("bitrate: {:?}", &player_config.bitrate);
 
-        let filter = self
-            .mixer
-            .borrow_mut()
+        let mixer = &mut self.mixer;
+        let filter = mixer
             .get_or_insert_with(|| {
                 let mix = Box::new(SoftMixer::open(MixerConfig {
                     // This value feels reasonable to me. Feel free to change it
@@ -237,9 +241,10 @@ impl SpotifyPlayer {
     }
 
     pub async fn start(self, receiver: UnboundedReceiver<Command>) -> Result<(), ()> {
-        let _self = &self;
+        let _self = RefCell::new(self);
         receiver
-            .for_each(|action| async move {
+            .for_each(|action| async {
+                let mut _self = _self.borrow_mut();
                 match _self.handle(action).await {
                     Ok(_) => {}
                     Err(err) => _self.delegate.report_error(err),

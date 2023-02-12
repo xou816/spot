@@ -11,5 +11,4 @@ fi
 cargo clippy --manifest-path "$SRC"/Cargo.toml -- -D warnings \
 -A clippy::module_inception \
 -A clippy::new_without_default \
--A clippy::enum-variant-names \
--A clippy::await_holding_refcell_ref  # not sure how to solve this one yet
+-A clippy::enum-variant-names
