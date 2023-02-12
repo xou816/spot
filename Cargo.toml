@@ -22,7 +22,7 @@ version = "^0.17.0"
 features = ["v2_60"]
 
 [dependencies.librespot]
-version = "0.3.1"
+version = "0.4.2"
 features = ["alsa-backend", "pulseaudio-backend"]
 
 [dependencies.protobuf]
