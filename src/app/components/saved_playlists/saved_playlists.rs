@@ -33,7 +33,7 @@ mod imp {
         type ParentType = gtk::Box;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -52,14 +52,14 @@ glib::wrapper! {
 
 impl SavedPlaylistsWidget {
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create an instance of SavedPlaylistsWidget")
+        glib::Object::new()
     }
 
     fn connect_bottom_edge<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        imp::SavedPlaylistsWidget::from_instance(self)
+        self.imp()
             .scrolled_window
             .connect_edge_reached(move |_, pos| {
                 if let gtk::PositionType::Bottom = pos {
@@ -72,7 +72,7 @@ impl SavedPlaylistsWidget {
     where
         F: Fn(String) + Clone + 'static,
     {
-        imp::SavedPlaylistsWidget::from_instance(self)
+        self.imp()
             .flowbox
             .bind_model(Some(store.unsafe_store()), move |item| {
                 let album_model = item.downcast_ref::<AlbumModel>().unwrap();
@@ -89,7 +89,7 @@ impl SavedPlaylistsWidget {
             });
     }
     pub fn get_status_page(&self) -> &libadwaita::StatusPage {
-        &imp::SavedPlaylistsWidget::from_instance(self).status_page
+        &self.imp().status_page
     }
 }
 
@@ -119,7 +119,7 @@ impl SavedPlaylists {
     fn bind_flowbox(&self) {
         self.widget.bind_albums(
             self.worker.clone(),
-            &*self.model.get_list_store().unwrap(),
+            &self.model.get_list_store().unwrap(),
             clone!(@weak self.model as model => move |id| {
                 model.open_playlist(id);
             }),

@@ -30,7 +30,7 @@ mod imp {
         type ParentType = libadwaita::Bin;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -49,14 +49,14 @@ glib::wrapper! {
 
 impl SavedTracksWidget {
     fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create an instance of SavedTracksWidget")
+        glib::Object::new()
     }
 
     fn connect_bottom_edge<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        imp::SavedTracksWidget::from_instance(self)
+        self.imp()
             .scrolled_window
             .connect_edge_reached(move |_, pos| {
                 if let gtk::PositionType::Bottom = pos {
@@ -66,9 +66,7 @@ impl SavedTracksWidget {
     }
 
     fn song_list_widget(&self) -> &gtk::ListView {
-        imp::SavedTracksWidget::from_instance(self)
-            .song_list
-            .as_ref()
+        self.imp().song_list.as_ref()
     }
 }
 

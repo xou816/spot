@@ -27,7 +27,7 @@ fn add_to_stack_and_listbox(
 }
 
 fn make_playlist_item(playlist_item: AlbumModel) -> SideBarItem {
-    let mut title = playlist_item.album_title();
+    let mut title = playlist_item.album();
     if title.is_empty() {
         title = gettext("Unnamed playlist");
     }

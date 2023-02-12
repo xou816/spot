@@ -5,23 +5,24 @@ edition = "2018"
 license = "MIT"
 
 [dependencies.gtk]
-version = "^0.4.1"
+version = "^0.6.0"
 package = "gtk4"
+features = ["gnome_42"]
 
 [dependencies.gdk]
-version = "^0.4.0"
+version = "^0.6.0"
 package = "gdk4"
 
 [dependencies.gio]
-version = "^0.15.7"
+version = "^0.17.0"
 features = ["v2_60"]
 
 [dependencies.glib]
-version = "^0.15.9"
+version = "^0.17.0"
 features = ["v2_60"]
 
 [dependencies.librespot]
-version = "0.3.1"
+version = "0.4.2"
 features = ["alsa-backend", "pulseaudio-backend"]
 
 [dependencies.protobuf]
@@ -30,7 +31,6 @@ version = "2.25.2"
 [dependencies.tokio]
 version = "1"
 features = ["rt", "macros", "sync"]
-
 
 [dependencies.futures]
 package = "futures"
@@ -57,8 +57,8 @@ features = ["gettext-system"]
 
 [dependencies]
 secret-service = "^2.0.1"
-gdk-pixbuf = "^0.15.6"
-libadwaita = "^0.1.0-beta-1"
+gdk-pixbuf = "^0.17.0"
+libadwaita = "^0.3.0"
 ref_filter_map = "^1.0.1"
 regex = "^1.5.5"
 async-std = "^1.10.0"

@@ -49,7 +49,7 @@ mod imp {
         type ParentType = gtk::Box;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -58,8 +58,8 @@ mod imp {
     }
 
     impl ObjectImpl for PlaybackWidget {
-        fn constructed(&self, obj: &Self::Type) {
-            self.parent_constructed(obj);
+        fn constructed(&self) {
+            self.parent_constructed();
             self.now_playing_mobile.set_info_visible(false);
             self.now_playing.set_info_visible(true);
             display_add_css_provider(resource!("/components/playback.css"));
@@ -76,19 +76,19 @@ glib::wrapper! {
 
 impl PlaybackWidget {
     pub fn set_title_and_artist(&self, title: &str, artist: &str) {
-        let widget = imp::PlaybackWidget::from_instance(self);
+        let widget = self.imp();
         widget.now_playing.set_title_and_artist(title, artist);
     }
 
     pub fn reset_info(&self) {
-        let widget = imp::PlaybackWidget::from_instance(self);
+        let widget = self.imp();
         widget.now_playing.reset_info();
         widget.now_playing_mobile.reset_info();
         self.set_song_duration(None);
     }
 
     fn set_artwork(&self, image: &gdk_pixbuf::Pixbuf) {
-        let widget = imp::PlaybackWidget::from_instance(self);
+        let widget = self.imp();
         widget.now_playing.set_artwork(image);
         widget.now_playing_mobile.set_artwork(image);
     }
@@ -105,7 +105,7 @@ impl PlaybackWidget {
     }
 
     pub fn set_song_duration(&self, duration: Option<f64>) {
-        let widget = imp::PlaybackWidget::from_instance(self);
+        let widget = self.imp();
         let class = "seek-bar--active";
         let style_context = widget.seek_bar.style_context();
         if let Some(duration) = duration {
@@ -127,13 +127,13 @@ impl PlaybackWidget {
     }
 
     pub fn set_seek_position(&self, pos: f64) {
-        let widget = imp::PlaybackWidget::from_instance(self);
+        let widget = self.imp();
         widget.seek_bar.set_value(pos);
         widget.track_position.set_text(&format_duration(pos));
     }
 
     pub fn increment_seek_position(&self) {
-        let value = imp::PlaybackWidget::from_instance(self).seek_bar.value() + 1_000.0;
+        let value = self.imp().seek_bar.value() + 1_000.0;
         self.set_seek_position(value);
     }
 
@@ -141,7 +141,7 @@ impl PlaybackWidget {
     where
         F: Fn() + Clone + 'static,
     {
-        let widget = imp::PlaybackWidget::from_instance(self);
+        let widget = self.imp();
         let f_clone = f.clone();
         widget.now_playing.connect_clicked(move |_| f_clone());
         widget.now_playing_mobile.connect_clicked(move |_| f());
@@ -152,11 +152,11 @@ impl PlaybackWidget {
         Seek: Fn(u32) + Clone + 'static,
     {
         let debouncer = Debouncer::new();
-        let widget = imp::PlaybackWidget::from_instance(self);
+        let widget = self.imp();
         widget.seek_bar.set_increments(5_000.0, 10_000.0);
         widget.seek_bar.connect_change_value(
             clone!(@weak self as _self => @default-return glib::signal::Inhibit(false), move |_, _, requested| {
-                    imp::PlaybackWidget::from_instance(&_self)
+                _self.imp()
                     .track_position
                     .set_text(&format_duration(requested));
                 let seek = seek.clone();
@@ -167,7 +167,7 @@ impl PlaybackWidget {
     }
 
     pub fn set_playing(&self, is_playing: bool) {
-        let widget = imp::PlaybackWidget::from_instance(self);
+        let widget = self.imp();
         widget.controls.set_playing(is_playing);
         widget.controls_mobile.set_playing(is_playing);
         if is_playing {
@@ -180,19 +180,19 @@ impl PlaybackWidget {
     }
 
     pub fn set_repeat_mode(&self, mode: RepeatMode) {
-        let widget = imp::PlaybackWidget::from_instance(self);
+        let widget = self.imp();
         widget.controls.set_repeat_mode(mode);
         widget.controls_mobile.set_repeat_mode(mode);
     }
 
     pub fn set_shuffled(&self, shuffled: bool) {
-        let widget = imp::PlaybackWidget::from_instance(self);
+        let widget = self.imp();
         widget.controls.set_shuffled(shuffled);
         widget.controls_mobile.set_shuffled(shuffled);
     }
 
     pub fn set_seekbar_visible(&self, visible: bool) {
-        let widget = imp::PlaybackWidget::from_instance(self);
+        let widget = self.imp();
         widget.seek_bar.set_visible(visible);
     }
 
@@ -200,7 +200,7 @@ impl PlaybackWidget {
     where
         F: Fn() + Clone + 'static,
     {
-        let widget = imp::PlaybackWidget::from_instance(self);
+        let widget = self.imp();
         widget.controls.connect_play_pause(f.clone());
         widget.controls_mobile.connect_play_pause(f);
     }
@@ -209,7 +209,7 @@ impl PlaybackWidget {
     where
         F: Fn() + Clone + 'static,
     {
-        let widget = imp::PlaybackWidget::from_instance(self);
+        let widget = self.imp();
         widget.controls.connect_prev(f.clone());
         widget.controls_mobile.connect_prev(f);
     }
@@ -218,7 +218,7 @@ impl PlaybackWidget {
     where
         F: Fn() + Clone + 'static,
     {
-        let widget = imp::PlaybackWidget::from_instance(self);
+        let widget = self.imp();
         widget.controls.connect_next(f.clone());
         widget.controls_mobile.connect_next(f);
     }
@@ -227,7 +227,7 @@ impl PlaybackWidget {
     where
         F: Fn() + Clone + 'static,
     {
-        let widget = imp::PlaybackWidget::from_instance(self);
+        let widget = self.imp();
         widget.controls.connect_shuffle(f.clone());
         widget.controls_mobile.connect_shuffle(f);
     }
@@ -236,7 +236,7 @@ impl PlaybackWidget {
     where
         F: Fn() + Clone + 'static,
     {
-        let widget = imp::PlaybackWidget::from_instance(self);
+        let widget = self.imp();
         widget.controls.connect_repeat(f.clone());
         widget.controls_mobile.connect_repeat(f);
     }

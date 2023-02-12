@@ -35,7 +35,7 @@ mod imp {
         type ParentType = gtk::Box;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -54,14 +54,14 @@ glib::wrapper! {
 
 impl LibraryWidget {
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create an instance of LibraryWidget")
+        glib::Object::new()
     }
 
     fn connect_bottom_edge<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        imp::LibraryWidget::from_instance(self)
+        self.imp()
             .scrolled_window
             .connect_edge_reached(move |_, pos| {
                 if let gtk::PositionType::Bottom = pos {
@@ -74,9 +74,9 @@ impl LibraryWidget {
     where
         F: Fn(String) + Clone + 'static,
     {
-        imp::LibraryWidget::from_instance(self).flowbox.bind_model(
-            Some(store.unsafe_store()),
-            move |item| {
+        self.imp()
+            .flowbox
+            .bind_model(Some(store.unsafe_store()), move |item| {
                 wrap_flowbox_item(item, |album_model| {
                     let f = on_album_pressed.clone();
                     let album = AlbumWidget::for_model(album_model, worker.clone());
@@ -85,12 +85,11 @@ impl LibraryWidget {
                     }));
                     album
                 })
-            },
-        );
+            });
     }
 
     pub fn status_page(&self) -> &libadwaita::StatusPage {
-        &imp::LibraryWidget::from_instance(self).status_page
+        &self.imp().status_page
     }
 }
 
@@ -118,7 +117,7 @@ impl Library {
     fn bind_flowbox(&self) {
         self.widget.bind_albums(
             self.worker.clone(),
-            &*self.model.get_list_store().unwrap(),
+            &self.model.get_list_store().unwrap(),
             clone!(@weak self.model as model => move |id| {
                 model.open_album(id);
             }),
