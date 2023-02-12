@@ -43,7 +43,7 @@ impl SidebarModel {
     }
 
     fn map_to_destination(a: AlbumModel) -> SidebarDestination {
-        let title = Some(a.album_title())
+        let title = Some(a.album())
             .filter(|s| !s.is_empty())
             .unwrap_or_else(|| gettext("Unnamed playlist"));
         let id = a.uri();
@@ -143,9 +143,8 @@ impl Sidebar {
     }
 
     fn make_navigatable(item: &SidebarItem) -> gtk::Widget {
-        let row = SidebarRow::new();
+        let row = SidebarRow::new(item.clone());
         row.set_selectable(false);
-        row.set_item(item);
         row.upcast()
     }
 
@@ -162,11 +161,10 @@ impl Sidebar {
     }
 
     fn make_create_playlist(item: &SidebarItem, popover: CreatePlaylistPopover) -> gtk::Widget {
-        let row = SidebarRow::new();
+        let row = SidebarRow::new(item.clone());
         row.set_activatable(true);
         row.set_selectable(false);
         row.set_sensitive(true);
-        row.set_item(item);
         popover.set_parent(&row);
         row.upcast()
     }

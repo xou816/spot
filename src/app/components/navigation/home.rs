@@ -79,7 +79,7 @@ impl EventListener for HomePane {
                     .set_visible_child_name(SidebarDestination::NowPlaying.id());
             }
             AppEvent::BrowserEvent(BrowserEvent::HomeVisiblePageChanged(page)) => {
-                self.stack.set_visible_child_name(*page);
+                self.stack.set_visible_child_name(page);
             }
             _ => {}
         }

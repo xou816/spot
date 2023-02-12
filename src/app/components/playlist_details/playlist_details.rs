@@ -76,7 +76,7 @@ glib::wrapper! {
 
 impl PlaylistDetailsWidget {
     fn new() -> Self {
-
+        glib::Object::new()
     }
 
     fn playlist_tracks_widget(&self) -> &gtk::ListView {
@@ -137,14 +137,14 @@ impl PlaylistDetailsWidget {
     where
         F: Fn() + 'static,
     {
-        self.imp().headerbar.connect_edit(move || f());
+        self.imp().headerbar.connect_edit(f);
     }
 
     pub fn connect_cancel<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        self.imp().headerbar.connect_cancel(move || f());
+        self.imp().headerbar.connect_cancel(f);
     }
 
     pub fn connect_done<F>(&self, f: F)
@@ -155,7 +155,7 @@ impl PlaylistDetailsWidget {
             .headerbar
             .connect_ok(clone!(@weak self as _self => move || {
                 let s = _self.imp().header_widget.get_edited_playlist_name();
-                f(s.clone());
+                f(s);
             }));
     }
 
@@ -163,7 +163,7 @@ impl PlaylistDetailsWidget {
     where
         F: Fn() + 'static,
     {
-        self.imp().headerbar.connect_go_back(move || f());
+        self.imp().headerbar.connect_go_back(f);
     }
 }
 

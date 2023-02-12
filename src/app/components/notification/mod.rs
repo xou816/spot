@@ -26,13 +26,13 @@ impl Notification {
         // translators: This is a label in the notification shown after creating a new playlist. If it is clicked, the new playlist will be opened.
         let label = gettext("View");
         let toast = libadwaita::Toast::builder()
-            .title(&message)
+            .title(message)
             .timeout(4)
             .action_name("app.open_playlist")
-            .button_label(&label)
+            .button_label(label)
             .action_target(&id.to_variant())
             .build();
-        self.toast_overlay.add_toast(&toast);
+        self.toast_overlay.add_toast(toast);
     }
 }
 

@@ -54,15 +54,9 @@ mod imp {
     impl ObjectImpl for PlaylistHeaderBarWidget {}
 
     impl BuildableImpl for PlaylistHeaderBarWidget {
-        fn add_child(
-            &self,
-            buildable: &Self::Type,
-            builder: &gtk::Builder,
-            child: &glib::Object,
-            type_: Option<&str>,
-        ) {
+        fn add_child(&self, builder: &gtk::Builder, child: &glib::Object, type_: Option<&str>) {
             if Some("root") == type_ {
-                self.parent_add_child(buildable, builder, child, type_);
+                self.parent_add_child(builder, child, type_);
             } else {
                 self.main_header
                     .set_title_widget(child.downcast_ref::<gtk::Widget>());
@@ -81,7 +75,7 @@ glib::wrapper! {
 
 impl PlaylistHeaderBarWidget {
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create an instance of PlaylistHeaderBarWidget")
+        glib::Object::new()
     }
 
     pub fn connect_edit<F>(&self, f: F)

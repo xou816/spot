@@ -1,7 +1,7 @@
-mod widget;
+mod scrolling_header_widget;
 use glib::StaticType;
-pub use widget::*;
+pub use scrolling_header_widget::*;
 
 pub fn expose_widgets() {
-    widget::ScrollingHeaderWidget::static_type();
+    scrolling_header_widget::ScrollingHeaderWidget::static_type();
 }

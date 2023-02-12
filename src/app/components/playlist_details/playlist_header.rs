@@ -58,7 +58,7 @@ glib::wrapper! {
 
 impl PlaylistHeaderWidget {
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create an instance of PlaylistHeaderWidget")
+        glib::Object::new()
     }
 
     pub fn connect_artist_clicked<F>(&self, f: F)

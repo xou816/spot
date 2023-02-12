@@ -24,7 +24,7 @@ mod imp {
         type Interfaces = (gtk::Buildable,);
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -33,22 +33,16 @@ mod imp {
     }
 
     impl ObjectImpl for ScrollingHeaderWidget {
-        fn constructed(&self, obj: &Self::Type) {
-            self.parent_constructed(obj);
+        fn constructed(&self) {
+            self.parent_constructed();
         }
     }
 
     impl BuildableImpl for ScrollingHeaderWidget {
-        fn add_child(
-            &self,
-            buildable: &Self::Type,
-            builder: &gtk::Builder,
-            child: &glib::Object,
-            type_: Option<&str>,
-        ) {
+        fn add_child(&self, builder: &gtk::Builder, child: &glib::Object, type_: Option<&str>) {
             let child_widget = child.downcast_ref::<gtk::Widget>();
             match type_ {
-                Some("internal") => self.parent_add_child(buildable, builder, child, type_),
+                Some("internal") => self.parent_add_child(builder, child, type_),
                 Some("header") => self.revealer.set_child(child_widget),
                 _ => self.scrolled_window.set_child(child_widget),
             }
@@ -64,12 +58,8 @@ glib::wrapper! {
 }
 
 impl ScrollingHeaderWidget {
-    fn widget(&self) -> &imp::ScrollingHeaderWidget {
-        imp::ScrollingHeaderWidget::from_instance(self)
-    }
-
     fn set_header_visible(&self, visible: bool) -> bool {
-        let widget = self.widget();
+        let widget = self.imp();
         let is_up_to_date = widget.revealer.reveals_child() == visible;
         if !is_up_to_date {
             widget.revealer.set_reveal_child(visible);
@@ -78,8 +68,8 @@ impl ScrollingHeaderWidget {
     }
 
     fn is_scrolled_to_top(&self) -> bool {
-        self.widget().scrolled_window.vadjustment().value() <= f64::EPSILON
-            || self.widget().revealer.reveals_child()
+        self.imp().scrolled_window.vadjustment().value() <= f64::EPSILON
+            || self.imp().revealer.reveals_child()
     }
 
     pub fn connect_header_visibility<F>(&self, f: F)
@@ -108,17 +98,15 @@ impl ScrollingHeaderWidget {
             _self.set_header_visible(visible);
         }));
 
-        self.widget()
-            .scrolled_window
-            .add_controller(&scroll_controller);
-        self.add_controller(&swipe_controller);
+        self.imp().scrolled_window.add_controller(scroll_controller);
+        self.add_controller(swipe_controller);
     }
 
     pub fn connect_bottom_edge<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        self.widget()
+        self.imp()
             .scrolled_window
             .connect_edge_reached(move |_, pos| {
                 if let gtk::PositionType::Bottom = pos {

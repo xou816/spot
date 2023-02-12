@@ -87,7 +87,7 @@ impl AlbumDetailsWidget {
 
     fn connect_header(&self) {
         self.set_header_visible(false);
-        self.widget().scrolling_header.connect_header_visibility(
+        self.imp().scrolling_header.connect_header_visibility(
             clone!(@weak self as _self => move |visible| {
                 _self.set_header_visible(visible);
             }),
@@ -110,7 +110,7 @@ impl AlbumDetailsWidget {
     }
 
     fn set_loaded(&self) {
-        let context = self.widget().scrolling_header.style_context();
+        let context = self.imp().scrolling_header.style_context();
         context.add_class("container--loaded");
     }
 

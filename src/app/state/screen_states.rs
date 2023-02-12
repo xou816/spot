@@ -228,7 +228,7 @@ impl UpdatableState for HomeState {
         match action.as_ref() {
             BrowserAction::SetHomeVisiblePage(page) => {
                 self.visible_page = *page;
-                vec![BrowserEvent::HomeVisiblePageChanged(*page)]
+                vec![BrowserEvent::HomeVisiblePageChanged(page)]
             }
             BrowserAction::SetLibraryContent(content) => {
                 if !self.albums.eq(content, |a, b| a.uri() == b.id) {

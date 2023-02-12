@@ -44,7 +44,7 @@ glib::wrapper! {
 
 impl CreatePlaylistPopover {
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create an instance of CreatePlaylistPopover")
+        glib::Object::new()
     }
 
     pub fn connect_create<F: Clone + Fn(String) + 'static>(&self, create_fun: F) {

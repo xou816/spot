@@ -19,7 +19,7 @@ pub struct PlaylistDetailsModel {
 impl PlaylistDetailsModel {
     pub fn new(id: String, app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
         Self {
-            id: id.clone(),
+            id,
             app_model,
             dispatcher,
         }

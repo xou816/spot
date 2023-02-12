@@ -123,7 +123,7 @@ sources = files(
 './app/components/selection/widget.rs',
 './app/components/selection/component.rs',
 './app/components/selection/mod.rs',
-'./app/components/scrolling_header/widget.rs',
+'./app/components/scrolling_header/scrolling_header_widget.rs',
 './app/components/scrolling_header/mod.rs',
 './app/components/mod.rs',
 './app/components/details/album_header.rs',
