@@ -141,8 +141,10 @@ impl SpotifyPlayer {
                 Ok(())
             }
             Command::PlayerPreload(track) => {
-                let player = player.as_mut().ok_or(SpotifyError::PlayerNotReady)?;
-                player.preload(track);
+                self.player
+                    .as_mut()
+                    .ok_or(SpotifyError::PlayerNotReady)?
+                    .preload(track);
                 Ok(())
             }
             Command::RefreshToken => {
@@ -347,6 +349,7 @@ async fn player_setup_delegate(
                 delegate.notify_playback_state(position_ms);
             }
             PlayerEvent::TimeToPreloadNextTrack { .. } => {
+                debug!("Requestiong next track to be preloaded...");
                 delegate.preload_next_track();
             }
             _ => {}
