@@ -212,8 +212,8 @@ impl SpotifyPlayer {
         };
         info!("bitrate: {:?}", &player_config.bitrate);
 
-        let mixer = &mut self.mixer;
-        let filter = mixer
+        let soft_volume = self
+            .mixer
             .get_or_insert_with(|| {
                 let mix = Box::new(SoftMixer::open(MixerConfig {
                     // This value feels reasonable to me. Feel free to change it
@@ -293,7 +293,9 @@ async fn create_session(
                 ap_port: Some(ap_port),
                 ..Default::default()
             };
-            let result = Session::connect(session_config, credentials, None, true).await.map(|r| r.0);
+            let result = Session::connect(session_config, credentials, None, true)
+                .await
+                .map(|r| r.0);
             result.map_err(|e| {
                 dbg!(e);
                 SpotifyError::LoginFailed
@@ -305,7 +307,9 @@ async fn create_session(
                     ap_port: port,
                     ..Default::default()
                 };
-                let result = Session::connect(session_config, credentials.clone(), None, true).await.map(|r| r.0);
+                let result = Session::connect(session_config, credentials.clone(), None, true)
+                    .await
+                    .map(|r| r.0);
 
                 match result {
                     Ok(session) => return Ok(session),
