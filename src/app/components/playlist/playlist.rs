@@ -73,7 +73,6 @@ pub trait PlaylistModel {
 pub struct Playlist<Model> {
     animator: AnimatorDefault,
     listview: gtk::ListView,
-    _press_gesture: gtk::GestureLongPress,
     model: Rc<Model>,
 }
 
@@ -134,12 +133,11 @@ where
         press_gesture.connect_pressed(clone!(@weak model => move |_, _, _| {
             model.enable_selection();
         }));
-        listview.add_controller(press_gesture.clone()); //FIXME
+        listview.add_controller(press_gesture);
 
         Self {
             animator: AnimatorDefault::ease_in_out_animator(),
             listview,
-            _press_gesture: press_gesture,
             model,
         }
     }

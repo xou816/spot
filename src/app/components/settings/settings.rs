@@ -88,7 +88,7 @@ impl SettingsWindow {
 
         audio_backend
             .bind_property("selected", alsa_device_row, "visible")
-            .transform_to(|_, value: u32| Some(value == 1)) //FIXME
+            .transform_to(|_, value: u32| Some(value == 1))
             .build();
 
         if audio_backend.selected() == 0 {
