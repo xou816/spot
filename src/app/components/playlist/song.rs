@@ -4,6 +4,8 @@ use crate::app::models::SongModel;
 
 use crate::app::Worker;
 use gio::MenuModel;
+use glib::subclass::InitializingObject;
+
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
@@ -49,30 +51,18 @@ mod imp {
         type ParentType = gtk::Grid;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
-        fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
+        fn instance_init(obj: &InitializingObject<Self>) {
             obj.init_template();
         }
     }
 
     lazy_static! {
         static ref PROPERTIES: [glib::ParamSpec; 2] = [
-            glib::ParamSpecBoolean::new(
-                "playing",
-                "Playing",
-                "",
-                false,
-                glib::ParamFlags::READWRITE
-            ),
-            glib::ParamSpecBoolean::new(
-                "selected",
-                "Selected",
-                "",
-                false,
-                glib::ParamFlags::READWRITE,
-            ),
+            glib::ParamSpecBoolean::builder("playing").build(),
+            glib::ParamSpecBoolean::builder("selected").build()
         ];
     }
 
@@ -81,19 +71,13 @@ mod imp {
             &*PROPERTIES
         }
 
-        fn set_property(
-            &self,
-            obj: &Self::Type,
-            _id: usize,
-            value: &glib::Value,
-            pspec: &glib::ParamSpec,
-        ) {
+        fn set_property(&self, _id: usize, value: &glib::Value, pspec: &glib::ParamSpec) {
             match pspec.name() {
                 "playing" => {
                     let is_playing = value
                         .get()
                         .expect("type conformity checked by `Object::set_property`");
-                    let context = obj.style_context();
+                    let context = self.obj().style_context();
                     if is_playing {
                         context.add_class(SONG_CLASS);
                     } else {
@@ -110,21 +94,21 @@ mod imp {
             }
         }
 
-        fn property(&self, obj: &Self::Type, _id: usize, pspec: &glib::ParamSpec) -> glib::Value {
+        fn property(&self, _id: usize, pspec: &glib::ParamSpec) -> glib::Value {
             match pspec.name() {
-                "playing" => obj.style_context().has_class(SONG_CLASS).to_value(),
+                "playing" => self.obj().style_context().has_class(SONG_CLASS).to_value(),
                 "selected" => self.song_checkbox.is_active().to_value(),
                 _ => unimplemented!(),
             }
         }
 
-        fn constructed(&self, obj: &Self::Type) {
-            self.parent_constructed(obj);
+        fn constructed(&self) {
+            self.parent_constructed();
             self.song_checkbox.set_sensitive(false);
         }
 
-        fn dispose(&self, obj: &Self::Type) {
-            while let Some(child) = obj.first_child() {
+        fn dispose(&self) {
+            while let Some(child) = self.obj().first_child() {
                 child.unparent();
             }
         }
@@ -141,11 +125,7 @@ glib::wrapper! {
 impl SongWidget {
     pub fn new() -> Self {
         display_add_css_provider(resource!("/components/song.css"));
-        glib::Object::new(&[]).expect("Failed to create an instance of SongWidget")
-    }
-
-    fn widget(&self) -> &imp::SongWidget {
-        imp::SongWidget::from_instance(self)
+        glib::Object::new()
     }
 
     pub fn set_actions(&self, actions: Option<&gio::ActionGroup>) {
@@ -154,7 +134,7 @@ impl SongWidget {
 
     pub fn set_menu(&self, menu: Option<&MenuModel>) {
         if menu.is_some() {
-            let widget = self.widget();
+            let widget = self.imp();
             widget.menu_btn.set_menu_model(menu);
             widget
                 .menu_btn
@@ -174,7 +154,7 @@ impl SongWidget {
     }
 
     fn set_image(&self, pixbuf: Option<&gdk_pixbuf::Pixbuf>) {
-        self.widget().song_cover.set_from_pixbuf(pixbuf);
+        self.imp().song_cover.set_from_pixbuf(pixbuf);
     }
 
     pub fn set_art(&self, model: &SongModel, worker: Worker) {
@@ -191,7 +171,7 @@ impl SongWidget {
     }
 
     pub fn bind(&self, model: &SongModel, worker: Worker, show_cover: bool) {
-        let widget = self.widget();
+        let widget = self.imp();
 
         model.bind_title(&*widget.song_title, "label");
         model.bind_artist(&*widget.song_artist, "label");

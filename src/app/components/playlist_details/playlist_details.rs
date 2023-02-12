@@ -42,7 +42,7 @@ mod imp {
         type ParentType = libadwaita::Bin;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -51,8 +51,8 @@ mod imp {
     }
 
     impl ObjectImpl for PlaylistDetailsWidget {
-        fn constructed(&self, obj: &Self::Type) {
-            self.parent_constructed(obj);
+        fn constructed(&self) {
+            self.parent_constructed();
             self.header_mobile.set_centered();
             self.header_mobile.hide_actions();
             self.header_widget.hide_actions();
@@ -69,22 +69,18 @@ glib::wrapper! {
 
 impl PlaylistDetailsWidget {
     fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create an instance of PlaylistDetailsWidget")
-    }
-
-    fn widget(&self) -> &imp::PlaylistDetailsWidget {
-        imp::PlaylistDetailsWidget::from_instance(self)
+        glib::Object::new()
     }
 
     fn playlist_tracks_widget(&self) -> &gtk::ListView {
-        self.widget().tracks.as_ref()
+        self.imp().tracks.as_ref()
     }
 
     fn connect_bottom_edge<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        self.widget()
+        self.imp()
             .scrolled_window
             .connect_edge_reached(move |_, pos| {
                 if let gtk::PositionType::Bottom = pos {
@@ -94,7 +90,7 @@ impl PlaylistDetailsWidget {
     }
 
     fn set_header_visible(&self, visible: bool) -> bool {
-        let widget = self.widget();
+        let widget = self.imp();
         let is_up_to_date = widget.header_revealer.reveals_child() == visible;
         if !is_up_to_date {
             widget.header_revealer.set_reveal_child(visible);
@@ -113,8 +109,8 @@ impl PlaylistDetailsWidget {
             }),
         );
 
-        let widget = self.widget();
-        widget.scrolled_window.add_controller(&scroll_controller);
+        let widget = self.imp();
+        widget.scrolled_window.add_controller(scroll_controller);
     }
 
     fn set_loaded(&self) {
@@ -123,27 +119,25 @@ impl PlaylistDetailsWidget {
     }
 
     fn set_album_and_artist(&self, album: &str, artist: &str) {
-        self.widget()
+        self.imp()
             .header_widget
             .set_album_and_artist_and_year(album, artist, None);
-        self.widget()
+        self.imp()
             .header_mobile
             .set_album_and_artist_and_year(album, artist, None);
     }
 
     fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {
-        self.widget().header_widget.set_artwork(art);
-        self.widget().header_mobile.set_artwork(art);
+        self.imp().header_widget.set_artwork(art);
+        self.imp().header_mobile.set_artwork(art);
     }
 
     fn connect_artist_clicked<F>(&self, f: F)
     where
         F: Fn() + Clone + 'static,
     {
-        self.widget()
-            .header_widget
-            .connect_artist_clicked(f.clone());
-        self.widget().header_mobile.connect_artist_clicked(f);
+        self.imp().header_widget.connect_artist_clicked(f.clone());
+        self.imp().header_mobile.connect_artist_clicked(f);
     }
 }
 
