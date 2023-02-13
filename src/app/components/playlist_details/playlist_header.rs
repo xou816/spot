@@ -7,10 +7,16 @@ const CSS_RO_ENTRY: &str = "playlist__title-entry--ro";
 
 mod imp {
 
+    use std::cell::RefCell;
+    use std::convert::TryFrom;
+
+    use glib::{ParamSpec, Properties};
+
     use super::*;
 
-    #[derive(Debug, Default, CompositeTemplate)]
+    #[derive(Debug, Default, CompositeTemplate, Properties)]
     #[template(resource = "/dev/alextren/Spot/components/playlist_header.ui")]
+    #[properties(wrapper_type = super::PlaylistHeaderWidget)]
     pub struct PlaylistHeaderWidget {
         #[template_child]
         pub playlist_label_entry: TemplateChild<gtk::Entry>,
@@ -27,8 +33,8 @@ mod imp {
         #[template_child]
         pub author_button_label: TemplateChild<gtk::Label>,
 
-        #[template_child]
-        pub year_label: TemplateChild<gtk::Label>,
+        #[property(get, set, name = "original-entry-text")]
+        pub original_entry_text: RefCell<String>,
     }
 
     #[glib::object_subclass]
@@ -47,7 +53,30 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for PlaylistHeaderWidget {}
+    impl ObjectImpl for PlaylistHeaderWidget {
+        fn properties() -> &'static [ParamSpec] {
+            Self::derived_properties()
+        }
+
+        fn set_property(&self, id: usize, value: &glib::Value, pspec: &glib::ParamSpec) {
+            self.derived_set_property(id, value, pspec);
+        }
+
+        fn property(&self, id: usize, pspec: &glib::ParamSpec) -> glib::Value {
+            self.derived_property(id, pspec)
+        }
+
+        fn constructed(&self) {
+            self.parent_constructed();
+            let entry: &gtk::Entry = &self.playlist_label_entry;
+            entry
+                .bind_property("text", entry, "width-chars")
+                .transform_to(|_, text: &str| Some(text.len() as i32))
+                .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                .build();
+        }
+    }
+
     impl WidgetImpl for PlaylistHeaderWidget {}
     impl BoxImpl for PlaylistHeaderWidget {}
 }
@@ -61,7 +90,7 @@ impl PlaylistHeaderWidget {
         glib::Object::new()
     }
 
-    pub fn connect_artist_clicked<F>(&self, f: F)
+    pub fn connect_owner_clicked<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
@@ -69,6 +98,12 @@ impl PlaylistHeaderWidget {
             f();
             glib::signal::Inhibit(true)
         });
+    }
+
+    pub fn reset_playlist_name(&self) {
+        self.imp()
+            .playlist_label_entry
+            .set_text(&self.original_entry_text());
     }
 
     pub fn get_edited_playlist_name(&self) -> String {
@@ -79,17 +114,14 @@ impl PlaylistHeaderWidget {
         self.imp().playlist_art.set_from_pixbuf(Some(art));
     }
 
-    pub fn set_album_and_artist_and_year(&self, album: &str, artist: &str, year: Option<u32>) {
+    pub fn set_info(&self, playlist: &str, owner: &str) {
         let widget = self.imp();
-        widget.playlist_label_entry.set_text(album);
+        self.set_original_entry_text(playlist);
+        widget.playlist_label_entry.set_text(playlist);
         widget
             .playlist_label_entry
-            .set_placeholder_text(Some(album));
-        widget.author_button_label.set_label(artist);
-        match year {
-            Some(year) => widget.year_label.set_label(&year.to_string()),
-            None => widget.year_label.hide(),
-        }
+            .set_placeholder_text(Some(playlist));
+        widget.author_button_label.set_label(owner);
     }
 
     pub fn set_centered(&self) {

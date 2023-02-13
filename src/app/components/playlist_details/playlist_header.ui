@@ -32,7 +32,7 @@
         <property name="spacing">6</property>
         <child>
           <object class="GtkEntry" id="playlist_label_entry">
-            <property name="hexpand">0</property>
+            <property name="hexpand">1</property>
             <property name="halign">start</property>
             <property name="editable">0</property>
             <property name="can-focus">0</property>
@@ -60,20 +60,6 @@
             </child>
             <style>
               <class name="title-4" />
-            </style>
-          </object>
-        </child>
-        <child>
-          <object class="GtkLabel" id="year_label">
-            <property name="xalign">0</property>
-            <property name="halign">start</property>
-            <property name="label">Year</property>
-            <property name="ellipsize">end</property>
-            <property name="max-width-chars">50</property>
-            <property name="lines">1</property>
-            <property name="sensitive">0</property>
-            <style>
-              <class name="body" />
             </style>
           </object>
         </child>

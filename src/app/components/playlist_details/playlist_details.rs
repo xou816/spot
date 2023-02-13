@@ -90,10 +90,23 @@ impl PlaylistDetailsWidget {
         self.imp().scrolling_header.connect_bottom_edge(f);
     }
 
+    fn set_header_visible(&self, visible: bool) {
+        let widget = self.imp();
+        widget.headerbar.set_title_visible(true);
+        if visible {
+            widget.headerbar.add_classes(&["flat"]);
+        } else {
+            widget.headerbar.remove_classes(&["flat"]);
+        }
+    }
+
     fn connect_header(&self) {
-        self.imp()
-            .scrolling_header
-            .connect_header_visibility(|_| {});
+        self.set_header_visible(false);
+        self.imp().scrolling_header.connect_header_visibility(
+            clone!(@weak self as _self => move |visible| {
+                _self.set_header_visible(visible);
+            }),
+        );
     }
 
     fn set_loaded(&self) {
@@ -111,13 +124,9 @@ impl PlaylistDetailsWidget {
         self.imp().headerbar.set_editable(editing);
     }
 
-    fn set_album_and_artist(&self, album: &str, artist: &str) {
-        self.imp()
-            .header_widget
-            .set_album_and_artist_and_year(album, artist, None);
-        self.imp()
-            .header_mobile
-            .set_album_and_artist_and_year(album, artist, None);
+    fn set_info(&self, playlist: &str, owner: &str) {
+        self.imp().header_widget.set_info(playlist, owner);
+        self.imp().header_mobile.set_info(playlist, owner);
     }
 
     fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {
@@ -125,12 +134,12 @@ impl PlaylistDetailsWidget {
         self.imp().header_mobile.set_artwork(art);
     }
 
-    fn connect_artist_clicked<F>(&self, f: F)
+    fn connect_owner_clicked<F>(&self, f: F)
     where
         F: Fn() + Clone + 'static,
     {
-        self.imp().header_widget.connect_artist_clicked(f.clone());
-        self.imp().header_mobile.connect_artist_clicked(f);
+        self.imp().header_widget.connect_owner_clicked(f.clone());
+        self.imp().header_mobile.connect_owner_clicked(f);
     }
 
     pub fn connect_edit<F>(&self, f: F)
@@ -144,7 +153,13 @@ impl PlaylistDetailsWidget {
     where
         F: Fn() + 'static,
     {
-        self.imp().headerbar.connect_cancel(f);
+        self.imp()
+            .headerbar
+            .connect_cancel(clone!(@weak self as _self => move || {
+                _self.imp().header_widget.reset_playlist_name();
+                _self.imp().header_mobile.reset_playlist_name();
+                f();
+            }));
     }
 
     pub fn connect_done<F>(&self, f: F)
@@ -195,7 +210,7 @@ impl PlaylistDetails {
             model.load_more_tracks();
         }));
 
-        widget.connect_artist_clicked(clone!(@weak model => move || model.view_owner()));
+        widget.connect_owner_clicked(clone!(@weak model => move || model.view_owner()));
 
         widget.connect_edit(clone!(@weak model => move || {
             model.enable_selection();
@@ -223,7 +238,7 @@ impl PlaylistDetails {
             let owner = &info.owner.display_name[..];
             let art_url = info.art.as_ref();
 
-            self.widget.set_album_and_artist(title, owner);
+            self.widget.set_info(title, owner);
 
             if let Some(art_url) = art_url.cloned() {
                 let widget = self.widget.downgrade();

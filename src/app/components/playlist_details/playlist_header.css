@@ -22,3 +22,25 @@
   margin-left: 6px;
   margin-bottom: 6px;
 }
+
+clamp.playlist_details__clamp {
+  background-color: @view_bg_color;
+  box-shadow: inset 0px -1px 0px @borders;
+}
+
+headerbar.playlist_details__headerbar {
+  transition: background-color .3s ease;
+}
+
+headerbar.flat.playlist_details__headerbar windowtitle {
+  opacity: 0;
+}
+
+headerbar.playlist_details__headerbar windowtitle {
+  transition: opacity .3s ease;
+  opacity: 1;
+}
+
+.playlist_details__headerbar.flat {
+  background-color: @view_bg_color;
+}

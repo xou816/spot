@@ -36,7 +36,7 @@
                       </object>
                     </child>
                     <style>
-                      <class name="_details__clamp" />
+                      <class name="playlist_details__clamp" />
                     </style>
                   </object>
                 </child>

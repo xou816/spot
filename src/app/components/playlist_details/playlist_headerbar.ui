@@ -30,7 +30,7 @@
               </object>
             </child>
             <style>
-              <class name="flat" />
+              <class name="playlist_details__headerbar" />
             </style>
           </object>
         </child>

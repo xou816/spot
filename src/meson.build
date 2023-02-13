@@ -141,6 +141,8 @@ sources = files(
 './app/components/playlist_details/playlist_details_model.rs',
 './app/components/playlist_details/mod.rs',
 './app/components/playlist_details/playlist_details.rs',
+'./app/components/playlist_details/playlist_headerbar.rs',
+'./app/components/playlist_details/playlist_header.rs',
 './app/components/headerbar/widget.rs',
 './app/components/headerbar/component.rs',
 './app/components/headerbar/mod.rs',
