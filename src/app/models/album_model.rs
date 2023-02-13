@@ -25,10 +25,6 @@ impl AlbumModel {
             .property("uri", uri)
             .build()
     }
-
-    pub fn set_album_title(&self, title: &str) {
-        self.set_property("album", title);
-    }
 }
 
 mod imp {

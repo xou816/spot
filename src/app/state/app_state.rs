@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use crate::app::models::PlaylistSummary;
+use crate::app::models::{PlaylistDescription, PlaylistSummary};
 use crate::app::state::{
     browser_state::{BrowserAction, BrowserEvent, BrowserState},
     login_state::{LoginAction, LoginEvent, LoginState},
@@ -20,7 +20,6 @@ pub enum AppAction {
     Start,
     Raise,
     ShowNotification(String),
-    ShowPlaylistCreatedNotification(String),
     ViewNowPlaying,
     // cross-state actions
     QueueSelection,
@@ -31,6 +30,7 @@ pub enum AppAction {
     UnsaveSelection,
     EnableSelection(SelectionContext),
     CancelSelection,
+    CreatePlaylist(PlaylistDescription),
     UpdatePlaylistName(PlaylistSummary),
 }
 
@@ -127,9 +127,6 @@ impl AppState {
                 vec![AppEvent::Started]
             }
             AppAction::ShowNotification(c) => vec![AppEvent::NotificationShown(c)],
-            AppAction::ShowPlaylistCreatedNotification(c) => {
-                vec![AppEvent::PlaylistCreatedNotificationShown(c)]
-            }
             AppAction::ViewNowPlaying => vec![AppEvent::NowPlayingShown],
             AppAction::Raise => vec![AppEvent::Raised],
             AppAction::QueueSelection => {
@@ -207,6 +204,20 @@ impl AppState {
                 } else {
                     vec![]
                 }
+            }
+            AppAction::CreatePlaylist(playlist) => {
+                let id = playlist.id.clone();
+                let mut events = forward_action(
+                    LoginAction::PrependUserPlaylist(vec![playlist.clone().into()]),
+                    &mut self.logged_user,
+                );
+                let mut more_events = forward_action(
+                    BrowserAction::PrependPlaylistsContent(vec![playlist]),
+                    &mut self.browser,
+                );
+                events.append(&mut more_events);
+                events.push(AppEvent::PlaylistCreatedNotificationShown(id));
+                events
             }
             AppAction::UpdatePlaylistName(s) => {
                 let mut events = forward_action(

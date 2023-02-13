@@ -118,7 +118,7 @@ impl dyn ActionDispatcher {
                 Err(SpotifyApiError::NoToken) => vec![],
                 Err(SpotifyApiError::InvalidToken) => {
                     let mut retried = call().await.unwrap_or_else(|_| Vec::new());
-                    retried.push(LoginAction::RefreshToken.into());
+                    retried.insert(0, LoginAction::RefreshToken.into());
                     retried
                 }
                 Err(err) => {

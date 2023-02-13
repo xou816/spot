@@ -24,6 +24,7 @@ pub enum LoginAction {
     SetLoginSuccess(SetLoginSuccessAction),
     SetUserPlaylists(Vec<PlaylistSummary>),
     UpdateUserPlaylist(PlaylistSummary),
+    PrependUserPlaylist(Vec<PlaylistSummary>),
     SetLoginFailure,
     RefreshToken,
     SetRefreshedToken {
@@ -128,6 +129,11 @@ impl UpdatableState for LoginState {
                 if let Some(p) = self.playlists.iter_mut().find(|p| p.id == id) {
                     p.title = title;
                 }
+                vec![LoginEvent::UserPlaylistsLoaded.into()]
+            }
+            LoginAction::PrependUserPlaylist(mut summaries) => {
+                summaries.append(&mut self.playlists);
+                self.playlists = summaries;
                 vec![LoginEvent::UserPlaylistsLoaded.into()]
             }
         }

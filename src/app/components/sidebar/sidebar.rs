@@ -54,15 +54,10 @@ impl SidebarModel {
         let user_id = self.app_model.get_state().logged_user.user.clone().unwrap();
         let api = self.app_model.get_spotify();
         self.dispatcher
-            .call_spotify_and_dispatch_many(move || async move {
+            .call_spotify_and_dispatch(move || async move {
                 api.create_new_playlist(name.as_str(), user_id.as_str())
                     .await
-                    .map(|p| {
-                        vec![
-                            BrowserAction::PrependPlaylistsContent(vec![p.clone()]).into(),
-                            AppAction::ShowPlaylistCreatedNotification(p.id),
-                        ]
-                    })
+                    .map(AppAction::CreatePlaylist)
             })
     }
 

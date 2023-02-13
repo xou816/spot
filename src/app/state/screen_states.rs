@@ -285,7 +285,7 @@ impl UpdatableState for HomeState {
             }
             BrowserAction::UpdatePlaylistName(PlaylistSummary { id, title }) => {
                 if let Some(p) = self.playlists.iter().find(|p| &p.uri() == id) {
-                    p.set_album_title(title);
+                    p.set_album(title.to_owned());
                 }
                 vec![BrowserEvent::SavedPlaylistsUpdated]
             }
