@@ -44,7 +44,7 @@ features = ["derive"]
 version = "^1.0.79"
 
 [dependencies.isahc]
-version = "^1.7.0"
+version = "^1.7.2"
 features = ["json"]
 
 [dependencies.rand]
