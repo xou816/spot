@@ -68,12 +68,6 @@ mod imp {
 
         fn constructed(&self) {
             self.parent_constructed();
-            let entry: &gtk::Entry = &self.playlist_label_entry;
-            entry
-                .bind_property("text", entry, "width-chars")
-                .transform_to(|_, text: &str| Some(text.len() as i32))
-                .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
-                .build();
         }
     }
 
@@ -142,5 +136,14 @@ impl PlaylistHeaderWidget {
 
     pub fn entry(&self) -> &gtk::Entry {
         self.imp().playlist_label_entry.as_ref()
+    }
+
+    pub fn set_grows_automatically(&self) {
+        let entry: &gtk::Entry = &self.imp().playlist_label_entry;
+        entry
+            .bind_property("text", entry, "width-chars")
+            .transform_to(|_, text: &str| Some(text.len() as i32))
+            .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+            .build();
     }
 }

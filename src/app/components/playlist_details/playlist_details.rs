@@ -58,6 +58,7 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
             self.header_mobile.set_centered();
+            self.header_widget.set_grows_automatically();
             self.header_widget
                 .entry()
                 .bind_property("text", self.header_mobile.entry(), "text")
@@ -127,6 +128,7 @@ impl PlaylistDetailsWidget {
     fn set_info(&self, playlist: &str, owner: &str) {
         self.imp().header_widget.set_info(playlist, owner);
         self.imp().header_mobile.set_info(playlist, owner);
+        self.imp().headerbar.set_title(Some(playlist));
     }
 
     fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {
