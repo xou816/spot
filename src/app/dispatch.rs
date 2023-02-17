@@ -8,6 +8,7 @@ use super::AppAction;
 
 pub trait ActionDispatcher {
     fn dispatch(&self, action: AppAction);
+    fn dispatch_many(&self, actions: Vec<AppAction>);
     fn dispatch_local_async(&self, action: LocalBoxFuture<'static, Option<AppAction>>);
     fn dispatch_async(&self, action: BoxFuture<'static, Option<AppAction>>);
     fn dispatch_many_async(&self, actions: BoxFuture<'static, Vec<AppAction>>);
@@ -29,6 +30,12 @@ impl ActionDispatcherImpl {
 impl ActionDispatcher for ActionDispatcherImpl {
     fn dispatch(&self, action: AppAction) {
         self.sender.unbounded_send(action).unwrap();
+    }
+
+    fn dispatch_many(&self, actions: Vec<AppAction>) {
+        for action in actions.into_iter() {
+            self.sender.unbounded_send(action).unwrap();
+        }
     }
 
     fn dispatch_local_async(&self, action: LocalBoxFuture<'static, Option<AppAction>>) {

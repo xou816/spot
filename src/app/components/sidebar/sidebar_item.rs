@@ -59,7 +59,7 @@ impl SidebarDestination {
 }
 
 impl SidebarItem {
-    pub fn for_destination(dest: SidebarDestination) -> Self {
+    pub fn from_destination(dest: SidebarDestination) -> Self {
         let (id, data, title) = match dest {
             SidebarDestination::Playlist(PlaylistSummary { id, title }) => {
                 (PLAYLIST, Some(id), title)

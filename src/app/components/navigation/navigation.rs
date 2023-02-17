@@ -64,9 +64,9 @@ impl Navigation {
         self.leaflet.navigate(NavigationDirection::Back);
     }
 
-    fn pop_to_home(&self) {
+    fn pop_to_home(&mut self) {
         self.leaflet.navigate(NavigationDirection::Forward);
-        self.model.go_home();
+        self.pop_to(&ScreenName::Home);
     }
 
     fn push_screen(&mut self, name: &ScreenName) {

@@ -62,16 +62,19 @@ impl SidebarModel {
     }
 
     fn navigate(&self, dest: SidebarDestination) {
-        let action = match dest {
+        let actions = match dest {
             SidebarDestination::Library
             | SidebarDestination::SavedTracks
             | SidebarDestination::NowPlaying
             | SidebarDestination::SavedPlaylists => {
-                BrowserAction::SetHomeVisiblePage(dest.id()).into()
+                vec![BrowserAction::SetHomeVisiblePage(dest.id()).into()]
             }
-            SidebarDestination::Playlist(PlaylistSummary { id, .. }) => AppAction::ViewPlaylist(id),
+            SidebarDestination::Playlist(PlaylistSummary { id, .. }) => vec![
+                BrowserAction::SetHomeVisiblePage(SidebarDestination::SavedPlaylists.id()).into(),
+                AppAction::ViewPlaylist(id),
+            ],
         };
-        self.dispatcher.dispatch(action);
+        self.dispatcher.dispatch_many(actions);
     }
 }
 
@@ -88,16 +91,16 @@ impl Sidebar {
 
         let list_store = gio::ListStore::new(SidebarItem::static_type());
 
-        list_store.append(&SidebarItem::for_destination(SidebarDestination::Library));
-        list_store.append(&SidebarItem::for_destination(
+        list_store.append(&SidebarItem::from_destination(SidebarDestination::Library));
+        list_store.append(&SidebarItem::from_destination(
             SidebarDestination::SavedTracks,
         ));
-        list_store.append(&SidebarItem::for_destination(
+        list_store.append(&SidebarItem::from_destination(
             SidebarDestination::NowPlaying,
         ));
         list_store.append(&SidebarItem::playlists_section());
         list_store.append(&SidebarItem::create_playlist_item());
-        list_store.append(&SidebarItem::for_destination(
+        list_store.append(&SidebarItem::from_destination(
             SidebarDestination::SavedPlaylists,
         ));
 
@@ -169,7 +172,7 @@ impl Sidebar {
             .model
             .get_playlists()
             .into_iter()
-            .map(SidebarItem::for_destination)
+            .map(SidebarItem::from_destination)
             .collect();
         self.list_store.splice(
             NUM_FIXED_ENTRIES,
