@@ -139,6 +139,13 @@ impl PlaylistDetailsWidget {
         self.imp().header_widget.connect_artist_clicked(f.clone());
         self.imp().header_mobile.connect_artist_clicked(f);
     }
+
+    fn connect_copy<F>(&self, f: F)
+    where
+        F: Fn() + Clone + 'static,
+    {
+        self.widget().header_widget.connect_copy(f);
+    }
 }
 
 pub struct PlaylistDetails {
@@ -169,6 +176,8 @@ impl PlaylistDetails {
         widget.connect_artist_clicked(clone!(@weak model => move || {
             model.view_owner();
         }));
+
+        widget.connect_copy(clone!(@weak model => move || model.toggle_copy_link()));
 
         Self {
             model,

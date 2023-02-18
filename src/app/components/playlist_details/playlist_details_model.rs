@@ -1,4 +1,4 @@
-use gio::prelude::*;
+use gdk::prelude::*;
 use gio::SimpleActionGroup;
 use std::ops::Deref;
 use std::rc::Rc;
@@ -91,6 +91,15 @@ impl PlaylistDetailsModel {
             self.dispatcher
                 .dispatch(AppAction::ViewUser(owner.to_owned()));
         }
+    }
+
+    pub fn toggle_copy_link(&self) {
+        let id = self.id.clone();
+        let link = format!("https://open.spotify.com/playlist/{}", &id);
+        let clipboard = gdk::Display::default().unwrap().clipboard();
+        clipboard
+            .set_content(Some(&gdk::ContentProvider::for_value(&link.to_value())))
+            .expect("Failed to set clipboard content");
     }
 }
 
