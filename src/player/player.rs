@@ -29,6 +29,7 @@ pub enum SpotifyError {
     LoginFailed,
     TokenFailed,
     PlayerNotReady,
+    TechnicalError,
 }
 
 impl Error for SpotifyError {}
@@ -39,6 +40,9 @@ impl fmt::Display for SpotifyError {
             Self::LoginFailed => write!(f, "Login failed!"),
             Self::TokenFailed => write!(f, "Token retrieval failed!"),
             Self::PlayerNotReady => write!(f, "Player is not responding."),
+            Self::TechnicalError => {
+                write!(f, "A technical error occured. Check your connectivity.")
+            }
         }
     }
 }
@@ -163,7 +167,7 @@ impl SpotifyPlayer {
             }
             Command::PasswordLogin { username, password } => {
                 let credentials = Credentials::with_password(username, password.clone());
-                let new_session = create_session(credentials, self.settings.ap_port).await?;
+                let new_session = create_session(&credentials, self.settings.ap_port).await?;
                 let (token, token_expiry_time) =
                     get_access_token_and_expiry_time(&new_session).await?;
                 let credentials = credentials::Credentials {
@@ -188,7 +192,7 @@ impl SpotifyPlayer {
                     auth_type: AuthenticationType::AUTHENTICATION_SPOTIFY_TOKEN,
                     auth_data: token.clone().into_bytes(),
                 };
-                let new_session = create_session(credentials, self.settings.ap_port).await?;
+                let new_session = create_session(&credentials, self.settings.ap_port).await?;
                 self.delegate
                     .token_login_successful(new_session.username(), token);
 
@@ -286,52 +290,45 @@ async fn get_access_token_and_expiry_time(
 ) -> Result<(String, SystemTime), SpotifyError> {
     let token = keymaster::get_token(session, CLIENT_ID, SCOPES)
         .await
-        .map_err(|e| {
-            dbg!(e);
-            SpotifyError::TokenFailed
-        })?;
+        .map_err(|_e| SpotifyError::TokenFailed)?;
     let expiry_time = SystemTime::now() + Duration::from_secs(token.expires_in.into());
     Ok((token.access_token, expiry_time))
 }
 
+async fn create_session_with_port(
+    credentials: &Credentials,
+    ap_port: Option<u16>,
+) -> Result<Session, SpotifyError> {
+    let session_config = SessionConfig {
+        ap_port,
+        ..Default::default()
+    };
+    match Session::connect(session_config, credentials.clone(), None, true).await {
+        Ok(r) => Ok(r.0),
+        Err(SessionError::IoError(_)) => Err(SpotifyError::TechnicalError),
+        Err(SessionError::AuthenticationError(_)) => Err(SpotifyError::LoginFailed),
+    }
+}
+
 async fn create_session(
-    credentials: Credentials,
+    credentials: &Credentials,
     ap_port: Option<u16>,
 ) -> Result<Session, SpotifyError> {
     match ap_port {
-        Some(ap_port) => {
-            let session_config = SessionConfig {
-                ap_port: Some(ap_port),
-                ..Default::default()
-            };
-            let result = Session::connect(session_config, credentials, None, true)
-                .await
-                .map(|r| r.0);
-            result.map_err(|e| {
-                dbg!(e);
-                SpotifyError::LoginFailed
-            })
-        }
+        Some(_) => create_session_with_port(credentials, ap_port).await,
         None => {
-            for port in KNOWN_AP_PORTS {
-                let session_config = SessionConfig {
-                    ap_port: port,
-                    ..Default::default()
-                };
-                let result = Session::connect(session_config, credentials.clone(), None, true)
-                    .await
-                    .map(|r| r.0);
-
-                match result {
-                    Ok(session) => return Ok(session),
-                    Err(SessionError::IoError(_)) => {}
-                    Err(SessionError::AuthenticationError(_)) => {
-                        return Err(SpotifyError::LoginFailed)
+            let mut ports_to_try = KNOWN_AP_PORTS.iter();
+            loop {
+                if let Some(next_port) = ports_to_try.next() {
+                    let res = create_session_with_port(credentials, *next_port).await;
+                    match res {
+                        Err(SpotifyError::TechnicalError) => continue,
+                        _ => break res,
                     }
+                } else {
+                    break Err(SpotifyError::TechnicalError);
                 }
             }
-
-            Err(SpotifyError::LoginFailed)
         }
     }
 }
