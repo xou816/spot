@@ -1,16 +1,17 @@
 use super::{
-    AppEvent, ArtistState, DetailsState, HomeState, PlaylistDetailsState, ScreenName, SearchState,
-    UpdatableState, UserState,
+    AppAction, AppEvent, ArtistState, DetailsState, HomeState, PlaylistDetailsState, ScreenName,
+    SearchState, UpdatableState, UserState,
 };
 use crate::app::models::*;
-use crate::app::state::AppAction;
 use std::borrow::Cow;
 use std::iter::Iterator;
 
 #[derive(Clone, Debug)]
 pub enum BrowserAction {
     SetNavigationHidden(bool),
+    SetHomeVisiblePage(&'static str),
     SetLibraryContent(Vec<AlbumDescription>),
+    PrependPlaylistsContent(Vec<PlaylistDescription>),
     AppendLibraryContent(Vec<AlbumDescription>),
     SetPlaylistsContent(Vec<PlaylistDescription>),
     AppendPlaylistsContent(Vec<PlaylistDescription>),
@@ -18,6 +19,7 @@ pub enum BrowserAction {
     SetAlbumDetails(Box<AlbumFullDescription>),
     AppendAlbumTracks(String, Box<SongBatch>),
     SetPlaylistDetails(Box<PlaylistDescription>),
+    UpdatePlaylistName(PlaylistSummary),
     AppendPlaylistTracks(String, Box<SongBatch>),
     Search(String),
     SetSearchResults(Box<SearchResults>),
@@ -45,6 +47,7 @@ impl From<BrowserAction> for AppAction {
 #[derive(Eq, PartialEq, Clone, Debug)]
 pub enum BrowserEvent {
     NavigationHidden(bool),
+    HomeVisiblePageChanged(&'static str),
     LibraryUpdated,
     SavedPlaylistsUpdated,
     AlbumDetailsLoaded(String),

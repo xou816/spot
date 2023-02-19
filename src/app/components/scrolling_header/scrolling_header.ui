@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0" />
+  <requires lib="libadwaita" version="1.0" />
+  <template class="ScrollingHeaderWidget" parent="GtkBox">
+    <property name="orientation">vertical</property>
+    <property name="vexpand">1</property>
+    <property name="hexpand">1</property>
+    <child type="internal">
+      <object class="GtkRevealer" id="revealer">
+        <property name="transition-type">slide-up</property>
+      </object>
+    </child>
+    <child type="internal">
+      <object class="GtkScrolledWindow" id="scrolled_window">
+        <property name="hscrollbar-policy">never</property>
+        <property name="propagate-natural-width">1</property>
+        <property name="hexpand">1</property>
+        <property name="vexpand">1</property>
+      </object>
+    </child>
+  </template>
+</interface>

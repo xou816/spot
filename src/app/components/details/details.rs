@@ -8,7 +8,7 @@ use super::release_details::ReleaseDetailsWindow;
 use super::DetailsModel;
 
 use crate::app::components::{
-    Component, EventListener, HeaderBarComponent, HeaderBarWidget, Playlist,
+    Component, EventListener, HeaderBarComponent, HeaderBarWidget, Playlist, ScrollingHeaderWidget,
 };
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
@@ -24,13 +24,10 @@ mod imp {
     #[template(resource = "/dev/alextren/Spot/components/details.ui")]
     pub struct AlbumDetailsWidget {
         #[template_child]
-        pub scrolled_window: TemplateChild<gtk::ScrolledWindow>,
+        pub scrolling_header: TemplateChild<ScrollingHeaderWidget>,
 
         #[template_child]
         pub headerbar: TemplateChild<HeaderBarWidget>,
-
-        #[template_child]
-        pub header_revealer: TemplateChild<gtk::Revealer>,
 
         #[template_child]
         pub header_widget: TemplateChild<AlbumHeaderWidget>,
@@ -78,56 +75,30 @@ impl AlbumDetailsWidget {
         glib::Object::new()
     }
 
-    fn set_header_visible(&self, visible: bool) -> bool {
+    fn set_header_visible(&self, visible: bool) {
         let widget = self.imp();
-        let is_up_to_date = widget.header_revealer.reveals_child() == visible;
-        if !is_up_to_date {
-            widget.header_revealer.set_reveal_child(visible);
-            widget.headerbar.set_title_visible(true);
-            if visible {
-                widget.headerbar.add_classes(&["flat"]);
-            } else {
-                widget.headerbar.remove_classes(&["flat"]);
-            }
+        widget.headerbar.set_title_visible(true);
+        if visible {
+            widget.headerbar.add_classes(&["flat"]);
+        } else {
+            widget.headerbar.remove_classes(&["flat"]);
         }
-        is_up_to_date
     }
 
-    fn connect_header_visibility(&self) {
-        self.set_header_visible(true);
-
-        let scroll_controller =
-            gtk::EventControllerScroll::new(gtk::EventControllerScrollFlags::VERTICAL);
-        scroll_controller.connect_scroll(
-            clone!(@weak self as _self => @default-return gtk::Inhibit(false), move |_, _, dy| {
-                let visible = dy < 0f64;
-                gtk::Inhibit(!_self.set_header_visible(visible))
+    fn connect_header(&self) {
+        self.set_header_visible(false);
+        self.imp().scrolling_header.connect_header_visibility(
+            clone!(@weak self as _self => move |visible| {
+                _self.set_header_visible(visible);
             }),
         );
-
-        let swipe_controller = gtk::GestureSwipe::new();
-        swipe_controller.set_touch_only(true);
-        swipe_controller.set_propagation_phase(gtk::PropagationPhase::Capture);
-        swipe_controller.connect_swipe(clone!(@weak self as _self => move |_, _, dy| {
-            let visible = dy >= 0f64;
-            _self.set_header_visible(visible);
-        }));
-
-        self.imp().scrolled_window.add_controller(scroll_controller);
-        self.add_controller(swipe_controller);
     }
 
     fn connect_bottom_edge<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        self.imp()
-            .scrolled_window
-            .connect_edge_reached(move |_, pos| {
-                if let gtk::PositionType::Bottom = pos {
-                    f()
-                }
-            });
+        self.imp().scrolling_header.connect_bottom_edge(f);
     }
 
     fn headerbar_widget(&self) -> &HeaderBarWidget {
@@ -139,7 +110,7 @@ impl AlbumDetailsWidget {
     }
 
     fn set_loaded(&self) {
-        let context = self.style_context();
+        let context = self.imp().scrolling_header.style_context();
         context.add_class("container--loaded");
     }
 
@@ -221,7 +192,7 @@ impl Details {
 
         widget.connect_liked(clone!(@weak model => move || model.toggle_save_album()));
 
-        widget.connect_header_visibility();
+        widget.connect_header();
 
         widget.connect_bottom_edge(clone!(@weak model => move || {
             model.load_more();

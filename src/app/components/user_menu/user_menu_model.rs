@@ -1,6 +1,5 @@
 use crate::api::clear_user_cache;
 use crate::app::credentials::Credentials;
-use crate::app::models::{PlaylistDescription, PlaylistSummary};
 use crate::app::state::{LoginAction, PlaybackAction};
 use crate::app::{ActionDispatcher, AppModel};
 use std::ops::Deref;
@@ -43,10 +42,7 @@ impl UserMenuModel {
                         let summaries = playlists
                             .into_iter()
                             .filter(|p| p.owner.id == current_user)
-                            .map(|PlaylistDescription { id, title, .. }| PlaylistSummary {
-                                id,
-                                title,
-                            })
+                            .map(|p| p.into())
                             .collect();
                         LoginAction::SetUserPlaylists(summaries).into()
                     })

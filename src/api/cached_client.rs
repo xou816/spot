@@ -57,7 +57,15 @@ pub trait SpotifyApiClient {
 
     fn add_to_playlist(&self, id: &str, uris: Vec<String>) -> BoxFuture<SpotifyResult<()>>;
 
+    fn create_new_playlist(
+        &self,
+        name: &str,
+        user_id: &str,
+    ) -> BoxFuture<SpotifyResult<PlaylistDescription>>;
+
     fn remove_from_playlist(&self, id: &str, uris: Vec<String>) -> BoxFuture<SpotifyResult<()>>;
+
+    fn update_playlist_details(&self, id: &str, name: String) -> BoxFuture<SpotifyResult<()>>;
 
     fn search(
         &self,
@@ -311,6 +319,27 @@ impl SpotifyApiClient for CachedSpotifyClient {
         })
     }
 
+    fn create_new_playlist(
+        &self,
+        name: &str,
+        user_id: &str,
+    ) -> BoxFuture<SpotifyResult<PlaylistDescription>> {
+        let name = name.to_owned();
+        let user_id = user_id.to_owned();
+
+        Box::pin(async move {
+            let playlist = self
+                .client
+                .create_new_playlist(&name, &user_id)
+                .send()
+                .await?
+                .deserialize()
+                .unwrap();
+
+            Ok(playlist.into())
+        })
+    }
+
     fn remove_from_playlist(&self, id: &str, uris: Vec<String>) -> BoxFuture<SpotifyResult<()>> {
         let id = id.to_owned();
 
@@ -324,6 +353,24 @@ impl SpotifyApiClient for CachedSpotifyClient {
                 .remove_from_playlist(&id, uris)
                 .send_no_response()
                 .await?;
+            Ok(())
+        })
+    }
+
+    fn update_playlist_details(&self, id: &str, name: String) -> BoxFuture<SpotifyResult<()>> {
+        let id = id.to_owned();
+
+        Box::pin(async move {
+            self.cache
+                .set_expired_pattern(&playlist_cache_key(&id))
+                .await
+                .unwrap_or(());
+
+            self.client
+                .update_playlist_details(&id, name)
+                .send_no_response()
+                .await?;
+
             Ok(())
         })
     }

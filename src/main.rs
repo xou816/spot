@@ -146,8 +146,21 @@ fn register_actions(app: &gtk::Application, sender: UnboundedSender<AppAction>) 
     app.add_action(&make_action(
         "search",
         AppAction::BrowserAction(BrowserAction::NavigationPush(ScreenName::Search)),
-        sender,
+        sender.clone(),
     ));
+
+    app.add_action(&{
+        let action = SimpleAction::new("open_playlist", Some(glib::VariantTy::STRING));
+        action.set_enabled(true);
+        action.connect_activate(move |_, playlist_id| {
+            if let Some(id) = playlist_id.and_then(|s| s.str()) {
+                sender
+                    .unbounded_send(AppAction::ViewPlaylist(id.to_owned()))
+                    .unwrap();
+            }
+        });
+        action
+    });
 }
 
 fn make_action(

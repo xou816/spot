@@ -3,12 +3,16 @@ use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use std::rc::Rc;
 
+use super::playlist_header::PlaylistHeaderWidget;
+use super::playlist_headerbar::PlaylistHeaderBarWidget;
 use super::PlaylistDetailsModel;
-use crate::app::components::AlbumHeaderWidget;
 
-use crate::app::components::{Component, EventListener, Playlist};
+use crate::app::components::{
+    Component, EventListener, Playlist, PlaylistModel, ScrollingHeaderWidget,
+};
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
+use crate::app::state::SelectionEvent;
 use crate::app::{AppEvent, BrowserEvent};
 use libadwaita::subclass::prelude::BinImpl;
 
@@ -20,16 +24,16 @@ mod imp {
     #[template(resource = "/dev/alextren/Spot/components/playlist_details.ui")]
     pub struct PlaylistDetailsWidget {
         #[template_child]
-        pub scrolled_window: TemplateChild<gtk::ScrolledWindow>,
+        pub headerbar: TemplateChild<PlaylistHeaderBarWidget>,
 
         #[template_child]
-        pub header_revealer: TemplateChild<gtk::Revealer>,
+        pub scrolling_header: TemplateChild<ScrollingHeaderWidget>,
 
         #[template_child]
-        pub header_widget: TemplateChild<AlbumHeaderWidget>,
+        pub header_widget: TemplateChild<PlaylistHeaderWidget>,
 
         #[template_child]
-        pub header_mobile: TemplateChild<AlbumHeaderWidget>,
+        pub header_mobile: TemplateChild<PlaylistHeaderWidget>,
 
         #[template_child]
         pub tracks: TemplateChild<gtk::ListView>,
@@ -54,8 +58,12 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
             self.header_mobile.set_centered();
-            self.header_mobile.hide_actions();
-            self.header_widget.hide_actions();
+            self.header_widget.set_grows_automatically();
+            self.header_widget
+                .entry()
+                .bind_property("text", self.header_mobile.entry(), "text")
+                .flags(glib::BindingFlags::BIDIRECTIONAL)
+                .build();
         }
     }
 
@@ -80,51 +88,47 @@ impl PlaylistDetailsWidget {
     where
         F: Fn() + 'static,
     {
-        self.imp()
-            .scrolled_window
-            .connect_edge_reached(move |_, pos| {
-                if let gtk::PositionType::Bottom = pos {
-                    f()
-                }
-            });
+        self.imp().scrolling_header.connect_bottom_edge(f);
     }
 
-    fn set_header_visible(&self, visible: bool) -> bool {
+    fn set_header_visible(&self, visible: bool) {
         let widget = self.imp();
-        let is_up_to_date = widget.header_revealer.reveals_child() == visible;
-        if !is_up_to_date {
-            widget.header_revealer.set_reveal_child(visible);
+        widget.headerbar.set_title_visible(true);
+        if visible {
+            widget.headerbar.add_classes(&["flat"]);
+        } else {
+            widget.headerbar.remove_classes(&["flat"]);
         }
-        is_up_to_date
     }
 
     fn connect_header(&self) {
-        self.set_header_visible(true);
-
-        let scroll_controller =
-            gtk::EventControllerScroll::new(gtk::EventControllerScrollFlags::VERTICAL);
-        scroll_controller.connect_scroll(
-            clone!(@weak self as _self => @default-return gtk::Inhibit(false), move |_, _, dy| {
-                gtk::Inhibit(!_self.set_header_visible(dy < 0f64))
+        self.set_header_visible(false);
+        self.imp().scrolling_header.connect_header_visibility(
+            clone!(@weak self as _self => move |visible| {
+                _self.set_header_visible(visible);
             }),
         );
-
-        let widget = self.imp();
-        widget.scrolled_window.add_controller(scroll_controller);
     }
 
     fn set_loaded(&self) {
-        let context = self.style_context();
+        let context = self.imp().scrolling_header.style_context();
         context.add_class("container--loaded");
     }
 
-    fn set_album_and_artist(&self, album: &str, artist: &str) {
-        self.imp()
-            .header_widget
-            .set_album_and_artist_and_year(album, artist, None);
-        self.imp()
-            .header_mobile
-            .set_album_and_artist_and_year(album, artist, None);
+    fn set_editing(&self, editing: bool) {
+        self.imp().header_widget.set_editing(editing);
+        self.imp().header_mobile.set_editing(editing);
+        self.imp().headerbar.set_editing(editing);
+    }
+
+    fn set_editable(&self, editing: bool) {
+        self.imp().headerbar.set_editable(editing);
+    }
+
+    fn set_info(&self, playlist: &str, owner: &str) {
+        self.imp().header_widget.set_info(playlist, owner);
+        self.imp().header_mobile.set_info(playlist, owner);
+        self.imp().headerbar.set_title(Some(playlist));
     }
 
     fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {
@@ -132,12 +136,51 @@ impl PlaylistDetailsWidget {
         self.imp().header_mobile.set_artwork(art);
     }
 
-    fn connect_artist_clicked<F>(&self, f: F)
+    fn connect_owner_clicked<F>(&self, f: F)
     where
         F: Fn() + Clone + 'static,
     {
-        self.imp().header_widget.connect_artist_clicked(f.clone());
-        self.imp().header_mobile.connect_artist_clicked(f);
+        self.imp().header_widget.connect_owner_clicked(f.clone());
+        self.imp().header_mobile.connect_owner_clicked(f);
+    }
+
+    pub fn connect_edit<F>(&self, f: F)
+    where
+        F: Fn() + 'static,
+    {
+        self.imp().headerbar.connect_edit(f);
+    }
+
+    pub fn connect_cancel<F>(&self, f: F)
+    where
+        F: Fn() + 'static,
+    {
+        self.imp()
+            .headerbar
+            .connect_cancel(clone!(@weak self as _self => move || {
+                _self.imp().header_widget.reset_playlist_name();
+                _self.imp().header_mobile.reset_playlist_name();
+                f();
+            }));
+    }
+
+    pub fn connect_done<F>(&self, f: F)
+    where
+        F: Fn(String) + 'static,
+    {
+        self.imp()
+            .headerbar
+            .connect_ok(clone!(@weak self as _self => move || {
+                let s = _self.imp().header_widget.get_edited_playlist_name();
+                f(s);
+            }));
+    }
+
+    pub fn connect_go_back<F>(&self, f: F)
+    where
+        F: Fn() + 'static,
+    {
+        self.imp().headerbar.connect_go_back(f);
     }
 }
 
@@ -153,6 +196,7 @@ impl PlaylistDetails {
         if model.get_playlist_info().is_none() {
             model.load_playlist_info();
         }
+
         let widget = PlaylistDetailsWidget::new();
         let playlist = Box::new(Playlist::new(
             widget.playlist_tracks_widget().clone(),
@@ -160,15 +204,27 @@ impl PlaylistDetails {
             worker.clone(),
         ));
 
+        widget.set_editable(model.is_playlist_editable());
+
         widget.connect_header();
 
         widget.connect_bottom_edge(clone!(@weak model => move || {
             model.load_more_tracks();
         }));
 
-        widget.connect_artist_clicked(clone!(@weak model => move || {
-            model.view_owner();
+        widget.connect_owner_clicked(clone!(@weak model => move || model.view_owner()));
+
+        widget.connect_edit(clone!(@weak model => move || {
+            model.enable_selection();
         }));
+
+        widget.connect_cancel(clone!(@weak model => move || model.disable_selection()));
+        widget.connect_done(clone!(@weak model => move |n| {
+            model.disable_selection();
+            model.update_playlist_details(n);
+        }));
+
+        widget.connect_go_back(clone!(@weak model => move || model.go_back()));
 
         Self {
             model,
@@ -184,7 +240,7 @@ impl PlaylistDetails {
             let owner = &info.owner.display_name[..];
             let art_url = info.art.as_ref();
 
-            self.widget.set_album_and_artist(title, owner);
+            self.widget.set_info(title, owner);
 
             if let Some(art_url) = art_url.cloned() {
                 let widget = self.widget.downgrade();
@@ -201,6 +257,13 @@ impl PlaylistDetails {
                 self.widget.set_loaded();
             }
         }
+    }
+
+    fn set_editing(&self, editable: bool) {
+        if !self.model.is_playlist_editable() {
+            return;
+        }
+        self.widget.set_editing(editable);
     }
 }
 
@@ -221,6 +284,9 @@ impl EventListener for PlaylistDetails {
                 if id == &self.model.id =>
             {
                 self.update_details()
+            }
+            AppEvent::SelectionEvent(SelectionEvent::SelectionModeChanged(editing)) => {
+                self.set_editing(*editing);
             }
             _ => {}
         }

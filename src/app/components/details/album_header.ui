@@ -10,8 +10,8 @@
     <property name="margin-bottom">6</property>
     <child>
       <object class="GtkOverlay">
-      <property name="overflow">hidden</property>
-      <property name="halign">center</property>
+        <property name="overflow">hidden</property>
+        <property name="halign">center</property>
         <child>
           <object class="GtkImage" id="album_art">
             <property name="width-request">160</property>
@@ -36,7 +36,7 @@
           </object>
         </child>
         <style>
-          <class name="card"/>
+          <class name="card" />
         </style>
       </object>
     </child>
@@ -45,7 +45,7 @@
         <property name="hexpand">1</property>
         <property name="valign">center</property>
         <property name="orientation">vertical</property>
-				<property name="spacing">6</property>
+        <property name="spacing">6</property>
         <child>
           <object class="GtkLabel" id="album_label">
             <property name="xalign">0</property>
@@ -89,7 +89,7 @@
             <property name="lines">1</property>
             <property name="sensitive">0</property>
             <style>
-              <class name="body"/>
+              <class name="body" />
             </style>
           </object>
         </child>
@@ -107,5 +107,8 @@
         </style>
       </object>
     </child>
+    <style>
+      <class name="album__header" />
+    </style>
   </template>
 </interface>

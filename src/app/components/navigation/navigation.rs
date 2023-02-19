@@ -13,7 +13,6 @@ pub struct Navigation {
     leaflet: libadwaita::Leaflet,
     navigation_stack: gtk::Stack,
     home_listbox: gtk::ListBox,
-    home_list_store: gio::ListStore,
     screen_factory: ScreenFactory,
     children: Vec<Box<dyn ListenerComponent>>,
 }
@@ -24,7 +23,6 @@ impl Navigation {
         leaflet: libadwaita::Leaflet,
         navigation_stack: gtk::Stack,
         home_listbox: gtk::ListBox,
-        home_list_store: gio::ListStore,
         screen_factory: ScreenFactory,
     ) -> Self {
         let model = Rc::new(model);
@@ -50,31 +48,25 @@ impl Navigation {
             leaflet,
             navigation_stack,
             home_listbox,
-            home_list_store,
             screen_factory,
             children: vec![],
         }
     }
 
     fn make_home(&self) -> Box<dyn ListenerComponent> {
-        let home = HomePane::new(
+        Box::new(HomePane::new(
             self.home_listbox.clone(),
             &self.screen_factory,
-            self.home_list_store.clone(),
-        );
-
-        home.connect_navigated(
-            clone!(@weak self.model as model, @weak self.leaflet as leaflet => move || {
-                leaflet.navigate(NavigationDirection::Forward);
-                model.go_home();
-            }),
-        );
-
-        Box::new(home)
+        ))
     }
 
     fn show_navigation(&self) {
         self.leaflet.navigate(NavigationDirection::Back);
+    }
+
+    fn pop_to_home(&mut self) {
+        self.leaflet.navigate(NavigationDirection::Forward);
+        self.pop_to(&ScreenName::Home);
     }
 
     fn push_screen(&mut self, name: &ScreenName) {
@@ -147,6 +139,9 @@ impl EventListener for Navigation {
             }
             AppEvent::BrowserEvent(BrowserEvent::NavigationPoppedTo(name)) => {
                 self.pop_to(name);
+            }
+            AppEvent::BrowserEvent(BrowserEvent::HomeVisiblePageChanged(_)) => {
+                self.pop_to_home();
             }
             _ => {}
         };

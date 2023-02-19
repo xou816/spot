@@ -4,16 +4,14 @@ use std::ops::Deref;
 use std::rc::Rc;
 
 use crate::api::SpotifyApiError;
-use crate::app::components::SimpleHeaderBarModel;
 use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::*;
 use crate::app::state::SelectionContext;
 use crate::app::state::{BrowserAction, PlaybackAction, SelectionAction, SelectionState};
-use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, BatchQuery, SongsSource};
+use crate::app::{ActionDispatcher, AppAction, AppModel, BatchQuery, SongsSource};
 
 pub struct PlaylistDetailsModel {
     pub id: String,
-    _editable_selection_context: SelectionContext,
     app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>,
 }
@@ -21,14 +19,13 @@ pub struct PlaylistDetailsModel {
 impl PlaylistDetailsModel {
     pub fn new(id: String, app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
         Self {
-            id: id.clone(),
-            _editable_selection_context: SelectionContext::EditablePlaylist(id),
+            id,
             app_model,
             dispatcher,
         }
     }
 
-    fn is_playlist_editable(&self) -> bool {
+    pub fn is_playlist_editable(&self) -> bool {
         let state = self.app_model.get_state();
         state.logged_user.playlists.iter().any(|p| p.id == self.id)
     }
@@ -85,12 +82,34 @@ impl PlaylistDetailsModel {
         Some(())
     }
 
+    pub fn update_playlist_details(&self, title: String) {
+        let api = self.app_model.get_spotify();
+        let id = self.id.clone();
+        self.dispatcher
+            .call_spotify_and_dispatch(move || async move {
+                let playlist = api.update_playlist_details(&id, title.clone()).await;
+                match playlist {
+                    Ok(_) => Ok(AppAction::UpdatePlaylistName(PlaylistSummary { id, title })),
+                    Err(e) => Err(e),
+                }
+            });
+    }
+
     pub fn view_owner(&self) {
         if let Some(playlist) = self.get_playlist_info() {
             let owner = &playlist.owner.id;
             self.dispatcher
                 .dispatch(AppAction::ViewUser(owner.to_owned()));
         }
+    }
+
+    pub fn disable_selection(&self) {
+        self.dispatcher.dispatch(AppAction::CancelSelection);
+    }
+
+    pub fn go_back(&self) {
+        self.dispatcher
+            .dispatch(BrowserAction::NavigationPop.into());
     }
 }
 
@@ -169,37 +188,16 @@ impl PlaylistModel for PlaylistDetailsModel {
     }
 
     fn enable_selection(&self) -> bool {
-        self.dispatcher.dispatch(AppAction::EnableSelection(
-            self.selection_context().unwrap().clone(),
-        ));
+        self.dispatcher
+            .dispatch(AppAction::EnableSelection(if self.is_playlist_editable() {
+                SelectionContext::EditablePlaylist(self.id.clone())
+            } else {
+                SelectionContext::Playlist
+            }));
         true
     }
 
     fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
         Some(Box::new(self.app_model.map_state(|s| &s.selection)))
-    }
-}
-
-impl SimpleHeaderBarModel for PlaylistDetailsModel {
-    fn title(&self) -> Option<String> {
-        None
-    }
-
-    fn title_updated(&self, _: &AppEvent) -> bool {
-        false
-    }
-
-    fn selection_context(&self) -> Option<&SelectionContext> {
-        Some(if self.is_playlist_editable() {
-            &self._editable_selection_context
-        } else {
-            &SelectionContext::Playlist
-        })
-    }
-
-    fn select_all(&self) {
-        let songs: Vec<SongDescription> = self.song_list_model().collect();
-        self.dispatcher
-            .dispatch(SelectionAction::Select(songs).into());
     }
 }

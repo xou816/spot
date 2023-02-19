@@ -1,48 +1,46 @@
-.album__header .title-4 label {
+.playlist__header .title-4 label {
   color: @window_fg_color;
   font-weight: bold;
   text-decoration: none;
 }
 
-
-.album__header .title-4:hover {
+.playlist__header .title-4:hover {
   border-radius: 6px;
   background-image: image(alpha(currentColor, 0.08));
 }
 
-.album__header .like__button {
+.playlist__header .like__button {
   margin-right: 6px;
 }
 
-.album__header .vertical {
+.playlist__header .vertical {
   margin-left: 18px;
 }
 
-.album__header .card {
+.playlist__header .card {
   margin-top: 18px;
   margin-left: 6px;
   margin-bottom: 6px;
 }
 
-
-clamp.details__clamp {
+clamp.playlist_details__clamp {
   background-color: @view_bg_color;
   box-shadow: inset 0px -1px 0px @borders;
 }
 
-headerbar.details__headerbar {
+headerbar.playlist_details__headerbar {
   transition: background-color .3s ease;
 }
 
-headerbar.flat.details__headerbar windowtitle {
+headerbar.flat.playlist_details__headerbar windowtitle {
   opacity: 0;
 }
 
-headerbar.details__headerbar windowtitle {
+headerbar.playlist_details__headerbar windowtitle {
   transition: opacity .3s ease;
   opacity: 1;
 }
 
-.details__headerbar.flat {
+.playlist_details__headerbar.flat {
   background-color: @view_bg_color;
 }
