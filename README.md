@@ -43,14 +43,14 @@ Scrobbling is not supported directly by Spot. However, you can use a tool such a
 
 Similarly, Spot does not display lyrics for songs, but you can use [osdlyrics](https://github.com/osdlyrics/osdlyrics)  ([see #226](https://github.com/xou816/spot/issues/226)).
 
-### Gtk theme
+### Dark mode 
 
-Spot uses the dark theme variant by default; this can be changed using `gsettings`.
-
-If you are using the flatpak version, don't forget to install your theme with flatpak as well. See [this comment](https://github.com/xou816/spot/issues/209#issuecomment-860180537) for details.
-
-Similarly, snap also requires that you install the corresponding snap for your theme. See [this comment](https://github.com/xou816/spot/issues/338#issuecomment-975543476) for details.
-
+Spot uses dark mode by default; this can be changed using `gsettings`:
+```
+flatpak --command="sh" run dev.alextren.Spot
+gsettings set dev.alextren.Spot prefers-dark-theme true
+```
+If your system supports color scheme preference (GNOME 42+ or elementary 6.1+), you would need to turn the gsettings flag off to follow the system's preference.
 ## Features
 
 **Only works with premium accounts!**
