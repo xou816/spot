@@ -10,7 +10,7 @@ pub struct PlaybackState {
     index: LazyRandomIndex,
     songs: SongListModel,
     list_position: Option<usize>,
-    seek_position: PositionMicros,
+    seek_position: PositionMillis,
     source: Option<SongsSource>,
     repeat: RepeatMode,
     is_playing: bool,
@@ -188,11 +188,10 @@ impl PlaybackState {
 
     fn play_prev(&mut self) -> Option<String> {
         self.prev_index().and_then(move |i| {
-            // Microseconds -> seconds conversion, divide by 1 million.
-            // Only jump to the previous track if we aren't more than 2 seconds into the current track.
+            // Only jump to the previous track if we aren't more than 2 seconds (2,000 ms) into the current track.
             // Otherwise, seek to the start of the current track.
             // (This replicates the behavior of official Spotify clients.)
-            if self.seek_position.current() / 1_000_000 <= 2 {
+            if self.seek_position.current() <= 2000 {
                 self.seek_position.set(0, true);
                 self.play_index(i)
             } else {
@@ -240,7 +239,7 @@ impl Default for PlaybackState {
             index: LazyRandomIndex::default(),
             songs: SongListModel::new(50),
             list_position: None,
-            seek_position: PositionMicros::new(1.0),
+            seek_position: PositionMillis::new(1.0),
             source: None,
             repeat: RepeatMode::None,
             is_playing: false,
@@ -426,11 +425,11 @@ impl UpdatableState for PlaybackState {
                 vec![PlaybackEvent::PlaylistChanged]
             }
             PlaybackAction::Seek(pos) => {
-                self.seek_position.set(pos as u128 * 1000, true);
+                self.seek_position.set(pos as u64 * 1000, true);
                 vec![PlaybackEvent::TrackSeeked(pos)]
             }
             PlaybackAction::SyncSeek(pos) => {
-                self.seek_position.set(pos as u128 * 1000, true);
+                self.seek_position.set(pos as u64 * 1000, true);
                 vec![PlaybackEvent::SeekSynced(pos)]
             }
             PlaybackAction::SetVolume(volume) => vec![PlaybackEvent::VolumeSet(volume)],
@@ -440,13 +439,13 @@ impl UpdatableState for PlaybackState {
 }
 
 #[derive(Debug)]
-struct PositionMicros {
-    last_known_position: u128,
+struct PositionMillis {
+    last_known_position: u64,
     last_resume_instant: Option<Instant>,
     rate: f32,
 }
 
-impl PositionMicros {
+impl PositionMillis {
     fn new(rate: f32) -> Self {
         Self {
             last_known_position: 0,
@@ -455,16 +454,16 @@ impl PositionMicros {
         }
     }
 
-    fn current(&self) -> u128 {
+    fn current(&self) -> u64 {
         let current_progress = self.last_resume_instant.map(|ri| {
-            let elapsed = ri.elapsed().as_micros() as f32;
+            let elapsed = ri.elapsed().as_millis() as f32;
             let real_elapsed = self.rate * elapsed;
-            real_elapsed.ceil() as u128
+            real_elapsed.ceil() as u64
         });
         self.last_known_position + current_progress.unwrap_or(0)
     }
 
-    fn set(&mut self, position: u128, playing: bool) {
+    fn set(&mut self, position: u64, playing: bool) {
         self.last_known_position = position;
         self.last_resume_instant = if playing { Some(Instant::now()) } else { None }
     }
