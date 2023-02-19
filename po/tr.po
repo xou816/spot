@@ -37,28 +37,28 @@ msgstr "{} listesine ekle"
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:56
 msgid "Could not save password. Make sure the session keyring is unlocked."
-msgstr "Şifreniz kaydedilemedi. Oturum anahtarlığınızın kilidinin açık olduğundan emin olun."
+msgstr "Parola kaydedilemedi. Oturum anahtarlığınızın kilidinin açık olduğundan emin olun."
 
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/batch_loader.rs:91 src/app/components/mod.rs:122
+#: src/app/batch_loader.rs:91 src/app/components/mod.rs:128
 msgid "An error occured. Check logs for details!"
 msgstr "Bir hata meydana geldi. Günlükleri kontrol edin."
 
 #. translators: This is a sidebar entry to browse to saved albums.
-#: src/app/components/navigation/factory.rs:32
-#: src/app/components/navigation/home.rs:68
+#: src/app/components/navigation/factory.rs:33
+#: src/app/components/sidebar/sidebar_item.rs:39
 msgid "Library"
 msgstr "Kütüphane"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
-#: src/app/components/navigation/factory.rs:51
-#: src/app/components/navigation/home.rs:94
+#: src/app/components/navigation/factory.rs:54
+#: src/app/components/sidebar/sidebar_item.rs:45
 msgid "Playlists"
 msgstr "Oynatma listesi"
 
 #. This is the visible name for the play queue. It appears in the sidebar as well.
-#: src/app/components/navigation/home.rs:87
 #: src/app/components/now_playing/now_playing_model.rs:134
+#: src/app/components/sidebar/sidebar_item.rs:43
 msgid "Now playing"
 msgstr "Şu an oynatılıyor"
 
@@ -77,14 +77,14 @@ msgstr "Hakkında"
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:69
 msgid "Quit"
-msgstr "Çıkış"
+msgstr "Çık"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:74
 msgid "Log out"
 msgstr "Oturumdan çık"
 
-#: src/app/state/login_state.rs:110
+#: src/app/state/login_state.rs:112
 msgid "Connection restored"
 msgstr "Bağlantı geri yüklendi."
 
@@ -104,22 +104,22 @@ msgid "Login to Spotify Premium"
 msgstr "Spotify Premium'a giriş yap"
 
 #. Placeholder for the username field
-#: src/app/components/login/login.ui:64
+#: src/app/components/login/login.ui:72
 msgid "Username"
 msgstr "Kullanıcı adı"
 
 #. Placeholder for the password field
-#: src/app/components/login/login.ui:72
+#: src/app/components/login/login.ui:89
 msgid "Password"
-msgstr "Şifre"
+msgstr "Parola"
 
 #. This error is shown when authentication fails.
-#: src/app/components/login/login.ui:126
+#: src/app/components/login/login.ui:114
 msgid "Authentication failed!"
 msgstr "Kimlik doğrulama başarısız."
 
 #. Log in button label
-#: src/app/components/login/login.ui:141
+#: src/app/components/login/login.ui:129
 msgid "Log in"
 msgstr "Giriş yap"
 
@@ -133,59 +133,54 @@ msgstr "Albümler"
 msgid "Artists"
 msgstr "Sanatçılar"
 
-#: src/app/components/navigation/factory.rs:82
-#: src/app/components/navigation/home.rs:78
+#: src/app/components/navigation/factory.rs:85
+#: src/app/components/sidebar/sidebar_item.rs:41
 msgid "Saved tracks"
-msgstr ""
-
-#. This information is shown when Caps Lock is enabled.
-#: src/app/components/login/login.ui:95
-msgid "Caps Lock is enabled!"
-msgstr ""
+msgstr "Kaydedilen parçalar"
 
 #: src/app/components/playback/playback_controls.rs:64
 msgid "Pause"
-msgstr ""
+msgstr "Durdur"
 
 #: src/app/components/playback/playback_controls.rs:66
 msgid "Play"
-msgstr ""
+msgstr "Oynat"
 
 #: src/app/components/playback/playback_controls.ui:17
 msgid "Shuffle"
-msgstr ""
+msgstr "Karıştır"
 
 #: src/app/components/playback/playback_controls.ui:27
 msgid "Previous"
-msgstr ""
+msgstr "Önceki"
 
 #: src/app/components/playback/playback_controls.ui:50
 msgid "Next"
-msgstr ""
+msgstr "Sonraki"
 
 #: src/app/components/playback/playback_controls.ui:60
 msgid "Repeat"
-msgstr ""
+msgstr "Yinele"
 
 #. A title that is shown when the user has not saved any playlists.
 #: src/app/components/saved_playlists/saved_playlists.ui:26
 msgid "You have no saved playlists."
-msgstr ""
+msgstr "Kaydedilmiş oynatma listeniz yok."
 
 #. A description of what happens when the user has saved playlists.
 #: src/app/components/saved_playlists/saved_playlists.ui:27
 msgid "Your playlists will be shown here."
-msgstr ""
+msgstr "Oynatma listeniz burada gösterilir."
 
 #. A title that is shown when the user has not saved any albums.
 #: src/app/components/library/library.ui:26
 msgid "You have no saved albums."
-msgstr ""
+msgstr "Kaydedilmiş ablümünüz yok."
 
 #. A description of what happens when the user has saved albums.
 #: src/app/components/library/library.ui:27
 msgid "Your library will be shown here."
-msgstr ""
+msgstr "Kütüphaneniz burada gösterilir."
 
 #. translators: This shows up when in selection mode. This text should be as short as possible.
 #: src/app/components/labels.rs:30
@@ -197,31 +192,32 @@ msgstr[1] "{} seçildi"
 #. Title for the empty search page (initial state).
 #: src/app/components/search/search.ui:116
 msgid "Search Spotify."
-msgstr ""
+msgstr "Spotify'da Ara."
 
 #. Subtitle for the empty search page (initial state).
 #: src/app/components/search/search.ui:117
 msgid "Type to search."
-msgstr ""
+msgstr "Aramak için yazın."
 
 #: src/app/components/selection/selection_toolbar.ui:69
 msgid "Remove"
-msgstr ""
+msgstr "Kaldır"
 
 #. <property name="icon-name">playlist2-symbolic</property>
 #: src/app/components/selection/selection_toolbar.ui:56
 msgid "Add to playlist..."
-msgstr ""
+msgstr "Oynatma listesine ekle..."
 
 #. Button label. Exits selection mode.
+#: src/app/components/playlist_details/playlist_headerbar.ui:50
 #: src/app/components/headerbar/headerbar.ui:47
 msgid "Cancel"
-msgstr ""
+msgstr "İptal Et"
 
 #. Button label. Selects all visible songs.
 #: src/app/components/headerbar/headerbar.ui:58
 msgid "Select all"
-msgstr ""
+msgstr "Tümünü seç"
 
 #. translators: This is part of a contextual menu attached to a single track; the full text is "More from <artist>".
 #: src/app/components/labels.rs:39
@@ -231,127 +227,163 @@ msgstr "Daha fazla {}"
 #. This refers to a music label
 #: src/app/components/details/release_details.ui:38
 msgid "Label"
-msgstr ""
+msgstr "Yayıncı"
 
 #. This refers to a release date
 #: src/app/components/details/release_details.ui:48
-#, fuzzy
 msgid "Released"
-msgstr "Parçalar"
+msgstr "Yayın tarih"
 
 #. This refers to a number of tracks
 #: src/app/components/details/release_details.ui:58
-#, fuzzy
 msgid "Tracks"
-msgstr "En çok dinlenenler"
+msgstr "Parça"
 
 #. This refers to the duration of a release
 #: src/app/components/details/release_details.ui:68
 msgid "Duration"
-msgstr ""
+msgstr "Süre"
 
 #: src/app/components/details/release_details.ui:68
 msgid "Copyright"
-msgstr ""
+msgstr "Telif hakkı"
 
 #. translators: This is part of a larger label that reads "<Album> by <Artist>"
 #: src/app/components/labels.rs:48
 msgid "{} by {}"
-msgstr ""
+msgstr "{}, {}"
 
-#: src/app/components/navigation/home.rs:32
+#: src/app/components/sidebar/sidebar.rs:48
 msgid "Unnamed playlist"
-msgstr ""
+msgstr "Adsız oynatma listesi"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
-#: src/app/components/navigation/home.rs:104
+#: src/app/components/sidebar/sidebar_item.rs:81
 msgid "All Playlists"
-msgstr ""
+msgstr "Tüm Oynatma Listeleri"
 
 #: src/app/components/selection/component.rs:66
 msgid "Tracks saved!"
-msgstr ""
+msgstr "Parçalar kaydedildi!"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:65
 msgid "Preferences"
-msgstr ""
+msgstr "Tercihler"
 
-#: src/main.rs:81
+#: src/main.rs:80
 msgid "Failed to open link!"
-msgstr ""
+msgstr "Bağlantı açılamadı!"
 
 #. Header for a group of preference items regarding audio
 #: src/app/components/settings/settings.ui:13
 msgid "Audio"
-msgstr ""
+msgstr "Ses"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:16
 msgid "Audio Backend"
-msgstr ""
+msgstr "Ses Arka Ucu"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:29
 msgid "ALSA Device"
-msgstr ""
+msgstr "ALSA Aygıtı"
 
 #. Description for the item (ALSA Device) in preferences
 #: src/app/components/settings/settings.ui:30
 msgid "Applied only if audio backend is ALSA"
-msgstr ""
+msgstr "Sadece, ses arka ucu ALSA ise uygulanır"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:40
 msgid "Audio Quality"
-msgstr ""
+msgstr "Ses Kalitesi"
 
 #: src/app/components/settings/settings.ui:44
 msgid "Normal"
-msgstr ""
+msgstr "Normal"
 
 #: src/app/components/settings/settings.ui:45
 msgid "High"
-msgstr ""
+msgstr "Yüksek"
 
 #: src/app/components/settings/settings.ui:46
 msgid "Very high"
-msgstr ""
+msgstr "Çok yüksek"
 
 #. Header for a group of preference items regarding the application's appearance
-#: src/app/components/settings/settings.ui:56
+#: src/app/components/settings/settings.ui:70
 msgid "Appearance"
-msgstr ""
+msgstr "Görünüm"
 
 #. Title for an item in preferences
-#: src/app/components/settings/settings.ui:59
+#: src/app/components/settings/settings.ui:73
 msgid "Theme"
-msgstr ""
+msgstr "Tema"
 
-#: src/app/components/settings/settings.ui:63
+#: src/app/components/settings/settings.ui:77
 msgid "Light"
-msgstr ""
+msgstr "Açık"
 
-#: src/app/components/settings/settings.ui:64
+#: src/app/components/settings/settings.ui:78
 msgid "Dark"
-msgstr ""
+msgstr "Koyu"
 
 #. Header for a group of preference items regarding network
-#: src/app/components/settings/settings.ui:74
+#: src/app/components/settings/settings.ui:89
 msgid "Network"
-msgstr ""
+msgstr "Ağ"
 
 #. Title for an item in preferences
-#: src/app/components/settings/settings.ui:77
+#: src/app/components/settings/settings.ui:92
 msgid "Access Point Port"
-msgstr ""
+msgstr "Erişim Noktası Bağlantı Noktası"
 
 #. Longer description for an item (Access Point Port) in preferences
-#: src/app/components/settings/settings.ui:78
+#: src/app/components/settings/settings.ui:93
 msgid "Port used for connections to Spotify's Access Point. Set to 0 if any port is fine."
-msgstr ""
+msgstr "Spotify Erişim Noktasına bağlanmak için kullanılan bağlantı noktası. Herhangi bir bağlantı noktası iyiyse 0'a ayarlayın."
 
 #: src/app/components/selection/selection_toolbar.ui:90
 msgid "Save to library"
+msgstr "Kütüphaneye kaydet"
+
+#. translators: This is a notification that pop ups when a new playlist is created. It includes the name of that playlist.
+#: src/app/components/notification/mod.rs:25
+msgid "New playlist created."
+msgstr ""
+
+#. translators: This is a label in the notification shown after creating a new playlist. If it is clicked, the new playlist will be opened.
+#: src/app/components/notification/mod.rs:27
+msgid "View"
+msgstr ""
+
+#: src/app/components/sidebar/sidebar_item.rs:90
+msgid "New Playlist"
+msgstr ""
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:54
+msgid "Gapless playback"
+msgstr ""
+
+#: src/app/components/settings/settings.ui:79
+msgid "System"
+msgstr ""
+
+#. Finish playlist edition
+#: src/app/components/playlist_details/playlist_headerbar.ui:63
+msgid "Done"
+msgstr ""
+
+#. label for the entry containing the name of a new playlist
+#: src/app/components/sidebar/create_playlist.ui:10
+msgid "Name"
+msgstr ""
+
+#. Button that creates a new playlist
+#: src/app/components/sidebar/create_playlist.ui:33
+msgid "Create"
 msgstr ""
 

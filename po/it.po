@@ -1,19 +1,12 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Spot\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-19 19:46-0500\n"
-"Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: POEditor.com\n"
+"Project-Id-Version: Spot\n"
+"Language: it\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
-#. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/batch_loader.rs:91 src/app/components/mod.rs:117
-msgid "An error occured. Check logs for details!"
-msgstr "C'è stato un errore. Controlla i log per i dettagli!"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
 #: src/app/components/labels.rs:5
@@ -27,7 +20,7 @@ msgstr "Copia link"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry adds a track at the end of the play queue.
 #: src/app/components/labels.rs:11
-#: src/app/components/selection/selection_toolbar.ui:37
+#: src/app/components/selection/selection_toolbar.ui:39
 msgid "Add to queue"
 msgstr "Aggiungi alla coda di riproduzione"
 
@@ -41,60 +34,33 @@ msgstr "Rimuovi dalla coda di riproduzione"
 msgid "Add to {}"
 msgstr "Aggiungi a {}"
 
-#. translators: This shows up when in selection mode. This text should be as short as possible.
-#: src/app/components/labels.rs:30
-msgid "{} song selected"
-msgid_plural "{} songs selected"
-msgstr[0] "{} brano selezionato"
-msgstr[1] "{} brani selezionati"
-
-#. translators: This is part of a contextual menu attached to a single track; the full text is "More from <artist>".
-#: src/app/components/labels.rs:39
-msgid "More from {}"
-msgstr "Di più da {}"
-
-#. translators: This is part of a larger label that reads "<Album> by <Artist>"
-#: src/app/components/labels.rs:48
-msgid "{} by {}"
-msgstr "{} di {}"
-
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:56
 msgid "Could not save password. Make sure the session keyring is unlocked."
-msgstr ""
-"Impossibile salvare la password. Controlla che la session keyring sia "
-"sbloccata."
+msgstr "Impossibile salvare la password. Controlla che la session keyring sia sbloccata."
+
+#. translators: This notification is the default message for unhandled errors. Logs refer to console output.
+#: src/app/batch_loader.rs:91 src/app/components/mod.rs:128
+msgid "An error occured. Check logs for details!"
+msgstr "C'è stato un errore. Controlla i log per i dettagli!"
 
 #. translators: This is a sidebar entry to browse to saved albums.
-#: src/app/components/navigation/factory.rs:29
-#: src/app/components/navigation/home.rs:36
+#: src/app/components/navigation/factory.rs:33
+#: src/app/components/sidebar/sidebar_item.rs:39
 msgid "Library"
 msgstr "Raccolta"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
-#: src/app/components/navigation/factory.rs:44
-#: src/app/components/navigation/home.rs:42
+#: src/app/components/navigation/factory.rs:54
+#: src/app/components/sidebar/sidebar_item.rs:45
 msgid "Playlists"
 msgstr "Playlist"
 
-#. translators: This is a sidebar entry to browse to saved tracks.
-#: src/app/components/navigation/factory.rs:73
-#: src/app/components/navigation/home.rs:48
-msgid "Saved tracks"
-msgstr "Tracce salvate"
-
-#: src/app/components/navigation/home.rs:53
-#: src/app/components/now_playing/now_playing_model.rs:152
+#. This is the visible name for the play queue. It appears in the sidebar as well.
+#: src/app/components/now_playing/now_playing_model.rs:134
+#: src/app/components/sidebar/sidebar_item.rs:43
 msgid "Now playing"
 msgstr "In riproduzione"
-
-#: src/app/components/playback/playback_controls.rs:64
-msgid "Pause"
-msgstr "Pausa"
-
-#: src/app/components/playback/playback_controls.rs:66
-msgid "Play"
-msgstr "Riproduci"
 
 #. translators: Short text displayed instead of a song title when nothing plays
 #. Short text displayed instead of a song title when nothing plays
@@ -104,33 +70,23 @@ msgid "No song playing"
 msgstr "Nessun brano in riproduzione"
 
 #. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:56
+#: src/app/components/user_menu/user_menu.rs:67
 msgid "About"
 msgstr "Informazioni su"
 
 #. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:58
+#: src/app/components/user_menu/user_menu.rs:69
 msgid "Quit"
 msgstr "Esci"
 
 #. translators: This is a menu entry.
-#: src/app/components/user_menu/user_menu.rs:63
+#: src/app/components/user_menu/user_menu.rs:74
 msgid "Log out"
 msgstr "Log out"
 
-#: src/app/state/login_state.rs:117
+#: src/app/state/login_state.rs:112
 msgid "Connection restored"
 msgstr "Connessione ripristinata"
-
-#. A title that is shown when the user has not saved any playlists.
-#: src/app/components/saved_playlists/saved_playlists.ui:26
-msgid "You have no saved playlists."
-msgstr "Non hai playlist salvate."
-
-#. A description of what happens when the user has saved playlists.
-#: src/app/components/saved_playlists/saved_playlists.ui:27
-msgid "Your playlists will be shown here."
-msgstr "Le tue playlist verranno mostrate qui."
 
 #. Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify.
 #: src/app/components/artist_details/artist_details.ui:26
@@ -138,62 +94,9 @@ msgid "Top tracks"
 msgstr "Brani più popolari"
 
 #. Title of the sections that contains all releases from an artist (both singles and albums).
-#: src/app/components/artist_details/artist_details.ui:55
+#: src/app/components/artist_details/artist_details.ui:53
 msgid "Releases"
 msgstr "Releases"
-
-#. This is the title of a section of the search results
-#: src/app/components/search/search.ui:70
-msgid "Albums"
-msgstr "Album"
-
-#. This is the title of a section of the search results
-#: src/app/components/search/search.ui:103
-msgid "Artists"
-msgstr "Artisti"
-
-#. Title for the empty search page (initial state).
-#: src/app/components/search/search.ui:114
-msgid "Search Spotify."
-msgstr "Cerca Spotify."
-
-#. Subtitle for the empty search page (initial state).
-#: src/app/components/search/search.ui:115
-msgid "Type to search."
-msgstr "Digita per cercare."
-
-#. <property name="icon-name">playlist2-symbolic</property>
-#: src/app/components/selection/selection_toolbar.ui:47
-msgid "Add to playlist..."
-msgstr "Aggiungi alla playlist..."
-
-#: src/app/components/selection/selection_toolbar.ui:58
-msgid "Remove"
-msgstr "Rimuovi"
-
-#. This refers to a music label
-#: src/app/components/details/release_details.ui:38
-msgid "Label"
-msgstr "Etichetta discografica"
-
-#. This refers to a release date
-#: src/app/components/details/release_details.ui:48
-msgid "Released"
-msgstr "Data di uscita"
-
-#. This refers to a number of tracks
-#: src/app/components/details/release_details.ui:58
-msgid "Tracks"
-msgstr "Traccia"
-
-#. This refers to the duration of a release
-#: src/app/components/details/release_details.ui:68
-msgid "Duration"
-msgstr "Durata"
-
-#: src/app/components/details/release_details.ui:78
-msgid "Copyright"
-msgstr "Copyright"
 
 #. Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).
 #: src/app/components/login/login.ui:45
@@ -201,39 +104,47 @@ msgid "Login to Spotify Premium"
 msgstr "Login su Spotify Premium"
 
 #. Placeholder for the username field
-#: src/app/components/login/login.ui:64
+#: src/app/components/login/login.ui:72
 msgid "Username"
 msgstr "Username"
 
 #. Placeholder for the password field
-#: src/app/components/login/login.ui:72
+#: src/app/components/login/login.ui:89
 msgid "Password"
 msgstr "Password"
 
-#. This information is shown when Caps Lock is enabled.
-#: src/app/components/login/login.ui:95
-msgid "Caps Lock is enabled!"
-msgstr "Il blocco maiuscole è abilitato!"
-
 #. This error is shown when authentication fails.
-#: src/app/components/login/login.ui:126
+#: src/app/components/login/login.ui:114
 msgid "Authentication failed!"
 msgstr "Autenticazione fallita!"
 
 #. Log in button label
-#: src/app/components/login/login.ui:141
+#: src/app/components/login/login.ui:129
 msgid "Log in"
 msgstr "Log in"
 
-#. Button label. Exits selection mode.
-#: src/app/components/headerbar/headerbar.ui:46
-msgid "Cancel"
-msgstr "Annulla"
+#. This is the title of a section of the search results
+#: src/app/components/search/search.ui:72
+msgid "Albums"
+msgstr "Album"
 
-#. Button label. Selects all visible songs.
-#: src/app/components/headerbar/headerbar.ui:57
-msgid "Select all"
-msgstr "Seleziona tutto"
+#. This is the title of a section of the search results
+#: src/app/components/search/search.ui:105
+msgid "Artists"
+msgstr "Artisti"
+
+#: src/app/components/navigation/factory.rs:85
+#: src/app/components/sidebar/sidebar_item.rs:41
+msgid "Saved tracks"
+msgstr "Tracce salvate"
+
+#: src/app/components/playback/playback_controls.rs:64
+msgid "Pause"
+msgstr "Pausa"
+
+#: src/app/components/playback/playback_controls.rs:66
+msgid "Play"
+msgstr "Riproduci"
 
 #: src/app/components/playback/playback_controls.ui:17
 msgid "Shuffle"
@@ -251,6 +162,16 @@ msgstr "Successivo"
 msgid "Repeat"
 msgstr "Ripeti"
 
+#. A title that is shown when the user has not saved any playlists.
+#: src/app/components/saved_playlists/saved_playlists.ui:26
+msgid "You have no saved playlists."
+msgstr "Non hai playlist salvate."
+
+#. A description of what happens when the user has saved playlists.
+#: src/app/components/saved_playlists/saved_playlists.ui:27
+msgid "Your playlists will be shown here."
+msgstr "Le tue playlist verranno mostrate qui."
+
 #. A title that is shown when the user has not saved any albums.
 #: src/app/components/library/library.ui:26
 msgid "You have no saved albums."
@@ -261,5 +182,208 @@ msgstr "Non hai album salvati."
 msgid "Your library will be shown here."
 msgstr "La tua libreria verrà mostrata qui."
 
-#~ msgid "by"
-#~ msgstr "by"
+#. translators: This shows up when in selection mode. This text should be as short as possible.
+#: src/app/components/labels.rs:30
+msgid "{} song selected"
+msgid_plural "{} songs selected"
+msgstr[0] "{} brano selezionato"
+msgstr[1] "{} brani selezionati"
+
+#. Title for the empty search page (initial state).
+#: src/app/components/search/search.ui:116
+msgid "Search Spotify."
+msgstr "Cerca Spotify."
+
+#. Subtitle for the empty search page (initial state).
+#: src/app/components/search/search.ui:117
+msgid "Type to search."
+msgstr "Digita per cercare."
+
+#: src/app/components/selection/selection_toolbar.ui:69
+msgid "Remove"
+msgstr "Rimuovi"
+
+#. <property name="icon-name">playlist2-symbolic</property>
+#: src/app/components/selection/selection_toolbar.ui:56
+msgid "Add to playlist..."
+msgstr "Aggiungi alla playlist..."
+
+#. Button label. Exits selection mode.
+#: src/app/components/playlist_details/playlist_headerbar.ui:50
+#: src/app/components/headerbar/headerbar.ui:47
+msgid "Cancel"
+msgstr "Annulla"
+
+#. Button label. Selects all visible songs.
+#: src/app/components/headerbar/headerbar.ui:58
+msgid "Select all"
+msgstr "Seleziona tutto"
+
+#. translators: This is part of a contextual menu attached to a single track; the full text is "More from <artist>".
+#: src/app/components/labels.rs:39
+msgid "More from {}"
+msgstr "Di più da {}"
+
+#. This refers to a music label
+#: src/app/components/details/release_details.ui:38
+msgid "Label"
+msgstr "Etichetta discografica"
+
+#. This refers to a release date
+#: src/app/components/details/release_details.ui:48
+msgid "Released"
+msgstr "Data di uscita"
+
+#. This refers to a number of tracks
+#: src/app/components/details/release_details.ui:58
+msgid "Tracks"
+msgstr "Tracce"
+
+#. This refers to the duration of a release
+#: src/app/components/details/release_details.ui:68
+msgid "Duration"
+msgstr "Durata"
+
+#: src/app/components/details/release_details.ui:68
+msgid "Copyright"
+msgstr "Copyright"
+
+#. translators: This is part of a larger label that reads "<Album> by <Artist>"
+#: src/app/components/labels.rs:48
+msgid "{} by {}"
+msgstr "{} di {}"
+
+#: src/app/components/sidebar/sidebar.rs:48
+msgid "Unnamed playlist"
+msgstr "Playlist senza nome"
+
+#. translators: This is a sidebar entry to browse to saved playlists.
+#: src/app/components/sidebar/sidebar_item.rs:81
+msgid "All Playlists"
+msgstr "Tutte le playlist"
+
+#: src/app/components/selection/component.rs:66
+msgid "Tracks saved!"
+msgstr "Tracce salvate!"
+
+#. translators: This is a menu entry.
+#: src/app/components/user_menu/user_menu.rs:65
+msgid "Preferences"
+msgstr "Preferenze"
+
+#: src/main.rs:80
+msgid "Failed to open link!"
+msgstr "Apertura del link fallita!"
+
+#. Header for a group of preference items regarding audio
+#: src/app/components/settings/settings.ui:13
+msgid "Audio"
+msgstr "Audio"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:16
+msgid "Audio Backend"
+msgstr "Backend Audio"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:29
+msgid "ALSA Device"
+msgstr "Device ALSA"
+
+#. Description for the item (ALSA Device) in preferences
+#: src/app/components/settings/settings.ui:30
+msgid "Applied only if audio backend is ALSA"
+msgstr "Applicato solo se il backend audio è ALSA"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:40
+msgid "Audio Quality"
+msgstr "Qualità Audio"
+
+#: src/app/components/settings/settings.ui:44
+msgid "Normal"
+msgstr "Normale"
+
+#: src/app/components/settings/settings.ui:45
+msgid "High"
+msgstr "Alta"
+
+#: src/app/components/settings/settings.ui:46
+msgid "Very high"
+msgstr "Molto alta"
+
+#. Header for a group of preference items regarding the application's appearance
+#: src/app/components/settings/settings.ui:70
+msgid "Appearance"
+msgstr "Aspetto"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:73
+msgid "Theme"
+msgstr "Tema"
+
+#: src/app/components/settings/settings.ui:77
+msgid "Light"
+msgstr "Chiaro"
+
+#: src/app/components/settings/settings.ui:78
+msgid "Dark"
+msgstr "Scuro"
+
+#. Header for a group of preference items regarding network
+#: src/app/components/settings/settings.ui:89
+msgid "Network"
+msgstr "Rete"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:92
+msgid "Access Point Port"
+msgstr "Porta Access Point"
+
+#. Longer description for an item (Access Point Port) in preferences
+#: src/app/components/settings/settings.ui:93
+msgid "Port used for connections to Spotify's Access Point. Set to 0 if any port is fine."
+msgstr "Porta usata per le connessioni all'Access Point Spotify. Impostala a 0 se qualsiasi valore va bene."
+
+#: src/app/components/selection/selection_toolbar.ui:90
+msgid "Save to library"
+msgstr "Salva nella libreria"
+
+#. translators: This is a notification that pop ups when a new playlist is created. It includes the name of that playlist.
+#: src/app/components/notification/mod.rs:25
+msgid "New playlist created."
+msgstr ""
+
+#. translators: This is a label in the notification shown after creating a new playlist. If it is clicked, the new playlist will be opened.
+#: src/app/components/notification/mod.rs:27
+msgid "View"
+msgstr ""
+
+#: src/app/components/sidebar/sidebar_item.rs:90
+msgid "New Playlist"
+msgstr ""
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:54
+msgid "Gapless playback"
+msgstr ""
+
+#: src/app/components/settings/settings.ui:79
+msgid "System"
+msgstr ""
+
+#. Finish playlist edition
+#: src/app/components/playlist_details/playlist_headerbar.ui:63
+msgid "Done"
+msgstr ""
+
+#. label for the entry containing the name of a new playlist
+#: src/app/components/sidebar/create_playlist.ui:10
+msgid "Name"
+msgstr ""
+
+#. Button that creates a new playlist
+#: src/app/components/sidebar/create_playlist.ui:33
+msgid "Create"
+msgstr ""
+

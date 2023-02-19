@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-28 00:21+0200\n"
+"POT-Creation-Date: 2023-02-19 17:27-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/batch_loader.rs:91 src/app/components/mod.rs:122
+#: src/app/batch_loader.rs:91 src/app/components/mod.rs:128
 msgid "An error occured. Check logs for details!"
 msgstr ""
 
@@ -72,35 +72,37 @@ msgid "Could not save password. Make sure the session keyring is unlocked."
 msgstr ""
 
 #. translators: This is a sidebar entry to browse to saved albums.
-#: src/app/components/navigation/factory.rs:32
-#: src/app/components/navigation/home.rs:68
+#: src/app/components/navigation/factory.rs:33
+#: src/app/components/sidebar/sidebar_item.rs:39
 msgid "Library"
 msgstr ""
 
 #. translators: This is a sidebar entry that marks that the entries below are playlists.
-#: src/app/components/navigation/factory.rs:51
-#: src/app/components/navigation/home.rs:94
+#: src/app/components/navigation/factory.rs:54
+#: src/app/components/sidebar/sidebar_item.rs:45
 msgid "Playlists"
 msgstr ""
 
 #. translators: This is a sidebar entry to browse to saved tracks.
-#: src/app/components/navigation/factory.rs:82
-#: src/app/components/navigation/home.rs:78
+#: src/app/components/navigation/factory.rs:85
+#: src/app/components/sidebar/sidebar_item.rs:41
 msgid "Saved tracks"
 msgstr ""
 
-#: src/app/components/navigation/home.rs:32
-msgid "Unnamed playlist"
+#. translators: This is a notification that pop ups when a new playlist is created. It includes the name of that playlist.
+#: src/app/components/notification/mod.rs:25
+msgid "New playlist created."
 msgstr ""
 
-#: src/app/components/navigation/home.rs:87
-#: src/app/components/now_playing/now_playing_model.rs:134
-msgid "Now playing"
+#. translators: This is a label in the notification shown after creating a new playlist. If it is clicked, the new playlist will be opened.
+#: src/app/components/notification/mod.rs:27
+msgid "View"
 msgstr ""
 
 #. translators: This is a sidebar entry to browse to saved playlists.
-#: src/app/components/navigation/home.rs:104
-msgid "All Playlists"
+#: src/app/components/now_playing/now_playing_model.rs:134
+#: src/app/components/sidebar/sidebar_item.rs:43
+msgid "Now playing"
 msgstr ""
 
 #: src/app/components/playback/playback_controls.rs:64
@@ -120,6 +122,18 @@ msgstr ""
 
 #: src/app/components/selection/component.rs:66
 msgid "Tracks saved!"
+msgstr ""
+
+#: src/app/components/sidebar/sidebar_item.rs:81
+msgid "All Playlists"
+msgstr ""
+
+#: src/app/components/sidebar/sidebar_item.rs:90
+msgid "New Playlist"
+msgstr ""
+
+#: src/app/components/sidebar/sidebar.rs:48
+msgid "Unnamed playlist"
 msgstr ""
 
 #. translators: This is a menu entry.
@@ -142,11 +156,11 @@ msgstr ""
 msgid "Log out"
 msgstr ""
 
-#: src/app/state/login_state.rs:110
+#: src/app/state/login_state.rs:112
 msgid "Connection restored"
 msgstr ""
 
-#: src/main.rs:81
+#: src/main.rs:80
 msgid "Failed to open link!"
 msgstr ""
 
@@ -227,36 +241,45 @@ msgstr ""
 msgid "Very high"
 msgstr ""
 
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:54
+msgid "Gapless playback"
+msgstr ""
+
 #. Header for a group of preference items regarding the application's appearance
-#: src/app/components/settings/settings.ui:56
+#: src/app/components/settings/settings.ui:70
 msgid "Appearance"
 msgstr ""
 
 #. Title for an item in preferences
-#: src/app/components/settings/settings.ui:59
+#: src/app/components/settings/settings.ui:73
 msgid "Theme"
 msgstr ""
 
-#: src/app/components/settings/settings.ui:63
+#: src/app/components/settings/settings.ui:77
 msgid "Light"
 msgstr ""
 
-#: src/app/components/settings/settings.ui:64
+#: src/app/components/settings/settings.ui:78
 msgid "Dark"
 msgstr ""
 
+#: src/app/components/settings/settings.ui:79
+msgid "System"
+msgstr ""
+
 #. Header for a group of preference items regarding network
-#: src/app/components/settings/settings.ui:74
+#: src/app/components/settings/settings.ui:89
 msgid "Network"
 msgstr ""
 
 #. Title for an item in preferences
-#: src/app/components/settings/settings.ui:77
+#: src/app/components/settings/settings.ui:92
 msgid "Access Point Port"
 msgstr ""
 
 #. Longer description for an item (Access Point Port) in preferences
-#: src/app/components/settings/settings.ui:78
+#: src/app/components/settings/settings.ui:93
 msgid ""
 "Port used for connections to Spotify's Access Point. Set to 0 if any port is "
 "fine."
@@ -319,14 +342,31 @@ msgstr ""
 msgid "Log in"
 msgstr ""
 
+#. Exit playlist edition
 #. Button label. Exits selection mode.
+#: src/app/components/playlist_details/playlist_headerbar.ui:50
 #: src/app/components/headerbar/headerbar.ui:47
 msgid "Cancel"
+msgstr ""
+
+#. Finish playlist edition
+#: src/app/components/playlist_details/playlist_headerbar.ui:63
+msgid "Done"
 msgstr ""
 
 #. Button label. Selects all visible songs.
 #: src/app/components/headerbar/headerbar.ui:58
 msgid "Select all"
+msgstr ""
+
+#. label for the entry containing the name of a new playlist
+#: src/app/components/sidebar/create_playlist.ui:10
+msgid "Name"
+msgstr ""
+
+#. Button that creates a new playlist
+#: src/app/components/sidebar/create_playlist.ui:33
+msgid "Create"
 msgstr ""
 
 #: src/app/components/playback/playback_controls.ui:17
