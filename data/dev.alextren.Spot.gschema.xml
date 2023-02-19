@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="spot">
   <enum id="dev.alextren.Spot.AudioBackend">
-    <value value="0" nick="pulseaudio"/>
-    <value value="1" nick="alsa"/>
+    <value value="0" nick="pulseaudio" />
+    <value value="1" nick="alsa" />
+    <value value="2" nick="gstreamer" />
   </enum>
   <enum id="dev.alextren.Spot.Bitrate">
-    <value value="0" nick="96"/>
-    <value value="1" nick="160"/>
-    <value value="2" nick="320"/>
+    <value value="0" nick="96" />
+    <value value="1" nick="160" />
+    <value value="2" nick="320" />
   </enum>
   <enum id="dev.alextren.Spot.ThemePref">
     <value value="0" nick="light" />
