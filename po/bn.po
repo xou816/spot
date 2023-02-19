@@ -4,402 +4,352 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: POEditor.com\n"
-"Project-Id-Version: Spot\n"
-"Language: bn\n"
+"Project-Id-Version: gnome-spotify-client\n"
+"Language: bg\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
 #: src/app/components/labels.rs:5
-#, fuzzy
 msgid "View album"
-msgstr "অ্যালবাম দেখুন"
+msgstr "Албум"
 
 #. translators: This is part of a contextual menu attached to a single track; the intent is to copy the link (public URL) to a specific track.
 #: src/app/components/labels.rs:8
-#, fuzzy
 msgid "Copy link"
-msgstr "লিংক কপি করুন"
+msgstr "Копирай линка"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry adds a track at the end of the play queue.
 #: src/app/components/labels.rs:11
 #: src/app/components/selection/selection_toolbar.ui:39
-#, fuzzy
 msgid "Add to queue"
-msgstr "সারিতে যোগ করুন"
+msgstr "Добави в опашката"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry removes a track from the play queue.
 #: src/app/components/labels.rs:14
-#, fuzzy
 msgid "Remove from queue"
-msgstr "সারি থেকে সরান"
+msgstr "Премахни от опашката"
 
 #. translators: This is part of a larger text that says "Add to <playlist name>". This text should be as short as possible.
 #: src/app/components/labels.rs:21
-#, fuzzy
 msgid "Add to {}"
-msgstr "{} তে যোগ করুন"
+msgstr "Добави в {}"
 
 #. translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
 #: src/app/components/login/login_model.rs:56
-#, fuzzy
 msgid "Could not save password. Make sure the session keyring is unlocked."
-msgstr "পাসওয়ার্ড সেভ করা যায়নি। সেশন কীরিং আনলক করা আছে কিনা নিশ্চিত করুন।"
+msgstr "Неуспешно запаметяване на паролата. Проверете дали мениджъра на пароли е отключен."
 
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
 #: src/app/batch_loader.rs:91 src/app/components/mod.rs:122
-#, fuzzy
 msgid "An error occured. Check logs for details!"
-msgstr "একটি ত্রুটি ঘটেছে। বিস্তারিত জানতে লগ চেক করুন!"
+msgstr "Възникна грешка. Проверете логовете за повече детайли!"
 
 #. translators: This is a sidebar entry to browse to saved albums.
 #: src/app/components/navigation/factory.rs:32
 #: src/app/components/navigation/home.rs:68
-#, fuzzy
 msgid "Library"
-msgstr "লাইব্রেরী"
+msgstr "Библиотека"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
 #: src/app/components/navigation/factory.rs:51
 #: src/app/components/navigation/home.rs:94
-#, fuzzy
 msgid "Playlists"
-msgstr "প্লেলিস্ট"
+msgstr "Playlists"
 
 #. This is the visible name for the play queue. It appears in the sidebar as well.
 #: src/app/components/navigation/home.rs:87
 #: src/app/components/now_playing/now_playing_model.rs:134
-#, fuzzy
 msgid "Now playing"
-msgstr "এখন প্লে হচ্ছে"
+msgstr "В момента се изпълнява"
 
 #. translators: Short text displayed instead of a song title when nothing plays
 #. Short text displayed instead of a song title when nothing plays
 #: src/app/components/playback/playback_info.rs:58
 #: src/app/components/playback/playback_info.ui:32
-#, fuzzy
 msgid "No song playing"
-msgstr "কোনো গান প্লে হচ্ছেনা"
+msgstr "Не се възпроизвежда песен"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:67
-#, fuzzy
 msgid "About"
-msgstr "অ্যাবাউট"
+msgstr "Относно"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:69
-#, fuzzy
 msgid "Quit"
-msgstr "প্রস্থান করুন"
+msgstr "Затваряне"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:74
-#, fuzzy
 msgid "Log out"
-msgstr "লগ আউট"
+msgstr "Изход от профила"
 
 #: src/app/state/login_state.rs:110
-#, fuzzy
 msgid "Connection restored"
-msgstr "সংযোগ পুনরুদ্ধার করা হয়েছে"
+msgstr "Връзката е възстановена"
 
 #. Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify.
 #: src/app/components/artist_details/artist_details.ui:26
-#, fuzzy
 msgid "Top tracks"
-msgstr "টপ ট্র্যাকগুলি"
+msgstr "Топ песни"
 
 #. Title of the sections that contains all releases from an artist (both singles and albums).
 #: src/app/components/artist_details/artist_details.ui:53
-#, fuzzy
 msgid "Releases"
-msgstr "রিলিজ"
+msgstr "Издания"
 
 #. Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).
 #: src/app/components/login/login.ui:45
-#, fuzzy
 msgid "Login to Spotify Premium"
-msgstr "স্পটিফাই প্রিমিয়ামে লগইন করুন"
+msgstr "Вход в Spotify Premium"
 
 #. Placeholder for the username field
 #: src/app/components/login/login.ui:64
-#, fuzzy
 msgid "Username"
-msgstr "ইউজারনেম"
+msgstr "Потребител"
 
 #. Placeholder for the password field
 #: src/app/components/login/login.ui:72
-#, fuzzy
 msgid "Password"
-msgstr "পাসওয়ার্ড"
+msgstr "Парола"
 
 #. This error is shown when authentication fails.
 #: src/app/components/login/login.ui:126
-#, fuzzy
 msgid "Authentication failed!"
-msgstr "অথেন্টিকেশন ব্যর্থ হয়েছে!"
+msgstr "Неуспешно влизане!"
 
 #. Log in button label
 #: src/app/components/login/login.ui:141
-#, fuzzy
 msgid "Log in"
-msgstr "লগ ইন"
+msgstr "Влизане"
 
 #. This is the title of a section of the search results
 #: src/app/components/search/search.ui:72
-#, fuzzy
 msgid "Albums"
-msgstr "অ্যালবাম"
+msgstr "Албуми"
 
 #. This is the title of a section of the search results
 #: src/app/components/search/search.ui:105
-#, fuzzy
 msgid "Artists"
-msgstr "আর্টিস্ট"
+msgstr "Изпълнители"
 
 #: src/app/components/navigation/factory.rs:82
 #: src/app/components/navigation/home.rs:78
-#, fuzzy
 msgid "Saved tracks"
-msgstr "সেভ করা ট্র্যাকগুলি"
+msgstr "Записани песни"
 
 #. This information is shown when Caps Lock is enabled.
 #: src/app/components/login/login.ui:95
-#, fuzzy
 msgid "Caps Lock is enabled!"
-msgstr "ক্যাপস লক সক্রিয় আছে!"
+msgstr "Caps Lock е включен!"
 
 #: src/app/components/playback/playback_controls.rs:64
-#, fuzzy
 msgid "Pause"
-msgstr "পজ"
+msgstr "Пауза"
 
 #: src/app/components/playback/playback_controls.rs:66
-#, fuzzy
 msgid "Play"
-msgstr "প্লে"
+msgstr "Пусни"
 
 #: src/app/components/playback/playback_controls.ui:17
-#, fuzzy
 msgid "Shuffle"
-msgstr "শাফল"
+msgstr "Разбъркана подредба"
 
 #: src/app/components/playback/playback_controls.ui:27
-#, fuzzy
 msgid "Previous"
-msgstr "পূর্ববর্তী"
+msgstr "Предишна песен"
 
 #: src/app/components/playback/playback_controls.ui:50
-#, fuzzy
 msgid "Next"
-msgstr "পরবর্তী"
+msgstr "Следваща песен"
 
 #: src/app/components/playback/playback_controls.ui:60
-#, fuzzy
 msgid "Repeat"
-msgstr "রিপিট"
+msgstr "Повтаряй"
 
 #. A title that is shown when the user has not saved any playlists.
 #: src/app/components/saved_playlists/saved_playlists.ui:26
-#, fuzzy
 msgid "You have no saved playlists."
-msgstr "আপনার কোনো সেভ করা প্লেলিস্ট নেই।"
+msgstr "Нямате записани плейлисти."
 
 #. A description of what happens when the user has saved playlists.
 #: src/app/components/saved_playlists/saved_playlists.ui:27
-#, fuzzy
 msgid "Your playlists will be shown here."
-msgstr "আপনার প্লেলিস্ট এখানে দেখানো হবে।"
+msgstr "Вашите плейлисти ще се появят тук."
 
 #. A title that is shown when the user has not saved any albums.
 #: src/app/components/library/library.ui:26
-#, fuzzy
 msgid "You have no saved albums."
-msgstr "আপনার কোনো সেভ করা অ্যালবাম নেই।"
+msgstr "Нямате записани албуми."
 
 #. A description of what happens when the user has saved albums.
 #: src/app/components/library/library.ui:27
-#, fuzzy
 msgid "Your library will be shown here."
-msgstr "আপনার লাইব্রেরী এখানে দেখানো হবে।"
+msgstr "Вашата библиотека ще се появи тук."
 
 #. translators: This shows up when in selection mode. This text should be as short as possible.
 #: src/app/components/labels.rs:30
-#, fuzzy
 msgid "{} song selected"
 msgid_plural "{} songs selected"
-msgstr[0] "{} টি গান সিলেক্ট করা হয়েছে"
-msgstr[1] "{} টি গান সিলেক্ট করা হয়েছে"
+msgstr[0] "{} избрана песен"
+msgstr[1] "{} избрани песни"
 
 #. Title for the empty search page (initial state).
 #: src/app/components/search/search.ui:116
-#, fuzzy
 msgid "Search Spotify."
-msgstr "স্পটিফাইয়ে খুঁজুন।"
+msgstr "Търсене в Spotify."
 
 #. Subtitle for the empty search page (initial state).
 #: src/app/components/search/search.ui:117
-#, fuzzy
 msgid "Type to search."
-msgstr "খোঁজার জন্য এখানে টাইপ করুন।"
+msgstr "Търсене."
 
 #: src/app/components/selection/selection_toolbar.ui:69
-#, fuzzy
 msgid "Remove"
-msgstr "রিমুভ করুন"
+msgstr "Премахни"
 
 #. <property name="icon-name">playlist2-symbolic</property>
 #: src/app/components/selection/selection_toolbar.ui:56
-#, fuzzy
 msgid "Add to playlist..."
-msgstr "প্লেলিস্টে যোগ করুন..."
+msgstr "Добави в плейлиста..."
 
 #. Button label. Exits selection mode.
 #: src/app/components/headerbar/headerbar.ui:47
-#, fuzzy
 msgid "Cancel"
-msgstr "বাতিল করুন"
+msgstr "Отказ"
 
 #. Button label. Selects all visible songs.
 #: src/app/components/headerbar/headerbar.ui:58
-#, fuzzy
 msgid "Select all"
-msgstr "সবকিছু সিলেক্ট করুন"
+msgstr "Избери всички"
 
 #. translators: This is part of a contextual menu attached to a single track; the full text is "More from <artist>".
 #: src/app/components/labels.rs:39
-#, fuzzy
 msgid "More from {}"
-msgstr "{} -র থেকে আরও"
+msgstr "Още от {}"
 
 #. This refers to a music label
 #: src/app/components/details/release_details.ui:38
-#, fuzzy
 msgid "Label"
-msgstr "লেবেল"
+msgstr "Издател"
 
 #. This refers to a release date
 #: src/app/components/details/release_details.ui:48
-#, fuzzy
 msgid "Released"
-msgstr "রিলিজ হয়েছে"
+msgstr "Издаден"
 
 #. This refers to a number of tracks
 #: src/app/components/details/release_details.ui:58
-#, fuzzy
 msgid "Tracks"
-msgstr "ট্র্যাক গুলি"
+msgstr "Песни"
 
 #. This refers to the duration of a release
 #: src/app/components/details/release_details.ui:68
-#, fuzzy
 msgid "Duration"
-msgstr "সময়"
+msgstr "Продължителност"
 
 #: src/app/components/details/release_details.ui:68
-#, fuzzy
 msgid "Copyright"
-msgstr "কপিরাইট"
+msgstr "Авторско право"
 
 #. translators: This is part of a larger label that reads "<Album> by <Artist>"
 #: src/app/components/labels.rs:48
-#, fuzzy
 msgid "{} by {}"
-msgstr "{} বাই {}"
+msgstr "{} от {}"
 
 #: src/app/components/navigation/home.rs:32
 msgid "Unnamed playlist"
-msgstr ""
+msgstr "Неименован плейлист"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
 #: src/app/components/navigation/home.rs:104
 msgid "All Playlists"
-msgstr ""
+msgstr "Всички плейлисти"
 
 #: src/app/components/selection/component.rs:66
 msgid "Tracks saved!"
-msgstr ""
+msgstr "Записани песни!"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:65
 msgid "Preferences"
-msgstr ""
+msgstr "Предпочитания"
 
 #: src/main.rs:81
 msgid "Failed to open link!"
-msgstr ""
+msgstr "Неуспешно отваряне на линка!"
 
 #. Header for a group of preference items regarding audio
 #: src/app/components/settings/settings.ui:13
 msgid "Audio"
-msgstr ""
+msgstr "Аудио"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:16
 msgid "Audio Backend"
-msgstr ""
+msgstr "Настройки на звука"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:29
 msgid "ALSA Device"
-msgstr ""
+msgstr "ALSA Устройство"
 
 #. Description for the item (ALSA Device) in preferences
 #: src/app/components/settings/settings.ui:30
 msgid "Applied only if audio backend is ALSA"
-msgstr ""
+msgstr "Приложимо само ако аудио устройството е ALSA"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:40
 msgid "Audio Quality"
-msgstr ""
+msgstr "Качество на звука"
 
 #: src/app/components/settings/settings.ui:44
 msgid "Normal"
-msgstr ""
+msgstr "Нормално"
 
 #: src/app/components/settings/settings.ui:45
 msgid "High"
-msgstr ""
+msgstr "Високо"
 
 #: src/app/components/settings/settings.ui:46
 msgid "Very high"
-msgstr ""
+msgstr "Много Високо"
 
 #. Header for a group of preference items regarding the application's appearance
 #: src/app/components/settings/settings.ui:56
 msgid "Appearance"
-msgstr ""
+msgstr "Изглед"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:59
 msgid "Theme"
-msgstr ""
+msgstr "Тема"
 
 #: src/app/components/settings/settings.ui:63
 msgid "Light"
-msgstr ""
+msgstr "Светла"
 
 #: src/app/components/settings/settings.ui:64
 msgid "Dark"
-msgstr ""
+msgstr "Тъмна"
 
 #. Header for a group of preference items regarding network
 #: src/app/components/settings/settings.ui:74
 msgid "Network"
-msgstr ""
+msgstr "Мрежа"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:77
 msgid "Access Point Port"
-msgstr ""
+msgstr "Порт за достъп"
 
 #. Longer description for an item (Access Point Port) in preferences
 #: src/app/components/settings/settings.ui:78
 msgid "Port used for connections to Spotify's Access Point. Set to 0 if any port is fine."
-msgstr ""
+msgstr "Порт за връзка към Spotify. Избран е 0 ако всеки порт е достъпен."
 
 #: src/app/components/selection/selection_toolbar.ui:90
 msgid "Save to library"
-msgstr ""
+msgstr "Запиши в библиотеката"
 
