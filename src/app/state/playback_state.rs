@@ -158,17 +158,22 @@ impl PlaybackState {
     fn stop(&mut self) {
         self.list_position = None;
         self.is_playing = false;
+        self.seek_position.set(0, false);
     }
 
     fn play_index(&mut self, index: usize) -> Option<String> {
         self.is_playing = true;
         self.list_position.replace(index);
+        self.seek_position.set(0, true);
         self.index.next_until(index + 1);
         self.current_song_id()
     }
 
     fn play_next(&mut self) -> Option<String> {
-        self.next_index().and_then(move |i| self.play_index(i))
+        self.next_index().and_then(move |i| {
+            self.seek_position.set(0, true);
+            self.play_index(i)
+        })
     }
 
     pub fn next_index(&self) -> Option<usize> {
@@ -182,7 +187,19 @@ impl PlaybackState {
     }
 
     fn play_prev(&mut self) -> Option<String> {
-        self.prev_index().and_then(move |i| self.play_index(i))
+        self.prev_index().and_then(move |i| {
+            // Microseconds -> seconds conversion, divide by 1 million.
+            // Only jump to the previous track if we aren't more than 2 seconds into the current track.
+            // Otherwise, seek to the start of the current track.
+            // (This replicates the behavior of official Spotify clients.)
+            if self.seek_position.current() / 1_000_000 <= 2 {
+                self.seek_position.set(0, true);
+                self.play_index(i)
+            } else {
+                self.seek_position.set(0, true);
+                None
+            }
+        })
     }
 
     pub fn prev_index(&self) -> Option<usize> {
@@ -198,6 +215,12 @@ impl PlaybackState {
     fn toggle_play(&mut self) -> Option<bool> {
         if self.list_position.is_some() {
             self.is_playing = !self.is_playing;
+
+            match self.is_playing {
+                false => self.seek_position.pause(),
+                true => self.seek_position.resume(),
+            };
+
             Some(self.is_playing)
         } else {
             None
@@ -295,10 +318,8 @@ impl UpdatableState for PlaybackState {
             PlaybackAction::TogglePlay => {
                 if let Some(playing) = self.toggle_play() {
                     if playing {
-                        self.seek_position.resume();
                         vec![PlaybackEvent::PlaybackResumed]
                     } else {
-                        self.seek_position.pause();
                         vec![PlaybackEvent::PlaybackPaused]
                     }
                 } else {
@@ -307,7 +328,6 @@ impl UpdatableState for PlaybackState {
             }
             PlaybackAction::Play => {
                 if !self.is_playing() && self.toggle_play() == Some(true) {
-                    self.seek_position.resume();
                     vec![PlaybackEvent::PlaybackResumed]
                 } else {
                     vec![]
@@ -315,7 +335,6 @@ impl UpdatableState for PlaybackState {
             }
             PlaybackAction::Pause => {
                 if self.is_playing() && self.toggle_play() == Some(false) {
-                    self.seek_position.pause();
                     vec![PlaybackEvent::PlaybackPaused]
                 } else {
                     vec![]
@@ -339,7 +358,6 @@ impl UpdatableState for PlaybackState {
             }
             PlaybackAction::Next => {
                 if let Some(id) = self.play_next() {
-                    self.seek_position.set(0, true);
                     make_events(vec![
                         Some(PlaybackEvent::TrackChanged(id)),
                         Some(PlaybackEvent::PlaybackResumed),
@@ -351,31 +369,20 @@ impl UpdatableState for PlaybackState {
             }
             PlaybackAction::Stop => {
                 self.stop();
-                self.seek_position.set(0, false);
                 vec![PlaybackEvent::PlaybackStopped]
             }
             PlaybackAction::Previous => {
-                // Microseconds -> seconds conversion, divide by 1 million.
-                // Only jump to the previous track if we aren't more than 2 seconds into the current song.
-                // (This replicates the behavior of official Spotify clients.)
-                if self.prev_index().is_some() && (self.seek_position.current() / 1_000_000) <= 2 {
-                    let Some(id) = self.play_prev() else {
-                        return vec![]
-                    };
-
-                    self.seek_position.set(0, true);
+                if let Some(id) = self.play_prev() {
                     make_events(vec![
                         Some(PlaybackEvent::TrackChanged(id)),
                         Some(PlaybackEvent::PlaybackResumed),
                     ])
                 } else {
-                    self.seek_position.set(0, true);
                     make_events(vec![Some(PlaybackEvent::TrackSeeked(0))])
                 }
             }
             PlaybackAction::Load(id) => {
                 if self.play(&id) {
-                    self.seek_position.set(0, true);
                     make_events(vec![
                         Some(PlaybackEvent::TrackChanged(id)),
                         Some(PlaybackEvent::PlaybackResumed),
