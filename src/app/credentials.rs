@@ -27,42 +27,44 @@ impl Credentials {
         }
     }
 
-    pub fn retrieve() -> Result<Self, Error> {
-        let service = SecretService::new(EncryptionType::Dh)?;
-        let collection = service.get_default_collection()?;
-        if collection.is_locked()? {
-            collection.unlock()?;
+    pub async fn retrieve() -> Result<Self, Error> {
+        let service = SecretService::connect(EncryptionType::Dh).await?;
+        let collection = service.get_default_collection().await?;
+        if collection.is_locked().await? {
+            collection.unlock().await?;
         }
-        let items = collection.search_items(make_attributes())?;
-        let item = items.get(0).ok_or(Error::NoResult)?.get_secret()?;
-        serde_json::from_slice(&item).map_err(|_| Error::Parse)
+        let items = collection.search_items(make_attributes()).await?;
+        let item = items.get(0).ok_or(Error::NoResult)?.get_secret().await?;
+        serde_json::from_slice(&item).map_err(|_| Error::Unavailable)
     }
 
-    pub fn logout() -> Result<(), Error> {
-        let service = SecretService::new(EncryptionType::Dh)?;
-        let collection = service.get_default_collection()?;
-        if collection.is_locked()? {
-            collection.unlock()?;
+    pub async fn logout() -> Result<(), Error> {
+        let service = SecretService::connect(EncryptionType::Dh).await?;
+        let collection = service.get_default_collection().await?;
+        if collection.is_locked().await? {
+            collection.unlock().await?;
         }
-        let result = collection.search_items(make_attributes())?;
+        let result = collection.search_items(make_attributes()).await?;
         let item = result.get(0).ok_or(Error::NoResult)?;
-        item.delete()
+        item.delete().await
     }
 
-    pub fn save(&self) -> Result<(), Error> {
-        let service = SecretService::new(EncryptionType::Dh)?;
-        let collection = service.get_default_collection()?;
-        if collection.is_locked()? {
-            collection.unlock()?;
+    pub async fn save(&self) -> Result<(), Error> {
+        let service = SecretService::connect(EncryptionType::Dh).await?;
+        let collection = service.get_default_collection().await?;
+        if collection.is_locked().await? {
+            collection.unlock().await?;
         }
         let encoded = serde_json::to_vec(&self).unwrap();
-        collection.create_item(
-            "Spotify Credentials",
-            make_attributes(),
-            &encoded,
-            true,
-            "text/plain",
-        )?;
+        collection
+            .create_item(
+                "Spotify Credentials",
+                make_attributes(),
+                &encoded,
+                true,
+                "text/plain",
+            )
+            .await?;
         Ok(())
     }
 }

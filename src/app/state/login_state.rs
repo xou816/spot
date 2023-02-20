@@ -20,6 +20,7 @@ pub enum SetLoginSuccessAction {
 
 #[derive(Clone, Debug)]
 pub enum LoginAction {
+    ShowLogin,
     TryLogin(TryLoginAction),
     SetLoginSuccess(SetLoginSuccessAction),
     SetUserPlaylists(Vec<PlaylistSummary>),
@@ -54,6 +55,7 @@ pub enum LoginCompletedEvent {
 
 #[derive(Clone, Debug)]
 pub enum LoginEvent {
+    LoginShown,
     LoginStarted(LoginStartedEvent),
     LoginCompleted(LoginCompletedEvent),
     UserPlaylistsLoaded,
@@ -84,6 +86,7 @@ impl UpdatableState for LoginState {
 
     fn update_with(&mut self, action: Cow<Self::Action>) -> Vec<Self::Event> {
         match action.into_owned() {
+            LoginAction::ShowLogin => vec![LoginEvent::LoginShown.into()],
             LoginAction::TryLogin(TryLoginAction::Password { username, password }) => {
                 vec![
                     LoginEvent::LoginStarted(LoginStartedEvent::Password { username, password })
