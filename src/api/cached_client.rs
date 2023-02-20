@@ -206,6 +206,7 @@ impl CachedSpotifyClient {
         T: DeserializeOwned,
     {
         let write = &write;
+        let do_debug = matches!(key, SpotCacheKey::Album(_));
         let cache_key = key.into_raw();
         let raw = self
             .cache
@@ -216,6 +217,9 @@ impl CachedSpotifyClient {
             )
             .await?;
 
+        if do_debug {
+            dbg!(std::str::from_utf8(&raw[..]).unwrap());
+        }
         let result = from_slice::<T>(&raw);
         match result {
             Ok(t) => Ok(t),
