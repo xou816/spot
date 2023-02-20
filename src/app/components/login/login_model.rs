@@ -18,21 +18,24 @@ impl LoginModel {
 
     pub fn try_autologin(&self) {
         self.dispatcher.dispatch_async(Box::pin(async {
-            let Ok(creds) = Credentials::retrieve().await else {
-                return Some(LoginAction::ShowLogin.into());
-            };
-            let try_login_action = if creds.token_expired() {
-                TryLoginAction::Password {
-                    username: creds.username,
-                    password: creds.password,
+            let action = match Credentials::retrieve().await {
+                Ok(creds) => LoginAction::TryLogin(if creds.token_expired() {
+                    TryLoginAction::Password {
+                        username: creds.username,
+                        password: creds.password,
+                    }
+                } else {
+                    TryLoginAction::Token {
+                        username: creds.username,
+                        token: creds.token,
+                    }
+                }),
+                Err(err) => {
+                    warn!("Could not retrieve credentials: {}", err);
+                    LoginAction::ShowLogin
                 }
-            } else {
-                TryLoginAction::Token {
-                    username: creds.username,
-                    token: creds.token,
-                }
             };
-            Some(LoginAction::TryLogin(try_login_action).into())
+            Some(action.into())
         }));
     }
 
@@ -47,16 +50,19 @@ impl LoginModel {
             if let Ok(mut credentials) = Credentials::retrieve().await {
                 credentials.token = token;
                 credentials.token_expiry_time = Some(token_expiry_time);
-                let _ = credentials.save().await;
+                if let Err(err) = credentials.save().await {
+                    warn!("Could not save credentials: {}", err);
+                }
             }
         });
     }
 
     pub fn save_for_autologin(&self, credentials: Credentials) {
         self.dispatcher.dispatch_async(Box::pin(async move {
-            let Err(_) = credentials.save().await else {
+            let Err(err) = credentials.save().await else {
                 return None;
             };
+            warn!("Could not save credentials: {}", err);
             Some(AppAction::ShowNotification(gettext(
                 // translators: This notification shows up right after login if the password could not be stored in the keyring (that is, GNOME's keyring aka seahorse, or any other libsecret compliant secret store).
                 "Could not save password. Make sure the session keyring is unlocked.",

@@ -41,12 +41,14 @@ impl Credentials {
     pub async fn logout() -> Result<(), Error> {
         let service = SecretService::connect(EncryptionType::Dh).await?;
         let collection = service.get_default_collection().await?;
-        if collection.is_locked().await? {
-            collection.unlock().await?;
+        if !collection.is_locked().await? {
+            let result = collection.search_items(make_attributes()).await?;
+            let item = result.get(0).ok_or(Error::NoResult)?;
+            item.delete().await
+        } else {
+            warn!("Keyring is locked -- not clearing credentials");
+            Ok(())
         }
-        let result = collection.search_items(make_attributes()).await?;
-        let item = result.get(0).ok_or(Error::NoResult)?;
-        item.delete().await
     }
 
     pub async fn save(&self) -> Result<(), Error> {

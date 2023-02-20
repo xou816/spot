@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <requires lib="gtk" version="4.0"/>
-  <requires lib="libadwaita" version="1.0"/>
+  <requires lib="gtk" version="4.0" />
+  <requires lib="libadwaita" version="1.0" />
   <template class="LoginWindow" parent="AdwWindow">
     <property name="default-width">360</property>
     <property name="default-height">100</property>
@@ -24,7 +24,7 @@
                 <property name="height-request">22</property>
                 <property name="icon-name">window-close-symbolic</property>
                 <style>
-                  <class name="circular"/>
+                  <class name="circular" />
                 </style>
               </object>
             </child>
@@ -38,11 +38,15 @@
                     <property name="vexpand">1</property>
                     <property name="orientation">vertical</property>
                     <property name="spacing">20</property>
+                    <property name="margin-bottom">20</property>
+                    <property name="margin-start">16</property>
+                    <property name="margin-end">16</property>
                     <child>
                       <object class="GtkLabel">
                         <property name="halign">start</property>
                         <property name="valign">start</property>
-                        <property name="label" translatable="yes" comments="Login window title -- shouldn&apos;t be too long, but must mention Premium (a premium account is required).">Login to Spotify Premium</property>
+                        <property name="label" translatable="yes"
+                          comments="Login window title -- shouldn&apos;t be too long, but must mention Premium (a premium account is required).">Login to Spotify Premium</property>
                         <property name="wrap">1</property>
                         <property name="xalign">0</property>
                         <property name="yalign">0</property>
@@ -50,7 +54,7 @@
                           <attribute name="weight" value="medium"></attribute>
                         </attributes>
                         <style>
-                          <class name="title-3"/>
+                          <class name="title-3" />
                         </style>
                       </object>
                     </child>
@@ -69,7 +73,9 @@
                             </child>
                             <child>
                               <object class="GtkEntry" id="username">
-                                <property name="placeholder-text" translatable="yes" comments="Placeholder for the username field">Username</property>
+                                <property name="hexpand">1</property>
+                                <property name="placeholder-text" translatable="yes"
+                                  comments="Placeholder for the username field">Username</property>
                               </object>
                             </child>
                           </object>
@@ -84,10 +90,12 @@
                               </object>
                             </child>
                             <child>
-                             <object class="GtkPasswordEntry" id="password">
-                               <property name="show-peek-icon">1</property>
-                               <property name="placeholder-text" translatable="yes" comments="Placeholder for the password field">Password</property>
-                             </object>
+                              <object class="GtkPasswordEntry" id="password">
+                                <property name="hexpand">1</property>
+                                <property name="show-peek-icon">1</property>
+                                <property name="placeholder-text" translatable="yes"
+                                  comments="Placeholder for the password field">Password</property>
+                              </object>
                             </child>
                           </object>
                         </child>
@@ -111,7 +119,8 @@
                             </child>
                             <child>
                               <object class="GtkLabel">
-                                <property name="label" translatable="yes" comments="This error is shown when authentication fails.">Authentication failed!</property>
+                                <property name="label" translatable="yes"
+                                  comments="This error is shown when authentication fails.">Authentication failed!</property>
                                 <property name="wrap">1</property>
                                 <property name="xalign">0</property>
                                 <property name="yalign">0</property>
@@ -129,7 +138,7 @@
                         <property name="label" translatable="yes" comments="Log in button label">Log in</property>
                         <property name="receives-default">1</property>
                         <style>
-                          <class name="suggested-action"/>
+                          <class name="suggested-action" />
                         </style>
                       </object>
                     </child>
