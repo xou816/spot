@@ -56,7 +56,7 @@ version = "0.7.0"
 features = ["gettext-system"]
 
 [dependencies]
-secret-service = "^2.0.1"
+secret-service = "^3.0.1"
 gdk-pixbuf = "^0.17.0"
 libadwaita = "^0.3.0"
 ref_filter_map = "^1.0.1"
