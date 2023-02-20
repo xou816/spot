@@ -307,7 +307,10 @@ async fn create_session_with_port(
     match Session::connect(session_config, credentials.clone(), None, true).await {
         Ok(r) => Ok(r.0),
         Err(SessionError::IoError(_)) => Err(SpotifyError::TechnicalError),
-        Err(SessionError::AuthenticationError(_)) => Err(SpotifyError::LoginFailed),
+        Err(SessionError::AuthenticationError(err)) => {
+            warn!("Login failure: {}", err);
+            Err(SpotifyError::LoginFailed)
+        }
     }
 }
 

@@ -55,8 +55,11 @@ features = ["small_rng"]
 version = "0.7.0"
 features = ["gettext-system"]
 
+[dependencies.secret-service]
+version = "3.0.0"
+features = ["rt-async-io-crypto-rust"]
+
 [dependencies]
-secret-service = "^2.0.1"
 gdk-pixbuf = "^0.17.0"
 libadwaita = "^0.3.0"
 ref_filter_map = "^1.0.1"

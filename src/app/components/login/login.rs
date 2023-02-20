@@ -158,14 +158,6 @@ impl Login {
         self.login_window.upcast_ref::<libadwaita::Window>()
     }
 
-    fn show_self_if_needed(&self) {
-        if self.model.try_autologin() {
-            self.window().close();
-        } else {
-            self.show_self();
-        }
-    }
-
     fn show_self(&self) {
         self.window().set_transient_for(Some(&self.parent));
         self.window().set_modal(true);
@@ -195,9 +187,9 @@ impl EventListener for Login {
                 self.reveal_error();
             }
             AppEvent::Started => {
-                self.show_self_if_needed();
+                self.model.try_autologin();
             }
-            AppEvent::LoginEvent(LoginEvent::LogoutCompleted) => {
+            AppEvent::LoginEvent(LoginEvent::LogoutCompleted | LoginEvent::LoginShown) => {
                 self.show_self();
             }
             AppEvent::LoginEvent(LoginEvent::RefreshTokenCompleted {
