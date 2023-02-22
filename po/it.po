@@ -305,6 +305,7 @@ msgid "Normal"
 msgstr "Normale"
 
 #: src/app/components/settings/settings.ui:45
+#, fuzzy
 msgid "High"
 msgstr "Alta"
 
@@ -352,38 +353,38 @@ msgstr "Salva nella libreria"
 #. translators: This is a notification that pop ups when a new playlist is created. It includes the name of that playlist.
 #: src/app/components/notification/mod.rs:25
 msgid "New playlist created."
-msgstr ""
+msgstr "Creata nuova playlist."
 
 #. translators: This is a label in the notification shown after creating a new playlist. If it is clicked, the new playlist will be opened.
 #: src/app/components/notification/mod.rs:27
 msgid "View"
-msgstr ""
+msgstr "Visualizza"
 
 #: src/app/components/sidebar/sidebar_item.rs:90
 msgid "New Playlist"
-msgstr ""
+msgstr "Nuova Playlist"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:54
 msgid "Gapless playback"
-msgstr ""
+msgstr "Riproduzione gapless"
 
 #: src/app/components/settings/settings.ui:79
 msgid "System"
-msgstr ""
+msgstr "Sistema"
 
 #. Finish playlist edition
 #: src/app/components/playlist_details/playlist_headerbar.ui:63
 msgid "Done"
-msgstr ""
+msgstr "Fatto"
 
 #. label for the entry containing the name of a new playlist
 #: src/app/components/sidebar/create_playlist.ui:10
 msgid "Name"
-msgstr ""
+msgstr "Nome"
 
 #. Button that creates a new playlist
 #: src/app/components/sidebar/create_playlist.ui:33
 msgid "Create"
-msgstr ""
+msgstr "Crea"
 

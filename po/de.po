@@ -60,14 +60,14 @@ msgstr "Playlists"
 #: src/app/components/now_playing/now_playing_model.rs:134
 #: src/app/components/sidebar/sidebar_item.rs:43
 msgid "Now playing"
-msgstr "Es läuft"
+msgstr "Wiedergabe"
 
 #. translators: Short text displayed instead of a song title when nothing plays
 #. Short text displayed instead of a song title when nothing plays
 #: src/app/components/playback/playback_info.rs:58
 #: src/app/components/playback/playback_info.ui:32
 msgid "No song playing"
-msgstr "Es wird kein Titel gespielt"
+msgstr "Keine Wiedergabe"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:67
@@ -260,7 +260,7 @@ msgstr "Unbenannte Playlist"
 #. translators: This is a sidebar entry to browse to saved playlists.
 #: src/app/components/sidebar/sidebar_item.rs:81
 msgid "All Playlists"
-msgstr "Alle Playlist"
+msgstr "Alle Playlists"
 
 #: src/app/components/selection/component.rs:66
 msgid "Tracks saved!"
@@ -298,7 +298,7 @@ msgstr "Wird nur angewendet, wenn das Audio-Backend ALSA ist"
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:40
 msgid "Audio Quality"
-msgstr "Audio Qualität"
+msgstr "Audioqualität"
 
 #: src/app/components/settings/settings.ui:44
 msgid "Normal"
@@ -347,43 +347,43 @@ msgstr "Port, der für Verbindungen mit dem Spotify Access Point verwendet wird.
 
 #: src/app/components/selection/selection_toolbar.ui:90
 msgid "Save to library"
-msgstr "Speichere in Bibliothek"
+msgstr "In Bibliothek speichern"
 
 #. translators: This is a notification that pop ups when a new playlist is created. It includes the name of that playlist.
 #: src/app/components/notification/mod.rs:25
 msgid "New playlist created."
-msgstr ""
+msgstr "Neue Playlist erstellt."
 
 #. translators: This is a label in the notification shown after creating a new playlist. If it is clicked, the new playlist will be opened.
 #: src/app/components/notification/mod.rs:27
 msgid "View"
-msgstr ""
+msgstr "Anzeigen"
 
 #: src/app/components/sidebar/sidebar_item.rs:90
 msgid "New Playlist"
-msgstr ""
+msgstr "Neue Playlist"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:54
 msgid "Gapless playback"
-msgstr ""
+msgstr "Lückenlose Wiedergabe"
 
 #: src/app/components/settings/settings.ui:79
 msgid "System"
-msgstr ""
+msgstr "System"
 
 #. Finish playlist edition
 #: src/app/components/playlist_details/playlist_headerbar.ui:63
 msgid "Done"
-msgstr ""
+msgstr "Fertig"
 
 #. label for the entry containing the name of a new playlist
 #: src/app/components/sidebar/create_playlist.ui:10
 msgid "Name"
-msgstr ""
+msgstr "Name"
 
 #. Button that creates a new playlist
 #: src/app/components/sidebar/create_playlist.ui:33
 msgid "Create"
-msgstr ""
+msgstr "Erstellen"
 
