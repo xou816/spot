@@ -29,7 +29,7 @@ See [this comment](https://github.com/xou816/spot/issues/92#issuecomment-8018525
 
 ### Settings
 
-Spot can also be configured via `gsettings` if you want to change the audio backend, the song bitrate, etc. [A GUI is planned but not available yet.](https://github.com/xou816/spot/issues/142)
+Spot can also be configured via `gsettings` if you want to change the audio backend, the song bitrate, etc.
 
 ### Seek bar warping
 It is possible to click on the seek bar to navigate to that position in a song. If you are having issues with this not working you may have [gtk-primary-button-warps-slider](https://docs.gtk.org/gtk3/property.Settings.gtk-primary-button-warps-slider.html) set to false.
@@ -41,11 +41,11 @@ Scrobbling is not supported directly by Spot. However, you can use a tool such a
 
 ### Lyrics
 
-Similarly, Spot does not display lyrics for songs, but you can use [osdlyrics](https://github.com/osdlyrics/osdlyrics)  ([see #226](https://github.com/xou816/spot/issues/226)).
+Similarly, Spot does not display lyrics for songs, but you can use [osdlyrics](https://github.com/osdlyrics/osdlyrics) ([see #226](https://github.com/xou816/spot/issues/226)).
 
 ### Gtk theme
 
-Spot uses the dark theme variant by default; this can be changed using `gsettings`.
+Spot uses the dark theme variant by default; this can be changed in the settings.
 
 If you are using the flatpak version, don't forget to install your theme with flatpak as well. See [this comment](https://github.com/xou816/spot/issues/209#issuecomment-860180537) for details.
 
@@ -64,11 +64,11 @@ Similarly, snap also requires that you install the corresponding snap for your t
 - view album info
 - credentials management with Secret Service
 - MPRIS integration
+- playlist management (creation and edition)
+- liked tracks
 
 ### Planned
 
-- playlist management (creation and edition)
-- liked tracks
 - GNOME search provider?
 - improved search? (track results)
 - recommendations?
@@ -77,13 +77,13 @@ Similarly, snap also requires that you install the corresponding snap for your t
 
 Contributions are welcome! If you wish, add yourself to the `AUTHORS` files when submitting your contribution.
 
-For any large feature/change, please open an issue first to discuss implementation and design decisions.
+For any large feature/change, **please** open an issue first to discuss implementation and design decisions.
 
 ### Translating
 
 Translations are managed using `gettext` and are available in the `po/` subdirectory.
 
-**I am now experimenting an online service, [POEditor](https://poeditor.com/join/project?hash=xfVrpQfRBM), to manage translations; PRs are still welcome if you feel like using these instead!**
+**Please use [POEditor](https://poeditor.com/join/project?hash=xfVrpQfRBM) to submit translations.**
 
 If you feel like it, you are welcome to open a PR to be added to the `TRANSLATORS` file!
 
