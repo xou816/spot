@@ -2,6 +2,7 @@ use futures::channel::mpsc::UnboundedReceiver;
 use futures::stream::StreamExt;
 
 use librespot::core::authentication::Credentials;
+use librespot::core::cache::Cache;
 use librespot::core::config::SessionConfig;
 use librespot::core::keymaster;
 use librespot::core::session::{Session, SessionError};
@@ -304,7 +305,16 @@ async fn create_session_with_port(
         ap_port,
         ..Default::default()
     };
-    match Session::connect(session_config, credentials.clone(), None, true).await {
+    let root = glib::user_cache_dir().join("spot").join("librespot");
+    let cache = Cache::new(
+        Some(root.join("credentials")),
+        Some(root.join("volume")),
+        Some(root.join("audio")),
+        None,
+    )
+    .map_err(|e| dbg!(e))
+    .ok();
+    match Session::connect(session_config, credentials.clone(), cache, true).await {
         Ok(r) => Ok(r.0),
         Err(SessionError::IoError(_)) => Err(SpotifyError::TechnicalError),
         Err(SessionError::AuthenticationError(err)) => {
