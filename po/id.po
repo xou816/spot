@@ -254,135 +254,135 @@ msgstr "{} oleh {}"
 
 #: src/app/components/sidebar/sidebar.rs:48
 msgid "Unnamed playlist"
-msgstr ""
+msgstr "Daftar putar tanpa nama"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
 #: src/app/components/sidebar/sidebar_item.rs:81
 msgid "All Playlists"
-msgstr ""
+msgstr "Semua Daftar Putar"
 
 #: src/app/components/selection/component.rs:66
 msgid "Tracks saved!"
-msgstr ""
+msgstr "Trek disimpan!"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:65
 msgid "Preferences"
-msgstr ""
+msgstr "Preferensi"
 
 #: src/main.rs:80
 msgid "Failed to open link!"
-msgstr ""
+msgstr "Gagal membuka tautan!"
 
 #. Header for a group of preference items regarding audio
 #: src/app/components/settings/settings.ui:13
 msgid "Audio"
-msgstr ""
+msgstr "Audio"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:16
 msgid "Audio Backend"
-msgstr ""
+msgstr "Backend Audio"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:29
 msgid "ALSA Device"
-msgstr ""
+msgstr "Perangkat ALSA"
 
 #. Description for the item (ALSA Device) in preferences
 #: src/app/components/settings/settings.ui:30
 msgid "Applied only if audio backend is ALSA"
-msgstr ""
+msgstr "Diterapkan hanya jika backend audio adalah ALSA"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:40
 msgid "Audio Quality"
-msgstr ""
+msgstr "Kualitas Audio"
 
 #: src/app/components/settings/settings.ui:44
 msgid "Normal"
-msgstr ""
+msgstr "Normal"
 
 #: src/app/components/settings/settings.ui:45
 msgid "High"
-msgstr ""
+msgstr "Tinggi"
 
 #: src/app/components/settings/settings.ui:46
 msgid "Very high"
-msgstr ""
+msgstr "Sangat tinggi"
 
 #. Header for a group of preference items regarding the application's appearance
 #: src/app/components/settings/settings.ui:70
 msgid "Appearance"
-msgstr ""
+msgstr "Penampilan"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:73
 msgid "Theme"
-msgstr ""
+msgstr "Tema"
 
 #: src/app/components/settings/settings.ui:77
 msgid "Light"
-msgstr ""
+msgstr "Terang"
 
 #: src/app/components/settings/settings.ui:78
 msgid "Dark"
-msgstr ""
+msgstr "Gelap"
 
 #. Header for a group of preference items regarding network
 #: src/app/components/settings/settings.ui:89
 msgid "Network"
-msgstr ""
+msgstr "Jaringan"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:92
 msgid "Access Point Port"
-msgstr ""
+msgstr "Port Titik Akses"
 
 #. Longer description for an item (Access Point Port) in preferences
 #: src/app/components/settings/settings.ui:93
 msgid "Port used for connections to Spotify's Access Point. Set to 0 if any port is fine."
-msgstr ""
+msgstr "Port yang digunakan untuk koneksi ke Titik Akses Spotify. Atur ke 0 jika ada port yang baik-baik saja."
 
 #: src/app/components/selection/selection_toolbar.ui:90
 msgid "Save to library"
-msgstr ""
+msgstr "Simpan ke pustaka"
 
 #. translators: This is a notification that pop ups when a new playlist is created. It includes the name of that playlist.
 #: src/app/components/notification/mod.rs:25
 msgid "New playlist created."
-msgstr ""
+msgstr "Daftar putar baru dibuat."
 
 #. translators: This is a label in the notification shown after creating a new playlist. If it is clicked, the new playlist will be opened.
 #: src/app/components/notification/mod.rs:27
 msgid "View"
-msgstr ""
+msgstr "Tilik"
 
 #: src/app/components/sidebar/sidebar_item.rs:90
 msgid "New Playlist"
-msgstr ""
+msgstr "Daftar Putar Baru"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:54
 msgid "Gapless playback"
-msgstr ""
+msgstr "Pemutaran tanpa celah"
 
 #: src/app/components/settings/settings.ui:79
 msgid "System"
-msgstr ""
+msgstr "Sistem"
 
 #. Finish playlist edition
 #: src/app/components/playlist_details/playlist_headerbar.ui:63
 msgid "Done"
-msgstr ""
+msgstr "Selesai"
 
 #. label for the entry containing the name of a new playlist
 #: src/app/components/sidebar/create_playlist.ui:10
 msgid "Name"
-msgstr ""
+msgstr "Nama"
 
 #. Button that creates a new playlist
 #: src/app/components/sidebar/create_playlist.ui:33
 msgid "Create"
-msgstr ""
+msgstr "Mencipta"
 
