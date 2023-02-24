@@ -1,0 +1,46 @@
+.playlist__header .title-4 label {
+  color: @window_fg_color;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.playlist__header .title-4:hover {
+  border-radius: 6px;
+  background-image: image(alpha(currentColor, 0.08));
+}
+
+.playlist__header .like__button {
+  margin-right: 6px;
+}
+
+.playlist__header .vertical {
+  margin-left: 18px;
+}
+
+.playlist__header .card {
+  margin-top: 18px;
+  margin-left: 6px;
+  margin-bottom: 6px;
+}
+
+clamp.playlist_details__clamp {
+  background-color: @view_bg_color;
+  box-shadow: inset 0px -1px 0px @borders;
+}
+
+headerbar.playlist_details__headerbar {
+  transition: background-color .3s ease;
+}
+
+headerbar.flat.playlist_details__headerbar windowtitle {
+  opacity: 0;
+}
+
+headerbar.playlist_details__headerbar windowtitle {
+  transition: opacity .3s ease;
+  opacity: 1;
+}
+
+.playlist_details__headerbar.flat {
+  background-color: @view_bg_color;
+}

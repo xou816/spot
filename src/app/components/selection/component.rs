@@ -216,7 +216,7 @@ impl EventListener for SelectionToolbar {
             AppEvent::LoginEvent(LoginEvent::UserPlaylistsLoaded) => {
                 let model = &self.model;
                 self.widget.connect_playlists(
-                    &*model.user_playlists(),
+                    &model.user_playlists(),
                     clone!(@weak model => move |s| model.add_to_playlist(s)),
                 );
             }

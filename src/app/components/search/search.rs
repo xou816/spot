@@ -46,7 +46,7 @@ mod imp {
         type ParentType = gtk::Box;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -58,7 +58,7 @@ mod imp {
     impl BoxImpl for SearchResultsWidget {}
 
     impl WidgetImpl for SearchResultsWidget {
-        fn grab_focus(&self, _: &Self::Type) -> bool {
+        fn grab_focus(&self) -> bool {
             self.search_entry.grab_focus()
         }
     }
@@ -70,18 +70,14 @@ glib::wrapper! {
 
 impl SearchResultsWidget {
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create an instance of SearchResultsWidget")
-    }
-
-    fn widget(&self) -> &imp::SearchResultsWidget {
-        imp::SearchResultsWidget::from_instance(self)
+        glib::Object::new()
     }
 
     pub fn bind_to_leaflet(&self, leaflet: &libadwaita::Leaflet) {
         leaflet
             .bind_property(
                 "folded",
-                &*self.widget().main_header,
+                &*self.imp().main_header,
                 "show-start-title-buttons",
             )
             .build();
@@ -92,20 +88,20 @@ impl SearchResultsWidget {
     where
         F: Fn() + 'static,
     {
-        self.widget().go_back.connect_clicked(move |_| f());
+        self.imp().go_back.connect_clicked(move |_| f());
     }
 
     pub fn connect_search_updated<F>(&self, f: F)
     where
         F: Fn(String) + 'static,
     {
-        self.widget()
+        self.imp()
             .search_entry
             .connect_changed(clone!(@weak self as _self => move |s| {
                 let query = s.text();
                 let query = query.as_str();
-                _self.widget().status_page.set_visible(query.is_empty());
-                _self.widget().search_results.set_visible(!query.is_empty());
+                _self.imp().status_page.set_visible(query.is_empty());
+                _self.imp().search_results.set_visible(!query.is_empty());
                 if !query.is_empty() {
                     f(query.to_string());
                 }
@@ -116,7 +112,7 @@ impl SearchResultsWidget {
     where
         F: Fn(String) + Clone + 'static,
     {
-        self.widget()
+        self.imp()
             .albums_results
             .bind_model(Some(store), move |item| {
                 wrap_flowbox_item(item, |album_model| {
@@ -134,7 +130,7 @@ impl SearchResultsWidget {
     where
         F: Fn(String) + Clone + 'static,
     {
-        self.widget()
+        self.imp()
             .artist_results
             .bind_model(Some(store), move |item| {
                 wrap_flowbox_item(item, |artist_model| {

@@ -38,7 +38,7 @@ mod imp {
         type ParentType = libadwaita::Bin;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -58,7 +58,7 @@ glib::wrapper! {
 impl AlbumWidget {
     pub fn new() -> Self {
         display_add_css_provider(resource!("/components/album.css"));
-        glib::Object::new(&[]).expect("Failed to create an instance of AlbumWidget")
+        glib::Object::new()
     }
 
     pub fn for_model(album_model: &AlbumModel, worker: Worker) -> Self {
@@ -73,21 +73,19 @@ impl AlbumWidget {
     }
 
     fn set_image(&self, pixbuf: Option<&gdk_pixbuf::Pixbuf>) {
-        imp::AlbumWidget::from_instance(self)
-            .cover_image
-            .set_from_pixbuf(pixbuf);
+        self.imp().cover_image.set_from_pixbuf(pixbuf);
     }
 
     fn bind(&self, album_model: &AlbumModel, worker: Worker) {
-        let widget = imp::AlbumWidget::from_instance(self);
+        let widget = self.imp();
         widget.cover_image.set_overflow(gtk::Overflow::Hidden);
 
-        if let Some(url) = album_model.cover_url() {
+        if let Some(cover_art) = album_model.cover() {
             let _self = self.downgrade();
             worker.send_local_task(async move {
                 if let Some(_self) = _self.upgrade() {
                     let loader = ImageLoader::new();
-                    let result = loader.load_remote(&url, "jpg", 200, 200).await;
+                    let result = loader.load_remote(&cover_art, "jpg", 200, 200).await;
                     _self.set_image(result.as_ref());
                     _self.set_loaded();
                 }
@@ -106,21 +104,18 @@ impl AlbumWidget {
             .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
             .build();
 
-        match album_model.year() {
-            Some(_) => {
-                album_model
-                    .bind_property("year", &*widget.year_label, "label")
-                    .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
-                    .build();
-            }
-            None => {
-                widget.year_label.hide();
-            }
+        if album_model.year() > 0 {
+            album_model
+                .bind_property("year", &*widget.year_label, "label")
+                .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                .build();
+        } else {
+            widget.year_label.hide();
         }
     }
 
     pub fn connect_album_pressed<F: Fn(&Self) + 'static>(&self, f: F) {
-        imp::AlbumWidget::from_instance(self)
+        self.imp()
             .cover_btn
             .connect_clicked(clone!(@weak self as _self => move |_| {
                 f(&_self);

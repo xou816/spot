@@ -1,8 +1,9 @@
 use gio::prelude::*;
 use gio::ListModel;
+use glib::Properties;
 use glib::StaticType;
 use gtk::subclass::prelude::*;
-use std::cell::{Ref, RefCell, RefMut};
+use std::cell::{Cell, Ref, RefCell, RefMut};
 
 use super::support::*;
 use crate::app::models::*;
@@ -60,15 +61,17 @@ glib::wrapper! {
 
 impl SongListModel {
     pub fn new(batch_size: u32) -> Self {
-        glib::Object::new(&[("batch-size", &batch_size)]).unwrap()
+        glib::Object::builder()
+            .property("batch-size", batch_size)
+            .build()
     }
 
     fn inner_mut(&mut self) -> RefMut<SongList> {
-        imp::SongListModel::from_instance(self).get_mut()
+        self.imp().get_mut()
     }
 
     fn inner(&self) -> Ref<SongList> {
-        imp::SongListModel::from_instance(self).get()
+        self.imp().get()
     }
 
     fn notify_changes(&self, changes: impl IntoIterator<Item = ListRangeUpdate> + 'static) {
@@ -170,74 +173,56 @@ impl SongListModel {
 mod imp {
 
     use super::*;
+    use std::convert::TryFrom;
 
-    pub struct SongListModel(RefCell<Option<SongList>>);
+    #[derive(Default, Properties)]
+    #[properties(wrapper_type = super::SongListModel)]
+    pub struct SongListModel {
+        #[property(get, set = Self::set_batch_size, name = "batch-size")]
+        batch_size: Cell<u32>,
+        song_list: RefCell<Option<SongList>>,
+    }
+
+    impl SongListModel {
+        fn set_batch_size(&self, batch_size: u32) {
+            self.batch_size.set(batch_size);
+            self.song_list
+                .replace(Some(SongList::new_sized(batch_size as usize)));
+        }
+    }
 
     #[glib::object_subclass]
     impl ObjectSubclass for SongListModel {
         const NAME: &'static str = "SongList";
-
         type Type = super::SongListModel;
         type ParentType = glib::Object;
         type Interfaces = (ListModel,);
-
-        fn new() -> Self {
-            Self(RefCell::new(None))
-        }
-    }
-
-    lazy_static! {
-        static ref PROPERTIES: [glib::ParamSpec; 1] = [glib::ParamSpecUInt::new(
-            "batch-size",
-            "Size of the batches",
-            "",
-            1,
-            u32::MAX,
-            1,
-            glib::ParamFlags::READWRITE,
-        )];
     }
 
     impl ObjectImpl for SongListModel {
         fn properties() -> &'static [glib::ParamSpec] {
-            &*PROPERTIES
+            Self::derived_properties()
         }
 
-        fn set_property(
-            &self,
-            _obj: &Self::Type,
-            _id: usize,
-            value: &glib::Value,
-            pspec: &glib::ParamSpec,
-        ) {
-            if "batch-size" == pspec.name() {
-                let batch_size = value.get::<u32>().unwrap();
-                *self.0.borrow_mut() = Some(SongList::new_sized(batch_size as usize))
-            } else {
-                unimplemented!()
-            }
+        fn set_property(&self, id: usize, value: &glib::Value, pspec: &glib::ParamSpec) {
+            self.derived_set_property(id, value, pspec);
         }
 
-        fn property(&self, _obj: &Self::Type, _id: usize, pspec: &glib::ParamSpec) -> glib::Value {
-            if "batch-size" == pspec.name() {
-                let size = self.get().batch_size() as u32;
-                size.to_value()
-            } else {
-                unimplemented!()
-            }
+        fn property(&self, id: usize, pspec: &glib::ParamSpec) -> glib::Value {
+            self.derived_property(id, pspec)
         }
     }
 
     impl ListModelImpl for SongListModel {
-        fn item_type(&self, _: &Self::Type) -> glib::Type {
+        fn item_type(&self) -> glib::Type {
             SongModel::static_type()
         }
 
-        fn n_items(&self, _: &Self::Type) -> u32 {
+        fn n_items(&self) -> u32 {
             self.get().partial_len() as u32
         }
 
-        fn item(&self, _: &Self::Type, position: u32) -> Option<glib::Object> {
+        fn item(&self, position: u32) -> Option<glib::Object> {
             self.get()
                 .index_continuous(position as usize)
                 .map(|m| m.clone().upcast())
@@ -246,13 +231,13 @@ mod imp {
 
     impl SongListModel {
         pub fn get_mut(&self) -> RefMut<SongList> {
-            RefMut::map(self.0.borrow_mut(), |s| {
+            RefMut::map(self.song_list.borrow_mut(), |s| {
                 s.as_mut().expect("set at construction")
             })
         }
 
         pub fn get(&self) -> Ref<SongList> {
-            Ref::map(self.0.borrow(), |s| {
+            Ref::map(self.song_list.borrow(), |s| {
                 s.as_ref().expect("set at construction")
             })
         }

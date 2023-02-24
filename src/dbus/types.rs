@@ -20,17 +20,15 @@ impl Type for LoopStatus {
     }
 }
 
-impl TryFrom<&Value<'_>> for LoopStatus {
-    type Error = zvariant::Error;
-
-    fn try_from(value: &Value<'_>) -> Result<Self, Self::Error> {
-        let s = String::try_from(value)?;
-        let s = s.as_str();
-        Ok(match s {
-            "Track" => LoopStatus::Track,
-            "Playlist" => LoopStatus::Playlist,
-            _ => LoopStatus::None,
-        })
+impl From<Value<'_>> for LoopStatus {
+    fn from(value: Value<'_>) -> Self {
+        String::try_from(value)
+            .map(|s| match s.as_str() {
+                "Track" => LoopStatus::Track,
+                "Playlist" => LoopStatus::Playlist,
+                _ => LoopStatus::None,
+            })
+            .unwrap_or(LoopStatus::None)
     }
 }
 

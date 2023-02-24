@@ -41,6 +41,12 @@ impl From<&PlaylistDescription> for AlbumModel {
     }
 }
 
+impl From<PlaylistDescription> for PlaylistSummary {
+    fn from(PlaylistDescription { id, title, .. }: PlaylistDescription) -> Self {
+        Self { id, title }
+    }
+}
+
 impl From<PlaylistDescription> for AlbumModel {
     fn from(playlist: PlaylistDescription) -> Self {
         Self::from(&playlist)

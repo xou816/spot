@@ -2,6 +2,7 @@ use futures::channel::mpsc::UnboundedReceiver;
 use futures::stream::StreamExt;
 
 use librespot::core::authentication::Credentials;
+use librespot::core::cache::Cache;
 use librespot::core::config::SessionConfig;
 use librespot::core::keymaster;
 use librespot::core::session::{Session, SessionError};
@@ -29,6 +30,7 @@ pub enum SpotifyError {
     LoginFailed,
     TokenFailed,
     PlayerNotReady,
+    TechnicalError,
 }
 
 impl Error for SpotifyError {}
@@ -39,6 +41,9 @@ impl fmt::Display for SpotifyError {
             Self::LoginFailed => write!(f, "Login failed!"),
             Self::TokenFailed => write!(f, "Token retrieval failed!"),
             Self::PlayerNotReady => write!(f, "Player is not responding."),
+            Self::TechnicalError => {
+                write!(f, "A technical error occured. Check your connectivity.")
+            }
         }
     }
 }
@@ -50,6 +55,7 @@ pub trait SpotifyPlayerDelegate {
     fn refresh_successful(&self, token: String, token_expiry_time: SystemTime);
     fn report_error(&self, error: SpotifyError);
     fn notify_playback_state(&self, position: u32);
+    fn preload_next_track(&self);
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -62,6 +68,7 @@ pub enum AudioBackend {
 pub struct SpotifyPlayerSettings {
     pub bitrate: Bitrate,
     pub backend: AudioBackend,
+    pub gapless: bool,
     pub ap_port: Option<u16>,
 }
 
@@ -69,6 +76,7 @@ impl Default for SpotifyPlayerSettings {
     fn default() -> Self {
         Self {
             bitrate: Bitrate::Bitrate160,
+            gapless: true,
             backend: AudioBackend::PulseAudio,
             ap_port: None,
         }
@@ -76,77 +84,91 @@ impl Default for SpotifyPlayerSettings {
 }
 
 pub struct SpotifyPlayer {
-    settings: RefCell<SpotifyPlayerSettings>,
-    player: RefCell<Option<Player>>,
-    mixer: RefCell<Option<Box<dyn Mixer>>>,
-    session: RefCell<Option<Session>>,
+    settings: SpotifyPlayerSettings,
+    player: Option<Player>,
+    mixer: Option<Box<dyn Mixer>>,
+    session: Option<Session>,
     delegate: Rc<dyn SpotifyPlayerDelegate>,
 }
 
 impl SpotifyPlayer {
     pub fn new(settings: SpotifyPlayerSettings, delegate: Rc<dyn SpotifyPlayerDelegate>) -> Self {
         Self {
-            settings: RefCell::new(settings),
-            mixer: RefCell::new(None),
-            player: RefCell::new(None),
-            session: RefCell::new(None),
+            settings,
+            mixer: None,
+            player: None,
+            session: None,
             delegate,
         }
     }
 
-    async fn handle(&self, action: Command) -> Result<(), SpotifyError> {
-        let mut player = self.player.borrow_mut();
-        let mut session = self.session.borrow_mut();
+    async fn handle(&mut self, action: Command) -> Result<(), SpotifyError> {
         match action {
             Command::PlayerSetVolume(volume) => {
-                if let Some(mixer) = self.mixer.borrow_mut().as_mut() {
+                if let Some(mixer) = self.mixer.as_mut() {
                     mixer.set_volume((VolumeCtrl::MAX_VOLUME as f64 * volume) as u16);
                 }
                 Ok(())
             }
             Command::PlayerResume => {
-                let player = player.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
-                player.play();
+                self.player
+                    .as_ref()
+                    .ok_or(SpotifyError::PlayerNotReady)?
+                    .play();
                 Ok(())
             }
             Command::PlayerPause => {
-                let player = player.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
-                player.pause();
+                self.player
+                    .as_ref()
+                    .ok_or(SpotifyError::PlayerNotReady)?
+                    .pause();
                 Ok(())
             }
             Command::PlayerStop => {
-                let player = player.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
-                player.stop();
+                self.player
+                    .as_ref()
+                    .ok_or(SpotifyError::PlayerNotReady)?
+                    .stop();
                 Ok(())
             }
             Command::PlayerSeek(position) => {
-                let player = player.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
-                player.seek(position);
+                self.player
+                    .as_ref()
+                    .ok_or(SpotifyError::PlayerNotReady)?
+                    .seek(position);
                 Ok(())
             }
             Command::PlayerLoad(track) => {
-                let player = player.as_mut().ok_or(SpotifyError::PlayerNotReady)?;
-                player.load(track, true, 0);
+                self.player
+                    .as_mut()
+                    .ok_or(SpotifyError::PlayerNotReady)?
+                    .load(track, true, 0);
+                Ok(())
+            }
+            Command::PlayerPreload(track) => {
+                self.player
+                    .as_mut()
+                    .ok_or(SpotifyError::PlayerNotReady)?
+                    .preload(track);
                 Ok(())
             }
             Command::RefreshToken => {
-                let session = session.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
+                let session = self.session.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
                 let (token, token_expiry_time) = get_access_token_and_expiry_time(session).await?;
                 self.delegate.refresh_successful(token, token_expiry_time);
                 Ok(())
             }
             Command::Logout => {
-                session
+                self.session
                     .take()
                     .ok_or(SpotifyError::PlayerNotReady)?
                     .shutdown();
-                let _ = player.take();
+                let _ = self.player.take();
                 Ok(())
             }
             Command::PasswordLogin { username, password } => {
                 let credentials = Credentials::with_password(username, password.clone());
-                let new_session =
-                    create_session(credentials, self.settings.borrow().ap_port).await?;
+                let new_session = create_session(&credentials, self.settings.ap_port).await?;
                 let (token, token_expiry_time) =
                     get_access_token_and_expiry_time(&new_session).await?;
                 let credentials = credentials::Credentials {
@@ -160,8 +182,8 @@ impl SpotifyPlayer {
 
                 let (new_player, channel) = self.create_player(new_session.clone());
                 tokio::task::spawn_local(player_setup_delegate(channel, Rc::clone(&self.delegate)));
-                player.replace(new_player);
-                session.replace(new_session);
+                self.player.replace(new_player);
+                self.session.replace(new_session);
 
                 Ok(())
             }
@@ -171,45 +193,43 @@ impl SpotifyPlayer {
                     auth_type: AuthenticationType::AUTHENTICATION_SPOTIFY_TOKEN,
                     auth_data: token.clone().into_bytes(),
                 };
-                let new_session =
-                    create_session(credentials, self.settings.borrow().ap_port).await?;
+                let new_session = create_session(&credentials, self.settings.ap_port).await?;
                 self.delegate
                     .token_login_successful(new_session.username(), token);
 
                 let (new_player, channel) = self.create_player(new_session.clone());
                 tokio::task::spawn_local(player_setup_delegate(channel, Rc::clone(&self.delegate)));
-                player.replace(new_player);
-                session.replace(new_session);
+                self.player.replace(new_player);
+                self.session.replace(new_session);
 
                 Ok(())
             }
             Command::ReloadSettings => {
                 let settings = SpotSettings::new_from_gsettings().unwrap_or_default();
-                self.settings.replace(settings.player_settings);
+                self.settings = settings.player_settings;
 
-                let session = session.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
-                let (new_player, channel) = self.create_player(session.clone());
+                let session = self.session.take().ok_or(SpotifyError::PlayerNotReady)?;
+                let (new_player, channel) = self.create_player(session);
                 tokio::task::spawn_local(player_setup_delegate(channel, Rc::clone(&self.delegate)));
-                player.replace(new_player);
+                self.player.replace(new_player);
 
                 Ok(())
             }
         }
     }
 
-    fn create_player(&self, session: Session) -> (Player, PlayerEventChannel) {
-        let settings = self.settings.borrow();
-        let backend = settings.backend.clone();
+    fn create_player(&mut self, session: Session) -> (Player, PlayerEventChannel) {
+        let backend = self.settings.backend.clone();
 
         let player_config = PlayerConfig {
-            bitrate: settings.bitrate,
+            gapless: self.settings.gapless,
+            bitrate: self.settings.bitrate,
             ..Default::default()
         };
         info!("bitrate: {:?}", &player_config.bitrate);
 
-        let filter = self
+        let soft_volume = self
             .mixer
-            .borrow_mut()
             .get_or_insert_with(|| {
                 let mix = Box::new(SoftMixer::open(MixerConfig {
                     // This value feels reasonable to me. Feel free to change it
@@ -221,8 +241,8 @@ impl SpotifyPlayer {
                 mix.set_volume(VolumeCtrl::MAX_VOLUME);
                 mix
             })
-            .get_audio_filter();
-        Player::new(player_config, session, filter, move || match backend {
+            .get_soft_volume();
+        Player::new(player_config, session, soft_volume, move || match backend {
             AudioBackend::PulseAudio => {
                 info!("using pulseaudio");
                 let backend = audio_backend::find(Some("pulseaudio".to_string())).unwrap();
@@ -237,9 +257,10 @@ impl SpotifyPlayer {
     }
 
     pub async fn start(self, receiver: UnboundedReceiver<Command>) -> Result<(), ()> {
-        let _self = &self;
+        let _self = RefCell::new(self);
         receiver
-            .for_each(|action| async move {
+            .for_each(|action| async {
+                let mut _self = _self.borrow_mut();
                 match _self.handle(action).await {
                     Ok(_) => {}
                     Err(err) => _self.delegate.report_error(err),
@@ -261,7 +282,8 @@ user-top-read,\
 user-read-recently-played,\
 playlist-modify-public,\
 playlist-modify-private,\
-streaming";
+streaming,\
+playlist-modify-public";
 
 const KNOWN_AP_PORTS: [Option<u16>; 4] = [None, Some(80), Some(443), Some(4070)];
 
@@ -270,48 +292,57 @@ async fn get_access_token_and_expiry_time(
 ) -> Result<(String, SystemTime), SpotifyError> {
     let token = keymaster::get_token(session, CLIENT_ID, SCOPES)
         .await
-        .map_err(|e| {
-            dbg!(e);
-            SpotifyError::TokenFailed
-        })?;
+        .map_err(|_e| SpotifyError::TokenFailed)?;
     let expiry_time = SystemTime::now() + Duration::from_secs(token.expires_in.into());
     Ok((token.access_token, expiry_time))
 }
 
+async fn create_session_with_port(
+    credentials: &Credentials,
+    ap_port: Option<u16>,
+) -> Result<Session, SpotifyError> {
+    let session_config = SessionConfig {
+        ap_port,
+        ..Default::default()
+    };
+    let root = glib::user_cache_dir().join("spot").join("librespot");
+    let cache = Cache::new(
+        Some(root.join("credentials")),
+        Some(root.join("volume")),
+        Some(root.join("audio")),
+        None,
+    )
+    .map_err(|e| dbg!(e))
+    .ok();
+    match Session::connect(session_config, credentials.clone(), cache, true).await {
+        Ok(r) => Ok(r.0),
+        Err(SessionError::IoError(_)) => Err(SpotifyError::TechnicalError),
+        Err(SessionError::AuthenticationError(err)) => {
+            warn!("Login failure: {}", err);
+            Err(SpotifyError::LoginFailed)
+        }
+    }
+}
+
 async fn create_session(
-    credentials: Credentials,
+    credentials: &Credentials,
     ap_port: Option<u16>,
 ) -> Result<Session, SpotifyError> {
     match ap_port {
-        Some(ap_port) => {
-            let session_config = SessionConfig {
-                ap_port: Some(ap_port),
-                ..Default::default()
-            };
-            let result = Session::connect(session_config, credentials, None).await;
-            result.map_err(|e| {
-                dbg!(e);
-                SpotifyError::LoginFailed
-            })
-        }
+        Some(_) => create_session_with_port(credentials, ap_port).await,
         None => {
-            for port in KNOWN_AP_PORTS {
-                let session_config = SessionConfig {
-                    ap_port: port,
-                    ..Default::default()
-                };
-                let result = Session::connect(session_config, credentials.clone(), None).await;
-
-                match result {
-                    Ok(session) => return Ok(session),
-                    Err(SessionError::IoError(_)) => {}
-                    Err(SessionError::AuthenticationError(_)) => {
-                        return Err(SpotifyError::LoginFailed)
+            let mut ports_to_try = KNOWN_AP_PORTS.iter();
+            loop {
+                if let Some(next_port) = ports_to_try.next() {
+                    let res = create_session_with_port(credentials, *next_port).await;
+                    match res {
+                        Err(SpotifyError::TechnicalError) => continue,
+                        _ => break res,
                     }
+                } else {
+                    break Err(SpotifyError::TechnicalError);
                 }
             }
-
-            Err(SpotifyError::LoginFailed)
         }
     }
 }
@@ -327,6 +358,10 @@ async fn player_setup_delegate(
             }
             PlayerEvent::Playing { position_ms, .. } => {
                 delegate.notify_playback_state(position_ms);
+            }
+            PlayerEvent::TimeToPreloadNextTrack { .. } => {
+                debug!("Requestiong next track to be preloaded...");
+                delegate.preload_next_track();
             }
             _ => {}
         }

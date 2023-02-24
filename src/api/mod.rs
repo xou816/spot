@@ -9,7 +9,7 @@ pub use client::SpotifyApiError;
 
 pub async fn clear_user_cache() -> Option<()> {
     cache::CacheManager::for_dir("spot/net")?
-        .clear_cache_pattern(&*cached_client::USER_CACHE)
+        .clear_cache_pattern(&cached_client::USER_CACHE)
         .await
         .ok()
 }

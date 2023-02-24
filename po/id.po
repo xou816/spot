@@ -40,25 +40,25 @@ msgid "Could not save password. Make sure the session keyring is unlocked."
 msgstr "Tak bisa menyimpan sandi. Pastikan bahwa kunci sesi tidak terkunci."
 
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/batch_loader.rs:91 src/app/components/mod.rs:122
+#: src/app/batch_loader.rs:91 src/app/components/mod.rs:128
 msgid "An error occured. Check logs for details!"
 msgstr "Timbul galat. Periksa log untuk detailnya!"
 
 #. translators: This is a sidebar entry to browse to saved albums.
-#: src/app/components/navigation/factory.rs:32
-#: src/app/components/navigation/home.rs:68
+#: src/app/components/navigation/factory.rs:33
+#: src/app/components/sidebar/sidebar_item.rs:39
 msgid "Library"
 msgstr "Pustaka"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
-#: src/app/components/navigation/factory.rs:51
-#: src/app/components/navigation/home.rs:94
+#: src/app/components/navigation/factory.rs:54
+#: src/app/components/sidebar/sidebar_item.rs:45
 msgid "Playlists"
 msgstr "Daftar putar"
 
 #. This is the visible name for the play queue. It appears in the sidebar as well.
-#: src/app/components/navigation/home.rs:87
 #: src/app/components/now_playing/now_playing_model.rs:134
+#: src/app/components/sidebar/sidebar_item.rs:43
 msgid "Now playing"
 msgstr "Sedang memutar"
 
@@ -84,7 +84,7 @@ msgstr "Keluar"
 msgid "Log out"
 msgstr "Log keluar"
 
-#: src/app/state/login_state.rs:110
+#: src/app/state/login_state.rs:112
 msgid "Connection restored"
 msgstr "Sambungan dipulihkan"
 
@@ -104,22 +104,22 @@ msgid "Login to Spotify Premium"
 msgstr "Masuk ke Spotify Premium"
 
 #. Placeholder for the username field
-#: src/app/components/login/login.ui:64
+#: src/app/components/login/login.ui:72
 msgid "Username"
 msgstr "Nama Pengguna"
 
 #. Placeholder for the password field
-#: src/app/components/login/login.ui:72
+#: src/app/components/login/login.ui:89
 msgid "Password"
 msgstr "Kata Sandi"
 
 #. This error is shown when authentication fails.
-#: src/app/components/login/login.ui:126
+#: src/app/components/login/login.ui:114
 msgid "Authentication failed!"
 msgstr "Autentikasi gagal!"
 
 #. Log in button label
-#: src/app/components/login/login.ui:141
+#: src/app/components/login/login.ui:129
 msgid "Log in"
 msgstr "Log masuk"
 
@@ -133,15 +133,10 @@ msgstr "Album"
 msgid "Artists"
 msgstr "Artis"
 
-#: src/app/components/navigation/factory.rs:82
-#: src/app/components/navigation/home.rs:78
+#: src/app/components/navigation/factory.rs:85
+#: src/app/components/sidebar/sidebar_item.rs:41
 msgid "Saved tracks"
 msgstr "Trek yang disimpan"
-
-#. This information is shown when Caps Lock is enabled.
-#: src/app/components/login/login.ui:95
-msgid "Caps Lock is enabled!"
-msgstr "Caps Lock diaktifkan!"
 
 #: src/app/components/playback/playback_controls.rs:64
 msgid "Pause"
@@ -213,6 +208,7 @@ msgid "Add to playlist..."
 msgstr "Tambah ke daftar putar…"
 
 #. Button label. Exits selection mode.
+#: src/app/components/playlist_details/playlist_headerbar.ui:50
 #: src/app/components/headerbar/headerbar.ui:47
 msgid "Cancel"
 msgstr "Batal"
@@ -256,99 +252,137 @@ msgstr "Hak Cipta"
 msgid "{} by {}"
 msgstr "{} oleh {}"
 
-#: src/app/components/navigation/home.rs:32
+#: src/app/components/sidebar/sidebar.rs:48
 msgid "Unnamed playlist"
-msgstr ""
+msgstr "Daftar putar tanpa nama"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
-#: src/app/components/navigation/home.rs:104
+#: src/app/components/sidebar/sidebar_item.rs:81
 msgid "All Playlists"
-msgstr ""
+msgstr "Semua Daftar Putar"
 
 #: src/app/components/selection/component.rs:66
 msgid "Tracks saved!"
-msgstr ""
+msgstr "Trek disimpan!"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:65
 msgid "Preferences"
-msgstr ""
+msgstr "Preferensi"
 
-#: src/main.rs:81
+#: src/main.rs:80
 msgid "Failed to open link!"
-msgstr ""
+msgstr "Gagal membuka tautan!"
 
 #. Header for a group of preference items regarding audio
 #: src/app/components/settings/settings.ui:13
 msgid "Audio"
-msgstr ""
+msgstr "Audio"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:16
 msgid "Audio Backend"
-msgstr ""
+msgstr "Backend Audio"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:29
 msgid "ALSA Device"
-msgstr ""
+msgstr "Perangkat ALSA"
 
 #. Description for the item (ALSA Device) in preferences
 #: src/app/components/settings/settings.ui:30
 msgid "Applied only if audio backend is ALSA"
-msgstr ""
+msgstr "Diterapkan hanya jika backend audio adalah ALSA"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:40
 msgid "Audio Quality"
-msgstr ""
+msgstr "Kualitas Audio"
 
 #: src/app/components/settings/settings.ui:44
 msgid "Normal"
-msgstr ""
+msgstr "Normal"
 
 #: src/app/components/settings/settings.ui:45
 msgid "High"
-msgstr ""
+msgstr "Tinggi"
 
 #: src/app/components/settings/settings.ui:46
 msgid "Very high"
-msgstr ""
+msgstr "Sangat tinggi"
 
 #. Header for a group of preference items regarding the application's appearance
-#: src/app/components/settings/settings.ui:56
+#: src/app/components/settings/settings.ui:70
 msgid "Appearance"
-msgstr ""
+msgstr "Penampilan"
 
 #. Title for an item in preferences
-#: src/app/components/settings/settings.ui:59
+#: src/app/components/settings/settings.ui:73
 msgid "Theme"
-msgstr ""
+msgstr "Tema"
 
-#: src/app/components/settings/settings.ui:63
+#: src/app/components/settings/settings.ui:77
 msgid "Light"
-msgstr ""
+msgstr "Terang"
 
-#: src/app/components/settings/settings.ui:64
+#: src/app/components/settings/settings.ui:78
 msgid "Dark"
-msgstr ""
+msgstr "Gelap"
 
 #. Header for a group of preference items regarding network
-#: src/app/components/settings/settings.ui:74
+#: src/app/components/settings/settings.ui:89
 msgid "Network"
-msgstr ""
+msgstr "Jaringan"
 
 #. Title for an item in preferences
-#: src/app/components/settings/settings.ui:77
+#: src/app/components/settings/settings.ui:92
 msgid "Access Point Port"
-msgstr ""
+msgstr "Port Titik Akses"
 
 #. Longer description for an item (Access Point Port) in preferences
-#: src/app/components/settings/settings.ui:78
+#: src/app/components/settings/settings.ui:93
 msgid "Port used for connections to Spotify's Access Point. Set to 0 if any port is fine."
-msgstr ""
+msgstr "Port yang digunakan untuk koneksi ke Titik Akses Spotify. Atur ke 0 jika ada port yang baik-baik saja."
 
 #: src/app/components/selection/selection_toolbar.ui:90
 msgid "Save to library"
-msgstr ""
+msgstr "Simpan ke pustaka"
+
+#. translators: This is a notification that pop ups when a new playlist is created. It includes the name of that playlist.
+#: src/app/components/notification/mod.rs:25
+msgid "New playlist created."
+msgstr "Daftar putar baru dibuat."
+
+#. translators: This is a label in the notification shown after creating a new playlist. If it is clicked, the new playlist will be opened.
+#: src/app/components/notification/mod.rs:27
+msgid "View"
+msgstr "Tilik"
+
+#: src/app/components/sidebar/sidebar_item.rs:90
+msgid "New Playlist"
+msgstr "Daftar Putar Baru"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:54
+msgid "Gapless playback"
+msgstr "Pemutaran tanpa celah"
+
+#: src/app/components/settings/settings.ui:79
+msgid "System"
+msgstr "Sistem"
+
+#. Finish playlist edition
+#: src/app/components/playlist_details/playlist_headerbar.ui:63
+msgid "Done"
+msgstr "Selesai"
+
+#. label for the entry containing the name of a new playlist
+#: src/app/components/sidebar/create_playlist.ui:10
+msgid "Name"
+msgstr "Nama"
+
+#. Button that creates a new playlist
+#: src/app/components/sidebar/create_playlist.ui:33
+msgid "Create"
+msgstr "Mencipta"
 

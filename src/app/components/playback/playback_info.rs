@@ -24,7 +24,7 @@ mod imp {
         type ParentType = gtk::Button;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -43,7 +43,7 @@ glib::wrapper! {
 
 impl PlaybackInfoWidget {
     pub fn set_title_and_artist(&self, title: &str, artist: &str) {
-        let widget = imp::PlaybackInfoWidget::from_instance(self);
+        let widget = self.imp();
         let title = glib::markup_escape_text(title);
         let artist = glib::markup_escape_text(artist);
         let label = format!("<b>{}</b>\n{}", title.as_str(), artist.as_str());
@@ -51,7 +51,7 @@ impl PlaybackInfoWidget {
     }
 
     pub fn reset_info(&self) {
-        let widget = imp::PlaybackInfoWidget::from_instance(self);
+        let widget = self.imp();
         widget
             .current_song_info
             // translators: Short text displayed instead of a song title when nothing plays
@@ -65,14 +65,10 @@ impl PlaybackInfoWidget {
     }
 
     pub fn set_info_visible(&self, visible: bool) {
-        imp::PlaybackInfoWidget::from_instance(self)
-            .current_song_info
-            .set_visible(visible);
+        self.imp().current_song_info.set_visible(visible);
     }
 
     pub fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {
-        imp::PlaybackInfoWidget::from_instance(self)
-            .playing_image
-            .set_from_pixbuf(Some(art));
+        self.imp().playing_image.set_from_pixbuf(Some(art));
     }
 }

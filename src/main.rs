@@ -12,7 +12,6 @@ use gio::prelude::*;
 use gio::ApplicationFlags;
 use gio::SimpleAction;
 use gtk::prelude::*;
-use libadwaita::ColorScheme;
 
 mod api;
 mod app;
@@ -91,18 +90,14 @@ fn main() {
 
 fn startup(settings: &settings::SpotSettings) {
     gtk::init().unwrap_or_else(|_| panic!("Failed to initialize GTK"));
-    libadwaita::init();
+    libadwaita::init().unwrap_or_else(|_| panic!("Failed to initialize libadwaita"));
     let manager = libadwaita::StyleManager::default();
 
     let res = gio::Resource::load(config::PKGDATADIR.to_owned() + "/spot.gresource")
         .expect("Could not load resources");
     gio::resources_register(&res);
 
-    manager.set_color_scheme(if settings.prefers_dark_theme {
-        ColorScheme::PreferDark
-    } else {
-        ColorScheme::PreferLight
-    });
+    manager.set_color_scheme(settings.theme_preference);
 
     let provider = gtk::CssProvider::new();
     provider.load_from_resource("/dev/alextren/Spot/app.css");
@@ -151,8 +146,21 @@ fn register_actions(app: &gtk::Application, sender: UnboundedSender<AppAction>) 
     app.add_action(&make_action(
         "search",
         AppAction::BrowserAction(BrowserAction::NavigationPush(ScreenName::Search)),
-        sender,
+        sender.clone(),
     ));
+
+    app.add_action(&{
+        let action = SimpleAction::new("open_playlist", Some(glib::VariantTy::STRING));
+        action.set_enabled(true);
+        action.connect_activate(move |_, playlist_id| {
+            if let Some(id) = playlist_id.and_then(|s| s.str()) {
+                sender
+                    .unbounded_send(AppAction::ViewPlaylist(id.to_owned()))
+                    .unwrap();
+            }
+        });
+        action
+    });
 }
 
 fn make_action(

@@ -32,6 +32,9 @@ mod imp {
         pub audio_backend: TemplateChild<libadwaita::ComboRow>,
 
         #[template_child]
+        pub gapless_playback: TemplateChild<libadwaita::ActionRow>,
+
+        #[template_child]
         pub ap_port: TemplateChild<gtk::Entry>,
 
         #[template_child]
@@ -45,7 +48,7 @@ mod imp {
         type ParentType = libadwaita::PreferencesWindow;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -66,8 +69,7 @@ glib::wrapper! {
 
 impl SettingsWindow {
     pub fn new() -> Self {
-        let window: Self =
-            glib::Object::new(&[]).expect("Failed to create an instance of SettingsWindow");
+        let window: Self = glib::Object::new();
 
         window.bind_backend_and_device();
         window.bind_settings();
@@ -76,7 +78,7 @@ impl SettingsWindow {
     }
 
     fn bind_backend_and_device(&self) {
-        let widget = imp::SettingsWindow::from_instance(self);
+        let widget = self.imp();
 
         let audio_backend = widget
             .audio_backend
@@ -89,7 +91,7 @@ impl SettingsWindow {
 
         audio_backend
             .bind_property("selected", alsa_device_row, "visible")
-            .transform_to(|_, value| value.get::<u32>().ok().map(|u| (u == 1).to_value()))
+            .transform_to(|_, value: u32| Some(value == 1))
             .build();
 
         if audio_backend.selected() == 0 {
@@ -98,7 +100,7 @@ impl SettingsWindow {
     }
 
     fn bind_settings(&self) {
-        let widget = imp::SettingsWindow::from_instance(self);
+        let widget = self.imp();
         let settings = gio::Settings::new(SETTINGS);
 
         let player_bitrate = widget
@@ -162,6 +164,18 @@ impl SettingsWindow {
             })
             .build();
 
+        let gapless_playback = widget
+            .gapless_playback
+            .downcast_ref::<libadwaita::ActionRow>()
+            .unwrap();
+        settings
+            .bind(
+                "gapless-playback",
+                &gapless_playback.activatable_widget().unwrap(),
+                "active",
+            )
+            .build();
+
         let ap_port = widget.ap_port.downcast_ref::<gtk::Entry>().unwrap();
         settings
             .bind("ap-port", ap_port, "text")
@@ -171,28 +185,46 @@ impl SettingsWindow {
 
         let theme = widget.theme.downcast_ref::<libadwaita::ComboRow>().unwrap();
         settings
-            .bind("prefers-dark-theme", theme, "selected")
+            .bind("theme-preference", theme, "selected")
             .mapping(|variant, _| {
-                variant
-                    .get::<bool>()
-                    .map(|prefer_dark| if prefer_dark { 1 } else { 0 }.to_value())
+                variant.str().map(|s| {
+                    match s {
+                        "light" => 0,
+                        "dark" => 1,
+                        "system" => 2,
+                        _ => unreachable!(),
+                    }
+                    .to_value()
+                })
             })
-            .set_mapping(|value, _| value.get::<u32>().ok().map(|u| (u == 1).to_variant()))
+            .set_mapping(|value, _| {
+                value.get::<u32>().ok().map(|u| {
+                    match u {
+                        0 => "light",
+                        1 => "dark",
+                        2 => "system",
+                        _ => unreachable!(),
+                    }
+                    .to_variant()
+                })
+            })
             .build();
     }
 
     fn connect_theme_select(&self) {
-        let widget = imp::SettingsWindow::from_instance(self);
+        let widget = self.imp();
         let theme = widget.theme.downcast_ref::<libadwaita::ComboRow>().unwrap();
         theme.connect_selected_notify(|theme| {
-            let prefers_dark_theme = theme.selected() == 1;
+            debug!("Theme switched! --> value: {}", theme.selected());
             let manager = libadwaita::StyleManager::default();
 
-            manager.set_color_scheme(if prefers_dark_theme {
-                libadwaita::ColorScheme::PreferDark
-            } else {
-                libadwaita::ColorScheme::PreferLight
-            });
+            let pref = match theme.selected() {
+                0 => libadwaita::ColorScheme::ForceLight,
+                1 => libadwaita::ColorScheme::ForceDark,
+                _ => libadwaita::ColorScheme::Default,
+            };
+
+            manager.set_color_scheme(pref);
         });
     }
 

@@ -9,6 +9,11 @@ use std::{
 use crate::app::models::*;
 
 #[derive(Serialize)]
+pub struct PlaylistDetails {
+    pub name: String,
+}
+
+#[derive(Serialize)]
 pub struct Uris {
     pub uris: Vec<String>,
 }
@@ -16,6 +21,11 @@ pub struct Uris {
 #[derive(Serialize)]
 pub struct Ids {
     pub ids: Vec<String>,
+}
+
+#[derive(Serialize)]
+pub struct Name<'a> {
+    pub name: &'a str,
 }
 
 pub enum SearchType {

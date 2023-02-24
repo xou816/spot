@@ -1,4 +1,3 @@
-use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use libadwaita::subclass::prelude::*;
@@ -35,7 +34,7 @@ mod imp {
         type ParentType = libadwaita::Window;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -44,8 +43,8 @@ mod imp {
     }
 
     impl ObjectImpl for ReleaseDetailsWindow {
-        fn constructed(&self, obj: &Self::Type) {
-            self.parent_constructed(obj);
+        fn constructed(&self) {
+            self.parent_constructed();
         }
     }
 
@@ -60,11 +59,7 @@ glib::wrapper! {
 
 impl ReleaseDetailsWindow {
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create an instance of ReleaseDetailsWindow")
-    }
-
-    fn widget(&self) -> &imp::ReleaseDetailsWindow {
-        imp::ReleaseDetailsWindow::from_instance(self)
+        glib::Object::new()
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -77,7 +72,7 @@ impl ReleaseDetailsWindow {
         track_count: usize,
         copyright: &str,
     ) {
-        let widget = self.widget();
+        let widget = self.imp();
 
         widget
             .album_artist

@@ -22,7 +22,7 @@ mod imp {
         pub username: TemplateChild<gtk::Entry>,
 
         #[template_child]
-        pub password: TemplateChild<gtk::Entry>,
+        pub password: TemplateChild<gtk::PasswordEntry>,
 
         #[template_child]
         pub close_button: TemplateChild<gtk::Button>,
@@ -41,7 +41,7 @@ mod imp {
         type ParentType = libadwaita::Window;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -61,15 +61,14 @@ glib::wrapper! {
 
 impl LoginWindow {
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create an instance of LoginWindow")
+        glib::Object::new()
     }
 
     fn connect_close<F>(&self, on_close: F)
     where
         F: Fn() + 'static,
     {
-        let widget = imp::LoginWindow::from_instance(self);
-        widget.close_button.connect_clicked(move |_| {
+        self.imp().close_button.connect_clicked(move |_| {
             on_close();
         });
     }
@@ -78,8 +77,6 @@ impl LoginWindow {
     where
         SubmitFn: Fn(&str, &str) + Clone + 'static,
     {
-        let widget = imp::LoginWindow::from_instance(self);
-
         let on_submit_clone = on_submit.clone();
         let controller = gtk::EventControllerKey::new();
         controller.set_propagation_phase(gtk::PropagationPhase::Capture);
@@ -93,9 +90,9 @@ impl LoginWindow {
                 }
             }),
         );
-        self.add_controller(&controller);
+        self.add_controller(controller);
 
-        widget
+        self.imp()
             .login_button
             .connect_clicked(clone!(@weak self as _self => move |_| {
                 _self.submit(&on_submit);
@@ -103,7 +100,7 @@ impl LoginWindow {
     }
 
     fn show_auth_error(&self, shown: bool) {
-        let widget = imp::LoginWindow::from_instance(self);
+        let widget = self.imp();
         widget.auth_error_container.set_reveal_child(shown);
     }
 
@@ -111,7 +108,7 @@ impl LoginWindow {
     where
         SubmitFn: Fn(&str, &str),
     {
-        let widget = imp::LoginWindow::from_instance(self);
+        let widget = self.imp();
 
         self.show_auth_error(false);
 
@@ -161,14 +158,6 @@ impl Login {
         self.login_window.upcast_ref::<libadwaita::Window>()
     }
 
-    fn show_self_if_needed(&self) {
-        if self.model.try_autologin() {
-            self.window().close();
-        } else {
-            self.show_self();
-        }
-    }
-
     fn show_self(&self) {
         self.window().set_transient_for(Some(&self.parent));
         self.window().set_modal(true);
@@ -198,9 +187,9 @@ impl EventListener for Login {
                 self.reveal_error();
             }
             AppEvent::Started => {
-                self.show_self_if_needed();
+                self.model.try_autologin();
             }
-            AppEvent::LoginEvent(LoginEvent::LogoutCompleted) => {
+            AppEvent::LoginEvent(LoginEvent::LogoutCompleted | LoginEvent::LoginShown) => {
                 self.show_self();
             }
             AppEvent::LoginEvent(LoginEvent::RefreshTokenCompleted {

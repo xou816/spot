@@ -67,7 +67,7 @@
         <property name="yalign">1</property>
         <property name="hexpand">1</property>
         <layout>
-          <property name="column-span">3</property>
+          <property name="column-span">2</property>
           <property name="column">1</property>
           <property name="row">0</property>
         </layout>

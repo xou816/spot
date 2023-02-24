@@ -1,6 +1,4 @@
 use crate::api::CachedSpotifyClient;
-use crate::app::components::sidebar_listbox::{build_sidebar_listbox, SideBarItem};
-use crate::glib::StaticType;
 use crate::settings::SpotSettings;
 use futures::channel::mpsc::UnboundedSender;
 use std::rc::Rc;
@@ -80,7 +78,7 @@ impl App {
                 dispatcher.box_clone(),
                 worker.clone(),
             ),
-            App::make_login(builder, dispatcher.box_clone()),
+            App::make_login(builder, dispatcher.box_clone(), worker.clone()),
             App::make_navigation(
                 builder,
                 Rc::clone(model),
@@ -129,8 +127,7 @@ impl App {
     ) -> Box<Navigation> {
         let leaflet: libadwaita::Leaflet = builder.object("leaflet").unwrap();
         let navigation_stack: gtk::Stack = builder.object("navigation_stack").unwrap();
-        let home_list_store = gio::ListStore::new(SideBarItem::static_type());
-        let home_listbox = build_sidebar_listbox(builder, &home_list_store);
+        let home_listbox: gtk::ListBox = builder.object("home_listbox").unwrap();
         let model = NavigationModel::new(Rc::clone(&app_model), dispatcher.box_clone());
         let screen_factory = ScreenFactory::new(
             Rc::clone(&app_model),
@@ -143,14 +140,17 @@ impl App {
             leaflet,
             navigation_stack,
             home_listbox,
-            home_list_store,
             screen_factory,
         ))
     }
 
-    fn make_login(builder: &gtk::Builder, dispatcher: Box<dyn ActionDispatcher>) -> Box<Login> {
+    fn make_login(
+        builder: &gtk::Builder,
+        dispatcher: Box<dyn ActionDispatcher>,
+        worker: Worker,
+    ) -> Box<Login> {
         let parent: gtk::Window = builder.object("window").unwrap();
-        let model = LoginModel::new(dispatcher);
+        let model = LoginModel::new(dispatcher, worker);
         Box::new(Login::new(parent, model))
     }
 

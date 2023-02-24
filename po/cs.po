@@ -40,25 +40,25 @@ msgid "Could not save password. Make sure the session keyring is unlocked."
 msgstr "Heslo nelze uložit. Zkontrolujte, že je klíčenka (session keyring) odemčená."
 
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/batch_loader.rs:91 src/app/components/mod.rs:122
+#: src/app/batch_loader.rs:91 src/app/components/mod.rs:128
 msgid "An error occured. Check logs for details!"
 msgstr "Došlo k chybě. Podrobnosti najdete v protokolu."
 
 #. translators: This is a sidebar entry to browse to saved albums.
-#: src/app/components/navigation/factory.rs:32
-#: src/app/components/navigation/home.rs:68
+#: src/app/components/navigation/factory.rs:33
+#: src/app/components/sidebar/sidebar_item.rs:39
 msgid "Library"
 msgstr "Knihovna"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
-#: src/app/components/navigation/factory.rs:51
-#: src/app/components/navigation/home.rs:94
+#: src/app/components/navigation/factory.rs:54
+#: src/app/components/sidebar/sidebar_item.rs:45
 msgid "Playlists"
 msgstr "Playlisty"
 
 #. This is the visible name for the play queue. It appears in the sidebar as well.
-#: src/app/components/navigation/home.rs:87
 #: src/app/components/now_playing/now_playing_model.rs:134
+#: src/app/components/sidebar/sidebar_item.rs:43
 msgid "Now playing"
 msgstr "Právě hraje"
 
@@ -84,7 +84,7 @@ msgstr "Konec"
 msgid "Log out"
 msgstr "Odhlásit se"
 
-#: src/app/state/login_state.rs:110
+#: src/app/state/login_state.rs:112
 msgid "Connection restored"
 msgstr "Připojení obnoveno"
 
@@ -104,22 +104,22 @@ msgid "Login to Spotify Premium"
 msgstr "Přihlásit se ke Spotify Premium"
 
 #. Placeholder for the username field
-#: src/app/components/login/login.ui:64
+#: src/app/components/login/login.ui:72
 msgid "Username"
 msgstr "Uživatelské jméno"
 
 #. Placeholder for the password field
-#: src/app/components/login/login.ui:72
+#: src/app/components/login/login.ui:89
 msgid "Password"
 msgstr "Heslo"
 
 #. This error is shown when authentication fails.
-#: src/app/components/login/login.ui:126
+#: src/app/components/login/login.ui:114
 msgid "Authentication failed!"
 msgstr "Chyba autentizace!"
 
 #. Log in button label
-#: src/app/components/login/login.ui:141
+#: src/app/components/login/login.ui:129
 msgid "Log in"
 msgstr "Přihlásit se"
 
@@ -136,15 +136,10 @@ msgstr "Umělci"
 #. Where is this text displayed?
 #. I see it is supposed to be in `src/app/components/navigation/home.rs:47`, but that does not seem to be the case: https://github.com/xou816/spot/blob/1b96cd07129f27c7f3f3a2e66299c44a52e489d4/src/app/components/navigation/home.rs
 #. Maybe it is something that has not been commited yet (2021-10-02T10:42:52+02:00), but @xou816 has it locally and has generated pot / po files from it in https://github.com/xou816/spot/commit/86414c03d207cdf4e2c1cbddd47c7ca5629d1303
-#: src/app/components/navigation/factory.rs:82
-#: src/app/components/navigation/home.rs:78
+#: src/app/components/navigation/factory.rs:85
+#: src/app/components/sidebar/sidebar_item.rs:41
 msgid "Saved tracks"
 msgstr "Uložené skladby"
-
-#. This information is shown when Caps Lock is enabled.
-#: src/app/components/login/login.ui:95
-msgid "Caps Lock is enabled!"
-msgstr "Máte zapnutý Caps Lock!"
 
 #: src/app/components/playback/playback_controls.rs:64
 msgid "Pause"
@@ -218,6 +213,7 @@ msgid "Add to playlist..."
 msgstr "Přidat do playlistu..."
 
 #. Button label. Exits selection mode.
+#: src/app/components/playlist_details/playlist_headerbar.ui:50
 #: src/app/components/headerbar/headerbar.ui:47
 msgid "Cancel"
 msgstr "Zrušit"
@@ -261,12 +257,12 @@ msgstr "Copyright"
 msgid "{} by {}"
 msgstr "{} od {}"
 
-#: src/app/components/navigation/home.rs:32
+#: src/app/components/sidebar/sidebar.rs:48
 msgid "Unnamed playlist"
 msgstr "Playlist bez názvu"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
-#: src/app/components/navigation/home.rs:104
+#: src/app/components/sidebar/sidebar_item.rs:81
 msgid "All Playlists"
 msgstr "Všechny playlisty"
 
@@ -279,7 +275,7 @@ msgstr "Skladby uloženy!"
 msgid "Preferences"
 msgstr "Nastavení"
 
-#: src/main.rs:81
+#: src/main.rs:80
 msgid "Failed to open link!"
 msgstr "Nepodařilo se otevřít odkaz!"
 
@@ -321,39 +317,77 @@ msgid "Very high"
 msgstr "Velmi vysoká"
 
 #. Header for a group of preference items regarding the application's appearance
-#: src/app/components/settings/settings.ui:56
+#: src/app/components/settings/settings.ui:70
 msgid "Appearance"
 msgstr "Vzhled"
 
 #. Title for an item in preferences
-#: src/app/components/settings/settings.ui:59
+#: src/app/components/settings/settings.ui:73
 msgid "Theme"
 msgstr "Téma"
 
-#: src/app/components/settings/settings.ui:63
+#: src/app/components/settings/settings.ui:77
 msgid "Light"
 msgstr "Světlé"
 
-#: src/app/components/settings/settings.ui:64
+#: src/app/components/settings/settings.ui:78
 msgid "Dark"
 msgstr "Tmavé"
 
 #. Header for a group of preference items regarding network
-#: src/app/components/settings/settings.ui:74
+#: src/app/components/settings/settings.ui:89
 msgid "Network"
 msgstr "Síť"
 
 #. Title for an item in preferences
-#: src/app/components/settings/settings.ui:77
+#: src/app/components/settings/settings.ui:92
 msgid "Access Point Port"
 msgstr "Port Access Pointu"
 
 #. Longer description for an item (Access Point Port) in preferences
-#: src/app/components/settings/settings.ui:78
+#: src/app/components/settings/settings.ui:93
 msgid "Port used for connections to Spotify's Access Point. Set to 0 if any port is fine."
 msgstr "Port používaný pro připojení ke Spotify Access Point. Nastavte na 0 pokud lze použít libovolný port."
 
 #: src/app/components/selection/selection_toolbar.ui:90
 msgid "Save to library"
 msgstr "Uložit do knihovny"
+
+#. translators: This is a notification that pop ups when a new playlist is created. It includes the name of that playlist.
+#: src/app/components/notification/mod.rs:25
+msgid "New playlist created."
+msgstr "Playlist byl vytvořen."
+
+#. translators: This is a label in the notification shown after creating a new playlist. If it is clicked, the new playlist will be opened.
+#: src/app/components/notification/mod.rs:27
+msgid "View"
+msgstr "Zobrazit"
+
+#: src/app/components/sidebar/sidebar_item.rs:90
+msgid "New Playlist"
+msgstr "Přidat playlist"
+
+#. Title for an item in preferences
+#: src/app/components/settings/settings.ui:54
+msgid "Gapless playback"
+msgstr "Přehrávání bez mezer"
+
+#: src/app/components/settings/settings.ui:79
+msgid "System"
+msgstr "Systém"
+
+#. Finish playlist edition
+#: src/app/components/playlist_details/playlist_headerbar.ui:63
+msgid "Done"
+msgstr "Hotovo"
+
+#. label for the entry containing the name of a new playlist
+#: src/app/components/sidebar/create_playlist.ui:10
+msgid "Name"
+msgstr "Název"
+
+#. Button that creates a new playlist
+#: src/app/components/sidebar/create_playlist.ui:33
+msgid "Create"
+msgstr "Vytvořit"
 

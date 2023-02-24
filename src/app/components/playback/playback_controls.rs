@@ -35,7 +35,7 @@ mod imp {
         type ParentType = gtk::Box;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -67,16 +67,13 @@ impl PlaybackControlsWidget {
         };
         let tooltip_text = Some(translated_tooltip.as_str());
 
-        let playback_control = imp::PlaybackControlsWidget::from_instance(self);
-
+        let playback_control = self.imp();
         playback_control.play_pause.set_icon_name(playback_icon);
         playback_control.play_pause.set_tooltip_text(tooltip_text);
     }
 
     pub fn set_shuffled(&self, shuffled: bool) {
-        imp::PlaybackControlsWidget::from_instance(self)
-            .shuffle
-            .set_active(shuffled);
+        self.imp().shuffle.set_active(shuffled);
     }
 
     pub fn set_repeat_mode(&self, mode: RepeatMode) {
@@ -86,53 +83,41 @@ impl PlaybackControlsWidget {
             RepeatMode::None => "media-playlist-consecutive-symbolic",
         };
 
-        imp::PlaybackControlsWidget::from_instance(self)
-            .repeat
-            .set_icon_name(repeat_mode_icon);
+        self.imp().repeat.set_icon_name(repeat_mode_icon);
     }
 
     pub fn connect_play_pause<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        imp::PlaybackControlsWidget::from_instance(self)
-            .play_pause
-            .connect_clicked(move |_| f());
+        self.imp().play_pause.connect_clicked(move |_| f());
     }
 
     pub fn connect_prev<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        imp::PlaybackControlsWidget::from_instance(self)
-            .prev
-            .connect_clicked(move |_| f());
+        self.imp().prev.connect_clicked(move |_| f());
     }
 
     pub fn connect_next<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        imp::PlaybackControlsWidget::from_instance(self)
-            .next
-            .connect_clicked(move |_| f());
+        self.imp().next.connect_clicked(move |_| f());
     }
 
     pub fn connect_shuffle<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        imp::PlaybackControlsWidget::from_instance(self)
-            .shuffle
-            .connect_clicked(move |_| f());
+        self.imp().shuffle.connect_clicked(move |_| f());
     }
 
     pub fn connect_repeat<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        imp::PlaybackControlsWidget::from_instance(self)
-            .repeat
-            .connect_clicked(move |_| f());
+        self.imp().repeat.connect_clicked(move |_| f());
     }
 }

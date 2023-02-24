@@ -122,6 +122,12 @@ impl UpdatableState for PlaylistDetailsState {
                 self.playlist = Some(*playlist.clone());
                 vec![BrowserEvent::PlaylistDetailsLoaded(id)]
             }
+            BrowserAction::UpdatePlaylistName(PlaylistSummary { id, title }) if id == &self.id => {
+                if let Some(p) = self.playlist.as_mut() {
+                    p.title = title.clone();
+                }
+                vec![BrowserEvent::PlaylistDetailsLoaded(self.id.clone())]
+            }
             BrowserAction::AppendPlaylistTracks(id, song_batch) if id == &self.id => {
                 self.songs.add(*song_batch.clone()).commit();
                 vec![BrowserEvent::PlaylistTracksAppended(id.clone())]
@@ -192,6 +198,7 @@ impl UpdatableState for ArtistState {
 
 pub struct HomeState {
     pub name: ScreenName,
+    pub visible_page: &'static str,
     pub next_albums_page: Pagination<()>,
     pub albums: ListStore<AlbumModel>,
     pub next_playlists_page: Pagination<()>,
@@ -203,6 +210,7 @@ impl Default for HomeState {
     fn default() -> Self {
         Self {
             name: ScreenName::Home,
+            visible_page: "library",
             next_albums_page: Pagination::new((), 30),
             albums: ListStore::new(),
             next_playlists_page: Pagination::new((), 30),
@@ -218,6 +226,10 @@ impl UpdatableState for HomeState {
 
     fn update_with(&mut self, action: Cow<Self::Action>) -> Vec<Self::Event> {
         match action.as_ref() {
+            BrowserAction::SetHomeVisiblePage(page) => {
+                self.visible_page = *page;
+                vec![BrowserEvent::HomeVisiblePageChanged(page)]
+            }
             BrowserAction::SetLibraryContent(content) => {
                 if !self.albums.eq(content, |a, b| a.uri() == b.id) {
                     self.albums.replace_all(content.iter().map(|a| a.into()));
@@ -226,6 +238,10 @@ impl UpdatableState for HomeState {
                 } else {
                     vec![]
                 }
+            }
+            BrowserAction::PrependPlaylistsContent(content) => {
+                self.playlists.prepend(content.iter().map(|a| a.into()));
+                vec![BrowserEvent::SavedPlaylistsUpdated]
             }
             BrowserAction::AppendLibraryContent(content) => {
                 self.next_albums_page.set_loaded_count(content.len());
@@ -265,6 +281,12 @@ impl UpdatableState for HomeState {
             BrowserAction::AppendPlaylistsContent(content) => {
                 self.next_playlists_page.set_loaded_count(content.len());
                 self.playlists.extend(content.iter().map(|p| p.into()));
+                vec![BrowserEvent::SavedPlaylistsUpdated]
+            }
+            BrowserAction::UpdatePlaylistName(PlaylistSummary { id, title }) => {
+                if let Some(p) = self.playlists.iter().find(|p| &p.uri() == id) {
+                    p.set_album(title.to_owned());
+                }
                 vec![BrowserEvent::SavedPlaylistsUpdated]
             }
             BrowserAction::AppendSavedTracks(song_batch) => {

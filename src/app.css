@@ -9,3 +9,7 @@
 .container--loaded {
   opacity: 1;
 }
+
+.playlist__title-entry--ro {
+  background: none;
+}

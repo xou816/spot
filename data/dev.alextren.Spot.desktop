@@ -1,5 +1,5 @@
 [Desktop Entry]
-Version=1.0
+Version=1.5
 Name=Spot
 Exec=spot %u
 GenericName=Music Player
@@ -10,3 +10,4 @@ Categories=GTK;GNOME;Music;AudioVideo;
 MimeType=x-scheme-handler/spotify;
 StartupNotify=true
 X-Purism-FormFactor=Workstation;Mobile;
+SingleMainWindow=true

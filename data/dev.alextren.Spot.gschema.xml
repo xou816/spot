@@ -9,10 +9,15 @@
     <value value="1" nick="160"/>
     <value value="2" nick="320"/>
   </enum>
+  <enum id="dev.alextren.Spot.ThemePref">
+    <value value="0" nick="light" />
+    <value value="1" nick="dark" />
+    <value value="2" nick="system" />
+  </enum>
   <schema id="dev.alextren.Spot" path="/dev/alextren/Spot/">
-    <key name='prefers-dark-theme' type='b'>
-      <default>true</default>
-      <summary>Prefer dark theme</summary>
+    <key name='theme-preference' enum='dev.alextren.Spot.ThemePref'>
+      <default>'system'</default>
+      <summary>The theme preference</summary>
     </key>
     <key name="window-width" type="i">
       <default>1080</default>
@@ -33,6 +38,10 @@
     <key name='audio-backend' enum='dev.alextren.Spot.AudioBackend'>
       <default>'pulseaudio'</default>
       <summary>Audio backend</summary>
+    </key>
+    <key name="gapless-playback" type="b">
+      <default>true</default>
+      <summary>A flag to enable gap-less playback</summary>
     </key>
     <key name='alsa-device' type='s'>
       <default>'default'</default>

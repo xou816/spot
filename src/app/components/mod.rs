@@ -79,15 +79,21 @@ pub use selection::*;
 mod headerbar;
 pub use headerbar::*;
 
+mod scrolling_header;
+pub use scrolling_header::*;
+
 pub mod utils;
 
 pub mod labels;
-pub mod sidebar_listbox;
+
+pub mod sidebar;
 
 pub fn expose_widgets() {
     playback::expose_widgets();
     selection::expose_widgets();
     headerbar::expose_widgets();
+    playlist_details::expose_widgets();
+    scrolling_header::expose_widgets();
 }
 
 impl dyn ActionDispatcher {
@@ -112,7 +118,7 @@ impl dyn ActionDispatcher {
                 Err(SpotifyApiError::NoToken) => vec![],
                 Err(SpotifyApiError::InvalidToken) => {
                     let mut retried = call().await.unwrap_or_else(|_| Vec::new());
-                    retried.push(LoginAction::RefreshToken.into());
+                    retried.insert(0, LoginAction::RefreshToken.into());
                     retried
                 }
                 Err(err) => {

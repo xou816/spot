@@ -20,9 +20,12 @@ pub enum SetLoginSuccessAction {
 
 #[derive(Clone, Debug)]
 pub enum LoginAction {
+    ShowLogin,
     TryLogin(TryLoginAction),
     SetLoginSuccess(SetLoginSuccessAction),
     SetUserPlaylists(Vec<PlaylistSummary>),
+    UpdateUserPlaylist(PlaylistSummary),
+    PrependUserPlaylist(Vec<PlaylistSummary>),
     SetLoginFailure,
     RefreshToken,
     SetRefreshedToken {
@@ -52,6 +55,7 @@ pub enum LoginCompletedEvent {
 
 #[derive(Clone, Debug)]
 pub enum LoginEvent {
+    LoginShown,
     LoginStarted(LoginStartedEvent),
     LoginCompleted(LoginCompletedEvent),
     UserPlaylistsLoaded,
@@ -82,6 +86,7 @@ impl UpdatableState for LoginState {
 
     fn update_with(&mut self, action: Cow<Self::Action>) -> Vec<Self::Event> {
         match action.into_owned() {
+            LoginAction::ShowLogin => vec![LoginEvent::LoginShown.into()],
             LoginAction::TryLogin(TryLoginAction::Password { username, password }) => {
                 vec![
                     LoginEvent::LoginStarted(LoginStartedEvent::Password { username, password })
@@ -121,6 +126,17 @@ impl UpdatableState for LoginState {
             }
             LoginAction::SetUserPlaylists(playlists) => {
                 self.playlists = playlists;
+                vec![LoginEvent::UserPlaylistsLoaded.into()]
+            }
+            LoginAction::UpdateUserPlaylist(PlaylistSummary { id, title }) => {
+                if let Some(p) = self.playlists.iter_mut().find(|p| p.id == id) {
+                    p.title = title;
+                }
+                vec![LoginEvent::UserPlaylistsLoaded.into()]
+            }
+            LoginAction::PrependUserPlaylist(mut summaries) => {
+                summaries.append(&mut self.playlists);
+                self.playlists = summaries;
                 vec![LoginEvent::UserPlaylistsLoaded.into()]
             }
         }
