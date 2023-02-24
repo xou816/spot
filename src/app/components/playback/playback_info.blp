@@ -1,0 +1,43 @@
+using Gtk 4.0;
+
+template PlaybackInfoWidget : Button {
+  receives-default: true;
+  halign: start;
+  valign: center;
+  has-frame: false;
+
+  layout {
+    column-span: "1";
+    column: "0";
+    row: "0";
+  }
+
+  Box {
+    halign: center;
+
+    Image playing_image {
+      width-request: 40;
+      height-request: 40;
+      icon-name: "emblem-music-symbolic";
+    }
+
+    Label current_song_info {
+      visible: false;
+      halign: start;
+      hexpand: true;
+      margin-start: 12;
+      margin-end: 12;
+
+      /* Translators: Short text displayed instead of a song title when nothing plays */
+
+      label: _("No song playing");
+      use-markup: true;
+      ellipsize: middle;
+      lines: 1;
+    }
+  }
+
+  styles [
+    "body",
+  ]
+}

@@ -1,0 +1,101 @@
+using Gtk 4.0;
+using Adw 1;
+
+template PlaybackWidget : Box {
+  orientation: vertical;
+
+  Scale seek_bar {
+    show-fill-level: true;
+    restrict-to-fill-level: false;
+    fill-level: 0;
+    digits: 0;
+    value-pos: left;
+
+    styles [
+      "seek-bar",
+    ]
+  }
+
+  Adw.Squeezer {
+    margin-top: 4;
+    margin-bottom: 4;
+    margin-start: 8;
+    margin-end: 8;
+
+    Grid {
+      hexpand: true;
+      column-homogeneous: true;
+
+      .PlaybackInfoWidget now_playing {
+        receives-default: "1";
+        halign: "start";
+        valign: "center";
+        has-frame: "0";
+
+        layout {
+          column-span: "1";
+          column: "0";
+          row: "0";
+        }
+      }
+
+      .PlaybackControlsWidget controls {
+        layout {
+          column-span: "1";
+          column: "1";
+          row: "0";
+        }
+      }
+
+      Box {
+        margin-top: 4;
+        margin-bottom: 4;
+        margin-start: 4;
+        margin-end: 4;
+
+        layout {
+          column-span: "1";
+          column: "2";
+          row: "0";
+        }
+
+        Label track_position {
+          sensitive: false;
+          label: "0∶00";
+          halign: end;
+          hexpand: true;
+
+          styles [
+            "numeric",
+          ]
+        }
+
+        Label track_duration {
+          sensitive: false;
+          label: " / 0∶00";
+          halign: end;
+
+          styles [
+            "numeric",
+          ]
+        }
+      }
+    }
+
+    Box {
+      halign: fill;
+      hexpand: true;
+
+      .PlaybackInfoWidget now_playing_mobile {
+        receives-default: "1";
+        halign: "start";
+        valign: "center";
+        has-frame: "0";
+      }
+
+      .PlaybackControlsWidget controls_mobile {
+        halign: "center";
+      }
+    }
+  }
+}

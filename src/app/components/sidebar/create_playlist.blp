@@ -1,0 +1,42 @@
+using Gtk 4.0;
+
+template CreatePlaylistPopover : Popover {
+  position: right;
+
+  Box box {
+    Label label {
+      /* Translators: label for the entry containing the name of a new playlist */
+
+      label: _("Name");
+    }
+
+    Entry entry {
+      focusable: true;
+      margin-start: 12;
+      margin-end: 12;
+    }
+
+    Revealer error_revealer {
+      child:       Label error_label {
+        max-width-chars: 0;
+        wrap: true;
+        xalign: 0;
+      }
+
+      ;
+    }
+
+    Button button {
+      /* Translators: Button that creates a new playlist */
+
+      label: _("Create");
+      focusable: true;
+      halign: end;
+      use-underline: true;
+
+      styles [
+        "suggested-action",
+      ]
+    }
+  }
+}

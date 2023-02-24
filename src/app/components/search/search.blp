@@ -1,0 +1,128 @@
+using Gtk 4.0;
+using Adw 1;
+
+template SearchResultsWidget : Box {
+  orientation: vertical;
+  can-focus: true;
+
+  Adw.HeaderBar main_header {
+    show-end-title-buttons: true;
+
+    Button go_back {
+      halign: start;
+      valign: center;
+      icon-name: "go-previous-symbolic";
+      has-frame: false;
+    }
+
+    [title]
+    SearchEntry search_entry {
+      receives-default: true;
+      can-focus: true;
+    }
+  }
+
+  Overlay overlay {
+    hexpand: true;
+    vexpand: true;
+
+    ScrolledWindow search_results {
+      visible: false;
+      hexpand: true;
+      vexpand: true;
+      hscrollbar-policy: never;
+      child: 
+      Box {
+        vexpand: false;
+        margin-start: 8;
+        margin-end: 8;
+        margin-top: 8;
+        margin-bottom: 8;
+        orientation: vertical;
+        spacing: 8;
+
+        Expander {
+          margin-start: 4;
+          margin-end: 4;
+          expanded: true;
+          vexpand: false;
+          valign: start;
+
+          ScrolledWindow {
+            vscrollbar-policy: never;
+            propagate-natural-height: false;
+            child: 
+            FlowBox albums_results {
+              halign: start;
+              hexpand: true;
+              vexpand: false;
+              valign: start;
+              orientation: vertical;
+              max-children-per-line: 1;
+              selection-mode: none;
+              activate-on-single-click: false;
+            }
+
+            ;
+          }
+
+          [label]
+          Label {
+            /* Translators: This is the title of a section of the search results */
+
+            label: _("Albums");
+          }
+        }
+
+        Expander {
+          margin-start: 4;
+          margin-end: 4;
+          margin-bottom: 4;
+          expanded: true;
+          vexpand: false;
+          valign: start;
+
+          ScrolledWindow {
+            vscrollbar-policy: never;
+            propagate-natural-height: false;
+            child: 
+            FlowBox artist_results {
+              halign: start;
+              hexpand: true;
+              vexpand: false;
+              valign: start;
+              orientation: vertical;
+              max-children-per-line: 1;
+              selection-mode: none;
+              activate-on-single-click: false;
+            }
+
+            ;
+          }
+
+          [label]
+          Label {
+            /* Translators: This is the title of a section of the search results */
+
+            label: _("Artists");
+          }
+        }
+      }
+
+      ;
+    }
+
+    [overlay]
+    Adw.StatusPage status_page {
+      /* Translators: Title for the empty search page (initial state). */
+
+      title: _("Search Spotify.");
+
+      /* Translators: Subtitle for the empty search page (initial state). */
+
+      description: _("Type to search.");
+      icon-name: "system-search-symbolic";
+      visible: true;
+    }
+  }
+}

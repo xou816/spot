@@ -1,0 +1,75 @@
+using Gtk 4.0;
+using Adw 1;
+
+template AlbumWidget : Adw.Bin {
+  Button cover_btn {
+    hexpand: false;
+    halign: center;
+
+    Box {
+      halign: center;
+      valign: start;
+      margin-top: 6;
+      margin-bottom: 6;
+      orientation: vertical;
+      spacing: 6;
+
+      Image cover_image {
+        icon-name: "media-playback-start-symbolic";
+
+        styles [
+          "card",
+        ]
+      }
+
+      Label album_label {
+        label: "Album";
+        justify: center;
+        wrap: true;
+        wrap-mode: word;
+        ellipsize: end;
+        max-width-chars: 1;
+        margin-top: 6;
+
+        styles [
+          "title-4",
+        ]
+      }
+
+      Label artist_label {
+        label: "Artist";
+        justify: center;
+        wrap: true;
+        wrap-mode: word;
+        ellipsize: end;
+        max-width-chars: 1;
+
+        styles [
+          "body",
+        ]
+      }
+
+      Label year_label {
+        label: "Year";
+        justify: center;
+        wrap: true;
+        wrap-mode: word_char;
+        max-width-chars: 1;
+        sensitive: false;
+
+        styles [
+          "body",
+        ]
+      }
+    }
+
+    styles [
+      "flat",
+    ]
+  }
+
+  styles [
+    "container",
+    "album",
+  ]
+}

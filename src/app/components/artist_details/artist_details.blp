@@ -1,0 +1,66 @@
+using Gtk 4.0;
+
+template ArtistDetailsWidget : Box {
+  ScrolledWindow scrolled_window {
+    hscrollbar-policy: never;
+    hexpand: true;
+    vexpand: true;
+    child: 
+    Box {
+      margin-start: 8;
+      margin-end: 8;
+      margin-top: 8;
+      margin-bottom: 8;
+      orientation: vertical;
+      spacing: 16;
+
+      Box {
+        orientation: vertical;
+
+        Label {
+          halign: start;
+          margin-start: 8;
+          margin-end: 8;
+
+          /* Translators: Title of the section that shows 5 of the top tracks for an artist, as defined by Spotify. */
+
+          label: _("Top tracks");
+
+          styles [
+            "title-4",
+          ]
+        }
+
+        ListView top_tracks {
+        }
+      }
+
+      Expander {
+        margin-top: 8;
+        margin-bottom: 8;
+        expanded: true;
+
+        FlowBox artist_releases {
+          height-request: 100;
+          hexpand: true;
+          min-children-per-line: 1;
+          selection-mode: none;
+          activate-on-single-click: false;
+        }
+
+        [label]
+        Label {
+          /* Translators: Title of the sections that contains all releases from an artist (both singles and albums). */
+
+          label: _("Releases");
+        }
+      }
+    }
+
+    ;
+  }
+
+  styles [
+    "artist",
+  ]
+}

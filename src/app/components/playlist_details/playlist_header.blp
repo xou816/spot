@@ -1,0 +1,67 @@
+using Gtk 4.0;
+
+template PlaylistHeaderWidget : Box {
+  valign: start;
+  vexpand: false;
+  margin-start: 6;
+  margin-end: 6;
+  margin-bottom: 6;
+
+  Box {
+    overflow: hidden;
+    halign: center;
+
+    Image playlist_art {
+      width-request: 160;
+      height-request: 160;
+      icon-name: "emblem-music-symbolic";
+    }
+
+    styles [
+      "card",
+    ]
+  }
+
+  Box playlist_info {
+    hexpand: true;
+    valign: center;
+    orientation: vertical;
+    spacing: 6;
+
+    Entry playlist_label_entry {
+      hexpand: false;
+      halign: start;
+      editable: false;
+      can-focus: false;
+      placeholder-text: "Playlist Title";
+
+      styles [
+        "title-1",
+        "playlist__title-entry",
+        "playlist__title-entry--ro",
+      ]
+    }
+
+    LinkButton author_button {
+      receives-default: true;
+      halign: start;
+      valign: center;
+      has-frame: false;
+
+      Label author_button_label {
+        hexpand: true;
+        vexpand: true;
+        label: "Artist";
+        ellipsize: middle;
+      }
+
+      styles [
+        "title-4",
+      ]
+    }
+  }
+
+  styles [
+    "playlist__header",
+  ]
+}

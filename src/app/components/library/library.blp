@@ -1,0 +1,38 @@
+using Gtk 4.0;
+using Adw 1;
+
+template LibraryWidget : Box {
+  ScrolledWindow scrolled_window {
+    hexpand: true;
+    vexpand: true;
+    vscrollbar-policy: always;
+    min-content-width: 250;
+    child: 
+    Overlay overlay {
+      FlowBox flowbox {
+        margin-start: 6;
+        margin-end: 6;
+        margin-top: 6;
+        margin-bottom: 6;
+        min-children-per-line: 1;
+        selection-mode: none;
+        activate-on-single-click: false;
+      }
+
+      [overlay]
+      Adw.StatusPage status_page {
+        /* Translators: A title that is shown when the user has not saved any albums. */
+
+        title: _("You have no saved albums.");
+
+        /* Translators: A description of what happens when the user has saved albums. */
+
+        description: _("Your library will be shown here.");
+        icon-name: "emblem-music-symbolic";
+        visible: true;
+      }
+    }
+
+    ;
+  }
+}

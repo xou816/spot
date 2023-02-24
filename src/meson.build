@@ -27,11 +27,42 @@ else
   conf.set('VERSION', meson.project_version())
 endif
 
+blueprints = custom_target('blueprints',
+  input: files(
+    'app/components/album/album.blp',
+    'app/components/artist/artist.blp',
+    'app/components/artist_details/artist_details.blp',
+    'app/components/details/album_header.blp',
+    'app/components/details/details.blp',
+    'app/components/details/release_details.blp',
+    'app/components/headerbar/headerbar.blp',
+    'app/components/library/library.blp',
+    'app/components/now_playing/now_playing.blp',
+    'app/components/playback/playback_controls.blp',
+    'app/components/playback/playback_info.blp',
+    'app/components/playback/playback_widget.blp',
+    'app/components/playlist_details/playlist_details.blp',
+    'app/components/playlist_details/playlist_header.blp',
+    'app/components/playlist_details/playlist_headerbar.blp',
+    'app/components/saved_playlists/saved_playlists.blp',
+    'app/components/saved_tracks/saved_tracks.blp',
+    'app/components/search/search.blp',
+    'app/components/selection/selection_toolbar.blp',
+    'app/components/user_details/user_details.blp',
+    'app/components/scrolling_header/scrolling_header.blp',
+    'app/components/sidebar/create_playlist.blp',
+    'app/components/sidebar/sidebar_row.blp',
+  ),
+  output: '.',
+  command: [find_program('blueprint-compiler'), 'batch-compile', '@OUTPUT@', '@CURRENT_SOURCE_DIR@', '@INPUT@'],
+)
+
 gnome.compile_resources('spot',
   'spot.gresource.xml',
   gresource_bundle: true,
   install: true,
-  install_dir: pkgdatadir
+  install_dir: pkgdatadir,
+  dependencies: blueprints
 )
 
 configure_file(

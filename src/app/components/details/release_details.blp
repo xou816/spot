@@ -1,0 +1,82 @@
+using Gtk 4.0;
+using Adw 1;
+
+template ReleaseDetailsWindow : Adw.Window {
+  modal: true;
+  hide-on-close: true;
+  default-width: 360;
+
+  Box {
+    orientation: vertical;
+
+    Adw.HeaderBar {
+      show-end-title-buttons: true;
+
+      [title]
+      Adw.WindowTitle album_artist {
+      }
+
+      styles [
+        "flat",
+      ]
+    }
+
+    ListBox {
+      margin-start: 6;
+      margin-end: 6;
+      margin-top: 6;
+      margin-bottom: 6;
+      valign: start;
+      selection-mode: none;
+      show-separators: true;
+      overflow: hidden;
+
+      styles [
+        "card",
+      ]
+
+      Adw.ActionRow {
+        /* Translators: This refers to a music label */
+
+        title: _("Label");
+
+        [suffix]
+        Label label {
+          label: "Label";
+        }
+      }
+
+      Adw.ActionRow {
+        /* Translators: This refers to a release date */
+
+        title: _("Released");
+
+        [suffix]
+        Label release {
+          label: "Released";
+        }
+      }
+
+      Adw.ActionRow {
+        /* Translators: This refers to a number of tracks */
+
+        title: _("Tracks");
+
+        [suffix]
+        Label tracks {
+          label: "Tracks";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Copyright");
+
+        [suffix]
+        Label copyright {
+          label: "Copyright";
+          ellipsize: middle;
+        }
+      }
+    }
+  }
+}

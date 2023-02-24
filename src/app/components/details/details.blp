@@ -1,0 +1,55 @@
+using Gtk 4.0;
+using Adw 1;
+
+template AlbumDetailsWidget : Adw.Bin {
+  Box {
+    orientation: vertical;
+    vexpand: true;
+    hexpand: true;
+
+    .HeaderBarWidget headerbar {
+    }
+
+    .ScrollingHeaderWidget scrolling_header {
+      [header]
+      WindowHandle {
+        Adw.Clamp {
+          maximum-size: 900;
+
+          Adw.Squeezer {
+            switch-threshold-policy: natural;
+            valign: center;
+            homogeneous: false;
+            transition-type: crossfade;
+
+            .AlbumHeaderWidget header_widget {
+            }
+
+            .AlbumHeaderWidget header_mobile {
+              orientation: "vertical";
+              spacing: "12";
+            }
+          }
+
+          styles [
+            "details__clamp",
+          ]
+        }
+      }
+
+      Adw.ClampScrollable {
+        maximum-size: 900;
+
+        ListView album_tracks {
+          styles [
+            "album__tracks",
+          ]
+        }
+      }
+
+      styles [
+        "container",
+      ]
+    }
+  }
+}
