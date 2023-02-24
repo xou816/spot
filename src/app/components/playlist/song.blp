@@ -1,0 +1,144 @@
+using Gtk 4.0;
+
+template SongWidget : Grid {
+  margin-start: 6;
+  margin-end: 6;
+  margin-top: 6;
+  margin-bottom: 6;
+  column-spacing: 6;
+  row-spacing: 0;
+
+  Overlay {
+    layout {
+      row-span: "2";
+      column: "0";
+      row: "0";
+    }
+
+    Label song_index {
+      label: "1";
+      sensitive: false;
+      halign: center;
+
+      styles [
+        "song__index",
+        "numeric",
+      ]
+    }
+
+    [overlay]
+    Image song_cover {
+      pixel-size: 30;
+      overflow: hidden;
+      halign: center;
+      valign: center;
+
+      styles [
+        "song__cover",
+      ]
+    }
+
+    [overlay]
+    Image song_icon {
+      icon-name: "media-playback-start-symbolic";
+      halign: center;
+      valign: center;
+
+      styles [
+        "song__icon",
+      ]
+    }
+
+    [overlay]
+    CheckButton song_checkbox {
+      halign: center;
+      valign: center;
+
+      styles [
+        "song__checkbox",
+      ]
+    }
+  }
+
+  Label song_title {
+    label: "Title";
+    ellipsize: middle;
+    max-width-chars: 50;
+    xalign: 0;
+    yalign: 1;
+    hexpand: true;
+
+    layout {
+      column-span: "2";
+      column: "1";
+      row: "0";
+    }
+
+    styles [
+      "title",
+    ]
+  }
+
+  Label song_artist {
+    label: "Artist";
+    ellipsize: middle;
+    max-width-chars: 35;
+    xalign: 0;
+    hexpand: true;
+
+    layout {
+      column-span: "1";
+      column: "1";
+      row: "1";
+    }
+
+    styles [
+      "subtitle",
+    ]
+  }
+
+  Label song_length {
+    sensitive: false;
+    label: "0∶00";
+    justify: right;
+    max-width-chars: 7;
+    xalign: 1;
+    hexpand: false;
+
+    layout {
+      row-span: "2";
+      column: "3";
+      row: "0";
+    }
+
+    styles [
+      "numeric",
+    ]
+  }
+
+  MenuButton menu_btn {
+    focus-on-click: false;
+    receives-default: true;
+    icon-name: "view-more-symbolic";
+    has-frame: false;
+    hexpand: false;
+    halign: end;
+    valign: center;
+    tooltip-text: "Menu";
+
+    layout {
+      row-span: "2";
+      column: "4";
+      row: "0";
+    }
+
+    styles [
+      "circular",
+      "flat",
+    ]
+  }
+
+  styles [
+    "song",
+  ]
+}
