@@ -3,7 +3,7 @@ use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use std::rc::Rc;
 
-use crate::app::components::EventListener;
+use crate::app::components::{display_add_css_provider, EventListener};
 use crate::app::credentials::Credentials;
 use crate::app::state::{LoginCompletedEvent, LoginEvent};
 use crate::app::AppEvent;
@@ -133,6 +133,7 @@ pub struct Login {
 
 impl Login {
     pub fn new(parent: gtk::Window, model: LoginModel) -> Self {
+        display_add_css_provider(resource!("/components/login.css"));
         let model = Rc::new(model);
 
         let login_window = LoginWindow::new();

@@ -1,0 +1,142 @@
+using Gtk 4.0;
+using Adw 1;
+
+template LoginWindow : Adw.Window {
+  default-width: 360;
+  default-height: 100;
+
+  WindowHandle {
+    Box {
+      margin-start: 4;
+      margin-end: 4;
+      margin-top: 4;
+      margin-bottom: 4;
+      orientation: vertical;
+
+      Button close_button {
+        valign: center;
+        receives-default: true;
+        halign: end;
+        has-frame: false;
+        width-request: 22;
+        height-request: 22;
+        icon-name: "window-close-symbolic";
+
+        styles [
+          "circular",
+        ]
+      }
+
+      Adw.Clamp {
+        maximum-size: 280;
+        tightening-threshold: 280;
+
+        Box {
+          valign: center;
+          vexpand: true;
+          orientation: vertical;
+          spacing: 20;
+          margin-bottom: 20;
+          margin-start: 16;
+          margin-end: 16;
+
+          Label {
+            halign: start;
+            valign: start;
+
+            /* Translators: Login window title -- shouldn't be too long, but must mention Premium (a premium account is required). */
+
+            label: _("Login to Spotify Premium");
+            wrap: true;
+            xalign: 0;
+            yalign: 0;
+
+            styles [
+              "title-login",
+            ]
+          }
+
+          Box {
+            orientation: vertical;
+            spacing: 4;
+
+            Box {
+              orientation: horizontal;
+              spacing: 4;
+
+              Image username-icon {
+                icon-name: "avatar-default-symbolic";
+              }
+
+              Entry username {
+                hexpand: true;
+
+                /* Translators: Placeholder for the username field */
+
+                placeholder-text: _("Username");
+              }
+            }
+
+            Box {
+              orientation: horizontal;
+              spacing: 4;
+
+              Image password-icon {
+                icon-name: "dialog-password-symbolic";
+              }
+
+              PasswordEntry password {
+                hexpand: true;
+                show-peek-icon: true;
+
+                /* Translators: Placeholder for the password field */
+
+                placeholder-text: _("Password");
+              }
+            }
+          }
+
+          Revealer auth_error_container {
+            vexpand: true;
+            transition-type: slide_up;
+            Box {
+              spacing: 8;
+
+              Image {
+                halign: center;
+                valign: start;
+                margin-top: 2;
+                vexpand: true;
+                icon-name: "dialog-warning-symbolic";
+              }
+
+              Label {
+                /* Translators: This error is shown when authentication fails. */
+
+                label: _("Authentication failed!");
+                wrap: true;
+                xalign: 0;
+                yalign: 0;
+
+                styles [
+                  "auth-error",
+                ]
+              }
+            }
+          }
+
+          Button login_button {
+            /* Translators: Log in button label */
+
+            label: _("Log in");
+            receives-default: true;
+
+            styles [
+              "suggested-action",
+            ]
+          }
+        }
+      }
+    }
+  }
+}
