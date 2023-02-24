@@ -11,5 +11,4 @@ fi
 cargo clippy --manifest-path "$SRC"/Cargo.toml -- -D warnings \
 -A clippy::module_inception \
 -A clippy::new_without_default \
--A clippy::enum-variant-names \
--A clippy::uninlined_format_args #tmp
+-A clippy::enum-variant-names

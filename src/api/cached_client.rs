@@ -112,28 +112,26 @@ enum SpotCacheKey<'a> {
 impl<'a> SpotCacheKey<'a> {
     fn into_raw(self) -> String {
         match self {
-            Self::SavedAlbums(offset, limit) => format!("me_albums_{}_{}.json", offset, limit),
-            Self::SavedTracks(offset, limit) => format!("me_tracks_{}_{}.json", offset, limit),
-            Self::SavedPlaylists(offset, limit) => {
-                format!("me_playlists_{}_{}.json", offset, limit)
-            }
-            Self::Album(id) => format!("album_{}.json", id),
+            Self::SavedAlbums(offset, limit) => format!("me_albums_{offset}_{limit}.json"),
+            Self::SavedTracks(offset, limit) => format!("me_tracks_{offset}_{limit}.json"),
+            Self::SavedPlaylists(offset, limit) => format!("me_playlists_{offset}_{limit}.json"),
+            Self::Album(id) => format!("album_{id}.json"),
             Self::AlbumTracks(id, offset, limit) => {
-                format!("album_item_{}_{}_{}.json", id, offset, limit)
+                format!("album_item_{id}_{offset}_{limit}.json")
             }
-            Self::AlbumLiked(id) => format!("album_liked_{}.json", id),
-            Self::Playlist(id) => format!("playlist_{}.json", id),
+            Self::AlbumLiked(id) => format!("album_liked_{id}.json"),
+            Self::Playlist(id) => format!("playlist_{id}.json"),
             Self::PlaylistTracks(id, offset, limit) => {
-                format!("playlist_item_{}_{}_{}.json", id, offset, limit)
+                format!("playlist_item_{id}_{offset}_{limit}.json")
             }
             Self::ArtistAlbums(id, offset, limit) => {
-                format!("artist_albums_{}_{}_{}.json", id, offset, limit)
+                format!("artist_albums_{id}_{offset}_{limit}.json")
             }
-            Self::Artist(id) => format!("artist_{}.json", id),
-            Self::ArtistTopTracks(id) => format!("artist_top_tracks_{}.json", id),
-            Self::User(id) => format!("user_{}.json", id),
+            Self::Artist(id) => format!("artist_{id}.json"),
+            Self::ArtistTopTracks(id) => format!("artist_top_tracks_{id}.json"),
+            Self::User(id) => format!("user_{id}.json"),
             Self::UserPlaylists(id, offset, limit) => {
-                format!("user_playlists_{}_{}_{}.json", id, offset, limit)
+                format!("user_playlists_{id}_{offset}_{limit}.json")
             }
         }
     }
@@ -147,7 +145,7 @@ lazy_static! {
 }
 
 fn playlist_cache_key(id: &str) -> Regex {
-    Regex::new(&format!(r"^playlist(_{}|item_{}_\w+_\w+)\.json$", id, id)).unwrap()
+    Regex::new(&format!(r"^playlist(_{id}|item_{id}_\w+_\w+)\.json$")).unwrap()
 }
 
 pub struct CachedSpotifyClient {

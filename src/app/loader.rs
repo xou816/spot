@@ -13,14 +13,14 @@ impl<'a> Write for LocalPixbufLoader<'a> {
     fn write(&mut self, buf: &[u8]) -> Result<usize, Error> {
         self.0
             .write(buf)
-            .map_err(|e| Error::new(ErrorKind::Other, format!("glib error: {}", e)))?;
+            .map_err(|e| Error::new(ErrorKind::Other, format!("glib error: {e}")))?;
         Ok(buf.len())
     }
 
     fn flush(&mut self) -> Result<(), Error> {
         self.0
             .close()
-            .map_err(|e| Error::new(ErrorKind::Other, format!("glib error: {}", e)))?;
+            .map_err(|e| Error::new(ErrorKind::Other, format!("glib error: {e}")))?;
         Ok(())
     }
 }

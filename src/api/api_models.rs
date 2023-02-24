@@ -67,7 +67,7 @@ impl SearchQuery {
             .append_pair("market", "from_token")
             .finish();
 
-        format!("type={}&{}", types, serialized)
+        format!("type={types}&{serialized}")
     }
 }
 
@@ -479,7 +479,7 @@ impl From<AlbumInfo> for AlbumReleaseDetails {
     ) -> Self {
         let copyright_text = copyrights
             .iter()
-            .map(|c| format!("[{}] {}", c.type_, c.text))
+            .map(|Copyright { type_, text }| format!("[{type_}] {text}"))
             .collect::<Vec<String>>()
             .join(",\n ");
 
