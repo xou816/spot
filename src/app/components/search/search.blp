@@ -31,7 +31,6 @@ template SearchResultsWidget : Box {
       hexpand: true;
       vexpand: true;
       hscrollbar-policy: never;
-      child: 
       Box {
         vexpand: false;
         margin-start: 8;
@@ -51,7 +50,6 @@ template SearchResultsWidget : Box {
           ScrolledWindow {
             vscrollbar-policy: never;
             propagate-natural-height: false;
-            child: 
             FlowBox albums_results {
               halign: start;
               hexpand: true;
@@ -62,8 +60,6 @@ template SearchResultsWidget : Box {
               selection-mode: none;
               activate-on-single-click: false;
             }
-
-            ;
           }
 
           [label]
@@ -85,7 +81,6 @@ template SearchResultsWidget : Box {
           ScrolledWindow {
             vscrollbar-policy: never;
             propagate-natural-height: false;
-            child: 
             FlowBox artist_results {
               halign: start;
               hexpand: true;
@@ -96,8 +91,6 @@ template SearchResultsWidget : Box {
               selection-mode: none;
               activate-on-single-click: false;
             }
-
-            ;
           }
 
           [label]
@@ -108,8 +101,6 @@ template SearchResultsWidget : Box {
           }
         }
       }
-
-      ;
     }
 
     [overlay]
