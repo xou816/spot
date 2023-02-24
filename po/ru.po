@@ -257,135 +257,135 @@ msgstr "{} в исполнении {}"
 
 #: src/app/components/sidebar/sidebar.rs:48
 msgid "Unnamed playlist"
-msgstr ""
+msgstr "Безымянный плейлист"
 
 #. translators: This is a sidebar entry to browse to saved playlists.
 #: src/app/components/sidebar/sidebar_item.rs:81
 msgid "All Playlists"
-msgstr ""
+msgstr "Все плейлисты"
 
 #: src/app/components/selection/component.rs:66
 msgid "Tracks saved!"
-msgstr ""
+msgstr "Треки сохранены!"
 
 #. translators: This is a menu entry.
 #: src/app/components/user_menu/user_menu.rs:65
 msgid "Preferences"
-msgstr ""
+msgstr "Настройки"
 
 #: src/main.rs:80
 msgid "Failed to open link!"
-msgstr ""
+msgstr "Не удалось открыть ссылку!"
 
 #. Header for a group of preference items regarding audio
 #: src/app/components/settings/settings.ui:13
 msgid "Audio"
-msgstr ""
+msgstr "Аудио"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:16
 msgid "Audio Backend"
-msgstr ""
+msgstr "Аудио Бэкэнд"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:29
 msgid "ALSA Device"
-msgstr ""
+msgstr "ALSA Device"
 
 #. Description for the item (ALSA Device) in preferences
 #: src/app/components/settings/settings.ui:30
 msgid "Applied only if audio backend is ALSA"
-msgstr ""
+msgstr "Применяется, только если звуковой бэкэнд ALSA"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:40
 msgid "Audio Quality"
-msgstr ""
+msgstr "Качество звука"
 
 #: src/app/components/settings/settings.ui:44
 msgid "Normal"
-msgstr ""
+msgstr "Нормальное"
 
 #: src/app/components/settings/settings.ui:45
 msgid "High"
-msgstr ""
+msgstr "Высокое"
 
 #: src/app/components/settings/settings.ui:46
 msgid "Very high"
-msgstr ""
+msgstr "Очень высокое"
 
 #. Header for a group of preference items regarding the application's appearance
 #: src/app/components/settings/settings.ui:70
 msgid "Appearance"
-msgstr ""
+msgstr "Внешний вид"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:73
 msgid "Theme"
-msgstr ""
+msgstr "Тема"
 
 #: src/app/components/settings/settings.ui:77
 msgid "Light"
-msgstr ""
+msgstr "Светлая"
 
 #: src/app/components/settings/settings.ui:78
 msgid "Dark"
-msgstr ""
+msgstr "Темная"
 
 #. Header for a group of preference items regarding network
 #: src/app/components/settings/settings.ui:89
 msgid "Network"
-msgstr ""
+msgstr "Сеть"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:92
 msgid "Access Point Port"
-msgstr ""
+msgstr "Порт точки доступа"
 
 #. Longer description for an item (Access Point Port) in preferences
 #: src/app/components/settings/settings.ui:93
 msgid "Port used for connections to Spotify's Access Point. Set to 0 if any port is fine."
-msgstr ""
+msgstr "Порт, используемый для подключения к точке доступа Spotify. Установите на 0, если все порты в порядке."
 
 #: src/app/components/selection/selection_toolbar.ui:90
 msgid "Save to library"
-msgstr ""
+msgstr "Сохранить в библиотеку"
 
 #. translators: This is a notification that pop ups when a new playlist is created. It includes the name of that playlist.
 #: src/app/components/notification/mod.rs:25
 msgid "New playlist created."
-msgstr ""
+msgstr "Создан новый плейлист."
 
 #. translators: This is a label in the notification shown after creating a new playlist. If it is clicked, the new playlist will be opened.
 #: src/app/components/notification/mod.rs:27
 msgid "View"
-msgstr ""
+msgstr "Вид"
 
 #: src/app/components/sidebar/sidebar_item.rs:90
 msgid "New Playlist"
-msgstr ""
+msgstr "Новый плейлист"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:54
 msgid "Gapless playback"
-msgstr ""
+msgstr "Непрерывное воспроизведение"
 
 #: src/app/components/settings/settings.ui:79
 msgid "System"
-msgstr ""
+msgstr "Система"
 
 #. Finish playlist edition
 #: src/app/components/playlist_details/playlist_headerbar.ui:63
 msgid "Done"
-msgstr ""
+msgstr "Сделано"
 
 #. label for the entry containing the name of a new playlist
 #: src/app/components/sidebar/create_playlist.ui:10
 msgid "Name"
-msgstr ""
+msgstr "Имя"
 
 #. Button that creates a new playlist
 #: src/app/components/sidebar/create_playlist.ui:33
 msgid "Create"
-msgstr ""
+msgstr "Создать"
 

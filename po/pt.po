@@ -273,17 +273,17 @@ msgstr "Preferências"
 
 #: src/main.rs:80
 msgid "Failed to open link!"
-msgstr "Falha ao abrir o link!"
+msgstr "Falha ao abrir a ligação!"
 
 #. Header for a group of preference items regarding audio
 #: src/app/components/settings/settings.ui:13
 msgid "Audio"
-msgstr "Aúdio"
+msgstr "Áudio"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:16
 msgid "Audio Backend"
-msgstr "Backend de Aúdio"
+msgstr "Back-end de Áudio"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:29
@@ -293,12 +293,12 @@ msgstr "Dispositivo ALSA"
 #. Description for the item (ALSA Device) in preferences
 #: src/app/components/settings/settings.ui:30
 msgid "Applied only if audio backend is ALSA"
-msgstr "Aplicado apenas se backend do aúdio é ALSA"
+msgstr "Aplicado apenas se back-end do áudio é ALSA"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:40
 msgid "Audio Quality"
-msgstr "Qualidade do Aúdio"
+msgstr "Qualidade do Áudio"
 
 #: src/app/components/settings/settings.ui:44
 msgid "Normal"
@@ -343,7 +343,7 @@ msgstr "Porta do Ponto de Acesso"
 #. Longer description for an item (Access Point Port) in preferences
 #: src/app/components/settings/settings.ui:93
 msgid "Port used for connections to Spotify's Access Point. Set to 0 if any port is fine."
-msgstr "Porta usada para conexões ao Ponto de Acesso do Spotify. Definir para 0 se qualquer porta estiver bem."
+msgstr "Porta usada para conexões ao Ponto de Acesso do Spotify. Definir para 0 se qualquer porta servir."
 
 #: src/app/components/selection/selection_toolbar.ui:90
 msgid "Save to library"
@@ -352,38 +352,38 @@ msgstr "Salvar na biblioteca"
 #. translators: This is a notification that pop ups when a new playlist is created. It includes the name of that playlist.
 #: src/app/components/notification/mod.rs:25
 msgid "New playlist created."
-msgstr ""
+msgstr "Nova lista de reprodução criada."
 
 #. translators: This is a label in the notification shown after creating a new playlist. If it is clicked, the new playlist will be opened.
 #: src/app/components/notification/mod.rs:27
 msgid "View"
-msgstr ""
+msgstr "Ver"
 
 #: src/app/components/sidebar/sidebar_item.rs:90
 msgid "New Playlist"
-msgstr ""
+msgstr "Nova lista de reprodução"
 
 #. Title for an item in preferences
 #: src/app/components/settings/settings.ui:54
 msgid "Gapless playback"
-msgstr ""
+msgstr "Reprodução sem intervalos"
 
 #: src/app/components/settings/settings.ui:79
 msgid "System"
-msgstr ""
+msgstr "Sistema"
 
 #. Finish playlist edition
 #: src/app/components/playlist_details/playlist_headerbar.ui:63
 msgid "Done"
-msgstr ""
+msgstr "Feito"
 
 #. label for the entry containing the name of a new playlist
 #: src/app/components/sidebar/create_playlist.ui:10
 msgid "Name"
-msgstr ""
+msgstr "Nome"
 
 #. Button that creates a new playlist
 #: src/app/components/sidebar/create_playlist.ui:33
 msgid "Create"
-msgstr ""
+msgstr "Criar"
 
