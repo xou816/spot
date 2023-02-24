@@ -7,7 +7,7 @@ license = "MIT"
 [dependencies.gtk]
 version = "^0.6.0"
 package = "gtk4"
-features = ["gnome_42"]
+features = ["gnome_42", "blueprint"]
 
 [dependencies.gdk]
 version = "^0.6.0"
