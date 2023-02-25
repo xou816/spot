@@ -36,7 +36,9 @@ impl Credentials {
         let items = collection.search_items(make_attributes()).await?;
         let item = items.get(0).ok_or(Error::NoResult)?.get_secret().await?;
         // We need to escape backslashes in order to correctnly deserialize passwords that contain backslashes
-        let secret = String::from_utf8(item).map_err(|_| Error::NoResult)?.replace("\\", "\\\\");
+        let secret = String::from_utf8(item)
+            .map_err(|_| Error::NoResult)?
+            .replace("\\", "\\\\");
         serde_json::from_str(secret.as_str()).map_err(|_| Error::NoResult)
     }
 
