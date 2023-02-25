@@ -1,4 +1,6 @@
-target/
-build/
-.flatpak-builder/
-src/config.rs
+/target/
+/doc/target
+/cargo/
+/build/
+/.flatpak-builder/
+/src/config.rs

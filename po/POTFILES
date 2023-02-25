@@ -16,7 +16,7 @@ src/app/state/login_state.rs
 src/main.rs
 
 # find src -name "*.ui*" -print
-src/window.ui.in
+src/window.ui
 src/app/components/saved_playlists/saved_playlists.ui
 src/app/components/artist_details/artist_details.ui
 src/app/components/saved_tracks/saved_tracks.ui

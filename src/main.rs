@@ -19,23 +19,17 @@ mod config;
 mod dbus;
 mod player;
 mod settings;
-pub use config::VERSION;
 
-use crate::app::components::expose_widgets;
+use crate::app::components::expose_custom_widgets;
 use crate::app::dispatch::{spawn_task_handler, DispatchLoop};
 use crate::app::{state::PlaybackAction, App, AppAction, BrowserAction};
 
 fn main() {
-    env_logger::init();
-    textdomain("spot")
-        .and_then(|_| bindtextdomain("spot", config::LOCALEDIR))
-        .and_then(|_| bind_textdomain_codeset("spot", "UTF-8"))
-        .expect("Could not setup localization");
-
     let settings = settings::SpotSettings::new_from_gsettings().unwrap_or_default();
-    startup(&settings);
+    setup_gtk(&settings);
+    expose_custom_widgets();
+
     let gtk_app = gtk::Application::new(Some(config::APPID), ApplicationFlags::HANDLES_OPEN);
-    expose_widgets();
     let builder = gtk::Builder::from_resource("/dev/alextren/Spot/window.ui");
     let window: libadwaita::ApplicationWindow = builder.object("window").unwrap();
 
@@ -45,10 +39,11 @@ fn main() {
     }
 
     let context = glib::MainContext::default();
-
     let dispatch_loop = DispatchLoop::new();
     let sender = dispatch_loop.make_dispatcher();
+
     register_actions(&gtk_app, sender.clone());
+    setup_credits(builder.object::<gtk::AboutDialog>("about").unwrap());
 
     let app = App::new(
         settings,
@@ -88,16 +83,23 @@ fn main() {
     std::process::exit(0);
 }
 
-fn startup(settings: &settings::SpotSettings) {
+fn setup_gtk(settings: &settings::SpotSettings) {
+    env_logger::init();
+
+    textdomain("spot")
+        .and_then(|_| bindtextdomain("spot", config::LOCALEDIR))
+        .and_then(|_| bind_textdomain_codeset("spot", "UTF-8"))
+        .expect("Could not setup localization");
+
     gtk::init().unwrap_or_else(|_| panic!("Failed to initialize GTK"));
     libadwaita::init().unwrap_or_else(|_| panic!("Failed to initialize libadwaita"));
+
     let manager = libadwaita::StyleManager::default();
+    manager.set_color_scheme(settings.theme_preference);
 
     let res = gio::Resource::load(config::PKGDATADIR.to_owned() + "/spot.gresource")
         .expect("Could not load resources");
     gio::resources_register(&res);
-
-    manager.set_color_scheme(settings.theme_preference);
 
     let provider = gtk::CssProvider::new();
     provider.load_from_resource("/dev/alextren/Spot/app.css");
@@ -107,6 +109,16 @@ fn startup(settings: &settings::SpotSettings) {
         &provider,
         gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
     );
+}
+
+fn setup_credits(about: gtk::AboutDialog) {
+    let authors: Vec<&str> = include_str!("../AUTHORS").split('\n').collect();
+    let translators = include_str!("../TRANSLATORS");
+    let artists: Vec<&str> = include_str!("../ARTISTS").split('\n').collect();
+    about.set_version(Some(config::VERSION));
+    about.set_authors(&authors);
+    about.set_translator_credits(Some(translators));
+    about.set_artists(&artists);
 }
 
 fn register_actions(app: &gtk::Application, sender: UnboundedSender<AppAction>) {
