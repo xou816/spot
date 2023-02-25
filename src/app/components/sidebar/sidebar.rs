@@ -8,6 +8,7 @@ use super::{
     SAVED_PLAYLISTS_SECTION,
 };
 use crate::app::models::{AlbumModel, PlaylistSummary};
+use crate::app::state::ScreenName;
 use crate::app::{
     ActionDispatcher, AppAction, AppEvent, AppModel, BrowserAction, BrowserEvent, Component,
     EventListener,
@@ -67,12 +68,14 @@ impl SidebarModel {
             | SidebarDestination::SavedTracks
             | SidebarDestination::NowPlaying
             | SidebarDestination::SavedPlaylists => {
-                vec![BrowserAction::SetHomeVisiblePage(dest.id()).into()]
+                vec![
+                    BrowserAction::NavigationPopTo(ScreenName::Home).into(),
+                    BrowserAction::SetHomeVisiblePage(dest.id()).into(),
+                ]
             }
-            SidebarDestination::Playlist(PlaylistSummary { id, .. }) => vec![
-                BrowserAction::SetHomeVisiblePage(SidebarDestination::SavedPlaylists.id()).into(),
-                AppAction::ViewPlaylist(id),
-            ],
+            SidebarDestination::Playlist(PlaylistSummary { id, .. }) => {
+                vec![AppAction::ViewPlaylist(id)]
+            }
         };
         self.dispatcher.dispatch_many(actions);
     }

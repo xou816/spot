@@ -282,19 +282,19 @@ impl BrowserState {
         extract_state!(self, BrowserScreen::User(state) if state.id == id => state)
     }
 
-    fn push_if_needed(&mut self, name: ScreenName) -> Vec<BrowserEvent> {
+    fn push_if_needed(&mut self, name: &ScreenName) -> Vec<BrowserEvent> {
         let navigation = &mut self.navigation;
-        let screen_visibility = navigation.screen_visibility(&name);
+        let screen_visibility = navigation.screen_visibility(name);
 
         match screen_visibility {
             ScreenState::Current => vec![],
             ScreenState::Present => {
-                navigation.pop_to(&name);
-                vec![BrowserEvent::NavigationPoppedTo(name)]
+                navigation.pop_to(name);
+                vec![BrowserEvent::NavigationPoppedTo(name.clone())]
             }
             ScreenState::NotPresent => {
-                navigation.push(BrowserScreen::from_name(&name));
-                vec![BrowserEvent::NavigationPushed(name)]
+                navigation.push(BrowserScreen::from_name(name));
+                vec![BrowserEvent::NavigationPushed(name.clone())]
             }
         }
     }
@@ -306,28 +306,24 @@ impl UpdatableState for BrowserState {
 
     fn update_with(&mut self, action: Cow<Self::Action>) -> Vec<Self::Event> {
         let can_pop = self.navigation.can_pop();
-        let action = action.into_owned();
+        let action_ref = action.as_ref();
 
-        match action {
+        match action_ref {
             BrowserAction::SetNavigationHidden(navigation_hidden) => {
-                self.navigation_hidden = navigation_hidden;
-                vec![BrowserEvent::NavigationHidden(navigation_hidden)]
+                self.navigation_hidden = *navigation_hidden;
+                vec![BrowserEvent::NavigationHidden(*navigation_hidden)]
             }
             BrowserAction::Search(_) => {
-                let mut events = self.push_if_needed(ScreenName::Search);
+                let mut events = self.push_if_needed(&ScreenName::Search);
 
-                let mut update_events = self
-                    .navigation
-                    .current_mut()
-                    .state()
-                    .update_with(Cow::Owned(action));
+                let mut update_events = self.navigation.current_mut().state().update_with(action);
                 events.append(&mut update_events);
                 events
             }
             BrowserAction::NavigationPush(name) => self.push_if_needed(name),
             BrowserAction::NavigationPopTo(name) => {
-                self.navigation.pop_to(&name);
-                vec![BrowserEvent::NavigationPoppedTo(name)]
+                self.navigation.pop_to(name);
+                vec![BrowserEvent::NavigationPoppedTo(name.clone())]
             }
             BrowserAction::NavigationPop if can_pop => {
                 self.navigation.pop();
@@ -340,7 +336,7 @@ impl UpdatableState for BrowserState {
             _ => self
                 .navigation
                 .iter_mut()
-                .flat_map(|s| s.state().update_with(Cow::Borrowed(&action)))
+                .flat_map(|s| s.state().update_with(Cow::Borrowed(action_ref)))
                 .collect(),
         }
     }

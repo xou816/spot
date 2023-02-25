@@ -64,11 +64,6 @@ impl Navigation {
         self.leaflet.navigate(NavigationDirection::Back);
     }
 
-    fn pop_to_home(&mut self) {
-        self.leaflet.navigate(NavigationDirection::Forward);
-        self.pop_to(&ScreenName::Home);
-    }
-
     fn push_screen(&mut self, name: &ScreenName) {
         let component: Box<dyn ListenerComponent> = match name {
             ScreenName::Home => self.make_home(),
@@ -139,9 +134,6 @@ impl EventListener for Navigation {
             }
             AppEvent::BrowserEvent(BrowserEvent::NavigationPoppedTo(name)) => {
                 self.pop_to(name);
-            }
-            AppEvent::BrowserEvent(BrowserEvent::HomeVisiblePageChanged(_)) => {
-                self.pop_to_home();
             }
             _ => {}
         };
