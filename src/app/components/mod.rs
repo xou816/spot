@@ -88,7 +88,8 @@ pub mod labels;
 
 pub mod sidebar;
 
-pub fn expose_widgets() {
+// without this the builder doesn't seen to know about the custom widgets
+pub fn expose_custom_widgets() {
     playback::expose_widgets();
     selection::expose_widgets();
     headerbar::expose_widgets();

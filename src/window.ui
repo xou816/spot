@@ -155,11 +155,7 @@
     <property name="destroy-with-parent">1</property>
     <property name="transient-for">window</property>
     <property name="program-name">Spot</property>
-    <property name="version">@VERSION@</property>
     <property name="website">https://github.com/xou816/spot</property>
-    <property name="authors">@AUTHORS@</property>
-    <property name="artists">@ARTISTS@</property>
-    <property name="translator-credits">@TRANSLATORS@</property>
     <property name="logo-icon-name">dev.alextren.Spot</property>
     <property name="license-type">mit-x11</property>
   </object>

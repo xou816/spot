@@ -13,7 +13,7 @@
         {
             "label": "meson",
             "type": "shell",
-            "command": "meson target -Dbuildtype=debug -Doffline=false --reconfigure --prefix=\"$HOME/.local\""
+            "command": "meson setup target -Dbuildtype=debug -Doffline=false --prefix=\"$HOME/.local\""
         },
         {
             "label": "build",
