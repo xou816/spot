@@ -158,7 +158,7 @@ impl SelectionToolbarWidget {
         let action_group = SimpleActionGroup::new();
 
         for PlaylistSummary { title, id } in playlists {
-            let action_name = format!("playlist_{}", &id);
+            let action_name = format!("playlist_{id}");
 
             action_group.add_action(&{
                 let id = id.clone();
@@ -170,7 +170,7 @@ impl SelectionToolbarWidget {
 
             menu.append(
                 Some(&labels::add_to_playlist_label(title)),
-                Some(&format!("add_to.{}", action_name)),
+                Some(&format!("add_to.{action_name}")),
             );
         }
 

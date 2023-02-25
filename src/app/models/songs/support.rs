@@ -444,7 +444,7 @@ mod tests {
                 total: 10,
             },
             songs: vec![
-                song(&format!("song{}", offset)),
+                song(&format!("song{offset}")),
                 song(&format!("song{}", offset + 1)),
             ],
         }

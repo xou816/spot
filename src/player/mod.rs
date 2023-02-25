@@ -84,7 +84,7 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
             .borrow_mut()
             .unbounded_send(match error {
                 SpotifyError::LoginFailed => LoginAction::SetLoginFailure.into(),
-                _ => AppAction::ShowNotification(format!("{}", error)),
+                _ => AppAction::ShowNotification(format!("{error}")),
             })
             .unwrap();
     }
