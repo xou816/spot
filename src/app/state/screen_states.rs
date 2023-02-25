@@ -19,11 +19,11 @@ impl ScreenName {
     pub fn identifier(&self) -> Cow<str> {
         match self {
             Self::Home => Cow::Borrowed("home"),
-            Self::AlbumDetails(s) => Cow::Owned(format!("album_{}", s)),
+            Self::AlbumDetails(s) => Cow::Owned(format!("album_{s}")),
             Self::Search => Cow::Borrowed("search"),
-            Self::Artist(s) => Cow::Owned(format!("artist_{}", s)),
-            Self::PlaylistDetails(s) => Cow::Owned(format!("playlist_{}", s)),
-            Self::User(s) => Cow::Owned(format!("user_{}", s)),
+            Self::Artist(s) => Cow::Owned(format!("artist_{s}")),
+            Self::PlaylistDetails(s) => Cow::Owned(format!("playlist_{s}")),
+            Self::User(s) => Cow::Owned(format!("user_{s}")),
         }
     }
 }

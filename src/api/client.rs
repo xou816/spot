@@ -51,7 +51,7 @@ where
     fn uri(mut self, path: String, query: Option<&str>) -> Self {
         let path_and_query = match query {
             None => path,
-            Some(query) => format!("{}?{}", path, query),
+            Some(query) => format!("{path}?{query}"),
         };
         let uri = Uri::builder()
             .scheme("https")
@@ -68,7 +68,7 @@ where
         let token = token.as_ref().ok_or(SpotifyApiError::NoToken)?;
         self.request = self
             .request
-            .header("Authorization", format!("Bearer {}", token));
+            .header("Authorization", format!("Bearer {token}"));
         Ok(self)
     }
 
@@ -290,7 +290,7 @@ impl SpotifyClient {
     pub(crate) fn get_artist(&self, id: &str) -> SpotifyRequest<'_, (), Artist> {
         self.request()
             .method(Method::GET)
-            .uri(format!("/v1/artists/{}", id), None)
+            .uri(format!("/v1/artists/{id}"), None)
     }
 
     pub(crate) fn get_artist_albums(
@@ -308,7 +308,7 @@ impl SpotifyClient {
 
         self.request()
             .method(Method::GET)
-            .uri(format!("/v1/artists/{}/albums", id), Some(&query))
+            .uri(format!("/v1/artists/{id}/albums"), Some(&query))
     }
 
     pub(crate) fn get_artist_top_tracks(&self, id: &str) -> SpotifyRequest<'_, (), TopTracks> {
@@ -318,7 +318,7 @@ impl SpotifyClient {
 
         self.request()
             .method(Method::GET)
-            .uri(format!("/v1/artists/{}/top-tracks", id), Some(&query))
+            .uri(format!("/v1/artists/{id}/top-tracks"), Some(&query))
     }
 
     pub(crate) fn is_album_saved(&self, id: &str) -> SpotifyRequest<'_, (), Vec<bool>> {
@@ -359,7 +359,7 @@ impl SpotifyClient {
     pub(crate) fn get_album(&self, id: &str) -> SpotifyRequest<'_, (), FullAlbum> {
         self.request()
             .method(Method::GET)
-            .uri(format!("/v1/albums/{}", id), None)
+            .uri(format!("/v1/albums/{id}"), None)
     }
 
     pub(crate) fn get_album_tracks(
@@ -375,7 +375,7 @@ impl SpotifyClient {
 
         self.request()
             .method(Method::GET)
-            .uri(format!("/v1/albums/{}/tracks", id), Some(&query))
+            .uri(format!("/v1/albums/{id}/tracks"), Some(&query))
     }
 
     pub(crate) fn get_playlist(&self, id: &str) -> SpotifyRequest<'_, (), Playlist> {
@@ -387,7 +387,7 @@ impl SpotifyClient {
             .finish();
         self.request()
             .method(Method::GET)
-            .uri(format!("/v1/playlists/{}", id), Some(&query))
+            .uri(format!("/v1/playlists/{id}"), Some(&query))
     }
 
     pub(crate) fn get_playlist_tracks(
@@ -403,7 +403,7 @@ impl SpotifyClient {
 
         self.request()
             .method(Method::GET)
-            .uri(format!("/v1/playlists/{}/tracks", id), Some(&query))
+            .uri(format!("/v1/playlists/{id}/tracks"), Some(&query))
     }
 
     pub(crate) fn add_to_playlist(
@@ -413,7 +413,7 @@ impl SpotifyClient {
     ) -> SpotifyRequest<'_, Vec<u8>, ()> {
         self.request()
             .method(Method::POST)
-            .uri(format!("/v1/playlists/{}/tracks", playlist), None)
+            .uri(format!("/v1/playlists/{playlist}/tracks"), None)
             .json_body(Uris { uris })
     }
 
@@ -424,7 +424,7 @@ impl SpotifyClient {
     ) -> SpotifyRequest<'_, Vec<u8>, Playlist> {
         self.request()
             .method(Method::POST)
-            .uri(format!("/v1/users/{}/playlists", user_id), None)
+            .uri(format!("/v1/users/{user_id}/playlists"), None)
             .json_body(Name { name })
     }
 
@@ -435,7 +435,7 @@ impl SpotifyClient {
     ) -> SpotifyRequest<'_, Vec<u8>, ()> {
         self.request()
             .method(Method::DELETE)
-            .uri(format!("/v1/playlists/{}/tracks", playlist), None)
+            .uri(format!("/v1/playlists/{playlist}/tracks"), None)
             .json_body(Uris { uris })
     }
 
@@ -446,7 +446,7 @@ impl SpotifyClient {
     ) -> SpotifyRequest<'_, Vec<u8>, ()> {
         self.request()
             .method(Method::PUT)
-            .uri(format!("/v1/playlists/{}", playlist), None)
+            .uri(format!("/v1/playlists/{playlist}"), None)
             .json_body(PlaylistDetails { name })
     }
 
@@ -517,7 +517,7 @@ impl SpotifyClient {
         let id = utf8_percent_encode(id, PATH_ENCODE_SET);
         self.request()
             .method(Method::GET)
-            .uri(format!("/v1/users/{}", id), None)
+            .uri(format!("/v1/users/{id}"), None)
     }
 
     pub(crate) fn get_user_playlists(
@@ -534,7 +534,7 @@ impl SpotifyClient {
 
         self.request()
             .method(Method::GET)
-            .uri(format!("/v1/users/{}/playlists", id), Some(&query))
+            .uri(format!("/v1/users/{id}/playlists"), Some(&query))
     }
 }
 
