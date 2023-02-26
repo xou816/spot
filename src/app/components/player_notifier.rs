@@ -171,6 +171,9 @@ impl PlayerNotifier {
                     .map(|track| Command::PlayerLoad { track, resume })
             }
             PlaybackEvent::TrackSeeked(position) => Some(Command::PlayerSeek(*position)),
+            PlaybackEvent::Preload(id) => {
+                SpotifyId::from_base62(id).ok().map(Command::PlayerPreload)
+            }
             _ => None,
         };
 

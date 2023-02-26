@@ -152,27 +152,34 @@ impl ConnectPlayer {
         }
     }
 
-    pub async fn handle_command(&self, command: ConnectCommand) {
-        let device_lost = {
-            let mut device_id = self.device_id.lock().unwrap();
-            if let ConnectCommand::SetDevice(new_device_id) = command {
-                *device_id = Some(new_device_id);
+    pub async fn handle_command(&self, command: ConnectCommand) -> Option<()> {
+        let device_lost = match command {
+            ConnectCommand::SetDevice(new_device_id) => {
+                self.device_id.lock().ok()?.replace(new_device_id);
                 false
-            } else if let ConnectCommand::PlayerStop = command {
-                if let Some(old_id) = device_id.take() {
+            }
+            ConnectCommand::PlayerStop => {
+                let device_id = self.device_id.lock().ok()?.take();
+                if let Some(old_id) = device_id {
                     let _ = self.api.player_pause(old_id).await;
                 }
                 false
-            } else if let Some(device_id) = &*device_id {
-                let result = self.handle_other_command(device_id.clone(), command).await;
-                matches!(result, Err(SpotifyApiError::BadStatus(404, _)))
-            } else {
-                true
+            }
+            _ => {
+                let device_id = self.device_id.lock().ok()?.clone();
+                if let Some(device_id) = device_id {
+                    let result = self.handle_other_command(device_id, command).await;
+                    matches!(result, Err(SpotifyApiError::BadStatus(404, _)))
+                } else {
+                    true
+                }
             }
         };
 
         if device_lost {
             self.device_lost();
         }
+
+        Some(())
     }
 }

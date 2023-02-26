@@ -66,7 +66,7 @@ impl PlaybackState {
     }
 
     pub fn current_song_index(&self) -> Option<usize> {
-        self.position
+        self.list_position
     }
 
     pub fn current_song_id(&self) -> Option<String> {
@@ -238,7 +238,7 @@ impl PlaybackState {
 
     fn set_shuffled(&mut self, shuffled: bool) {
         self.is_shuffled = shuffled;
-        let old = self.position.replace(0).unwrap_or(0);
+        let old = self.list_position.replace(0).unwrap_or(0);
         self.index.reset_picking_first(old);
     }
 
@@ -316,7 +316,7 @@ pub enum PlaybackEvent {
     TrackChanged(String),
     SourceChanged,
     Preload(String),
-    ShuffleChanged,
+    ShuffleChanged(bool),
     PlaylistChanged,
     PlaybackStopped,
     SwitchedDevice(Device),
@@ -402,7 +402,7 @@ impl UpdatableState for PlaybackState {
                         PlaybackEvent::PlaybackResumed,
                     ]
                 } else {
-                    make_events(vec![Some(PlaybackEvent::TrackSeeked(0))])
+                    vec![PlaybackEvent::TrackSeeked(0)]
                 }
             }
             PlaybackAction::Load(id) => {

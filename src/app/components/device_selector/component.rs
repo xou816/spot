@@ -88,11 +88,11 @@ impl EventListener for DeviceSelector {
             }
             AppEvent::PlaybackEvent(PlaybackEvent::AvailableDevicesChanged) => {
                 self.widget
-                    .update_devices_list(&*self.model.get_available_devices());
+                    .update_devices_list(&self.model.get_available_devices());
             }
             AppEvent::PlaybackEvent(PlaybackEvent::SwitchedDevice(_)) => {
                 self.widget
-                    .set_current_device(&*self.model.get_current_device());
+                    .set_current_device(&self.model.get_current_device());
             }
             _ => (),
         }

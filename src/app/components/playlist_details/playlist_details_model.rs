@@ -4,10 +4,12 @@ use std::ops::Deref;
 use std::rc::Rc;
 
 use crate::api::SpotifyApiError;
+use crate::app::components::SimpleHeaderBarModel;
 use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::*;
 use crate::app::state::SelectionContext;
 use crate::app::state::{BrowserAction, PlaybackAction, SelectionAction, SelectionState};
+use crate::app::AppEvent;
 use crate::app::{ActionDispatcher, AppAction, AppModel, BatchQuery, SongsSource};
 
 pub struct PlaylistDetailsModel {

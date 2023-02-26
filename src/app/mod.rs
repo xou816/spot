@@ -1,6 +1,4 @@
 use crate::api::CachedSpotifyClient;
-use crate::app::components::sidebar_listbox::{build_sidebar_listbox, SideBarItem};
-use crate::glib::StaticType;
 use crate::settings::SpotSettings;
 use futures::channel::mpsc::UnboundedSender;
 use std::rc::Rc;

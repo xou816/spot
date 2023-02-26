@@ -55,25 +55,27 @@ mod imp {
     }
 
     impl ObjectImpl for DeviceSelectorWidget {
-        fn constructed(&self, obj: &Self::Type) {
-            self.parent_constructed(obj);
+        fn constructed(&self) {
+            self.parent_constructed();
 
-            let popover: &gtk::PopoverMenu = &*self.popover;
+            let popover: &gtk::PopoverMenu = &self.popover;
             popover.set_menu_model(Some(&*self.menu));
             popover.add_child(&*self.custom_content, "custom_content");
-            popover.set_parent(obj);
+            popover.set_parent(&*self.obj());
             popover.set_autohide(true);
 
             let this_device = &*self.this_device_button;
             this_device.set_action_name(Some(&format!("{}.{}", ACTIONS, CONNECT_ACTION)));
             this_device.set_action_target_value(Some(&Option::<String>::None.to_variant()));
 
-            obj.insert_action_group(ACTIONS, Some(&self.action_group));
-            obj.connect_clicked(clone!(@weak popover => move |_| {
-                popover.show();
-                popover.present();
-                popover.grab_focus();
-            }));
+            self.obj()
+                .insert_action_group(ACTIONS, Some(&self.action_group));
+            self.obj()
+                .connect_clicked(clone!(@weak popover => move |_| {
+                    popover.show();
+                    popover.present();
+                    popover.grab_focus();
+                }));
         }
     }
 
@@ -86,19 +88,15 @@ glib::wrapper! {
 }
 
 impl DeviceSelectorWidget {
-    fn widget(&self) -> &imp::DeviceSelectorWidget {
-        imp::DeviceSelectorWidget::from_instance(self)
-    }
-
     fn action(&self, name: &str) -> Option<Action> {
-        self.widget().action_group.lookup_action(name)
+        self.imp().action_group.lookup_action(name)
     }
 
     pub fn connect_refresh<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        self.widget().action_group.add_action(&{
+        self.imp().action_group.add_action(&{
             let refresh = SimpleAction::new(REFRESH_ACTION, None);
             refresh.connect_activate(move |_, _| f());
             refresh
@@ -109,11 +107,11 @@ impl DeviceSelectorWidget {
     where
         F: Fn(Option<String>) + 'static,
     {
-        self.widget().action_group.add_action(&{
+        self.imp().action_group.add_action(&{
             let connect = SimpleAction::new_stateful(
                 CONNECT_ACTION,
                 Some(Option::<String>::static_variant_type().as_ref()),
-                &Option::<String>::None.to_variant(),
+                Option::<String>::None.to_variant(),
             );
             connect.connect_activate(move |action, device_id| {
                 if let Some(device_id) = device_id {
@@ -146,12 +144,12 @@ impl DeviceSelectorWidget {
                 ConnectDeviceKind::Other => "audio-x-generic-symbolic",
             },
         };
-        self.widget().button_content.set_label(&label);
-        self.widget().button_content.set_icon_name(icon);
+        self.imp().button_content.set_label(&label);
+        self.imp().button_content.set_icon_name(icon);
     }
 
     pub fn update_devices_list(&self, devices: &[ConnectDevice]) {
-        let widget = self.widget();
+        let widget = self.imp();
         widget.this_device_button.set_sensitive(!devices.is_empty());
         widget.popover.unparent();
 

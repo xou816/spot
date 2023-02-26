@@ -47,8 +47,8 @@ mod imp {
     }
 
     impl ObjectImpl for NowPlayingWidget {
-        fn constructed(&self, obj: &Self::Type) {
-            self.parent_constructed(obj);
+        fn constructed(&self) {
+            self.parent_constructed();
         }
     }
 
@@ -76,10 +76,6 @@ impl NowPlayingWidget {
                     f()
                 }
             });
-    }
-
-    fn widget(&self) -> &imp::NowPlayingWidget {
-        imp::NowPlayingWidget::from_instance(self)
     }
 
     fn song_list_widget(&self) -> &gtk::ListView {

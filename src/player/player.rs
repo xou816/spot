@@ -86,89 +86,81 @@ impl Default for SpotifyPlayerSettings {
 }
 
 pub struct SpotifyPlayer {
-    api: Arc<dyn SpotifyApiClient + Send + Sync>,
     settings: SpotifyPlayerSettings,
     player: Option<Player>,
     mixer: Option<Box<dyn Mixer>>,
     session: Option<Session>,
     delegate: Rc<dyn SpotifyPlayerDelegate>,
-    device: Device,
 }
 
 impl SpotifyPlayer {
-    pub fn new(
-        api: Arc<dyn SpotifyApiClient + Send + Sync>,
-        settings: SpotifyPlayerSettings,
-        delegate: Rc<dyn SpotifyPlayerDelegate>,
-    ) -> Self {
+    pub fn new(settings: SpotifyPlayerSettings, delegate: Rc<dyn SpotifyPlayerDelegate>) -> Self {
         Self {
-            api,
             settings,
             mixer: None,
             player: None,
             session: None,
             delegate,
-            device: Device::Local,
         }
     }
 
     async fn handle(&mut self, action: Command) -> Result<(), SpotifyError> {
-        match (self.device, action) {
-            (Device::Local, Command::PlayerSetVolume(volume)) => {
+        match action {
+            Command::PlayerSetVolume(volume) => {
                 if let Some(mixer) = self.mixer.as_mut() {
                     mixer.set_volume((VolumeCtrl::MAX_VOLUME as f64 * volume) as u16);
                 }
                 Ok(())
             }
-            (Device::Local, Command::PlayerResume)) => {
+            Command::PlayerResume => {
                 self.player
                     .as_ref()
                     .ok_or(SpotifyError::PlayerNotReady)?
                     .play();
                 Ok(())
             }
-            (Device::Local, Command::PlayerPause)) => {
+            Command::PlayerPause => {
                 self.player
                     .as_ref()
                     .ok_or(SpotifyError::PlayerNotReady)?
                     .pause();
                 Ok(())
             }
-            (Device::Local, Command::PlayerStop)) => {
+            Command::PlayerStop => {
                 self.player
                     .as_ref()
                     .ok_or(SpotifyError::PlayerNotReady)?
                     .stop();
                 Ok(())
             }
-            (Device::Local, Command::PlayerSeek(position)) => {
+            Command::PlayerSeek(position) => {
                 self.player
                     .as_ref()
                     .ok_or(SpotifyError::PlayerNotReady)?
                     .seek(position);
                 Ok(())
             }
-            (Device::Local, Command::PlayerLoad { track, resume }) => {
+            Command::PlayerLoad { track, resume } => {
                 self.player
                     .as_mut()
                     .ok_or(SpotifyError::PlayerNotReady)?
                     .load(track, resume, 0);
                 Ok(())
             }
-            (Device::Local, Command::PlayerPreload(track)) => {
+            Command::PlayerPreload(track) => {
                 self.player
                     .as_mut()
                     .ok_or(SpotifyError::PlayerNotReady)?
                     .preload(track);
                 Ok(())
             }
-            (_, Command::RefreshToken) => {
+            Command::RefreshToken => {
                 let session = self.session.as_ref().ok_or(SpotifyError::PlayerNotReady)?;
                 let (token, token_expiry_time) = get_access_token_and_expiry_time(session).await?;
                 self.delegate.refresh_successful(token, token_expiry_time);
                 Ok(())
             }
-            (_, Command::Logout) => {
+            Command::Logout => {
                 self.session
                     .take()
                     .ok_or(SpotifyError::PlayerNotReady)?

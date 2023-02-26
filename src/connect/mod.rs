@@ -29,7 +29,7 @@ async fn connect_server(
     });
 
     receiver
-        .for_each(|command| player.handle_command(command))
+        .for_each(|command| async { player.handle_command(command).await.unwrap() })
         .await;
 }
 
