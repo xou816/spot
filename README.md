@@ -97,7 +97,7 @@ Open the project in GNOME Builder and make the `dev.alextren.Spot.development.js
 
 ### Manually
 
-Requires Rust (stable), **GTK4**, and a couple other things. Also requires **libadwaita**: it is not packaged on all distros at the moment, you might have to build it yourself!
+Requires Rust (stable), **GTK4**, and a couple other things. Also requires **libadwaita** and **blueprint-compiler**: they are not packaged on all distros at the moment, you might have to build them yourself!
 
 With meson:
 
