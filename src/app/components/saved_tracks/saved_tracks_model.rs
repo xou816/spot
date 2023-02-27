@@ -29,12 +29,11 @@ impl SavedTracksModel {
             batch: Batch::first_of_size(50),
         };
         self.dispatcher.dispatch_async(Box::pin(async move {
-            let action = loader
+            loader
                 .query(query, |song_batch| {
                     BrowserAction::SetSavedTracks(Box::new(song_batch)).into()
                 })
-                .await;
-            Some(action)
+                .await
         }));
     }
 
@@ -46,12 +45,11 @@ impl SavedTracksModel {
             batch: last_batch,
         };
         self.dispatcher.dispatch_async(Box::pin(async move {
-            let action = loader
+            loader
                 .query(query, |song_batch| {
                     BrowserAction::AppendSavedTracks(Box::new(song_batch)).into()
                 })
-                .await;
-            Some(action)
+                .await
         }));
         Some(())
     }

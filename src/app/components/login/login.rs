@@ -3,7 +3,7 @@ use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use std::rc::Rc;
 
-use crate::app::components::{display_add_css_provider, EventListener};
+use crate::app::components::EventListener;
 use crate::app::credentials::Credentials;
 use crate::app::state::{LoginCompletedEvent, LoginEvent};
 use crate::app::AppEvent;
@@ -19,13 +19,10 @@ mod imp {
     #[template(resource = "/dev/alextren/Spot/components/login.ui")]
     pub struct LoginWindow {
         #[template_child]
-        pub username: TemplateChild<gtk::Entry>,
+        pub username: TemplateChild<libadwaita::EntryRow>,
 
         #[template_child]
-        pub password: TemplateChild<gtk::PasswordEntry>,
-
-        #[template_child]
-        pub close_button: TemplateChild<gtk::Button>,
+        pub password: TemplateChild<libadwaita::PasswordEntryRow>,
 
         #[template_child]
         pub login_button: TemplateChild<gtk::Button>,
@@ -68,8 +65,10 @@ impl LoginWindow {
     where
         F: Fn() + 'static,
     {
-        self.imp().close_button.connect_clicked(move |_| {
+        let window = self.upcast_ref::<libadwaita::Window>();
+        window.connect_close_request(move |_| {
             on_close();
+            gtk::Inhibit(false)
         });
     }
 
@@ -100,7 +99,15 @@ impl LoginWindow {
     }
 
     fn show_auth_error(&self, shown: bool) {
+        let error_class = "error";
         let widget = self.imp();
+        if shown {
+            widget.username.add_css_class(error_class);
+            widget.password.add_css_class(error_class);
+        } else {
+            widget.username.remove_css_class(error_class);
+            widget.password.remove_css_class(error_class);
+        }
         widget.auth_error_container.set_reveal_child(shown);
     }
 
@@ -133,7 +140,6 @@ pub struct Login {
 
 impl Login {
     pub fn new(parent: gtk::Window, model: LoginModel) -> Self {
-        display_add_css_provider(resource!("/components/login.css"));
         let model = Rc::new(model);
 
         let login_window = LoginWindow::new();

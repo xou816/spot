@@ -71,12 +71,11 @@ impl PlaylistDetailsModel {
         let loader = self.app_model.get_batch_loader();
 
         self.dispatcher.dispatch_async(Box::pin(async move {
-            let action = loader
+            loader
                 .query(next_query, |song_batch| {
                     BrowserAction::AppendPlaylistTracks(id, Box::new(song_batch)).into()
                 })
-                .await;
-            Some(action)
+                .await
         }));
 
         Some(())

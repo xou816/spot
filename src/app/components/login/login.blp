@@ -1,139 +1,97 @@
 using Gtk 4.0;
 using Adw 1;
 
+
 template LoginWindow : Adw.Window {
   default-width: 360;
   default-height: 100;
 
-  WindowHandle {
-    Box {
-      margin-start: 4;
-      margin-end: 4;
-      margin-top: 4;
-      margin-bottom: 4;
-      orientation: vertical;
+  Box {
+    hexpand: true;
+    margin-bottom: 24;
+    orientation: vertical;
 
-      Button close_button {
-        valign: center;
-        receives-default: true;
-        halign: end;
-        has-frame: false;
-        width-request: 22;
-        height-request: 22;
-        icon-name: "window-close-symbolic";
+    Adw.HeaderBar {
+      [title]
+      Label {}
+      
+      styles ["flat"]
+    }
 
-        styles [
-          "circular",
-        ]
-      }
+    WindowHandle {
 
       Adw.Clamp {
-        maximum-size: 280;
+        maximum-size: 360;
         tightening-threshold: 280;
 
         Box {
-          valign: center;
-          vexpand: true;
+          hexpand: true;
           orientation: vertical;
-          spacing: 20;
-          margin-bottom: 20;
           margin-start: 16;
           margin-end: 16;
-
-          Label {
-            halign: start;
-            valign: start;
-
-            /* Translators: Login window title -- shouldn't be too long, but must mention Premium (a premium account is required). */
-
-            label: _("Login to Spotify Premium");
-            wrap: true;
-            xalign: 0;
-            yalign: 0;
-
-            styles [
-              "title-login",
-            ]
+          spacing: 24;
+          
+          Image {
+            icon-name: "dev.alextren.Spot";
+            pixel-size: 128;
+            margin-bottom: 20;
           }
-
-          Box {
+            
+          Box{
+            hexpand: true;
             orientation: vertical;
             spacing: 4;
 
-            Box {
-              orientation: horizontal;
-              spacing: 4;
-
-              Image username-icon {
-                icon-name: "avatar-default-symbolic";
-              }
-
-              Entry username {
-                hexpand: true;
-
-                /* Translators: Placeholder for the username field */
-
-                placeholder-text: _("Username");
-              }
+            Label {
+              label: _("Welcome to Spot");
+              halign: center;
+              styles ["title-1"]
             }
-
-            Box {
-              orientation: horizontal;
-              spacing: 4;
-
-              Image password-icon {
-                icon-name: "dialog-password-symbolic";
-              }
-
-              PasswordEntry password {
-                hexpand: true;
-                show-peek-icon: true;
-
-                /* Translators: Placeholder for the password field */
-
-                placeholder-text: _("Password");
-              }
+          
+            Label {
+              /* Translators: Login window title, must mention Premium (a premium account is required). */
+              label: _("Login with your Spotify Account. A Spotify Premium subscription is required to use Spot.");
+              wrap: true;
+              wrap-mode: word;
+              halign: center;
+              styles ["body"]
             }
           }
+          
+          ListBox {
+            styles ["boxed-list"]
+            
+              Adw.EntryRow username {
+                /* Translators: Placeholder for the username field */
+                title: _("Username");
+              }
+              
+              Adw.PasswordEntryRow password {
+                /* Translators: Placeholder for the password field */
+                title: _("Password");
+              }
+          }     
 
           Revealer auth_error_container {
             vexpand: true;
             transition-type: slide_up;
-            Box {
-              spacing: 8;
 
-              Image {
-                halign: center;
-                valign: start;
-                margin-top: 2;
-                vexpand: true;
-                icon-name: "dialog-warning-symbolic";
-              }
-
-              Label {
-                /* Translators: This error is shown when authentication fails. */
-
-                label: _("Authentication failed!");
-                wrap: true;
-                xalign: 0;
-                yalign: 0;
-
-                styles [
-                  "auth-error",
-                ]
-              }
+            Label {
+              /* Translators: This error is shown when authentication fails. */
+              label: _("Incorrect login credentials.");
+              halign: center;
+              justify: center;
+              wrap: true;
+              wrap-mode: word;
+              styles ["error"]
             }
           }
-
+            
           Button login_button {
             /* Translators: Log in button label */
-
             label: _("Log in");
-            receives-default: true;
-
-            styles [
-              "suggested-action",
-            ]
+            halign: center;
+            styles ["pill", "suggested-action"]
           }
         }
       }
