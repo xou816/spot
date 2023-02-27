@@ -30,7 +30,7 @@
     <ul>
       <li>playback control (play/pause, prev/next, seeking)</li>
       <li>play queue with shuffle option</li>
-      <li>selection mode: easily browse and select mutliple tracks to queue them</li>
+      <li>selection mode: easily browse and select multiple tracks to queue them</li>
       <li>browse your saved albums and playlists</li>
       <li>search albums and artists</li>
       <li>view an artist's releases</li>
@@ -270,7 +270,7 @@
           New feature: the main window can now be closed without stopping playback. Use Quit or Ctrl+Q to exit the app.
         </p>
         <p>
-          This release fixes numerous issues, including: main window being too large and too tall for phones, startup crash for playlist without images, "About" dialog not closing in qtile, keyboard navigation being broken in the login dialog. Special thanks to Douile for contributing fixes for many of these isssues!
+          This release fixes numerous issues, including: main window being too large and too tall for phones, startup crash for playlist without images, "About" dialog not closing in qtile, keyboard navigation being broken in the login dialog. Special thanks to Douile for contributing fixes for many of these issues!
         </p>
       </description>
     </release>
