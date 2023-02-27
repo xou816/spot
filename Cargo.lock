@@ -1117,9 +1117,9 @@ checksum = "221996f774192f0f718773def8201c4ae31f02616a54ccfc2d358bb0e5cefdec"
 
 [[package]]
 name = "gio"
-version = "0.17.0"
+version = "0.17.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1981edf8679d2f2c8ec3120015867f45aa0a1c2d5e3e129ca2f7dda174d3d2a9"
+checksum = "65acfc24267314eee46f49e0a531e08fd6c3025040d1cfb4a7cd8e41c5e06116"
 dependencies = [
  "bitflags",
  "futures-channel",
