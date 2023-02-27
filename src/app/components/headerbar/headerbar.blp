@@ -1,0 +1,67 @@
+using Gtk 4.0;
+using Adw 1;
+
+template HeaderBarWidget : Adw.Bin {
+  [root]
+  Overlay overlay {
+    hexpand: true;
+
+    Adw.HeaderBar main_header {
+      show-end-title-buttons: true;
+
+      Button go_back {
+        receives-default: true;
+        halign: start;
+        valign: center;
+        icon-name: "go-previous-symbolic";
+        has-frame: false;
+      }
+
+      [title]
+      Adw.WindowTitle title {
+        visible: true;
+        title: "Spot";
+      }
+
+      [end]
+      Button start_selection {
+        icon-name: "object-select-symbolic";
+      }
+    }
+
+    [overlay]
+    Adw.HeaderBar selection_header {
+      show-end-title-buttons: false;
+      show-start-title-buttons: false;
+      visible: false;
+
+      styles [
+        "selection-mode",
+      ]
+
+      Button cancel {
+        receives-default: true;
+        halign: start;
+        valign: center;
+
+        /* Translators: Button label. Exits selection mode. */
+
+        label: _("Cancel");
+      }
+
+      [title]
+      Adw.WindowTitle selection_title {
+        title: "";
+      }
+
+      [end]
+      Button select_all {
+        valign: center;
+
+        /* Translators: Button label. Selects all visible songs. */
+
+        label: _("Select all");
+      }
+    }
+  }
+}

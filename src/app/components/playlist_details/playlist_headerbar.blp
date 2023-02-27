@@ -1,0 +1,77 @@
+using Gtk 4.0;
+using Adw 1;
+
+template PlaylistHeaderBarWidget : Adw.Bin {
+  [root]
+  Overlay overlay {
+    hexpand: true;
+
+    Adw.HeaderBar main_header {
+      show-end-title-buttons: true;
+
+      Button go_back {
+        receives-default: true;
+        halign: start;
+        valign: center;
+        icon-name: "go-previous-symbolic";
+        has-frame: false;
+      }
+
+      [title]
+      Adw.WindowTitle title {
+        visible: false;
+        title: "Spot";
+      }
+
+      [end]
+      Button edit {
+        icon-name: "document-edit-symbolic";
+      }
+
+      styles [
+        "playlist_details__headerbar",
+      ]
+    }
+
+    [overlay]
+    Adw.HeaderBar edition_header {
+      show-end-title-buttons: false;
+      show-start-title-buttons: false;
+      visible: false;
+
+      styles [
+        "selection-mode",
+      ]
+
+      Button cancel {
+        receives-default: true;
+        halign: start;
+        valign: center;
+
+        /* Translators: Exit playlist edition */
+
+        label: _("Cancel");
+      }
+
+      [title]
+      Separator {
+        styles [
+          "spacer",
+        ]
+      }
+
+      [end]
+      Button ok {
+        valign: center;
+
+        /* Translators: Finish playlist edition */
+
+        label: _("Done");
+
+        styles [
+          "suggested-action",
+        ]
+      }
+    }
+  }
+}

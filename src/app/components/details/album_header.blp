@@ -1,0 +1,110 @@
+using Gtk 4.0;
+
+template AlbumHeaderWidget : Box {
+  valign: start;
+  vexpand: false;
+  margin-start: 6;
+  margin-end: 6;
+  margin-bottom: 6;
+
+  Overlay {
+    overflow: hidden;
+    halign: center;
+
+    Image album_art {
+      width-request: 160;
+      height-request: 160;
+      icon-name: "emblem-music-symbolic";
+    }
+
+    [overlay]
+    Button info_button {
+      icon-name: "preferences-system-details-symbolic";
+      halign: end;
+      valign: end;
+      margin-start: 6;
+      margin-end: 6;
+      margin-top: 6;
+      margin-bottom: 6;
+      tooltip-text: "Album Info";
+
+      styles [
+        "circular",
+        "osd",
+      ]
+    }
+
+    styles [
+      "card",
+    ]
+  }
+
+  Box album_info {
+    hexpand: true;
+    valign: center;
+    orientation: vertical;
+    spacing: 6;
+
+    Label album_label {
+      xalign: 0;
+      halign: start;
+      label: "Album";
+      wrap: true;
+      ellipsize: end;
+      max-width-chars: 50;
+      lines: 4;
+
+      styles [
+        "title-1",
+      ]
+    }
+
+    LinkButton artist_button {
+      receives-default: true;
+      halign: start;
+      valign: center;
+      has-frame: false;
+
+      Label artist_button_label {
+        hexpand: true;
+        vexpand: true;
+        label: "Artist";
+        ellipsize: middle;
+      }
+
+      styles [
+        "title-4",
+      ]
+    }
+
+    Label year_label {
+      xalign: 0;
+      halign: start;
+      label: "Year";
+      ellipsize: end;
+      max-width-chars: 50;
+      lines: 1;
+      sensitive: false;
+
+      styles [
+        "body",
+      ]
+    }
+  }
+
+  Button like_button {
+    receives-default: true;
+    halign: center;
+    valign: center;
+    tooltip-text: "Add to Library";
+
+    styles [
+      "circular",
+      "like__button",
+    ]
+  }
+
+  styles [
+    "album__header",
+  ]
+}

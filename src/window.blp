@@ -1,0 +1,134 @@
+using Gtk 4.0;
+using Adw 1;
+
+Adw.ApplicationWindow window {
+  default-width: 1080;
+  default-height: 720;
+
+  Box {
+    orientation: vertical;
+
+    ShortcutController {
+      scope: local;
+
+      Shortcut {
+        trigger: "space";
+        action: "action(app.toggle_playback)";
+      }
+
+      Shortcut {
+        trigger: "<Ctrl>Q";
+        action: "action(app.quit)";
+      }
+
+      Shortcut {
+        trigger: "P";
+        action: "action(app.player_prev)";
+      }
+
+      Shortcut {
+        trigger: "N";
+        action: "action(app.player_next)";
+      }
+
+      Shortcut {
+        trigger: "<Alt>Left";
+        action: "action(app.nav_pop)";
+      }
+
+      Shortcut {
+        trigger: "<Ctrl>F";
+        action: "action(app.search)";
+      }
+    }
+
+    Adw.Leaflet leaflet {
+      vexpand: true;
+
+      Adw.LeafletPage {
+        navigatable: false;
+        child: Box {
+          orientation: vertical;
+
+          Adw.HeaderBar {
+            show-end-title-buttons: bind leaflet.folded;
+
+            Button search_button {
+              icon-name: "system-search-symbolic";
+            }
+
+            [title]
+            Adw.WindowTitle {
+              title: "Spot";
+            }
+
+            [end]
+            MenuButton user {
+              icon-name: "open-menu-symbolic";
+            }
+          }
+
+          ScrolledWindow {
+            hscrollbar-policy: never;
+            ListBox home_listbox {
+              width-request: 200;
+              vexpand: true;
+
+              styles [
+                "navigation-sidebar",
+              ]
+            }
+          }
+        };
+      }
+
+      Adw.LeafletPage {
+        navigatable: false;
+        child: Separator {
+          orientation: vertical;
+        };
+      }
+
+      Adw.LeafletPage {
+        name: "main";
+        child: Box {
+          orientation: vertical;
+
+          Adw.ToastOverlay main {
+            hexpand: true;
+            vexpand: true;
+
+            Stack navigation_stack {
+              transition-type: slide_left_right;
+            }
+          }
+
+          Overlay {
+            hexpand: true;
+
+            .PlaybackWidget playback {
+              hexpand: "1";
+            }
+
+            [overlay]
+            .SelectionToolbarWidget selection_toolbar {
+              hexpand: "1";
+            }
+          }
+        };
+      }
+
+      visible-child: main;
+    }
+  }
+}
+
+AboutDialog about {
+  modal: true;
+  destroy-with-parent: true;
+  transient-for: window;
+  program-name: "Spot";
+  website: "https://github.com/xou816/spot";
+  logo-icon-name: "dev.alextren.Spot";
+  license-type: mit_x11;
+}

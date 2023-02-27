@@ -1,0 +1,20 @@
+using Gtk 4.0;
+
+template ScrollingHeaderWidget : Box {
+  orientation: vertical;
+  vexpand: true;
+  hexpand: true;
+
+  [internal]
+  Revealer revealer {
+    transition-type: slide_up;
+  }
+
+  [internal]
+  ScrolledWindow scrolled_window {
+    hscrollbar-policy: never;
+    propagate-natural-width: true;
+    hexpand: true;
+    vexpand: true;
+  }
+}

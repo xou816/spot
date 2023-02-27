@@ -1,0 +1,44 @@
+using Gtk 4.0;
+
+template UserDetailsWidget : Box {
+  ScrolledWindow scrolled_window {
+    hscrollbar-policy: never;
+    hexpand: true;
+    vexpand: true;
+    Box {
+      margin-start: 8;
+      margin-end: 8;
+      margin-top: 8;
+      margin-bottom: 8;
+      orientation: vertical;
+      spacing: 10;
+
+      Label user_name {
+        halign: start;
+        margin-start: 8;
+        margin-end: 8;
+        label: "User";
+        wrap: true;
+        xalign: 0;
+
+        styles [
+          "user_details--name",
+          "large-title",
+        ]
+      }
+
+      FlowBox user_playlists {
+        height-request: 100;
+        valign: start;
+        hexpand: true;
+        min-children-per-line: 1;
+        selection-mode: none;
+        activate-on-single-click: false;
+      }
+    }
+  }
+
+  styles [
+    "user",
+  ]
+}

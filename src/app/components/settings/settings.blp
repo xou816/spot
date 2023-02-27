@@ -1,0 +1,108 @@
+using Gtk 4.0;
+using Adw 1;
+
+template SettingsWindow : Adw.PreferencesWindow {
+  default-width: 600;
+  hide-on-close: true;
+  search-enabled: false;
+
+  Adw.PreferencesPage {
+    Adw.PreferencesGroup {
+      /* Translators: Header for a group of preference items regarding audio */
+
+      title: _("Audio");
+
+      Adw.ComboRow audio_backend {
+        /* Translators: Title for an item in preferences */
+
+        title: _("Audio Backend");
+        model: StringList {
+          strings [
+            "PulseAudio",
+            "ALSA"
+          ]
+        };
+      }
+
+      Adw.ActionRow alsa_device_row {
+        /* Translators: Title for an item in preferences */
+
+        title: _("ALSA Device");
+
+        /* Translators: Description for the item (ALSA Device) in preferences */
+
+        subtitle: _("Applied only if audio backend is ALSA");
+
+        Entry alsa_device {
+          valign: center;
+        }
+      }
+
+      Adw.ComboRow player_bitrate {
+        /* Translators: Title for an item in preferences */
+
+        title: _("Audio Quality");
+        model: StringList {
+          strings [
+            _("Normal"),
+            _("High"),
+            _("Very high"),
+          ]
+        };
+      }
+
+      Adw.ActionRow gapless_playback {
+        /* Translators: Title for an item in preferences */
+
+        title: _("Gapless playback");
+        name: "gapless_playback_row";
+        activatable-widget: gapless_playback_switch;
+        visible: true;
+
+        Switch gapless_playback_switch {
+          margin-top: 12;
+          margin-bottom: 12;
+        }
+      }
+    }
+
+    Adw.PreferencesGroup {
+      /* Translators: Header for a group of preference items regarding the application's appearance */
+
+      title: _("Appearance");
+
+      Adw.ComboRow theme {
+        /* Translators: Title for an item in preferences */
+
+        title: _("Theme");
+        model: StringList {
+          strings [
+            _("Light"),
+            _("Dark"),
+            _("System")
+          ]
+        };
+      }
+    }
+
+    Adw.PreferencesGroup {
+      /* Translators: Header for a group of preference items regarding network */
+
+      title: _("Network");
+
+      Adw.ActionRow {
+        /* Translators: Title for an item in preferences */
+
+        title: _("Access Point Port");
+
+        /* Translators: Longer description for an item (Access Point Port) in preferences */
+
+        subtitle: _("Port used for connections to Spotify\'s Access Point. Set to 0 if any port is fine.");
+
+        Entry ap_port {
+          valign: center;
+        }
+      }
+    }
+  }
+}

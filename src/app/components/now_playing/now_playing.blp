@@ -1,0 +1,15 @@
+using Gtk 4.0;
+using Adw 1;
+
+template NowPlayingWidget : Adw.Bin {
+  ScrolledWindow scrolled_window {
+    vexpand: true;
+
+    Adw.ClampScrollable {
+      maximum-size: 900;
+
+      ListView song_list {
+      }
+    }
+  }
+}

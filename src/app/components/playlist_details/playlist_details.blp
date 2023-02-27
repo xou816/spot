@@ -1,0 +1,52 @@
+using Gtk 4.0;
+using Adw 1;
+
+template PlaylistDetailsWidget : Adw.Bin {
+  Box {
+    orientation: vertical;
+    vexpand: true;
+    hexpand: true;
+
+    .PlaylistHeaderBarWidget headerbar {
+    }
+
+    .ScrollingHeaderWidget scrolling_header {
+      [header]
+      WindowHandle {
+        Adw.Clamp {
+          maximum-size: 900;
+
+          Adw.Squeezer {
+            valign: center;
+            homogeneous: false;
+            transition-type: crossfade;
+            switch-threshold-policy: natural;
+
+            .PlaylistHeaderWidget header_widget {
+            }
+
+            .PlaylistHeaderWidget header_mobile {
+              orientation: "vertical";
+              spacing: "12";
+            }
+          }
+
+          styles [
+            "playlist_details__clamp",
+          ]
+        }
+      }
+
+      Adw.ClampScrollable {
+        maximum-size: 900;
+
+        ListView tracks {
+        }
+      }
+
+      styles [
+        "container",
+      ]
+    }
+  }
+}
