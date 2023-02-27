@@ -4,12 +4,10 @@ use std::ops::Deref;
 use std::rc::Rc;
 
 use crate::api::SpotifyApiError;
-use crate::app::components::SimpleHeaderBarModel;
 use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::*;
 use crate::app::state::SelectionContext;
 use crate::app::state::{BrowserAction, PlaybackAction, SelectionAction, SelectionState};
-use crate::app::AppEvent;
 use crate::app::{ActionDispatcher, AppAction, AppModel, BatchQuery, SongsSource};
 
 pub struct PlaylistDetailsModel {
@@ -193,37 +191,16 @@ impl PlaylistModel for PlaylistDetailsModel {
     }
 
     fn enable_selection(&self) -> bool {
-        self.dispatcher.dispatch(AppAction::EnableSelection(
-            self.selection_context().unwrap(),
-        ));
+        self.dispatcher
+            .dispatch(AppAction::EnableSelection(if self.is_playlist_editable() {
+                SelectionContext::EditablePlaylist(self.id.clone())
+            } else {
+                SelectionContext::Playlist
+            }));
         true
     }
 
     fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
         Some(Box::new(self.app_model.map_state(|s| &s.selection)))
-    }
-}
-
-impl SimpleHeaderBarModel for PlaylistDetailsModel {
-    fn title(&self) -> Option<String> {
-        None
-    }
-
-    fn title_updated(&self, _: &AppEvent) -> bool {
-        false
-    }
-
-    fn selection_context(&self) -> Option<SelectionContext> {
-        Some(if self.is_playlist_editable() {
-            SelectionContext::EditablePlaylist(self.id.clone())
-        } else {
-            SelectionContext::Playlist
-        })
-    }
-
-    fn select_all(&self) {
-        let songs: Vec<SongDescription> = self.song_list_model().collect();
-        self.dispatcher
-            .dispatch(SelectionAction::Select(songs).into());
     }
 }
