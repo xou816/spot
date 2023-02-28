@@ -1,7 +1,7 @@
 use gettextrs::gettext;
 use std::sync::Arc;
 
-use crate::api::SpotifyApiClient;
+use crate::api::{SpotifyApiClient, SpotifyApiError};
 use crate::app::models::*;
 use crate::app::AppAction;
 
@@ -55,7 +55,7 @@ impl BatchLoader {
         &self,
         query: BatchQuery,
         create_action: ActionCreator,
-    ) -> AppAction
+    ) -> Option<AppAction>
     where
         ActionCreator: FnOnce(SongBatch) -> AppAction,
     {
@@ -83,13 +83,14 @@ impl BatchLoader {
         };
 
         match result {
-            Ok(batch) => create_action(batch),
+            Ok(batch) => Some(create_action(batch)),
+            Err(SpotifyApiError::NoToken) => None,
             Err(err) => {
                 error!("Spotify API error: {}", err);
-                AppAction::ShowNotification(gettext(
+                Some(AppAction::ShowNotification(gettext(
                     // translators: This notification is the default message for unhandled errors. Logs refer to console output.
                     "An error occured. Check logs for details!",
-                ))
+                )))
             }
         }
     }

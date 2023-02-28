@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-27 08:26-0500\n"
+"POT-Creation-Date: 2023-02-27 09:46-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/batch_loader.rs:91 src/app/components/mod.rs:129
+#: src/app/batch_loader.rs:92 src/app/components/mod.rs:129
 msgid "An error occured. Check logs for details!"
 msgstr ""
 
@@ -100,7 +100,7 @@ msgid "View"
 msgstr ""
 
 #. translators: This is a sidebar entry to browse to saved playlists.
-#: src/app/components/now_playing/now_playing_model.rs:134
+#: src/app/components/now_playing/now_playing_model.rs:133
 #: src/app/components/sidebar/sidebar_item.rs:43
 msgid "Now playing"
 msgstr ""
@@ -316,28 +316,34 @@ msgstr ""
 msgid "Copyright"
 msgstr ""
 
-#. Translators: Login window title -- shouldn't be too long, but must mention Premium (a premium account is required).
-#: src/app/components/login/login.blp:49
-msgid "Login to Spotify Premium"
+#: src/app/components/login/login.blp:46
+msgid "Welcome to Spot"
+msgstr ""
+
+#. Translators: Login window title, must mention Premium (a premium account is required).
+#: src/app/components/login/login.blp:53
+msgid ""
+"Login with your Spotify Account. A Spotify Premium subscription is required "
+"to use Spot."
 msgstr ""
 
 #. Translators: Placeholder for the username field
-#: src/app/components/login/login.blp:76
+#: src/app/components/login/login.blp:66
 msgid "Username"
 msgstr ""
 
 #. Translators: Placeholder for the password field
-#: src/app/components/login/login.blp:94
+#: src/app/components/login/login.blp:71
 msgid "Password"
 msgstr ""
 
 #. Translators: This error is shown when authentication fails.
-#: src/app/components/login/login.blp:116
-msgid "Authentication failed!"
+#: src/app/components/login/login.blp:81
+msgid "Incorrect login credentials."
 msgstr ""
 
 #. Translators: Log in button label
-#: src/app/components/login/login.blp:131
+#: src/app/components/login/login.blp:92
 msgid "Log in"
 msgstr ""
 
