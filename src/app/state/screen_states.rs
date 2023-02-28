@@ -49,7 +49,7 @@ impl DetailsState {
             id: id.clone(),
             name: ScreenName::AlbumDetails(id),
             content: None,
-            songs: SongListModel::new(100),
+            songs: SongListModel::new(50),
         }
     }
 }
