@@ -6,6 +6,7 @@
         "env": {
             "RUST_BACKTRACE": "1",
             "RUST_LOG": "spot=debug",
+            "LANG": "C",
             //"https_proxy": "localhost:8080"
         }
     },
