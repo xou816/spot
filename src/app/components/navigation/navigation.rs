@@ -135,6 +135,9 @@ impl EventListener for Navigation {
             AppEvent::BrowserEvent(BrowserEvent::NavigationPoppedTo(name)) => {
                 self.pop_to(name);
             }
+            AppEvent::BrowserEvent(BrowserEvent::HomeVisiblePageChanged(_)) => {
+                self.leaflet.navigate(NavigationDirection::Forward);
+            }
             _ => {}
         };
         for child in self.children.iter_mut() {
