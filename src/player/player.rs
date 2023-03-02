@@ -16,6 +16,7 @@ use librespot::playback::config::{AudioFormat, Bitrate, PlayerConfig, VolumeCtrl
 use librespot::playback::player::{Player, PlayerEvent, PlayerEventChannel};
 
 use std::cell::RefCell;
+use std::env;
 use std::error::Error;
 use std::fmt;
 use std::rc::Rc;
@@ -245,6 +246,7 @@ impl SpotifyPlayer {
         Player::new(player_config, session, soft_volume, move || match backend {
             AudioBackend::PulseAudio => {
                 info!("using pulseaudio");
+                env::set_var("PULSE_PROP_application.name", "Spot");
                 let backend = audio_backend::find(Some("pulseaudio".to_string())).unwrap();
                 backend(None, AudioFormat::default())
             }
