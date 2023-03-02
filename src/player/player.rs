@@ -15,8 +15,8 @@ use librespot::playback::audio_backend;
 use librespot::playback::config::{AudioFormat, Bitrate, PlayerConfig, VolumeCtrl};
 use librespot::playback::player::{Player, PlayerEvent, PlayerEventChannel};
 
-use std::env;
 use std::cell::RefCell;
+use std::env;
 use std::error::Error;
 use std::fmt;
 use std::rc::Rc;
