@@ -24,7 +24,7 @@ endif
 appstream_util = find_program('appstream-util', required: false)
 if appstream_util.found()
   test(
-    'Validate appstream appdata', 
+    'Validate appstream appdata',
     appstream_util,
     args: ['validate-relax', meson.current_source_dir() / 'dev.alextren.Spot.appdata.xml']
   )

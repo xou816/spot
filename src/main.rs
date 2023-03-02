@@ -112,9 +112,15 @@ fn setup_gtk(settings: &settings::SpotSettings) {
 }
 
 fn setup_credits(about: gtk::AboutDialog) {
-    let authors: Vec<&str> = include_str!("../AUTHORS").split('\n').collect();
-    let translators = include_str!("../TRANSLATORS");
-    let artists: Vec<&str> = include_str!("../ARTISTS").split('\n').collect();
+    let authors: Vec<&str> = include_str!("../AUTHORS")
+        .trim_end_matches('\n')
+        .split('\n')
+        .collect();
+    let translators = include_str!("../TRANSLATORS").trim_end_matches('\n');
+    let artists: Vec<&str> = include_str!("../ARTISTS")
+        .trim_end_matches('\n')
+        .split('\n')
+        .collect();
     about.set_version(Some(config::VERSION));
     about.set_authors(&authors);
     about.set_translator_credits(Some(translators));

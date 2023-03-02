@@ -15,7 +15,7 @@
 \usetikzlibrary{shapes}
 \usetikzlibrary{positioning}
 
-\tikzstyle{box}=[fill=black, solid, line width=0mm, text=white, rounded corners=2mm, font={\bfseries}, inner sep=3mm]    
+\tikzstyle{box}=[fill=black, solid, line width=0mm, text=white, rounded corners=2mm, font={\bfseries}, inner sep=3mm]
 \tikzstyle{sizedbox}=[box, text width=3cm, anchor=north, align=center]
 \tikzstyle{link}=[->, >=latex, line width=.5mm, rounded corners, shorten >=1pt]
 \tikzstyle{smalllink}=[->, >=latex, line width=.2mm, rounded corners, shorten >=1pt, dashed, gray]
@@ -31,12 +31,12 @@
 
 \paragraph{Centralized.} That state is centralized and unique. This allows various parts of the application to access any part of it, and conversely makes it easy to perform state updates that affect various and sometimes unrelated parts of the application.
 
-\paragraph{Controlled mutations.} There is only one way to modify the app state, and that is by dispatching \emph{actions} -- plain structs that represent a mutation to the state. Updates to the state produce \emph{events}, which \texttt{EventListeners} can use to update the UI. 
+\paragraph{Controlled mutations.} There is only one way to modify the app state, and that is by dispatching \emph{actions} -- plain structs that represent a mutation to the state. Updates to the state produce \emph{events}, which \texttt{EventListeners} can use to update the UI.
 
 \begin{figure}[!h]
 
     \centering
-    
+
     \begin{tikzpicture}
 
     \node[box, fill=spotifygreen, minimum height=2cm] (model) at (0, 0) {\ttfamily AppModel};
@@ -57,7 +57,7 @@
 
 This draws heavy inspiration from the Flux architecture\footnote{See https://facebook.github.io/flux/docs/in-depth-overview for instance}; the one big difference here is that there is no way to automatically find out which portion of the UI should be updated. Instead, listeners are responsible for figuring out the updates to apply based on the events.
 
-It should be noted that the app state is only readable from the main thread for simplicity. 
+It should be noted that the app state is only readable from the main thread for simplicity.
 
 \subsection{How actions are handled}
 
@@ -67,7 +67,7 @@ Here is the relevant part of the code\footnote{Variables have been renamed for c
 let events = self.model.update_state(action);
 
 for event in events.iter() {
-    for listener in self.listeners.iter_mut() { 
+    for listener in self.listeners.iter_mut() {
         listener.on_event(event);
     }
 }
@@ -81,18 +81,18 @@ Note: futures are used a lot in the code to perform asynchronous operations such
 
 \subsection{A listener: the player subsystem}
 
-Any element that wishes to update the state or react to changes from the state has to follow that same pattern. For instance, the ``player'' part of Spot receives \texttt{Commands} (mapped from events by a \texttt{PlayerNotifier}) to start playing music, and dispatches actions back the app through a \texttt{SpotifyPlayerDelegate} (see figure \ref{fig:player}). 
+Any element that wishes to update the state or react to changes from the state has to follow that same pattern. For instance, the ``player'' part of Spot receives \texttt{Commands} (mapped from events by a \texttt{PlayerNotifier}) to start playing music, and dispatches actions back the app through a \texttt{SpotifyPlayerDelegate} (see figure \ref{fig:player}).
 
 These two extra elements add some indirection so that the player is not too strongly coupled to the rest of the app (it does not and should not care about most events, afterall!). Moreover, those commands are handled in a separate thread where the player lives.
 
 \begin{figure}[!ht]
     \centering
-    
+
     \begin{tikzpicture}
 
     \node[box, fill=spotifygreen, minimum height=2cm] (model) at (0, 0) {\ttfamily AppModel};
 
-    \draw[smalllink] (-5, -3) node[sizedbox] (listeners) {Components}  
+    \draw[smalllink] (-5, -3) node[sizedbox] (listeners) {Components}
         -- +(0, -1.5) node[right] {update}
         -- +(0, -2) node[sizedbox] (ui) {Gtk widgets};
 
@@ -131,7 +131,7 @@ One major difference is that the MPRIS server maintains its own state here, sinc
 
 \subsection{Overview}
 
-Components are thin wrappers around Gtk widgets, dedicated to binding them so that they produce the right actions, and updating them when specific events occur by conforming to \texttt{EventListener}. 
+Components are thin wrappers around Gtk widgets, dedicated to binding them so that they produce the right actions, and updating them when specific events occur by conforming to \texttt{EventListener}.
 
 \subsection{Modeling interactions}
 
@@ -144,12 +144,12 @@ impl PlaybackModel {
 }
 \end{minted}
 
-What we need to make our button work is a way to know its current state (is a song playing?) and a way to change that state (toggling on activation). Note that it would be tempting to simply query the widget's state, which \emph{should} be in sync with the actual playback state, but what we should really do instead is query the app state, which is the one source of truth for anything state-related. 
+What we need to make our button work is a way to know its current state (is a song playing?) and a way to change that state (toggling on activation). Note that it would be tempting to simply query the widget's state, which \emph{should} be in sync with the actual playback state, but what we should really do instead is query the app state, which is the one source of truth for anything state-related.
 
 Why do this? First, toggling the playback might fail (e.g. if no song is playing), but more importantly something else could alter the playback state (e.g. a DBUS query).
 
 \begin{minted}{rust}
-fn is_playing(&self) -> bool { 
+fn is_playing(&self) -> bool {
     self.app_model.get_state().playback.is_playing()
 }
 \end{minted}
