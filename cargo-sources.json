@@ -1054,6 +1054,45 @@
     },
     {
         "type": "file",
+        "url": "https://static.crates.io/crates/env_logger/env_logger-0.10.0.crate",
+        "sha256": "85cdab6a89accf66733ad5a1693a4dcced6aeff64602b634530dd73c1f3ee9f0",
+        "dest": "cargo/vendor",
+        "dest-filename": "env_logger-0.10.0.crate"
+    },
+    {
+        "type": "file",
+        "url": "data:%7B%22package%22%3A%20%2285cdab6a89accf66733ad5a1693a4dcced6aeff64602b634530dd73c1f3ee9f0%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/env_logger-0.10.0",
+        "dest-filename": ".cargo-checksum.json"
+    },
+    {
+        "type": "file",
+        "url": "https://static.crates.io/crates/errno/errno-0.2.8.crate",
+        "sha256": "f639046355ee4f37944e44f60642c6f3a7efa3cf6b78c78a0d989a8ce6c396a1",
+        "dest": "cargo/vendor",
+        "dest-filename": "errno-0.2.8.crate"
+    },
+    {
+        "type": "file",
+        "url": "data:%7B%22package%22%3A%20%22f639046355ee4f37944e44f60642c6f3a7efa3cf6b78c78a0d989a8ce6c396a1%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/errno-0.2.8",
+        "dest-filename": ".cargo-checksum.json"
+    },
+    {
+        "type": "file",
+        "url": "https://static.crates.io/crates/errno-dragonfly/errno-dragonfly-0.1.2.crate",
+        "sha256": "aa68f1b12764fab894d2755d2518754e71b4fd80ecfb822714a1206c2aab39bf",
+        "dest": "cargo/vendor",
+        "dest-filename": "errno-dragonfly-0.1.2.crate"
+    },
+    {
+        "type": "file",
+        "url": "data:%7B%22package%22%3A%20%22aa68f1b12764fab894d2755d2518754e71b4fd80ecfb822714a1206c2aab39bf%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/errno-dragonfly-0.1.2",
+        "dest-filename": ".cargo-checksum.json"
+    },
+    {
+        "type": "file",
         "url": "https://static.crates.io/crates/event-listener/event-listener-2.5.3.crate",
         "sha256": "0206175f82b8d6bf6652ff7d71a1e27fd2e4efde587fd368662814d6ec1d9ce0",
         "dest": "cargo/vendor",
@@ -1665,6 +1704,19 @@
     },
     {
         "type": "file",
+        "url": "https://static.crates.io/crates/hermit-abi/hermit-abi-0.3.1.crate",
+        "sha256": "fed44880c466736ef9a5c5b5facefb5ed0785676d0c02d612db14e54f0d84286",
+        "dest": "cargo/vendor",
+        "dest-filename": "hermit-abi-0.3.1.crate"
+    },
+    {
+        "type": "file",
+        "url": "data:%7B%22package%22%3A%20%22fed44880c466736ef9a5c5b5facefb5ed0785676d0c02d612db14e54f0d84286%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/hermit-abi-0.3.1",
+        "dest-filename": ".cargo-checksum.json"
+    },
+    {
+        "type": "file",
         "url": "https://static.crates.io/crates/hex/hex-0.4.3.crate",
         "sha256": "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70",
         "dest": "cargo/vendor",
@@ -1908,6 +1960,32 @@
         "type": "file",
         "url": "data:%7B%22package%22%3A%20%227a5bbe824c507c5da5956355e86a746d82e0e1464f65d862cc5e71da70e94b2c%22%2C%20%22files%22%3A%20%7B%7D%7D",
         "dest": "cargo/vendor/instant-0.1.12",
+        "dest-filename": ".cargo-checksum.json"
+    },
+    {
+        "type": "file",
+        "url": "https://static.crates.io/crates/io-lifetimes/io-lifetimes-1.0.5.crate",
+        "sha256": "1abeb7a0dd0f8181267ff8adc397075586500b81b28a73e8a0208b00fc170fb3",
+        "dest": "cargo/vendor",
+        "dest-filename": "io-lifetimes-1.0.5.crate"
+    },
+    {
+        "type": "file",
+        "url": "data:%7B%22package%22%3A%20%221abeb7a0dd0f8181267ff8adc397075586500b81b28a73e8a0208b00fc170fb3%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/io-lifetimes-1.0.5",
+        "dest-filename": ".cargo-checksum.json"
+    },
+    {
+        "type": "file",
+        "url": "https://static.crates.io/crates/is-terminal/is-terminal-0.4.4.crate",
+        "sha256": "21b6b32576413a8e69b90e952e4a026476040d81017b80445deda5f2d3921857",
+        "dest": "cargo/vendor",
+        "dest-filename": "is-terminal-0.4.4.crate"
+    },
+    {
+        "type": "file",
+        "url": "data:%7B%22package%22%3A%20%2221b6b32576413a8e69b90e952e4a026476040d81017b80445deda5f2d3921857%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/is-terminal-0.4.4",
         "dest-filename": ".cargo-checksum.json"
     },
     {
@@ -2311,6 +2389,19 @@
         "type": "file",
         "url": "data:%7B%22package%22%3A%20%22ecd207c9c713c34f95a097a5b029ac2ce6010530c7b49d7fea24d977dede04f5%22%2C%20%22files%22%3A%20%7B%7D%7D",
         "dest": "cargo/vendor/link-cplusplus-1.0.8",
+        "dest-filename": ".cargo-checksum.json"
+    },
+    {
+        "type": "file",
+        "url": "https://static.crates.io/crates/linux-raw-sys/linux-raw-sys-0.1.4.crate",
+        "sha256": "f051f77a7c8e6957c0696eac88f26b0117e54f52d3fc682ab19397a8812846a4",
+        "dest": "cargo/vendor",
+        "dest-filename": "linux-raw-sys-0.1.4.crate"
+    },
+    {
+        "type": "file",
+        "url": "data:%7B%22package%22%3A%20%22f051f77a7c8e6957c0696eac88f26b0117e54f52d3fc682ab19397a8812846a4%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/linux-raw-sys-0.1.4",
         "dest-filename": ".cargo-checksum.json"
     },
     {
@@ -3468,6 +3559,19 @@
         "type": "file",
         "url": "data:%7B%22package%22%3A%20%22bfa0f585226d2e68097d4f95d113b15b83a82e819ab25717ec0590d9584ef366%22%2C%20%22files%22%3A%20%7B%7D%7D",
         "dest": "cargo/vendor/rustc_version-0.4.0",
+        "dest-filename": ".cargo-checksum.json"
+    },
+    {
+        "type": "file",
+        "url": "https://static.crates.io/crates/rustix/rustix-0.36.8.crate",
+        "sha256": "f43abb88211988493c1abb44a70efa56ff0ce98f233b7b276146f1f3f7ba9644",
+        "dest": "cargo/vendor",
+        "dest-filename": "rustix-0.36.8.crate"
+    },
+    {
+        "type": "file",
+        "url": "data:%7B%22package%22%3A%20%22f43abb88211988493c1abb44a70efa56ff0ce98f233b7b276146f1f3f7ba9644%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/rustix-0.36.8",
         "dest-filename": ".cargo-checksum.json"
     },
     {
