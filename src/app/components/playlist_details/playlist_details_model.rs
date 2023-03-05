@@ -123,6 +123,10 @@ impl PlaylistModel for PlaylistDetailsModel {
             .clone()
     }
 
+    fn is_paused(&self) -> bool {
+        !self.app_model.get_state().playback.is_playing()
+    }
+
     fn current_song_id(&self) -> Option<String> {
         self.app_model.get_state().playback.current_song_id()
     }

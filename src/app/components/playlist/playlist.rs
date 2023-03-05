@@ -10,6 +10,8 @@ use crate::app::state::{PlaybackEvent, SelectionEvent, SelectionState};
 use crate::app::{AppEvent, Worker};
 
 pub trait PlaylistModel {
+    fn is_paused(&self) -> bool;
+
     fn song_list_model(&self) -> SongListModel;
 
     fn current_song_id(&self) -> Option<String>;
@@ -224,6 +226,11 @@ where
             }
             AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
                 self.update_list();
+            }
+            AppEvent::PlaybackEvent(
+                PlaybackEvent::PlaybackResumed | PlaybackEvent::PlaybackPaused,
+            ) => {
+                Self::set_paused(&self.listview, self.model.is_paused());
             }
             AppEvent::SelectionEvent(SelectionEvent::SelectionModeChanged(_)) => {
                 Self::set_selection_active(&self.listview, self.model.is_selection_enabled());

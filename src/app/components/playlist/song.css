@@ -15,32 +15,94 @@
   opacity: 0;
 }
 
+
+/* playback indicator */
+
 .song--playing .song__icon {
   opacity: 1;
-  animation: playing 1.1s linear infinite;
+  animation: playing 1s linear infinite;
   color: @accent_bg_color;
   min-width: 16px;
+  -gtk-icon-source: -gtk-icontheme("playback-0-symbolic");
 }
 
 @keyframes playing {
-    0% { -gtk-icon-source: -gtk-icontheme("playback-0-symbolic"); }
-    6% { -gtk-icon-source: -gtk-icontheme("playback-1-symbolic"); }
-    12% { -gtk-icon-source: -gtk-icontheme("playback-2-symbolic"); }
-    18% { -gtk-icon-source: -gtk-icontheme("playback-3-symbolic"); }
-    24% { -gtk-icon-source: -gtk-icontheme("playback-4-symbolic"); }
-    30% { -gtk-icon-source: -gtk-icontheme("playback-5-symbolic"); }
-    36% { -gtk-icon-source: -gtk-icontheme("playback-6-symbolic"); }
-    42% { -gtk-icon-source: -gtk-icontheme("playback-7-symbolic"); }
-    49% { -gtk-icon-source: -gtk-icontheme("playback-8-symbolic"); }
-    54% { -gtk-icon-source: -gtk-icontheme("playback-9-symbolic"); }
-    60% { -gtk-icon-source: -gtk-icontheme("playback-10-symbolic"); }
-    66% { -gtk-icon-source: -gtk-icontheme("playback-11-symbolic"); }
-    72% { -gtk-icon-source: -gtk-icontheme("playback-12-symbolic"); }
-    79% { -gtk-icon-source: -gtk-icontheme("playback-13-symbolic"); }
-    85% { -gtk-icon-source: -gtk-icontheme("playback-14-symbolic"); }
-    90% { -gtk-icon-source: -gtk-icontheme("playback-15-symbolic"); }
-    96% { -gtk-icon-source: -gtk-icontheme("playback-16-symbolic"); }
-    100% { -gtk-icon-source: -gtk-icontheme("playback-0-symbolic"); }
+  0% {
+    -gtk-icon-source: -gtk-icontheme("playback-0-symbolic");
+  }
+
+  6% {
+    -gtk-icon-source: -gtk-icontheme("playback-1-symbolic");
+  }
+
+  12% {
+    -gtk-icon-source: -gtk-icontheme("playback-2-symbolic");
+  }
+
+  18% {
+    -gtk-icon-source: -gtk-icontheme("playback-3-symbolic");
+  }
+
+  24% {
+    -gtk-icon-source: -gtk-icontheme("playback-4-symbolic");
+  }
+
+  30% {
+    -gtk-icon-source: -gtk-icontheme("playback-5-symbolic");
+  }
+
+  36% {
+    -gtk-icon-source: -gtk-icontheme("playback-6-symbolic");
+  }
+
+  42% {
+    -gtk-icon-source: -gtk-icontheme("playback-7-symbolic");
+  }
+
+  49% {
+    -gtk-icon-source: -gtk-icontheme("playback-8-symbolic");
+  }
+
+  54% {
+    -gtk-icon-source: -gtk-icontheme("playback-9-symbolic");
+  }
+
+  60% {
+    -gtk-icon-source: -gtk-icontheme("playback-10-symbolic");
+  }
+
+  66% {
+    -gtk-icon-source: -gtk-icontheme("playback-11-symbolic");
+  }
+
+  72% {
+    -gtk-icon-source: -gtk-icontheme("playback-12-symbolic");
+  }
+
+  79% {
+    -gtk-icon-source: -gtk-icontheme("playback-13-symbolic");
+  }
+
+  85% {
+    -gtk-icon-source: -gtk-icontheme("playback-14-symbolic");
+  }
+
+  90% {
+    -gtk-icon-source: -gtk-icontheme("playback-15-symbolic");
+  }
+
+  96% {
+    -gtk-icon-source: -gtk-icontheme("playback-16-symbolic");
+  }
+
+  100% {
+    -gtk-icon-source: -gtk-icontheme("playback-0-symbolic");
+  }
+}
+
+.playlist--paused .song--playing .song__icon {
+  animation: none;
+  -gtk-icon-source: -gtk-icontheme("playback-paused-symbolic");
 }
 
 .song__icon,
@@ -90,70 +152,35 @@ row:hover .song__menu--enabled, .song__menu--enabled:checked {
 
 .playlist row {
   background: @card_bg_color;
-  margin-left:12px;
-  margin-right:12px;
+  margin-left: 12px;
+  margin-right: 12px;
   box-shadow: 1px 0px 3px rgba(0, 0, 0, 0.07), -1px 0px 3px rgba(0, 0, 0, 0.07);
   transition: background-color 150ms ease;
 }
 
 .playlist row:hover {
-background-image: image(alpha(currentColor,0.03));
+  background-image: image(alpha(currentColor, 0.03));
 }
+
 .playlist row:active {
-background-image: image(alpha(currentColor,0.08));
+  background-image: image(alpha(currentColor, 0.08));
 }
 
 
 .playlist row:first-child {
- margin-top: 12px;
- border-radius: 12px 12px 0 0;
+  margin-top: 12px;
+  border-radius: 12px 12px 0 0;
 }
 
 .playlist row:last-child {
- margin-bottom: 12px;
- border-bottom-color:rgba(0, 0, 0, 0);
- border-radius: 0 0 12px 12px;
- box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.21);
+  margin-bottom: 12px;
+  border-bottom-color: rgba(0, 0, 0, 0);
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.21);
 }
 
 .playlist row:only-child {
- margin-top: 12px;
- margin-bottom: 12px;
- border-radius: 12px 12px 12px 12px;
-}
-
-/* playback indicator */
-
-.song--playing .song__icon {
-  opacity: 1;
-  animation: playing 1s linear infinite;
-  color: @accent_bg_color;
-  min-width: 16px;
-  -gtk-icon-source: -gtk-icontheme("playback-0-symbolic");
-}
-
-@keyframes playing {
-    0% { -gtk-icon-source: -gtk-icontheme("playback-0-symbolic"); }
-    6% { -gtk-icon-source: -gtk-icontheme("playback-1-symbolic"); }
-    12% { -gtk-icon-source: -gtk-icontheme("playback-2-symbolic"); }
-    18% { -gtk-icon-source: -gtk-icontheme("playback-3-symbolic"); }
-    24% { -gtk-icon-source: -gtk-icontheme("playback-4-symbolic"); }
-    30% { -gtk-icon-source: -gtk-icontheme("playback-5-symbolic"); }
-    36% { -gtk-icon-source: -gtk-icontheme("playback-6-symbolic"); }
-    42% { -gtk-icon-source: -gtk-icontheme("playback-7-symbolic"); }
-    49% { -gtk-icon-source: -gtk-icontheme("playback-8-symbolic"); }
-    54% { -gtk-icon-source: -gtk-icontheme("playback-9-symbolic"); }
-    60% { -gtk-icon-source: -gtk-icontheme("playback-10-symbolic"); }
-    66% { -gtk-icon-source: -gtk-icontheme("playback-11-symbolic"); }
-    72% { -gtk-icon-source: -gtk-icontheme("playback-12-symbolic"); }
-    79% { -gtk-icon-source: -gtk-icontheme("playback-13-symbolic"); }
-    85% { -gtk-icon-source: -gtk-icontheme("playback-14-symbolic"); }
-    90% { -gtk-icon-source: -gtk-icontheme("playback-15-symbolic"); }
-    96% { -gtk-icon-source: -gtk-icontheme("playback-16-symbolic"); }
-    100% { -gtk-icon-source: -gtk-icontheme("playback-0-symbolic"); }
-}
-
-.playlist--paused .song--playing .song__icon {
-  animation: none;
-  -gtk-icon-source: -gtk-icontheme("playback-paused-symbolic");
+  margin-top: 12px;
+  margin-bottom: 12px;
+  border-radius: 12px 12px 12px 12px;
 }
