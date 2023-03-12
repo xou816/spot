@@ -6,7 +6,7 @@ use std::{
     vec::IntoIter,
 };
 
-use crate::app::models::*;
+use crate::app::{models::*, SongsSource};
 
 #[derive(Serialize)]
 pub struct PlaylistDetails {
@@ -304,12 +304,20 @@ pub struct Devices {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+pub struct PlayerContext {
+    #[serde(alias = "type")]
+    pub type_: String,
+    pub uri: String,
+}
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct PlayerState {
     pub progress_ms: u32,
     pub is_playing: bool,
     pub repeat_state: String,
     pub shuffle_state: bool,
     pub item: FailibleTrackItem,
+    pub context: PlayerContext,
 }
 
 impl From<PlayerState> for ConnectPlayerState {
@@ -320,12 +328,18 @@ impl From<PlayerState> for ConnectPlayerState {
             repeat_state,
             shuffle_state,
             item,
+            context: PlayerContext { type_, uri },
         }: PlayerState,
     ) -> Self {
         let repeat = match &repeat_state[..] {
             "track" => RepeatMode::Song,
             "context" => RepeatMode::Playlist,
             _ => RepeatMode::None,
+        };
+        let id = uri.split(':').last().unwrap_or_default();
+        let source = match type_.as_str() {
+            "album" => Some(SongsSource::Album(id.to_string())),
+            _ => None,
         };
         let shuffle = shuffle_state;
         let current_song_id = item.get().map(|i| i.track.id);
@@ -334,7 +348,7 @@ impl From<PlayerState> for ConnectPlayerState {
             progress_ms,
             repeat,
             shuffle,
-            source: None, // FIXME!
+            source,
             current_song_id,
         }
     }

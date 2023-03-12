@@ -35,12 +35,11 @@ impl NowPlayingModel {
         let queue = self.queue();
         let loader = self.app_model.get_batch_loader();
         let query = queue.next_query()?;
-        let source = query.source.clone();
         debug!("next_query = {:?}", &query);
 
         self.dispatcher.dispatch_async(Box::pin(async move {
             loader
-                .query(query, |song_batch| {
+                .query(query, |source, song_batch| {
                     PlaybackAction::LoadPagedSongs(source, song_batch).into()
                 })
                 .await

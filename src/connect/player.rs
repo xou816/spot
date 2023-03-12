@@ -4,15 +4,15 @@ use futures::channel::mpsc::UnboundedSender;
 use gettextrs::gettext;
 
 use crate::api::{SpotifyApiClient, SpotifyApiError, SpotifyResult};
-use crate::app::models::RepeatMode;
+use crate::app::models::{Batch, ConnectPlayerState, RepeatMode};
 use crate::app::state::{Device, PlaybackAction};
-use crate::app::AppAction;
+use crate::app::{AppAction, BatchLoader, BatchQuery, SongsSource};
 
 #[derive(Debug)]
 pub enum ConnectCommand {
     SetDevice(String),
     PlayerLoadInContext {
-        context: String,
+        source: SongsSource,
         offset: usize,
         song: String,
     },
@@ -29,10 +29,17 @@ pub enum ConnectCommand {
     PlayerSetVolume(u8),
 }
 
+#[derive(Default, Clone)]
+struct State {
+    device_id: Option<String>,
+    source: Option<SongsSource>,
+}
+
 pub struct ConnectPlayer {
     api: Arc<dyn SpotifyApiClient + Send + Sync>,
+    batch_loader: BatchLoader,
     action_sender: UnboundedSender<AppAction>,
-    device_id: Mutex<Option<String>>,
+    state: Mutex<State>,
 }
 
 impl ConnectPlayer {
@@ -41,9 +48,10 @@ impl ConnectPlayer {
         action_sender: UnboundedSender<AppAction>,
     ) -> Self {
         Self {
-            api,
+            api: api.clone(),
+            batch_loader: BatchLoader::new(api),
             action_sender,
-            device_id: Default::default(),
+            state: Default::default(),
         }
     }
 
@@ -54,7 +62,7 @@ impl ConnectPlayer {
     }
 
     fn device_lost(&self) {
-        let _ = self.device_id.lock().unwrap().take();
+        let _ = self.state.lock().unwrap().device_id.take();
         self.send_actions([
             AppAction::ShowNotification(gettext("Connection to device lost!")),
             PlaybackAction::SwitchDevice(Device::Local).into(),
@@ -62,35 +70,56 @@ impl ConnectPlayer {
         ]);
     }
 
-    async fn sync_state_unguarded(&self) {
-        let state = self.api.player_state().await;
-        match state {
-            Ok(state) => {
-                let play_pause = if state.is_playing {
-                    PlaybackAction::Load(state.current_song_id.unwrap())
-                } else {
-                    PlaybackAction::Pause
+    async fn sync_state_send_actions(&self, partial_state: State, state: &ConnectPlayerState) {
+        let load_songs = match (state.source.as_ref(), partial_state.source.as_ref()) {
+            (Some(source), old_source) if Some(source) != old_source => {
+                let query = BatchQuery {
+                    source: source.clone(),
+                    batch: Batch::first_of_size(50),
                 };
-                self.send_actions([
-                    play_pause.into(),
-                    PlaybackAction::SetRepeatMode(state.repeat).into(),
-                    PlaybackAction::SetShuffled(state.shuffle).into(),
-                    PlaybackAction::SyncSeek(state.progress_ms).into(),
-                ]);
+                let action = self
+                    .batch_loader
+                    .query(query, |source, batch| {
+                        PlaybackAction::LoadPagedSongs(source, batch).into()
+                    })
+                    .await;
+                Some(action)
             }
-            Err(SpotifyApiError::NoContent) => {
-                self.device_lost();
-            }
-            _ => {}
+            _ => None,
+        };
+
+        if let Some(load_songs) = load_songs {
+            self.send_actions([load_songs]);
         }
+
+        let play_pause = if state.is_playing {
+            PlaybackAction::Load(state.current_song_id.clone().unwrap())
+        } else {
+            PlaybackAction::Pause
+        };
+
+        self.send_actions([
+            play_pause.into(),
+            PlaybackAction::SetRepeatMode(state.repeat).into(),
+            PlaybackAction::SetShuffled(state.shuffle).into(),
+            PlaybackAction::SyncSeek(state.progress_ms).into(),
+        ]);
     }
 
-    pub async fn sync_state(&self) {
-        let device_id = self.device_id.try_lock().ok().and_then(|d| (*d).clone());
-        if device_id.is_some() {
+    pub async fn sync_state(&self) -> Option<()> {
+        let partial_state = self.state.try_lock().ok()?.clone();
+        let has_device = partial_state.device_id.is_some();
+        if has_device {
             debug!("polling connect device...");
-            self.sync_state_unguarded().await;
+            let player_state = self.api.player_state().await;
+            let Ok(state) = player_state else {
+                self.device_lost();
+                return Some(());
+            };
+            self.sync_state_send_actions(partial_state, &state).await;
+            self.state.lock().ok()?.source = state.source;
         }
+        Some(())
     }
 
     async fn should_play(&self, song: &str) -> bool {
@@ -108,12 +137,13 @@ impl ConnectPlayer {
     ) -> SpotifyResult<()> {
         match command {
             ConnectCommand::PlayerLoadInContext {
-                context,
+                source,
                 offset,
                 song,
             } => {
                 let should_play = self.should_play(song.as_str()).await;
                 if should_play {
+                    let context = source.spotify_uri().unwrap();
                     self.api
                         .player_play_in_context(device_id, context, offset)
                         .await
@@ -155,18 +185,18 @@ impl ConnectPlayer {
     pub async fn handle_command(&self, command: ConnectCommand) -> Option<()> {
         let device_lost = match command {
             ConnectCommand::SetDevice(new_device_id) => {
-                self.device_id.lock().ok()?.replace(new_device_id);
+                self.state.lock().ok()?.device_id.replace(new_device_id);
                 false
             }
             ConnectCommand::PlayerStop => {
-                let device_id = self.device_id.lock().ok()?.take();
+                let device_id = self.state.lock().ok()?.device_id.take();
                 if let Some(old_id) = device_id {
                     let _ = self.api.player_pause(old_id).await;
                 }
                 false
             }
             _ => {
-                let device_id = self.device_id.lock().ok()?.clone();
+                let device_id = self.state.lock().ok()?.device_id.clone();
                 if let Some(device_id) = device_id {
                     let result = self.handle_other_command(device_id, command).await;
                     matches!(result, Err(SpotifyApiError::BadStatus(404, _)))

@@ -14,7 +14,7 @@ use crate::player::Command;
 
 enum CurrentlyPlaying {
     WithSource {
-        context: String,
+        source: SongsSource,
         offset: usize,
         song: String,
     },
@@ -63,22 +63,19 @@ impl PlayerNotifier {
         let state = self.app_model.get_state();
         let song = state.playback.current_song_id()?;
         let offset = state.playback.current_song_index()?;
-        let context = state
-            .playback
-            .current_source()
-            .and_then(SongsSource::spotify_uri);
-        Some(if let Some(context) = context {
-            CurrentlyPlaying::WithSource {
-                context,
+        let source = state.playback.current_source().cloned();
+        let result = match source {
+            Some(source) if source.has_spotify_uri() => CurrentlyPlaying::WithSource {
+                source,
                 offset,
                 song,
-            }
-        } else {
-            CurrentlyPlaying::Songs {
+            },
+            _ => CurrentlyPlaying::Songs {
                 songs: state.playback.songs().map_collect(|s| s.id),
                 offset,
-            }
-        })
+            },
+        };
+        Some(result)
     }
 
     fn device(&self) -> impl Deref<Target = Device> + '_ {
@@ -116,11 +113,11 @@ impl PlayerNotifier {
             PlaybackEvent::TrackChanged(_) | PlaybackEvent::SourceChanged => {
                 match currently_playing {
                     Some(CurrentlyPlaying::WithSource {
-                        context,
+                        source,
                         offset,
                         song,
                     }) => Some(ConnectCommand::PlayerLoadInContext {
-                        context,
+                        source,
                         offset,
                         song,
                     }),
