@@ -7,10 +7,10 @@ license = "MIT"
 [dependencies.gtk]
 version = "^0.6.0"
 package = "gtk4"
-features = ["gnome_42", "blueprint"]
+features = ["gnome_43", "blueprint"]
 
 [dependencies.libadwaita]
-version = "^0.3.0"
+version = "^0.3.1"
 features = ["v1_2"]
 
 [dependencies.gdk]
@@ -18,7 +18,7 @@ version = "^0.6.0"
 package = "gdk4"
 
 [dependencies.gio]
-version = "^0.17.0"
+version = "^0.17.4"
 features = ["v2_60"]
 
 [dependencies.glib]
@@ -28,9 +28,6 @@ features = ["v2_60"]
 [dependencies.librespot]
 version = "0.4.2"
 features = ["alsa-backend", "pulseaudio-backend", "gstreamer-backend"]
-
-[dependencies.protobuf]
-version = "2.25.2"
 
 [dependencies.tokio]
 version = "1"
