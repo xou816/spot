@@ -61,6 +61,7 @@ pub trait SpotifyPlayerDelegate {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum AudioBackend {
+    GStreamer(String),
     PulseAudio,
     Alsa(String),
 }
@@ -244,6 +245,10 @@ impl SpotifyPlayer {
             })
             .get_soft_volume();
         Player::new(player_config, session, soft_volume, move || match backend {
+            AudioBackend::GStreamer(pipeline) => {
+                let backend = audio_backend::find(Some("gstreamer".to_string())).unwrap();
+                backend(Some(pipeline), AudioFormat::default())
+            }
             AudioBackend::PulseAudio => {
                 info!("using pulseaudio");
                 env::set_var("PULSE_PROP_application.name", "Spot");
