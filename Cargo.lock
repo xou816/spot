@@ -1937,9 +1937,9 @@ dependencies = [
 
 [[package]]
 name = "libadwaita"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "674cbf1bd796f3d4f0c24466c15d91180e33e497ae2e07eea3f3d545468dc839"
+checksum = "b1c4efd2020a4fcedbad2c4a97de97bf6045e5dc49d61d5a5d0cfd753db60700"
 dependencies = [
  "bitflags",
  "futures-channel",
