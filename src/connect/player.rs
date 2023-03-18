@@ -1,12 +1,14 @@
-use std::sync::{Arc, Mutex};
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
+use std::sync::{Arc, RwLock};
 
 use futures::channel::mpsc::UnboundedSender;
 use gettextrs::gettext;
 
 use crate::api::{SpotifyApiClient, SpotifyApiError, SpotifyResult};
-use crate::app::models::{Batch, ConnectPlayerState, RepeatMode};
+use crate::app::models::{ConnectPlayerState, RepeatMode, SongDescription};
 use crate::app::state::{Device, PlaybackAction};
-use crate::app::{AppAction, BatchLoader, BatchQuery, SongsSource};
+use crate::app::{AppAction, SongsSource};
 
 #[derive(Debug)]
 pub enum ConnectCommand {
@@ -29,17 +31,12 @@ pub enum ConnectCommand {
     PlayerSetVolume(u8),
 }
 
-#[derive(Default, Clone)]
-struct State {
-    device_id: Option<String>,
-    source: Option<SongsSource>,
-}
-
 pub struct ConnectPlayer {
     api: Arc<dyn SpotifyApiClient + Send + Sync>,
-    batch_loader: BatchLoader,
     action_sender: UnboundedSender<AppAction>,
-    state: Mutex<State>,
+    device_id: RwLock<Option<String>>,
+    last_queue: RwLock<u64>,
+    last_state: RwLock<ConnectPlayerState>,
 }
 
 impl ConnectPlayer {
@@ -49,9 +46,10 @@ impl ConnectPlayer {
     ) -> Self {
         Self {
             api: api.clone(),
-            batch_loader: BatchLoader::new(api),
             action_sender,
-            state: Default::default(),
+            device_id: Default::default(),
+            last_queue: Default::default(),
+            last_state: Default::default(),
         }
     }
 
@@ -62,7 +60,7 @@ impl ConnectPlayer {
     }
 
     fn device_lost(&self) {
-        let _ = self.state.lock().unwrap().device_id.take();
+        let _ = self.device_id.write().unwrap().take();
         self.send_actions([
             AppAction::ShowNotification(gettext("Connection to device lost!")),
             PlaybackAction::SwitchDevice(Device::Local).into(),
@@ -70,26 +68,25 @@ impl ConnectPlayer {
         ]);
     }
 
-    async fn sync_state_send_actions(&self, partial_state: State, state: &ConnectPlayerState) {
-        let load_songs = match (state.source.as_ref(), partial_state.source.as_ref()) {
-            (Some(source), old_source) if Some(source) != old_source => {
-                let query = BatchQuery {
-                    source: source.clone(),
-                    batch: Batch::first_of_size(50),
-                };
-                let action = self
-                    .batch_loader
-                    .query(query, |source, batch| {
-                        PlaybackAction::LoadPagedSongs(source, batch).into()
-                    })
-                    .await;
-                Some(action)
+    async fn get_queue_if_changed(&self) -> Option<Vec<SongDescription>> {
+        let last_queue = *self.last_queue.read().ok().as_deref().unwrap_or(&0u64);
+        let songs = self.api.get_player_queue().await.ok();
+        songs.filter(|songs| {
+            let hash = {
+                let mut hasher = DefaultHasher::new();
+                songs.hash(&mut hasher);
+                hasher.finish()
+            };
+            if let Some(last_queue) = self.last_queue.try_write().ok().as_deref_mut() {
+                *last_queue = hash;
             }
-            _ => None,
-        };
+            hash != last_queue
+        })
+    }
 
-        if let Some(load_songs) = load_songs {
-            self.send_actions([load_songs]);
+    async fn apply_remote_state(&self, state: &ConnectPlayerState) {
+        if let Some(songs) = self.get_queue_if_changed().await {
+            self.send_actions([PlaybackAction::LoadSongs(songs).into()]);
         }
 
         let play_pause = if state.is_playing {
@@ -106,28 +103,88 @@ impl ConnectPlayer {
         ]);
     }
 
-    pub async fn sync_state(&self) -> Option<()> {
-        let partial_state = self.state.try_lock().ok()?.clone();
-        let has_device = partial_state.device_id.is_some();
-        if has_device {
-            debug!("polling connect device...");
-            let player_state = self.api.player_state().await;
-            let Ok(state) = player_state else {
-                self.device_lost();
-                return Some(());
-            };
-            self.sync_state_send_actions(partial_state, &state).await;
-            self.state.lock().ok()?.source = state.source;
-        }
-        Some(())
+    pub fn has_device(&self) -> bool {
+        self.device_id
+            .read()
+            .map(|it| it.is_some())
+            .unwrap_or(false)
     }
 
-    async fn should_play(&self, song: &str) -> bool {
-        let current_state = self.api.player_state().await.ok();
-        current_state
-            .and_then(|s| s.current_song_id)
-            .map(|id| id != song)
-            .unwrap_or(true)
+    pub async fn sync_state(&self) {
+        debug!("polling connect device...");
+        let player_state = self.api.player_state().await;
+        let Ok(state) = player_state else {
+                self.device_lost();
+                return;
+        };
+        self.apply_remote_state(&state).await;
+        if let Ok(mut last_state) = self.last_state.write() {
+            *last_state = state;
+        }
+    }
+
+    async fn handle_player_load_in_context(
+        &self,
+        device_id: String,
+        current_state: &ConnectPlayerState,
+        command: ConnectCommand,
+    ) -> SpotifyResult<()> {
+        let ConnectCommand::PlayerLoadInContext {
+            source,
+            offset,
+            song,
+        } = command else {
+            panic!("Illegal call");
+        };
+        let is_diff_song = current_state
+            .current_song_id
+            .as_ref()
+            .map(|it| it != &song)
+            .unwrap_or(true);
+        let is_paused = !current_state.is_playing;
+        if is_diff_song {
+            let context = source.spotify_uri().unwrap();
+            self.api
+                .player_play_in_context(device_id, context, offset)
+                .await
+        } else if is_paused {
+            self.api.player_resume(device_id).await
+        } else {
+            Ok(())
+        }
+    }
+
+    async fn handle_player_load(
+        &self,
+        device_id: String,
+        current_state: &ConnectPlayerState,
+        command: ConnectCommand,
+    ) -> SpotifyResult<()> {
+        let ConnectCommand::PlayerLoad { songs, offset } = command else {
+            panic!("Illegal call");
+        };
+        let is_diff_song = current_state
+            .current_song_id
+            .as_ref()
+            .map(|it| it != &songs[offset])
+            .unwrap_or(true);
+        let is_paused = !current_state.is_playing;
+        if is_diff_song {
+            self.api
+                .player_play_no_context(
+                    device_id,
+                    songs
+                        .into_iter()
+                        .map(|s| format!("spotify:track:{}", s))
+                        .collect(),
+                    offset,
+                )
+                .await
+        } else if is_paused {
+            self.api.player_resume(device_id).await
+        } else {
+            Ok(())
+        }
     }
 
     async fn handle_other_command(
@@ -135,41 +192,24 @@ impl ConnectPlayer {
         device_id: String,
         command: ConnectCommand,
     ) -> SpotifyResult<()> {
+        let state = self.last_state.read();
+        let Ok(state) = state.as_deref() else {
+            return Ok(());
+        };
         match command {
-            ConnectCommand::PlayerLoadInContext {
-                source,
-                offset,
-                song,
-            } => {
-                let should_play = self.should_play(song.as_str()).await;
-                if should_play {
-                    let context = source.spotify_uri().unwrap();
-                    self.api
-                        .player_play_in_context(device_id, context, offset)
-                        .await
-                } else {
-                    self.api.player_resume(device_id).await
-                }
+            ConnectCommand::PlayerLoadInContext { .. } => {
+                self.handle_player_load_in_context(device_id, state, command)
+                    .await
             }
-            ConnectCommand::PlayerLoad { songs, offset } => {
-                let should_play = self.should_play(songs[offset].as_str()).await;
-                if should_play {
-                    self.api
-                        .player_play_no_context(
-                            device_id,
-                            songs
-                                .into_iter()
-                                .map(|s| format!("spotify:track:{}", s))
-                                .collect(),
-                            offset,
-                        )
-                        .await
-                } else {
-                    self.api.player_resume(device_id).await
-                }
+            ConnectCommand::PlayerLoad { .. } => {
+                self.handle_player_load(device_id, state, command).await
             }
-            ConnectCommand::PlayerResume => self.api.player_resume(device_id).await,
-            ConnectCommand::PlayerPause => self.api.player_pause(device_id).await,
+            ConnectCommand::PlayerResume if !state.is_playing => {
+                self.api.player_resume(device_id).await
+            }
+            ConnectCommand::PlayerPause if state.is_playing => {
+                self.api.player_pause(device_id).await
+            }
             ConnectCommand::PlayerSeek(offset) => self.api.player_seek(device_id, offset).await,
             ConnectCommand::PlayerRepeat(mode) => self.api.player_repeat(device_id, mode).await,
             ConnectCommand::PlayerShuffle(shuffle) => {
@@ -185,18 +225,19 @@ impl ConnectPlayer {
     pub async fn handle_command(&self, command: ConnectCommand) -> Option<()> {
         let device_lost = match command {
             ConnectCommand::SetDevice(new_device_id) => {
-                self.state.lock().ok()?.device_id.replace(new_device_id);
+                self.device_id.write().ok()?.replace(new_device_id);
+                self.sync_state().await;
                 false
             }
             ConnectCommand::PlayerStop => {
-                let device_id = self.state.lock().ok()?.device_id.take();
+                let device_id = self.device_id.write().ok()?.take();
                 if let Some(old_id) = device_id {
                     let _ = self.api.player_pause(old_id).await;
                 }
                 false
             }
             _ => {
-                let device_id = self.state.lock().ok()?.device_id.clone();
+                let device_id = self.device_id.read().ok()?.clone();
                 if let Some(device_id) = device_id {
                     let result = self.handle_other_command(device_id, command).await;
                     matches!(result, Err(SpotifyApiError::BadStatus(404, _)))

@@ -1,4 +1,7 @@
-use std::str::FromStr;
+use std::{
+    hash::{Hash, Hasher},
+    str::FromStr,
+};
 
 use crate::app::SongsSource;
 
@@ -151,6 +154,12 @@ impl SongDescription {
     }
 }
 
+impl Hash for SongDescription {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
+}
+
 #[derive(Copy, Clone, Default)]
 pub struct SongState {
     pub is_playing: bool,
@@ -242,6 +251,19 @@ pub struct ConnectPlayerState {
     pub progress_ms: u32,
     pub repeat: RepeatMode,
     pub shuffle: bool,
+}
+
+impl Default for ConnectPlayerState {
+    fn default() -> Self {
+        Self {
+            is_playing: false,
+            source: None,
+            current_song_id: None,
+            progress_ms: 0,
+            repeat: RepeatMode::None,
+            shuffle: false,
+        }
+    }
 }
 
 #[cfg(test)]

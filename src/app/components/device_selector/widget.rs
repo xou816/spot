@@ -151,7 +151,6 @@ impl DeviceSelectorWidget {
     pub fn update_devices_list(&self, devices: &[ConnectDevice]) {
         let widget = self.imp();
         widget.this_device_button.set_sensitive(!devices.is_empty());
-        widget.popover.unparent();
 
         while let Some(child) = widget.devices.upcast_ref::<gtk::Widget>().first_child() {
             widget.devices.remove(&child);
@@ -166,7 +165,5 @@ impl DeviceSelectorWidget {
                 .build();
             widget.devices.append(&check);
         }
-
-        widget.popover.set_parent(self);
     }
 }

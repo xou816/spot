@@ -2,6 +2,7 @@ use form_urlencoded::Serializer;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::{
+    collections::HashSet,
     convert::{Into, TryFrom, TryInto},
     vec::IntoIter,
 };
@@ -304,6 +305,12 @@ pub struct Devices {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+pub struct PlayerQueue {
+    pub currently_playing: TrackItem,
+    pub queue: Vec<TrackItem>,
+}
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct PlayerContext {
     #[serde(alias = "type")]
     pub type_: String,
@@ -317,7 +324,7 @@ pub struct PlayerState {
     pub repeat_state: String,
     pub shuffle_state: bool,
     pub item: FailibleTrackItem,
-    pub context: PlayerContext,
+    pub context: Option<PlayerContext>,
 }
 
 impl From<PlayerState> for ConnectPlayerState {
@@ -328,7 +335,7 @@ impl From<PlayerState> for ConnectPlayerState {
             repeat_state,
             shuffle_state,
             item,
-            context: PlayerContext { type_, uri },
+            context,
         }: PlayerState,
     ) -> Self {
         let repeat = match &repeat_state[..] {
@@ -336,11 +343,13 @@ impl From<PlayerState> for ConnectPlayerState {
             "context" => RepeatMode::Playlist,
             _ => RepeatMode::None,
         };
-        let id = uri.split(':').last().unwrap_or_default();
-        let source = match type_.as_str() {
-            "album" => Some(SongsSource::Album(id.to_string())),
+        let source = context.and_then(|PlayerContext { type_, uri }| match type_.as_str() {
+            "album" => {
+                let id = uri.split(':').last().unwrap_or_default();
+                Some(SongsSource::Album(id.to_string()))
+            }
             _ => None,
-        };
+        });
         let shuffle = shuffle_state;
         let current_song_id = item.get().map(|i| i.track.id);
         Self {
@@ -420,6 +429,30 @@ impl TryFrom<PlaylistTrack> for TrackItem {
 impl From<SavedTrack> for TrackItem {
     fn from(track: SavedTrack) -> Self {
         track.track
+    }
+}
+
+impl From<PlayerQueue> for Vec<SongDescription> {
+    fn from(
+        PlayerQueue {
+            mut queue,
+            currently_playing,
+        }: PlayerQueue,
+    ) -> Self {
+        let mut ids = HashSet::<String>::new();
+        queue.insert(0, currently_playing);
+        let queue: Vec<TrackItem> = queue
+            .into_iter()
+            .take_while(|e| {
+                if ids.contains(&e.track.id) {
+                    false
+                } else {
+                    ids.insert(e.track.id.clone());
+                    true
+                }
+            })
+            .collect();
+        Page::new(queue).into()
     }
 }
 

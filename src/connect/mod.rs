@@ -24,7 +24,9 @@ async fn connect_server(
         let mut interval = time::interval(Duration::from_secs(5));
         loop {
             interval.tick().await;
-            player_clone.sync_state().await;
+            if player_clone.has_device() {
+                player_clone.sync_state().await;
+            }
         }
     });
 

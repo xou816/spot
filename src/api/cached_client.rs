@@ -92,6 +92,8 @@ pub trait SpotifyApiClient {
 
     fn list_available_devices(&self) -> BoxFuture<SpotifyResult<Vec<ConnectDevice>>>;
 
+    fn get_player_queue(&self) -> BoxFuture<SpotifyResult<Vec<SongDescription>>>;
+
     fn update_token(&self, token: String);
 
     fn player_pause(&self, device_id: String) -> BoxFuture<SpotifyResult<()>>;
@@ -213,7 +215,7 @@ impl CachedSpotifyClient {
                     max_age,
                     etag,
                 } = r?;
-                let expiry = CacheExpiry::expire_in_seconds(u64::max(max_age, 10), etag);
+                let expiry = CacheExpiry::expire_in_seconds(max_age, etag);
                 SpotifyResult::Ok(match kind {
                     SpotifyResponseKind::Ok(content, _) => {
                         FetchResult::Modified(content.into_bytes(), expiry)
@@ -708,24 +710,25 @@ impl SpotifyApiClient for CachedSpotifyClient {
         })
     }
 
-    fn player_pause(&self, device_id: String) -> BoxFuture<SpotifyResult<()>> {
+    fn get_player_queue(&self) -> BoxFuture<SpotifyResult<Vec<SongDescription>>> {
         Box::pin(async move {
-            self.client
-                .player_pause(&device_id)
-                .send_no_response()
-                .await?;
-            Ok(())
+            let queue = self
+                .client
+                .get_player_queue()
+                .send()
+                .await?
+                .deserialize()
+                .ok_or(SpotifyApiError::NoContent)?;
+            Ok(queue.into())
         })
     }
 
+    fn player_pause(&self, device_id: String) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(self.client.player_pause(&device_id).send_no_response())
+    }
+
     fn player_resume(&self, device_id: String) -> BoxFuture<SpotifyResult<()>> {
-        Box::pin(async move {
-            self.client
-                .player_resume(&device_id)
-                .send_no_response()
-                .await?;
-            Ok(())
-        })
+        Box::pin(self.client.player_resume(&device_id).send_no_response())
     }
 
     fn player_play_in_context(
@@ -734,7 +737,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
         context_uri: String,
         offset: usize,
     ) -> BoxFuture<SpotifyResult<()>> {
-        Box::pin(async move {
+        Box::pin(
             self.client
                 .player_set_playing(
                     &device_id,
@@ -745,10 +748,8 @@ impl SpotifyApiClient for CachedSpotifyClient {
                         },
                     },
                 )
-                .send_no_response()
-                .await?;
-            Ok(())
-        })
+                .send_no_response(),
+        )
     }
 
     fn player_play_no_context(
@@ -757,7 +758,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
         uris: Vec<String>,
         offset: usize,
     ) -> BoxFuture<SpotifyResult<()>> {
-        Box::pin(async move {
+        Box::pin(
             self.client
                 .player_set_playing(
                     &device_id,
@@ -768,30 +769,16 @@ impl SpotifyApiClient for CachedSpotifyClient {
                         },
                     },
                 )
-                .send_no_response()
-                .await?;
-            Ok(())
-        })
+                .send_no_response(),
+        )
     }
 
     fn player_next(&self, device_id: String) -> BoxFuture<SpotifyResult<()>> {
-        Box::pin(async move {
-            self.client
-                .player_next(&device_id)
-                .send_no_response()
-                .await?;
-            Ok(())
-        })
+        Box::pin(self.client.player_next(&device_id).send_no_response())
     }
 
     fn player_seek(&self, device_id: String, pos: usize) -> BoxFuture<SpotifyResult<()>> {
-        Box::pin(async move {
-            self.client
-                .player_seek(&device_id, pos)
-                .send_no_response()
-                .await?;
-            Ok(())
-        })
+        Box::pin(self.client.player_seek(&device_id, pos).send_no_response())
     }
 
     fn player_state(&self) -> BoxFuture<SpotifyResult<ConnectPlayerState>> {
@@ -808,7 +795,7 @@ impl SpotifyApiClient for CachedSpotifyClient {
     }
 
     fn player_repeat(&self, device_id: String, mode: RepeatMode) -> BoxFuture<SpotifyResult<()>> {
-        Box::pin(async move {
+        Box::pin(
             self.client
                 .player_repeat(
                     &device_id,
@@ -818,30 +805,24 @@ impl SpotifyApiClient for CachedSpotifyClient {
                         RepeatMode::None => "off",
                     },
                 )
-                .send_no_response()
-                .await?;
-            Ok(())
-        })
+                .send_no_response(),
+        )
     }
 
     fn player_shuffle(&self, device_id: String, shuffle: bool) -> BoxFuture<SpotifyResult<()>> {
-        Box::pin(async move {
+        Box::pin(
             self.client
                 .player_shuffle(&device_id, shuffle)
-                .send_no_response()
-                .await?;
-            Ok(())
-        })
+                .send_no_response(),
+        )
     }
 
     fn player_volume(&self, device_id: String, volume: u8) -> BoxFuture<SpotifyResult<()>> {
-        Box::pin(async move {
+        Box::pin(
             self.client
                 .player_volume(&device_id, volume)
-                .send_no_response()
-                .await?;
-            Ok(())
-        })
+                .send_no_response(),
+        )
     }
 }
 

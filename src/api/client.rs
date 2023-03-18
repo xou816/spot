@@ -550,6 +550,12 @@ impl SpotifyClient {
             .uri("/v1/me/player/devices".to_string(), None)
     }
 
+    pub(crate) fn get_player_queue(&self) -> SpotifyRequest<'_, (), PlayerQueue> {
+        self.request()
+            .method(Method::GET)
+            .uri("/v1/me/player/queue".to_string(), None)
+    }
+
     pub(crate) fn player_state(&self) -> SpotifyRequest<'_, (), PlayerState> {
         self.request()
             .method(Method::GET)
