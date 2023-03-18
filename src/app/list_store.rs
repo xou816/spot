@@ -58,7 +58,7 @@ where
     pub fn iter(&self) -> impl Iterator<Item = GType> + '_ {
         let store = &self.store;
         let count = store.n_items();
-        (0..count).into_iter().map(move |i| self.get(i))
+        (0..count).map(move |i| self.get(i))
     }
 
     pub fn len(&self) -> usize {

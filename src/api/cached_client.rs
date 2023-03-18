@@ -7,7 +7,7 @@ use std::convert::Into;
 use std::future::Future;
 
 use super::cache::{CacheExpiry, CacheManager, CachePolicy, FetchResult};
-use super::client::{SpotifyApiError, SpotifyClient, SpotifyResponse, SpotifyResponseKind};
+use super::client::*;
 use crate::app::models::*;
 
 pub type SpotifyResult<T> = Result<T, SpotifyApiError>;
@@ -90,7 +90,41 @@ pub trait SpotifyApiClient {
         limit: usize,
     ) -> BoxFuture<SpotifyResult<Vec<PlaylistDescription>>>;
 
+    fn list_available_devices(&self) -> BoxFuture<SpotifyResult<Vec<ConnectDevice>>>;
+
+    fn get_player_queue(&self) -> BoxFuture<SpotifyResult<Vec<SongDescription>>>;
+
     fn update_token(&self, token: String);
+
+    fn player_pause(&self, device_id: String) -> BoxFuture<SpotifyResult<()>>;
+
+    fn player_resume(&self, device_id: String) -> BoxFuture<SpotifyResult<()>>;
+
+    fn player_next(&self, device_id: String) -> BoxFuture<SpotifyResult<()>>;
+
+    fn player_seek(&self, device_id: String, pos: usize) -> BoxFuture<SpotifyResult<()>>;
+
+    fn player_repeat(&self, device_id: String, mode: RepeatMode) -> BoxFuture<SpotifyResult<()>>;
+
+    fn player_shuffle(&self, device_id: String, shuffle: bool) -> BoxFuture<SpotifyResult<()>>;
+
+    fn player_volume(&self, device_id: String, volume: u8) -> BoxFuture<SpotifyResult<()>>;
+
+    fn player_play_in_context(
+        &self,
+        device_id: String,
+        context: String,
+        offset: usize,
+    ) -> BoxFuture<SpotifyResult<()>>;
+
+    fn player_play_no_context(
+        &self,
+        device_id: String,
+        uris: Vec<String>,
+        offset: usize,
+    ) -> BoxFuture<SpotifyResult<()>>;
+
+    fn player_state(&self) -> BoxFuture<SpotifyResult<ConnectPlayerState>>;
 }
 
 enum SpotCacheKey<'a> {
@@ -181,7 +215,7 @@ impl CachedSpotifyClient {
                     max_age,
                     etag,
                 } = r?;
-                let expiry = CacheExpiry::expire_in_seconds(u64::max(max_age, 10), etag);
+                let expiry = CacheExpiry::expire_in_seconds(max_age, etag);
                 SpotifyResult::Ok(match kind {
                     SpotifyResponseKind::Ok(content, _) => {
                         FetchResult::Modified(content.into_bytes(), expiry)
@@ -653,6 +687,142 @@ impl SpotifyApiClient for CachedSpotifyClient {
             };
             Ok(result)
         })
+    }
+
+    fn list_available_devices(&self) -> BoxFuture<SpotifyResult<Vec<ConnectDevice>>> {
+        Box::pin(async move {
+            let devices = self
+                .client
+                .get_player_devices()
+                .send()
+                .await?
+                .deserialize()
+                .ok_or(SpotifyApiError::NoContent)?;
+            Ok(devices
+                .devices
+                .into_iter()
+                .filter(|d| {
+                    debug!("found device: {:?}", d);
+                    !d.is_restricted
+                })
+                .map(ConnectDevice::from)
+                .collect())
+        })
+    }
+
+    fn get_player_queue(&self) -> BoxFuture<SpotifyResult<Vec<SongDescription>>> {
+        Box::pin(async move {
+            let queue = self
+                .client
+                .get_player_queue()
+                .send()
+                .await?
+                .deserialize()
+                .ok_or(SpotifyApiError::NoContent)?;
+            Ok(queue.into())
+        })
+    }
+
+    fn player_pause(&self, device_id: String) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(self.client.player_pause(&device_id).send_no_response())
+    }
+
+    fn player_resume(&self, device_id: String) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(self.client.player_resume(&device_id).send_no_response())
+    }
+
+    fn player_play_in_context(
+        &self,
+        device_id: String,
+        context_uri: String,
+        offset: usize,
+    ) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(
+            self.client
+                .player_set_playing(
+                    &device_id,
+                    PlayRequest::Contextual {
+                        context_uri,
+                        offset: PlayOffset {
+                            position: offset as u32,
+                        },
+                    },
+                )
+                .send_no_response(),
+        )
+    }
+
+    fn player_play_no_context(
+        &self,
+        device_id: String,
+        uris: Vec<String>,
+        offset: usize,
+    ) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(
+            self.client
+                .player_set_playing(
+                    &device_id,
+                    PlayRequest::Uris {
+                        uris,
+                        offset: PlayOffset {
+                            position: offset as u32,
+                        },
+                    },
+                )
+                .send_no_response(),
+        )
+    }
+
+    fn player_next(&self, device_id: String) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(self.client.player_next(&device_id).send_no_response())
+    }
+
+    fn player_seek(&self, device_id: String, pos: usize) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(self.client.player_seek(&device_id, pos).send_no_response())
+    }
+
+    fn player_state(&self) -> BoxFuture<SpotifyResult<ConnectPlayerState>> {
+        Box::pin(async move {
+            let result = self
+                .client
+                .player_state()
+                .send()
+                .await?
+                .deserialize()
+                .ok_or(SpotifyApiError::NoContent)?;
+            Ok(result.into())
+        })
+    }
+
+    fn player_repeat(&self, device_id: String, mode: RepeatMode) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(
+            self.client
+                .player_repeat(
+                    &device_id,
+                    match mode {
+                        RepeatMode::Song => "track",
+                        RepeatMode::Playlist => "context",
+                        RepeatMode::None => "off",
+                    },
+                )
+                .send_no_response(),
+        )
+    }
+
+    fn player_shuffle(&self, device_id: String, shuffle: bool) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(
+            self.client
+                .player_shuffle(&device_id, shuffle)
+                .send_no_response(),
+        )
+    }
+
+    fn player_volume(&self, device_id: String, volume: u8) -> BoxFuture<SpotifyResult<()>> {
+        Box::pin(
+            self.client
+                .player_volume(&device_id, volume)
+                .send_no_response(),
+        )
     }
 }
 

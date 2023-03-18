@@ -151,7 +151,6 @@ impl SongList {
         let batches = &self.batches;
         let batch_size = self.batch_size;
         let batch_count = (0..up_to_batch_index)
-            .into_iter()
             .filter(move |i| batches.contains_key(i))
             .count();
         batch_size * batch_count
@@ -178,7 +177,6 @@ impl SongList {
         let batch_size = self.batch_size;
         let batches = &self.batches;
         (a..=b)
-            .into_iter()
             .filter_map(move |i| batches.get_key_value(&i))
             .flat_map(move |(k, b)| {
                 b.iter()
@@ -346,7 +344,6 @@ impl SongList {
         let batch_size = self.batch_size;
         let bi = i / batch_size;
         let batch = (0..=self.last_batch_key)
-            .into_iter()
             .filter_map(move |i| self.batches.get(&i))
             .nth(bi)?;
         batch

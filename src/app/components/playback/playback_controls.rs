@@ -3,7 +3,7 @@ use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{glib, CompositeTemplate};
 
-use crate::app::state::RepeatMode;
+use crate::app::models::RepeatMode;
 
 mod imp {
 

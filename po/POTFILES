@@ -1,11 +1,11 @@
 # grep gettext src/**/*.rs | cut -d: -f1 | uniq
 src/app/batch_loader.rs
+src/app/components/device_selector/widget.rs
 src/app/components/labels.rs
 src/app/components/login/login_model.rs
 src/app/components/mod.rs
 src/app/components/navigation/factory.rs
 src/app/components/notification/mod.rs
-src/app/components/now_playing/now_playing_model.rs
 src/app/components/playback/playback_controls.rs
 src/app/components/playback/playback_info.rs
 src/app/components/selection/component.rs
@@ -13,9 +13,10 @@ src/app/components/sidebar/sidebar_item.rs
 src/app/components/sidebar/sidebar.rs
 src/app/components/user_menu/user_menu.rs
 src/app/state/login_state.rs
+src/connect/player.rs
 src/main.rs
 
-# find src -name "*.ui*" -o -name "*.blp*"
+# find src -name "*.blp" -print
 src/window.blp
 src/app/components/saved_playlists/saved_playlists.blp
 src/app/components/artist_details/artist_details.blp
@@ -31,10 +32,11 @@ src/app/components/details/release_details.blp
 src/app/components/details/details.blp
 src/app/components/now_playing/now_playing.blp
 src/app/components/login/login.blp
-src/app/components/playlist_details/playlist_headerbar.blp
-src/app/components/playlist_details/playlist_header.blp
 src/app/components/playlist_details/playlist_details.blp
+src/app/components/playlist_details/playlist_header.blp
+src/app/components/playlist_details/playlist_headerbar.blp
 src/app/components/headerbar/headerbar.blp
+src/app/components/device_selector/device_selector.blp
 src/app/components/sidebar/create_playlist.blp
 src/app/components/sidebar/sidebar_row.blp
 src/app/components/album/album.blp

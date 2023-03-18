@@ -167,6 +167,13 @@ impl SelectionToolbar {
                     .set_remove(SelectionToolState::Visible(count > 0));
                 self.widget.set_save(SelectionToolState::Hidden);
             }
+            SelectionContext::ReadOnlyQueue => {
+                self.widget.set_move(SelectionToolState::Hidden);
+                self.widget.set_queue(SelectionToolState::Hidden);
+                self.widget.set_add(SelectionToolState::Hidden);
+                self.widget.set_remove(SelectionToolState::Hidden);
+                self.widget.set_save(SelectionToolState::Visible(count > 0));
+            }
             SelectionContext::Queue => {
                 self.widget
                     .set_move(SelectionToolState::Visible(count == 1));

@@ -16,6 +16,7 @@ use gtk::prelude::*;
 mod api;
 mod app;
 mod config;
+mod connect;
 mod dbus;
 mod player;
 mod settings;

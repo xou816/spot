@@ -1,7 +1,15 @@
 using Gtk 4.0;
 using Adw 1;
 
-template NowPlayingWidget : Adw.Bin {
+template NowPlayingWidget : Box {
+  orientation: vertical;
+  vexpand: true;
+  hexpand: true;
+
+  .HeaderBarWidget headerbar {
+    .DeviceSelectorWidget device_selector {}
+  }
+
   ScrolledWindow scrolled_window {
     vexpand: true;
 

@@ -1,4 +1,9 @@
-use std::str::FromStr;
+use std::{
+    hash::{Hash, Hasher},
+    str::FromStr,
+};
+
+use crate::app::SongsSource;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Batch {
@@ -106,6 +111,21 @@ pub struct PlaylistDescription {
     pub owner: UserRef,
 }
 
+#[derive(Clone, Copy, Debug)]
+pub enum ConnectDeviceKind {
+    Phone,
+    Computer,
+    Speaker,
+    Other,
+}
+
+#[derive(Clone, Debug)]
+pub struct ConnectDevice {
+    pub id: String,
+    pub label: String,
+    pub kind: ConnectDeviceKind,
+}
+
 #[derive(Clone, Debug)]
 pub struct PlaylistSummary {
     pub id: String,
@@ -131,6 +151,12 @@ impl SongDescription {
             .map(|a| a.name.to_string())
             .collect::<Vec<String>>()
             .join(", ")
+    }
+}
+
+impl Hash for SongDescription {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
     }
 }
 
@@ -208,6 +234,36 @@ pub struct UserDescription {
     pub id: String,
     pub name: String,
     pub playlists: Vec<PlaylistDescription>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum RepeatMode {
+    Song,
+    Playlist,
+    None,
+}
+
+#[derive(Clone, Debug)]
+pub struct ConnectPlayerState {
+    pub is_playing: bool,
+    pub source: Option<SongsSource>,
+    pub current_song_id: Option<String>,
+    pub progress_ms: u32,
+    pub repeat: RepeatMode,
+    pub shuffle: bool,
+}
+
+impl Default for ConnectPlayerState {
+    fn default() -> Self {
+        Self {
+            is_playing: false,
+            source: None,
+            current_song_id: None,
+            progress_ms: 0,
+            repeat: RepeatMode::None,
+            shuffle: false,
+        }
+    }
 }
 
 #[cfg(test)]

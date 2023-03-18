@@ -140,11 +140,11 @@ impl SpotifyPlayer {
                     .seek(position);
                 Ok(())
             }
-            Command::PlayerLoad(track) => {
+            Command::PlayerLoad { track, resume } => {
                 self.player
                     .as_mut()
                     .ok_or(SpotifyError::PlayerNotReady)?
-                    .load(track, true, 0);
+                    .load(track, resume, 0);
                 Ok(())
             }
             Command::PlayerPreload(track) => {
@@ -287,8 +287,10 @@ user-library-read,\
 user-library-modify,\
 user-top-read,\
 user-read-recently-played,\
+user-read-playback-state,\
 playlist-modify-public,\
 playlist-modify-private,\
+user-modify-playback-state,\
 streaming,\
 playlist-modify-public";
 
@@ -360,7 +362,7 @@ async fn player_setup_delegate(
 ) {
     while let Some(event) = channel.recv().await {
         match event {
-            PlayerEvent::EndOfTrack { .. } | PlayerEvent::Stopped { .. } => {
+            PlayerEvent::EndOfTrack { .. } => {
                 delegate.end_of_track_reached();
             }
             PlayerEvent::Playing { position_ms, .. } => {

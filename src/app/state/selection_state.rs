@@ -31,6 +31,7 @@ impl From<SelectionEvent> for AppEvent {
 
 #[derive(Debug, Clone)]
 pub enum SelectionContext {
+    ReadOnlyQueue,
     Queue,
     Playlist,
     EditablePlaylist(String),

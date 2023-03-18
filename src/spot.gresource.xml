@@ -32,6 +32,7 @@
     <file alias="components/saved_playlists.ui">app/components/saved_playlists/saved_playlists.ui</file>
     <!-- now playing -->
     <file alias="components/now_playing.ui">app/components/now_playing/now_playing.ui</file>
+    <file alias="components/device_selector.ui">app/components/device_selector/device_selector.ui</file>
     <!-- liked songs -->
     <file alias="components/saved_tracks.ui">app/components/saved_tracks/saved_tracks.ui</file>
     <!-- song -->

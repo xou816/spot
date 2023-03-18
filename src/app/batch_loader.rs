@@ -30,6 +30,20 @@ impl PartialEq for SongsSource {
 
 impl Eq for SongsSource {}
 
+impl SongsSource {
+    pub fn has_spotify_uri(&self) -> bool {
+        matches!(self, Self::Playlist(_) | Self::Album(_))
+    }
+
+    pub fn spotify_uri(&self) -> Option<String> {
+        match self {
+            Self::Playlist(id) => Some(format!("spotify:playlist:{}", id)),
+            Self::Album(id) => Some(format!("spotify:album:{}", id)),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct BatchQuery {
     pub source: SongsSource,
@@ -57,16 +71,16 @@ impl BatchLoader {
         create_action: ActionCreator,
     ) -> Option<AppAction>
     where
-        ActionCreator: FnOnce(SongBatch) -> AppAction,
+        ActionCreator: FnOnce(SongsSource, SongBatch) -> AppAction,
     {
         let api = Arc::clone(&self.api);
 
-        let result = match query.source {
+        let result = match &query.source {
             SongsSource::Playlist(id) => {
                 let Batch {
                     offset, batch_size, ..
                 } = query.batch;
-                api.get_playlist_tracks(&id, offset, batch_size).await
+                api.get_playlist_tracks(id, offset, batch_size).await
             }
             SongsSource::SavedTracks => {
                 let Batch {
@@ -78,12 +92,12 @@ impl BatchLoader {
                 let Batch {
                     offset, batch_size, ..
                 } = query.batch;
-                api.get_album_tracks(&id, offset, batch_size).await
+                api.get_album_tracks(id, offset, batch_size).await
             }
         };
 
         match result {
-            Ok(batch) => Some(create_action(batch)),
+            Ok(batch) => Some(create_action(query.source, batch)),
             Err(SpotifyApiError::NoToken) => None,
             Err(err) => {
                 error!("Spotify API error: {}", err);

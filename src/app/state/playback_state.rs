@@ -1,12 +1,14 @@
 use std::borrow::Cow;
 use std::time::Instant;
 
-use crate::app::models::{SongBatch, SongDescription, SongListModel, SongListModelPending};
+use crate::app::models::*;
 use crate::app::state::{AppAction, AppEvent, UpdatableState};
 use crate::app::{BatchQuery, LazyRandomIndex, SongsSource};
 
 #[derive(Debug)]
 pub struct PlaybackState {
+    available_devices: Vec<ConnectDevice>,
+    current_device: Device,
     index: LazyRandomIndex,
     songs: SongListModel,
     list_position: Option<usize>,
@@ -57,6 +59,14 @@ impl PlaybackState {
             self.songs.index(i)
         };
         Some(song?.into_description())
+    }
+
+    pub fn current_source(&self) -> Option<&SongsSource> {
+        self.source.as_ref()
+    }
+
+    pub fn current_song_index(&self) -> Option<usize> {
+        self.list_position
     }
 
     pub fn current_song_id(&self) -> Option<String> {
@@ -226,16 +236,26 @@ impl PlaybackState {
         }
     }
 
-    fn toggle_shuffle(&mut self) {
-        self.is_shuffled = !self.is_shuffled;
+    fn set_shuffled(&mut self, shuffled: bool) {
+        self.is_shuffled = shuffled;
         let old = self.list_position.replace(0).unwrap_or(0);
         self.index.reset_picking_first(old);
+    }
+
+    pub fn available_devices(&self) -> &Vec<ConnectDevice> {
+        &self.available_devices
+    }
+
+    pub fn current_device(&self) -> &Device {
+        &self.current_device
     }
 }
 
 impl Default for PlaybackState {
     fn default() -> Self {
         Self {
+            available_devices: vec![],
+            current_device: Device::Local,
             index: LazyRandomIndex::default(),
             songs: SongListModel::new(50),
             list_position: None,
@@ -255,6 +275,7 @@ pub enum PlaybackAction {
     Pause,
     Stop,
     SetRepeatMode(RepeatMode),
+    SetShuffled(bool),
     ToggleRepeat,
     ToggleShuffle,
     Seek(u32),
@@ -268,12 +289,20 @@ pub enum PlaybackAction {
     Preload,
     Queue(Vec<SongDescription>),
     Dequeue(String),
+    SwitchDevice(Device),
+    SetAvailableDevices(Vec<ConnectDevice>),
 }
 
 impl From<PlaybackAction> for AppAction {
     fn from(playback_action: PlaybackAction) -> Self {
         Self::PlaybackAction(playback_action)
     }
+}
+
+#[derive(Clone, Debug)]
+pub enum Device {
+    Local,
+    Connect(ConnectDevice),
 }
 
 #[derive(Clone, Debug)]
@@ -285,27 +314,19 @@ pub enum PlaybackEvent {
     SeekSynced(u32),
     VolumeSet(f64),
     TrackChanged(String),
+    SourceChanged,
     Preload(String),
-    ShuffleChanged,
+    ShuffleChanged(bool),
     PlaylistChanged,
     PlaybackStopped,
-}
-
-#[derive(Clone, Copy, Debug)]
-pub enum RepeatMode {
-    Song,
-    Playlist,
-    None,
+    SwitchedDevice(Device),
+    AvailableDevicesChanged,
 }
 
 impl From<PlaybackEvent> for AppEvent {
     fn from(playback_event: PlaybackEvent) -> Self {
         Self::PlaybackEvent(playback_event)
     }
-}
-
-fn make_events(opt_events: Vec<Option<PlaybackEvent>>) -> Vec<PlaybackEvent> {
-    opt_events.into_iter().flatten().collect()
 }
 
 impl UpdatableState for PlaybackState {
@@ -347,20 +368,24 @@ impl UpdatableState for PlaybackState {
                 };
                 vec![PlaybackEvent::RepeatModeChanged(self.repeat)]
             }
-            PlaybackAction::SetRepeatMode(mode) => {
+            PlaybackAction::SetRepeatMode(mode) if self.repeat != mode => {
                 self.repeat = mode;
                 vec![PlaybackEvent::RepeatModeChanged(self.repeat)]
             }
+            PlaybackAction::SetShuffled(shuffled) if self.is_shuffled != shuffled => {
+                self.set_shuffled(shuffled);
+                vec![PlaybackEvent::ShuffleChanged(shuffled)]
+            }
             PlaybackAction::ToggleShuffle => {
-                self.toggle_shuffle();
-                vec![PlaybackEvent::ShuffleChanged]
+                self.set_shuffled(!self.is_shuffled);
+                vec![PlaybackEvent::ShuffleChanged(self.is_shuffled)]
             }
             PlaybackAction::Next => {
                 if let Some(id) = self.play_next() {
-                    make_events(vec![
-                        Some(PlaybackEvent::TrackChanged(id)),
-                        Some(PlaybackEvent::PlaybackResumed),
-                    ])
+                    vec![
+                        PlaybackEvent::TrackChanged(id),
+                        PlaybackEvent::PlaybackResumed,
+                    ]
                 } else {
                     self.stop();
                     vec![PlaybackEvent::PlaybackStopped]
@@ -372,20 +397,20 @@ impl UpdatableState for PlaybackState {
             }
             PlaybackAction::Previous => {
                 if let Some(id) = self.play_prev() {
-                    make_events(vec![
-                        Some(PlaybackEvent::TrackChanged(id)),
-                        Some(PlaybackEvent::PlaybackResumed),
-                    ])
+                    vec![
+                        PlaybackEvent::TrackChanged(id),
+                        PlaybackEvent::PlaybackResumed,
+                    ]
                 } else {
-                    make_events(vec![Some(PlaybackEvent::TrackSeeked(0))])
+                    vec![PlaybackEvent::TrackSeeked(0)]
                 }
             }
             PlaybackAction::Load(id) => {
                 if self.play(&id) {
-                    make_events(vec![
-                        Some(PlaybackEvent::TrackChanged(id)),
-                        Some(PlaybackEvent::PlaybackResumed),
-                    ])
+                    vec![
+                        PlaybackEvent::TrackChanged(id),
+                        PlaybackEvent::PlaybackResumed,
+                    ]
                 } else {
                     vec![]
                 }
@@ -409,12 +434,13 @@ impl UpdatableState for PlaybackState {
             PlaybackAction::LoadPagedSongs(source, batch)
                 if Some(&source) != self.source.as_ref() =>
             {
+                debug!("new source: {:?}", &source);
                 self.set_batch(Some(source), batch);
-                vec![PlaybackEvent::PlaylistChanged]
+                vec![PlaybackEvent::PlaylistChanged, PlaybackEvent::SourceChanged]
             }
             PlaybackAction::LoadSongs(tracks) => {
                 self.set_queue(tracks);
-                vec![PlaybackEvent::PlaylistChanged]
+                vec![PlaybackEvent::PlaylistChanged, PlaybackEvent::SourceChanged]
             }
             PlaybackAction::Queue(tracks) => {
                 self.queue(tracks);
@@ -433,6 +459,14 @@ impl UpdatableState for PlaybackState {
                 vec![PlaybackEvent::SeekSynced(pos)]
             }
             PlaybackAction::SetVolume(volume) => vec![PlaybackEvent::VolumeSet(volume)],
+            PlaybackAction::SetAvailableDevices(list) => {
+                self.available_devices = list;
+                vec![PlaybackEvent::AvailableDevicesChanged]
+            }
+            PlaybackAction::SwitchDevice(new_device) => {
+                self.current_device = new_device.clone();
+                vec![PlaybackEvent::SwitchedDevice(new_device)]
+            }
             _ => vec![],
         }
     }
@@ -611,14 +645,14 @@ mod tests {
         state.play("2");
         assert_eq!(state.current_position(), Some(1));
 
-        state.toggle_shuffle();
+        state.set_shuffled(true);
         assert!(state.is_shuffled());
         assert_eq!(state.current_position(), Some(0));
 
         state.play_next();
         assert_eq!(state.current_position(), Some(1));
 
-        state.toggle_shuffle();
+        state.set_shuffled(false);
         assert!(!state.is_shuffled());
 
         let ids = state.song_ids();
@@ -638,12 +672,12 @@ mod tests {
         let mut state = PlaybackState::default();
         state.queue(vec![song("1"), song("2"), song("3")]);
 
-        state.toggle_shuffle();
+        state.set_shuffled(true);
         assert!(state.is_shuffled());
 
         state.queue(vec![song("4")]);
 
-        state.toggle_shuffle();
+        state.set_shuffled(false);
         assert!(!state.is_shuffled());
 
         let ids = state.song_ids();

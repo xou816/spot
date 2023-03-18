@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spot\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-27 09:46-0500\n"
+"POT-Creation-Date: 2023-03-18 19:15-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,8 +19,14 @@ msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
 #. translators: This notification is the default message for unhandled errors. Logs refer to console output.
-#: src/app/batch_loader.rs:92 src/app/components/mod.rs:129
+#: src/app/batch_loader.rs:106 src/app/components/mod.rs:133
 msgid "An error occured. Check logs for details!"
+msgstr ""
+
+#: src/app/components/device_selector/widget.rs:135
+#: src/app/components/device_selector/device_selector.blp:9
+#: src/app/components/device_selector/device_selector.blp:37
+msgid "This device"
 msgstr ""
 
 #. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
@@ -84,7 +90,7 @@ msgid "Playlists"
 msgstr ""
 
 #. translators: This is a sidebar entry to browse to saved tracks.
-#: src/app/components/navigation/factory.rs:85
+#: src/app/components/navigation/factory.rs:76
 #: src/app/components/sidebar/sidebar_item.rs:41
 msgid "Saved tracks"
 msgstr ""
@@ -97,12 +103,6 @@ msgstr ""
 #. translators: This is a label in the notification shown after creating a new playlist. If it is clicked, the new playlist will be opened.
 #: src/app/components/notification/mod.rs:27
 msgid "View"
-msgstr ""
-
-#. translators: This is a sidebar entry to browse to saved playlists.
-#: src/app/components/now_playing/now_playing_model.rs:133
-#: src/app/components/sidebar/sidebar_item.rs:43
-msgid "Now playing"
 msgstr ""
 
 #: src/app/components/playback/playback_controls.rs:64
@@ -122,6 +122,11 @@ msgstr ""
 
 #: src/app/components/selection/component.rs:66
 msgid "Tracks saved!"
+msgstr ""
+
+#. translators: This is a sidebar entry to browse to saved playlists.
+#: src/app/components/sidebar/sidebar_item.rs:43
+msgid "Now playing"
 msgstr ""
 
 #: src/app/components/sidebar/sidebar_item.rs:81
@@ -160,7 +165,11 @@ msgstr ""
 msgid "Connection restored"
 msgstr ""
 
-#: src/main.rs:75
+#: src/connect/player.rs:65
+msgid "Connection to device lost!"
+msgstr ""
+
+#: src/main.rs:76
 msgid "Failed to open link!"
 msgstr ""
 
@@ -362,6 +371,14 @@ msgstr ""
 #. Translators: Button label. Selects all visible songs.
 #: src/app/components/headerbar/headerbar.blp:63
 msgid "Select all"
+msgstr ""
+
+#: src/app/components/device_selector/device_selector.blp:15
+msgid "Playing on"
+msgstr ""
+
+#: src/app/components/device_selector/device_selector.blp:24
+msgid "Refresh devices"
 msgstr ""
 
 #. Translators: label for the entry containing the name of a new playlist

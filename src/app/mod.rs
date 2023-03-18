@@ -48,7 +48,12 @@ impl App {
         let model = Rc::new(AppModel::new(state, spotify_client));
 
         let components: Vec<Box<dyn EventListener>> = vec![
-            App::make_player_notifier(&settings, sender.clone()),
+            App::make_player_notifier(
+                Rc::clone(&model),
+                &settings,
+                Box::new(ActionDispatcherImpl::new(sender.clone(), worker.clone())),
+                sender.clone(),
+            ),
             App::make_dbus(Rc::clone(&model), sender.clone()),
         ];
 
@@ -94,12 +99,17 @@ impl App {
     }
 
     fn make_player_notifier(
+        app_model: Rc<AppModel>,
         settings: &SpotSettings,
+        dispatcher: Box<dyn ActionDispatcher>,
         sender: UnboundedSender<AppAction>,
     ) -> Box<impl EventListener> {
+        let api = app_model.get_spotify();
         Box::new(PlayerNotifier::new(
-            sender.clone(),
-            crate::player::start_player_service(settings.player_settings.clone(), sender),
+            app_model,
+            dispatcher,
+            crate::player::start_player_service(settings.player_settings.clone(), sender.clone()),
+            crate::connect::start_connect_server(api, sender),
         ))
     }
 

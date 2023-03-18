@@ -1,15 +1,17 @@
-use gettextrs::gettext;
 use gio::prelude::*;
 use gio::SimpleActionGroup;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use crate::app::components::SimpleHeaderBarModel;
-use crate::app::components::{labels, PlaylistModel};
-use crate::app::models::SongDescription;
-use crate::app::models::SongListModel;
-use crate::app::state::SelectionContext;
-use crate::app::state::{PlaybackAction, PlaybackState, SelectionAction, SelectionState};
+use crate::app::components::{
+    labels, DeviceSelectorModel, HeaderBarModel, PlaylistModel, SimpleHeaderBarModel,
+    SimpleHeaderBarModelWrapper,
+};
+use crate::app::models::{SongDescription, SongListModel};
+use crate::app::state::Device;
+use crate::app::state::{
+    PlaybackAction, PlaybackState, SelectionAction, SelectionContext, SelectionState,
+};
 use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel};
 
 pub struct NowPlayingModel {
@@ -33,18 +35,37 @@ impl NowPlayingModel {
         let queue = self.queue();
         let loader = self.app_model.get_batch_loader();
         let query = queue.next_query()?;
-        let source = query.source.clone();
         debug!("next_query = {:?}", &query);
 
         self.dispatcher.dispatch_async(Box::pin(async move {
             loader
-                .query(query, |song_batch| {
+                .query(query, |source, song_batch| {
                     PlaybackAction::LoadPagedSongs(source, song_batch).into()
                 })
                 .await
         }));
 
         Some(())
+    }
+
+    pub fn to_headerbar_model(self: &Rc<Self>) -> Rc<impl HeaderBarModel> {
+        Rc::new(SimpleHeaderBarModelWrapper::new(
+            self.clone(),
+            self.app_model.clone(),
+            self.dispatcher.box_clone(),
+        ))
+    }
+
+    pub fn device_selector_model(&self) -> DeviceSelectorModel {
+        DeviceSelectorModel::new(self.app_model.clone(), self.dispatcher.box_clone())
+    }
+
+    fn current_selection_context(&self) -> SelectionContext {
+        let state = self.app_model.get_state();
+        match state.playback.current_device() {
+            Device::Local => SelectionContext::Queue,
+            Device::Connect(_) => SelectionContext::ReadOnlyQueue,
+        }
     }
 }
 
@@ -122,7 +143,7 @@ impl PlaylistModel for NowPlayingModel {
 
     fn enable_selection(&self) -> bool {
         self.dispatcher
-            .dispatch(AppAction::EnableSelection(SelectionContext::Queue));
+            .dispatch(AppAction::EnableSelection(self.current_selection_context()));
         true
     }
 
@@ -134,15 +155,15 @@ impl PlaylistModel for NowPlayingModel {
 
 impl SimpleHeaderBarModel for NowPlayingModel {
     fn title(&self) -> Option<String> {
-        Some(gettext("Now playing"))
+        None
     }
 
     fn title_updated(&self, _: &AppEvent) -> bool {
         false
     }
 
-    fn selection_context(&self) -> Option<&SelectionContext> {
-        Some(&SelectionContext::Queue)
+    fn selection_context(&self) -> Option<SelectionContext> {
+        Some(self.current_selection_context())
     }
 
     fn select_all(&self) {

@@ -112,7 +112,7 @@ impl DetailsModel {
 
         self.dispatcher.dispatch_async(Box::pin(async move {
             loader
-                .query(next_query, |song_batch| {
+                .query(next_query, |_s, song_batch| {
                     BrowserAction::AppendAlbumTracks(id, Box::new(song_batch)).into()
                 })
                 .await
@@ -229,8 +229,8 @@ impl SimpleHeaderBarModel for DetailsModel {
         false
     }
 
-    fn selection_context(&self) -> Option<&SelectionContext> {
-        Some(&SelectionContext::Default)
+    fn selection_context(&self) -> Option<SelectionContext> {
+        Some(SelectionContext::Default)
     }
 
     fn select_all(&self) {
