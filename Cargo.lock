@@ -2126,7 +2126,7 @@ dependencies = [
  "librespot-playback",
  "librespot-protocol",
  "log",
- "protobuf",
+ "protobuf 2.28.0",
  "rand",
  "serde",
  "serde_json",
@@ -2160,7 +2160,7 @@ dependencies = [
  "once_cell",
  "pbkdf2",
  "priority-queue",
- "protobuf",
+ "protobuf 2.28.0",
  "rand",
  "serde",
  "serde_json",
@@ -2208,7 +2208,7 @@ dependencies = [
  "librespot-core",
  "librespot-protocol",
  "log",
- "protobuf",
+ "protobuf 2.28.0",
 ]
 
 [[package]]
@@ -2251,7 +2251,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d6d3ac6196ac0ea67bbe039f56d6730a5d8b31502ef9bce0f504ed729dcb39f"
 dependencies = [
  "glob",
- "protobuf",
+ "protobuf 2.28.0",
  "protobuf-codegen-pure",
 ]
 
@@ -2999,12 +2999,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "106dd99e98437432fed6519dedecfade6a06a73bb7b2a1e019fdd2bee5778d94"
 
 [[package]]
+name = "protobuf"
+version = "3.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b55bad9126f378a853655831eb7363b7b01b81d19f8cb1218861086ca4a1a61e"
+dependencies = [
+ "once_cell",
+ "protobuf-support",
+ "thiserror",
+]
+
+[[package]]
 name = "protobuf-codegen"
 version = "2.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "033460afb75cf755fcfc16dfaed20b86468082a2ea24e05ac35ab4a099a017d6"
 dependencies = [
- "protobuf",
+ "protobuf 2.28.0",
 ]
 
 [[package]]
@@ -3013,8 +3024,17 @@ version = "2.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95a29399fc94bcd3eeaa951c715f7bea69409b2445356b00519740bcd6ddd865"
 dependencies = [
- "protobuf",
+ "protobuf 2.28.0",
  "protobuf-codegen",
+]
+
+[[package]]
+name = "protobuf-support"
+version = "3.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a5d4d7b8601c814cfb36bcebb79f0e61e45e1e93640cf778837833bbed05c372"
+dependencies = [
+ "thiserror",
 ]
 
 [[package]]
@@ -3425,7 +3445,7 @@ dependencies = [
  "librespot",
  "log",
  "percent-encoding",
- "protobuf",
+ "protobuf 3.2.0",
  "rand",
  "ref_filter_map",
  "regex",
