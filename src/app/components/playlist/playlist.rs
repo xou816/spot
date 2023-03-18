@@ -10,6 +10,8 @@ use crate::app::state::{PlaybackEvent, SelectionEvent, SelectionState};
 use crate::app::{AppEvent, Worker};
 
 pub trait PlaylistModel {
+    fn is_paused(&self) -> bool;
+
     fn song_list_model(&self) -> SongListModel;
 
     fn current_song_id(&self) -> Option<String>;
@@ -93,6 +95,7 @@ where
         listview.set_factory(Some(&factory));
         listview.set_single_click_activate(true);
         listview.set_model(Some(&selection_model));
+        Self::set_paused(&listview, model.is_paused());
         Self::set_selection_active(&listview, model.is_selection_enabled());
 
         factory.connect_setup(|_, item| {
@@ -187,6 +190,16 @@ where
             context.remove_class(class_name);
         }
     }
+
+    fn set_paused(listview: &gtk::ListView, paused: bool) {
+        let class_name = "playlist--paused";
+        let context = listview.style_context();
+        if paused {
+            context.add_class(class_name);
+        } else {
+            context.remove_class(class_name);
+        }
+    }
 }
 
 impl SongModel {
@@ -213,6 +226,11 @@ where
             }
             AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {
                 self.update_list();
+            }
+            AppEvent::PlaybackEvent(
+                PlaybackEvent::PlaybackResumed | PlaybackEvent::PlaybackPaused,
+            ) => {
+                Self::set_paused(&self.listview, self.model.is_paused());
             }
             AppEvent::SelectionEvent(SelectionEvent::SelectionModeChanged(_)) => {
                 Self::set_selection_active(&self.listview, self.model.is_selection_enabled());

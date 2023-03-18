@@ -28,6 +28,7 @@ else
 endif
 
 blueprints = custom_target('blueprints',
+  build_always_stale: true,
   input: files(
     'app/components/album/album.blp',
     'app/components/artist/artist.blp',

@@ -141,6 +141,10 @@ impl PlaylistModel for DetailsModel {
             .clone()
     }
 
+    fn is_paused(&self) -> bool {
+        !self.app_model.get_state().playback.is_playing()
+    }
+
     fn show_song_covers(&self) -> bool {
         false
     }

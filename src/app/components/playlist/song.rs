@@ -1,7 +1,6 @@
 use crate::app::components::display_add_css_provider;
 use crate::app::loader::ImageLoader;
 use crate::app::models::SongModel;
-
 use crate::app::Worker;
 use gio::MenuModel;
 use glib::subclass::InitializingObject;
@@ -23,7 +22,7 @@ mod imp {
         pub song_index: TemplateChild<gtk::Label>,
 
         #[template_child]
-        pub song_icon: TemplateChild<gtk::Image>,
+        pub song_icon: TemplateChild<gtk::Spinner>,
 
         #[template_child]
         pub song_checkbox: TemplateChild<gtk::CheckButton>,
