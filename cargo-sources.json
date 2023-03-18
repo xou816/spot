@@ -1444,15 +1444,15 @@
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/gio/gio-0.17.0.crate",
-        "sha256": "1981edf8679d2f2c8ec3120015867f45aa0a1c2d5e3e129ca2f7dda174d3d2a9",
+        "url": "https://static.crates.io/crates/gio/gio-0.17.4.crate",
+        "sha256": "2261a3b4e922ec676d1c27ac466218c38cf5dcb49a759129e54bb5046e442125",
         "dest": "cargo/vendor",
-        "dest-filename": "gio-0.17.0.crate"
+        "dest-filename": "gio-0.17.4.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%221981edf8679d2f2c8ec3120015867f45aa0a1c2d5e3e129ca2f7dda174d3d2a9%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/gio-0.17.0",
+        "url": "data:%7B%22package%22%3A%20%222261a3b4e922ec676d1c27ac466218c38cf5dcb49a759129e54bb5046e442125%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/gio-0.17.4",
         "dest-filename": ".cargo-checksum.json"
     },
     {
@@ -2289,15 +2289,15 @@
     },
     {
         "type": "file",
-        "url": "https://static.crates.io/crates/libadwaita/libadwaita-0.3.0.crate",
-        "sha256": "674cbf1bd796f3d4f0c24466c15d91180e33e497ae2e07eea3f3d545468dc839",
+        "url": "https://static.crates.io/crates/libadwaita/libadwaita-0.3.1.crate",
+        "sha256": "b1c4efd2020a4fcedbad2c4a97de97bf6045e5dc49d61d5a5d0cfd753db60700",
         "dest": "cargo/vendor",
-        "dest-filename": "libadwaita-0.3.0.crate"
+        "dest-filename": "libadwaita-0.3.1.crate"
     },
     {
         "type": "file",
-        "url": "data:%7B%22package%22%3A%20%22674cbf1bd796f3d4f0c24466c15d91180e33e497ae2e07eea3f3d545468dc839%22%2C%20%22files%22%3A%20%7B%7D%7D",
-        "dest": "cargo/vendor/libadwaita-0.3.0",
+        "url": "data:%7B%22package%22%3A%20%22b1c4efd2020a4fcedbad2c4a97de97bf6045e5dc49d61d5a5d0cfd753db60700%22%2C%20%22files%22%3A%20%7B%7D%7D",
+        "dest": "cargo/vendor/libadwaita-0.3.1",
         "dest-filename": ".cargo-checksum.json"
     },
     {
