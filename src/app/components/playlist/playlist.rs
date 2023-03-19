@@ -99,10 +99,12 @@ where
         Self::set_selection_active(&listview, model.is_selection_enabled());
 
         factory.connect_setup(|_, item| {
+            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
             item.set_child(Some(&SongWidget::new()));
         });
 
         factory.connect_bind(clone!(@weak model => move |_, item| {
+            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
             let song_model = item.item().unwrap().downcast::<SongModel>().unwrap();
             song_model.set_state(model.song_state(&song_model.get_id()));
 
@@ -115,6 +117,7 @@ where
         }));
 
         factory.connect_unbind(|_, item| {
+            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
             let song_model = item.item().unwrap().downcast::<SongModel>().unwrap();
             song_model.unbind_all();
         });
