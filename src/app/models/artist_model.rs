@@ -4,6 +4,7 @@ use gio::prelude::*;
 use glib::subclass::prelude::*;
 use glib::Properties;
 
+// UI model!
 glib::wrapper! {
     pub struct ArtistModel(ObjectSubclass<imp::ArtistModel>);
 }

@@ -1,3 +1,4 @@
+// Configured by meson
 pub static PKGDATADIR: &str = @PKGDATADIR@;
 pub static VERSION: &str = "@VERSION@";
 pub static LOCALEDIR: &str = @LOCALEDIR@;

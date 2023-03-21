@@ -9,7 +9,9 @@ use crate::app::{BatchQuery, LazyRandomIndex, SongsSource};
 pub struct PlaybackState {
     available_devices: Vec<ConnectDevice>,
     current_device: Device,
+    // A mapping of indices for shuffled playback
     index: LazyRandomIndex,
+    // The actual list like thing backing the currently playing tracks
     songs: SongListModel,
     list_position: Option<usize>,
     seek_position: PositionMillis,
@@ -19,6 +21,8 @@ pub struct PlaybackState {
     is_shuffled: bool,
 }
 
+// Most mutatings methods shouldn't be pub
+// If they are, they probably are only used by the app state
 impl PlaybackState {
     pub fn songs(&self) -> &SongListModel {
         &self.songs
@@ -36,6 +40,7 @@ impl PlaybackState {
         self.repeat
     }
 
+    // Whatever batch of songs we would need to grab if we were to play the next track
     pub fn next_query(&self) -> Option<BatchQuery> {
         let next_index = self.next_index()?;
         let next_index = if self.is_shuffled {
@@ -89,6 +94,7 @@ impl PlaybackState {
         self.songs.clear()
     }
 
+    // Replaces (!) the current playlist with the contents of a song batch
     fn set_batch(&mut self, source: Option<SongsSource>, song_batch: SongBatch) -> bool {
         let ok = self.clear(source).and(|s| s.add(song_batch)).commit();
         self.index.resize(self.songs.len());
@@ -101,7 +107,8 @@ impl PlaybackState {
         ok
     }
 
-    pub fn set_queue(&mut self, tracks: Vec<SongDescription>) {
+    // Replaces (!) the current playlist with a bunch of songs (not batched, not expected to grow)
+    fn set_queue(&mut self, tracks: Vec<SongDescription>) {
         self.clear(None).and(|s| s.append(tracks)).commit();
         self.index.grow(self.songs.len());
     }
@@ -119,6 +126,7 @@ impl PlaybackState {
         self.index.shrink(self.songs.len());
     }
 
+    // Update the current playing track (identified by a position in the list) if we're swapping songs
     fn swap_pos(&mut self, index: usize, other_index: usize) {
         let len = self.songs.len();
         self.list_position = self
@@ -153,6 +161,7 @@ impl PlaybackState {
         let found_index = self.songs.find_index(id);
 
         if let Some(index) = found_index {
+            // If shufflings songs, we make sure the track we just picked is the first to come up
             if self.is_shuffled {
                 self.index.reset_picking_first(index);
                 self.play_index(0);
@@ -180,7 +189,7 @@ impl PlaybackState {
     }
 
     fn play_next(&mut self) -> Option<String> {
-        self.next_index().and_then(move |i| {
+        self.next_index().and_then(|i| {
             self.seek_position.set(0, true);
             self.play_index(i)
         })
@@ -197,7 +206,7 @@ impl PlaybackState {
     }
 
     fn play_prev(&mut self) -> Option<String> {
-        self.prev_index().and_then(move |i| {
+        self.prev_index().and_then(|i| {
             // Only jump to the previous track if we aren't more than 2 seconds (2,000 ms) into the current track.
             // Otherwise, seek to the start of the current track.
             // (This replicates the behavior of official Spotify clients.)
@@ -279,6 +288,7 @@ pub enum PlaybackAction {
     ToggleRepeat,
     ToggleShuffle,
     Seek(u32),
+    // I can't remember the diff betweek Seek and SyncSeek right now. Probably the source of the action
     SyncSeek(u32),
     Load(String),
     LoadSongs(Vec<SongDescription>),
@@ -333,6 +343,7 @@ impl UpdatableState for PlaybackState {
     type Action = PlaybackAction;
     type Event = PlaybackEvent;
 
+    // Main "reducer" :)
     fn update_with(&mut self, action: Cow<Self::Action>) -> Vec<Self::Event> {
         match action.into_owned() {
             PlaybackAction::TogglePlay => {
@@ -472,10 +483,15 @@ impl UpdatableState for PlaybackState {
     }
 }
 
+// A struct to keep track of the playback position
+// Caller must call pause/play at the right time
 #[derive(Debug)]
 struct PositionMillis {
+    // Last recorded position in the track (in milliseconds)
     last_known_position: u64,
+    // Last time we resumed playback
     last_resume_instant: Option<Instant>,
+    // Playback rate (1)
     rate: f32,
 }
 
@@ -488,6 +504,7 @@ impl PositionMillis {
         }
     }
 
+    // Read the current pos by adding elapsed time since the last time we resumed playback to the last know position
     fn current(&self) -> u64 {
         let current_progress = self.last_resume_instant.map(|ri| {
             let elapsed = ri.elapsed().as_millis() as f32;

@@ -5,10 +5,14 @@ use std::{
 
 use crate::app::SongsSource;
 
+// A batch of whatever
 #[derive(Clone, Copy, Debug)]
 pub struct Batch {
+    // What offset does the batch start at
     pub offset: usize,
+    // How many elements
     pub batch_size: usize,
+    // Total number of elements if we had all batches
     pub total: usize,
 }
 
@@ -36,6 +40,8 @@ impl Batch {
         .filter(|b| b.offset < total)
     }
 }
+
+// "Something"Ref models usually boil down to an ID/url + a display name
 
 #[derive(Clone, Debug)]
 pub struct UserRef {
@@ -166,6 +172,7 @@ pub struct SongState {
     pub is_selected: bool,
 }
 
+// A batch of SONGS
 #[derive(Debug, Clone)]
 pub struct SongBatch {
     pub songs: Vec<SongDescription>,
@@ -182,6 +189,7 @@ impl SongBatch {
 
     pub fn resize(self, batch_size: usize) -> Vec<Self> {
         let SongBatch { mut songs, batch } = self;
+        // Growing a batch is easy...
         if batch_size > batch.batch_size {
             let new_batch = Batch {
                 batch_size,
@@ -191,9 +199,11 @@ impl SongBatch {
                 songs,
                 batch: new_batch,
             }]
+        // Shrinking is not!
+        // We have to split the batch in multiple batches
         } else {
             let n = songs.len();
-            let iter_count = n / batch_size + (if n % batch_size > 0 { 1 } else { 0 });
+            let iter_count = (n + batch_size - 1) / batch_size;
             (0..iter_count)
                 .map(|i| {
                     let offset = batch.offset + i * batch_size;

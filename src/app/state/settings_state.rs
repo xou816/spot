@@ -27,6 +27,7 @@ impl From<SettingsEvent> for AppEvent {
 
 #[derive(Default)]
 pub struct SettingsState {
+    // Probably shouldn't be stored, the source of truth is GSettings anyway
     pub settings: SpotSettings,
 }
 

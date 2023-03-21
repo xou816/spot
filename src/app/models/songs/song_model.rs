@@ -7,6 +7,7 @@ use std::{cell::Ref, ops::Deref};
 use crate::app::components::utils::format_duration;
 use crate::app::models::*;
 
+// UI model for a song
 glib::wrapper! {
     pub struct SongModel(ObjectSubclass<imp::SongModel>);
 }
@@ -111,6 +112,7 @@ mod imp {
     use super::*;
     use std::cell::{Cell, RefCell};
 
+    // Keep track of signals and bindings targeting this song
     #[derive(Default)]
     struct BindingsInner {
         pub signals: Vec<SignalHandlerId>,
@@ -156,7 +158,9 @@ mod imp {
             glib::ParamSpecString::builder("duration")
                 .read_only()
                 .build(),
+            // URL
             glib::ParamSpecString::builder("art").read_only().build(),
+            // Can be true when playback is paused; just means this is the current song
             glib::ParamSpecBoolean::builder("playing")
                 .readwrite()
                 .build(),

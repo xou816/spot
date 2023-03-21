@@ -9,6 +9,8 @@ pub struct AppServices {
     pub batch_loader: BatchLoader,
 }
 
+// Two purposes: give access to some services to users of the AppModel (shared)
+// and give a read only view of the state
 pub struct AppModel {
     state: RefCell<AppState>,
     services: AppServices,
@@ -32,14 +34,17 @@ impl AppModel {
         self.services.batch_loader.clone()
     }
 
+    // Read only access to the state!
     pub fn get_state(&self) -> Ref<'_, AppState> {
         self.state.borrow()
     }
 
+    // Convenience...
     pub fn map_state<T: 'static, F: FnOnce(&AppState) -> &T>(&self, map: F) -> Ref<'_, T> {
         Ref::map(self.state.borrow(), map)
     }
 
+    // Convenience...
     pub fn map_state_opt<T: 'static, F: FnOnce(&AppState) -> Option<&T>>(
         &self,
         map: F,
@@ -47,8 +52,10 @@ impl AppModel {
         ref_filter_map(self.state.borrow(), map)
     }
 
-    pub fn update_state(&self, message: AppAction) -> Vec<AppEvent> {
-        match &message {
+    pub fn update_state(&self, action: AppAction) -> Vec<AppEvent> {
+        // The LoginActions are a bit special, we intercept them to grab the Spotify token
+        // and save it in our Arc'd API client
+        match &action {
             AppAction::LoginAction(LoginAction::SetLoginSuccess(
                 SetLoginSuccessAction::Password(creds),
             )) => {
@@ -65,7 +72,8 @@ impl AppModel {
             _ => {}
         }
 
+        // And this is the only mutable borrow of our state!
         let mut state = self.state.borrow_mut();
-        state.update_state(message)
+        state.update_state(action)
     }
 }

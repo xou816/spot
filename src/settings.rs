@@ -35,6 +35,7 @@ impl WindowGeometry {
     }
 }
 
+// Player (librespot) settings
 impl SpotifyPlayerSettings {
     pub fn new_from_gsettings() -> Option<Self> {
         let settings = gio::Settings::new(SETTINGS);
@@ -50,7 +51,7 @@ impl SpotifyPlayerSettings {
                 settings.string("alsa-device").as_str().to_string(),
             )),
             2 => Some(AudioBackend::GStreamer(
-                "audioconvert dithering=none ! audioresample ! pipewiresink".to_string(),
+                "audioconvert dithering=none ! audioresample ! pipewiresink".to_string(), // This should be configurable eventually
             )),
             _ => None,
         }?;
@@ -85,6 +86,7 @@ pub struct SpotSettings {
     pub window: WindowGeometry,
 }
 
+// Application settings
 impl SpotSettings {
     pub fn new_from_gsettings() -> Option<Self> {
         let settings = gio::Settings::new(SETTINGS);

@@ -1,17 +1,19 @@
 use futures::channel::mpsc::{unbounded, UnboundedReceiver, UnboundedSender};
+use futures::future::BoxFuture;
 use futures::future::Future;
-use futures::future::{BoxFuture, LocalBoxFuture};
 use futures::stream::StreamExt;
 use std::pin::Pin;
 
 use super::AppAction;
 
+// A wrapper around an MPSC sender to send AppActions synchronously or asynchronously
+// It is a trait because I guess I wanted to be able to stub it, but see how that went...
 pub trait ActionDispatcher {
     fn dispatch(&self, action: AppAction);
     fn dispatch_many(&self, actions: Vec<AppAction>);
-    fn dispatch_local_async(&self, action: LocalBoxFuture<'static, Option<AppAction>>);
     fn dispatch_async(&self, action: BoxFuture<'static, Option<AppAction>>);
     fn dispatch_many_async(&self, actions: BoxFuture<'static, Vec<AppAction>>);
+    // Can't have impl Clone easily so there you go
     fn box_clone(&self) -> Box<dyn ActionDispatcher>;
 }
 
@@ -38,15 +40,6 @@ impl ActionDispatcher for ActionDispatcherImpl {
         }
     }
 
-    fn dispatch_local_async(&self, action: LocalBoxFuture<'static, Option<AppAction>>) {
-        let clone = self.sender.clone();
-        self.worker.send_local_task(async move {
-            if let Some(action) = action.await {
-                clone.unbounded_send(action).unwrap();
-            }
-        });
-    }
-
     fn dispatch_async(&self, action: BoxFuture<'static, Option<AppAction>>) {
         let clone = self.sender.clone();
         self.worker.send_task(async move {
@@ -70,6 +63,7 @@ impl ActionDispatcher for ActionDispatcherImpl {
     }
 }
 
+// Funky name for a mere wrapper around an MPSC send/recv pair
 pub struct DispatchLoop {
     receiver: UnboundedReceiver<AppAction>,
     sender: UnboundedSender<AppAction>,
@@ -98,6 +92,7 @@ impl DispatchLoop {
 pub type FutureTask = Pin<Box<dyn Future<Output = ()> + Send>>;
 pub type FutureLocalTask = Pin<Box<dyn Future<Output = ()>>>;
 
+// The Worker (see below) is a glorified way to send an async task to the GLib(rs) future executor
 pub fn spawn_task_handler(context: &glib::MainContext) -> Worker {
     let (future_local_sender, future_local_receiver) = unbounded::<FutureLocalTask>();
     context.spawn_local_with_priority(
@@ -114,6 +109,8 @@ pub fn spawn_task_handler(context: &glib::MainContext) -> Worker {
     Worker(future_local_sender, future_sender)
 }
 
+// Again, fancy name for an MPSC sender
+// Actually two of them, in case you need to send local futures (no Send needed)
 #[derive(Clone)]
 pub struct Worker(
     UnboundedSender<FutureLocalTask>,

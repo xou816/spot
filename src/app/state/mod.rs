@@ -8,8 +8,6 @@ mod screen_states;
 mod selection_state;
 mod settings_state;
 
-use std::borrow::Cow;
-
 pub use app_model::AppModel;
 pub use app_state::*;
 pub use browser_state::*;
@@ -24,5 +22,5 @@ pub trait UpdatableState {
     type Action: Clone;
     type Event;
 
-    fn update_with(&mut self, action: Cow<Self::Action>) -> Vec<Self::Event>;
+    fn update_with(&mut self, action: std::borrow::Cow<Self::Action>) -> Vec<Self::Event>;
 }

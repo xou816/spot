@@ -76,7 +76,9 @@ impl From<LoginEvent> for AppEvent {
 
 #[derive(Default)]
 pub struct LoginState {
+    // Username
     pub user: Option<String>,
+    // Playlists owned by the logged in user
     pub playlists: Vec<PlaylistSummary>,
 }
 
@@ -84,6 +86,7 @@ impl UpdatableState for LoginState {
     type Action = LoginAction;
     type Event = AppEvent;
 
+    // The login state has a lot of actions that just translate to events
     fn update_with(&mut self, action: Cow<Self::Action>) -> Vec<Self::Event> {
         match action.into_owned() {
             LoginAction::ShowLogin => vec![LoginEvent::LoginShown.into()],

@@ -28,12 +28,17 @@ use crate::app::{state::PlaybackAction, App, AppAction, BrowserAction};
 fn main() {
     let settings = settings::SpotSettings::new_from_gsettings().unwrap_or_default();
     setup_gtk(&settings);
+
+    // Looks like there's a side effect to declaring widgets that allows them to be referenced them in ui/blueprint files
+    // so here goes!
     expose_custom_widgets();
 
     let gtk_app = gtk::Application::new(Some(config::APPID), ApplicationFlags::HANDLES_OPEN);
     let builder = gtk::Builder::from_resource("/dev/alextren/Spot/window.ui");
     let window: libadwaita::ApplicationWindow = builder.object("window").unwrap();
 
+    // In debug mode, the app id is different (see meson config) so we fix the resource path (and add a distinctive style)
+    // Having a different app id allows running both the stable and development version at the same time
     if cfg!(debug_assertions) {
         window.style_context().add_class("devel");
         gtk_app.set_resource_base_path(Some("/dev/alextren/Spot"));
@@ -43,9 +48,11 @@ fn main() {
     let dispatch_loop = DispatchLoop::new();
     let sender = dispatch_loop.make_dispatcher();
 
+    // Couple of actions used with shortcuts
     register_actions(&gtk_app, sender.clone());
     setup_credits(builder.object::<libadwaita::AboutWindow>("about").unwrap());
 
+    // Main app logic is hooked up here
     let app = App::new(
         settings,
         builder,
@@ -60,6 +67,7 @@ fn main() {
         if let Some(existing_window) = gtk_app.active_window() {
             existing_window.present();
         } else {
+            // Only send the Start action if we've just created the window
             window.set_application(Some(gtk_app));
             gtk_app.add_window(&window);
             sender_clone.unbounded_send(AppAction::Start).unwrap();
@@ -85,13 +93,16 @@ fn main() {
 }
 
 fn setup_gtk(settings: &settings::SpotSettings) {
+    // Setup logging
     env_logger::init();
 
+    // Setup translations
     textdomain("spot")
         .and_then(|_| bindtextdomain("spot", config::LOCALEDIR))
         .and_then(|_| bind_textdomain_codeset("spot", "UTF-8"))
         .expect("Could not setup localization");
 
+    // Setup Gtk, Adwaita...
     gtk::init().unwrap_or_else(|_| panic!("Failed to initialize GTK"));
     libadwaita::init().unwrap_or_else(|_| panic!("Failed to initialize libadwaita"));
 
@@ -113,6 +124,7 @@ fn setup_gtk(settings: &settings::SpotSettings) {
 }
 
 fn setup_credits(about: libadwaita::AboutWindow) {
+    // Read from a couple files at compile time and update the about dialog
     let authors: Vec<&str> = include_str!("../AUTHORS")
         .trim_end_matches('\n')
         .split('\n')

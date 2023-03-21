@@ -4,6 +4,8 @@ use gio::prelude::*;
 use glib::subclass::prelude::*;
 use glib::Properties;
 
+// UI model!
+// Despite the name, it can represent a playlist as well
 glib::wrapper! {
     pub struct AlbumModel(ObjectSubclass<imp::AlbumModel>);
 }

@@ -1,6 +1,8 @@
+// Domain models
 mod main;
 pub use main::*;
 
+// UI models (GObject)
 mod songs;
 pub use songs::*;
 

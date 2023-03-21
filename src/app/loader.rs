@@ -7,6 +7,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::Hasher;
 use std::io::{Error, ErrorKind, Write};
 
+// A wrapper to be able to implement the Write trait on a PixbufLoader
 struct LocalPixbufLoader<'a>(&'a PixbufLoader);
 
 impl<'a> Write for LocalPixbufLoader<'a> {
@@ -25,6 +26,7 @@ impl<'a> Write for LocalPixbufLoader<'a> {
     }
 }
 
+// A helper to load remote images, with simple cache management
 pub struct ImageLoader {
     cache: CacheManager,
 }
@@ -36,6 +38,7 @@ impl ImageLoader {
         }
     }
 
+    // Downloaded images are simply named [hash of url].[file extension]
     fn resource_for(url: &str, ext: &str) -> String {
         let mut hasher = DefaultHasher::new();
         hasher.write(url.as_bytes());
@@ -64,19 +67,25 @@ impl ImageLoader {
         pixbuf_loader.set_size(width, height);
         let mut loader = LocalPixbufLoader(&pixbuf_loader);
 
+        // Try to read from cache first, ignoring possible expiry
         match self
             .cache
             .read_cache_file(&resource[..], CachePolicy::IgnoreExpiry)
             .await
         {
+            // Write content of cache file to the pixbuf loader if the cache contained something
             Ok(CacheFile::Fresh(buffer, _)) => {
                 loader.write_all(&buffer[..]).ok()?;
             }
+            // Otherwise, get image over HTTP
             _ => {
                 if let Some(mut resp) = Self::get_image(url).await {
                     let mut buffer = vec![];
+                    // Copy the image to a buffer...
                     resp.copy_to(&mut buffer).await.ok()?;
+                    // ... copy the buffer to the loader...
                     loader.write_all(&buffer[..]).ok()?;
+                    // ... but also save that buffer to cache
                     self.cache
                         .write_cache_file(&resource[..], &buffer[..], CacheExpiry::Never)
                         .await

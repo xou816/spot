@@ -36,10 +36,12 @@ impl PartialEq for ScreenName {
 
 impl Eq for ScreenName {}
 
+// ALBUM details
 pub struct DetailsState {
     pub id: String,
     pub name: ScreenName,
     pub content: Option<AlbumFullDescription>,
+    // Read the songs from here, not content (won't get more than the initial batch of songs)
     pub songs: SongListModel,
 }
 
@@ -96,6 +98,7 @@ pub struct PlaylistDetailsState {
     pub id: String,
     pub name: ScreenName,
     pub playlist: Option<PlaylistDescription>,
+    // Read the songs from here, not content (won't get more than the initial batch of songs)
     pub songs: SongListModel,
 }
 
@@ -196,6 +199,7 @@ impl UpdatableState for ArtistState {
     }
 }
 
+// The "home" represents screens visible initially (saved albums, saved playlists, saved tracks)
 pub struct HomeState {
     pub name: ScreenName,
     pub visible_page: &'static str,
@@ -360,6 +364,7 @@ impl UpdatableState for SearchState {
     }
 }
 
+// Screen when we click on the name of a playlist owner
 pub struct UserState {
     pub id: String,
     pub name: ScreenName,

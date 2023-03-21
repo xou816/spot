@@ -3,6 +3,7 @@ use glib::clone::{Downgrade, Upgrade};
 use std::iter::Iterator;
 use std::marker::PhantomData;
 
+// A typed wrapper around a GIO ListStore
 pub struct ListStore<GType> {
     store: gio::ListStore,
     _marker: PhantomData<GType>,
@@ -65,6 +66,9 @@ where
         self.store.n_items() as usize
     }
 
+    // Quick and dirty comparison between the list store and a slice of object that can be compared
+    // with the contents of the store using some function F.
+    // Not so great but eh
     pub fn eq<F, O>(&self, other: &[O], comparison: F) -> bool
     where
         F: Fn(&GType, &O) -> bool,

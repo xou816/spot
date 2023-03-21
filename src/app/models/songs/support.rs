@@ -3,6 +3,7 @@ use std::convert::{TryFrom, TryInto};
 
 use crate::app::models::*;
 
+// A range of numbers [a, b], empty range is allowed as well
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Range {
     Empty,
@@ -10,6 +11,7 @@ enum Range {
 }
 
 impl Range {
+    // Create a range [a, b] if b >= a, or an empty range otherwise
     fn of(a: impl TryInto<u32>, b: impl TryInto<u32>) -> Self {
         match (a.try_into(), b.try_into()) {
             (Ok(a), Ok(b)) if b >= a => Self::NotEmpty(a, b),
@@ -42,6 +44,7 @@ impl Range {
         }
     }
 
+    // Start index of the range, if not an empty range
     fn start<Target>(self) -> Option<Target>
     where
         Target: TryFrom<u32>,
@@ -53,6 +56,8 @@ impl Range {
     }
 }
 
+// Represents the range affected by an operation on the list
+// ListRangeUpdate(position, nb of elements added, nb of elements removed)
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ListRangeUpdate(pub i32, pub i32, pub i32);
 
@@ -77,6 +82,7 @@ impl ListRangeUpdate {
         Self(position.try_into().unwrap_or_default(), 1, 1)
     }
 
+    // Merge two range updates
     pub fn merge(self, other: Self) -> Self {
         // reorder for simplicity
         let (left, right) = if self.0 <= other.0 {
@@ -111,12 +117,26 @@ impl ListRangeUpdate {
     }
 }
 
+// A list of songs that supports
+// - batch loading (with non contiguous batches if songs are accessed in random order)
+// - O(1) time access to a song by its id
+// - manually adding content (not batched), when managing a queue for instance
+// - tracking the affected range after a mutation
+//
+// Note: the mutated ranges are given in terms of LOADED tracks. The theoretical size of the list is not accounted for.
+// This is to ease the work of updating the UI: we want to know what loaded/visible elements have moved around.
+//
+// Some operations are not very efficient. It might have been smarter to have different structures for our two use cases:
+// - fixed, batched sources (an album, a playlist)
+// - editable lists (queue)
 #[derive(Clone, Debug)]
 pub struct SongList {
     total: usize,
     total_loaded: usize,
     batch_size: usize,
     last_batch_key: usize,
+    // Here a batch has an index (key) and a list of associated song ids
+    // Why not a Vec? We could have batch 1, 2, NOT 3, then 4
     batches: HashMap<usize, Vec<String>>,
     indexed_songs: HashMap<String, SongModel>,
 }
@@ -143,10 +163,12 @@ impl SongList {
             .filter_map(move |(_, id)| indexed_songs.get(id))
     }
 
+    // How many songs we actually have at the moment
     pub fn partial_len(&self) -> usize {
         self.total_loaded
     }
 
+    // How many songs are loaded, up to a given batch index
     fn estimated_len(&self, up_to_batch_index: usize) -> usize {
         let batches = &self.batches;
         let batch_size = self.batch_size;
@@ -156,6 +178,7 @@ impl SongList {
         batch_size * batch_count
     }
 
+    // The theoretical len of the playlist, if we had all songs
     pub fn len(&self) -> usize {
         self.total
     }
@@ -167,12 +190,14 @@ impl SongList {
             .skip(i % batch_size)
     }
 
+    // Find the position of a song in the list
     pub fn find_index(&self, song_id: &str) -> Option<usize> {
         self.iter_ids_from(0)
             .find(|(_, id)| &id[..] == song_id)
             .map(|(pos, _)| pos)
     }
 
+    // Iterate over batches (in a given batch range), returning a tuple with the index of a song and its id
     fn iter_range(&self, a: usize, b: usize) -> impl Iterator<Item = (usize, &'_ String)> {
         let batch_size = self.batch_size;
         let batches = &self.batches;
@@ -185,12 +210,14 @@ impl SongList {
             })
     }
 
+    // Add an id to our batches
     fn batches_add(batches: &mut HashMap<usize, Vec<String>>, batch_size: usize, id: &str) {
         let index = batches.len().saturating_sub(1);
         let count = batches
             .get(&index)
             .map(|b| b.len() % batch_size)
             .unwrap_or(0);
+        // If there's no space in the last batch, we insert a new one
         if count == 0 {
             batches.insert(batches.len(), vec![id.to_string()]);
         } else {
@@ -209,6 +236,7 @@ impl SongList {
         let mut batches = HashMap::<usize, Vec<String>>::default();
         self.iter_ids_from(0)
             .filter(|(_, s)| !ids.contains(s))
+            // Removing is expensive, we have to recreate all batches
             .for_each(|(_, next)| {
                 Self::batches_add(&mut batches, self.batch_size, next);
             });
@@ -217,11 +245,13 @@ impl SongList {
         let removed = ids.len();
         self.total = self.total.saturating_sub(removed);
         self.total_loaded = self.total_loaded.saturating_sub(removed);
+        // Lazy computation of the affected range, basically assume everything has changed
         ListRangeUpdate(0, len as i32, self.total_loaded as i32)
     }
 
     pub fn append(&mut self, songs: Vec<SongDescription>) -> ListRangeUpdate {
         let songs_len = songs.len();
+        // How many loaded/visible songs so far
         let insertion_start = self.estimated_len(self.last_batch_key + 1);
         self.total = self.total.saturating_add(songs_len);
         self.total_loaded = self.total_loaded.saturating_add(songs_len);
@@ -238,6 +268,7 @@ impl SongList {
         let songs_len = songs.len();
         let insertion_start = 0;
 
+        // Prepending also requires redoing all the batches
         let mut batches = HashMap::<usize, Vec<String>>::default();
         for song in songs {
             Self::batches_add(&mut batches, self.batch_size, &song.id);
@@ -253,9 +284,11 @@ impl SongList {
         self.last_batch_key = batches.len().saturating_sub(1);
         self.batches = batches;
 
+        // But it's a bit easier to computer the visibly affected range :)
         ListRangeUpdate::inserted(insertion_start, songs_len)
     }
 
+    // Adding a batch is easy, might only require a resize
     pub fn add(&mut self, song_batch: SongBatch) -> Option<ListRangeUpdate> {
         if song_batch.batch.batch_size != self.batch_size {
             song_batch
@@ -266,6 +299,7 @@ impl SongList {
                     self.add_one(new_batch)
                 })
                 .reduce(|acc, cur| {
+                    // If we have added more than one batch we just merge the affected ranges
                     let merged = acc?.merge(cur?);
                     Some(merged).or(acc).or(cur)
                 })
@@ -330,6 +364,7 @@ impl SongList {
         Some(ListRangeUpdate::updated(a).merge(ListRangeUpdate::updated(b)))
     }
 
+    // Get the song at i (if the index is valid AND has been loaded)
     pub fn index(&self, i: usize) -> Option<&SongModel> {
         let batch_size = self.batch_size;
         let batch_id = i / batch_size;
@@ -340,10 +375,12 @@ impl SongList {
             .and_then(move |id| indexed_songs.get(id))
     }
 
+    // Get the i-th loaded song. VERY different!
     pub fn index_continuous(&self, i: usize) -> Option<&SongModel> {
         let batch_size = self.batch_size;
         let bi = i / batch_size;
         let batch = (0..=self.last_batch_key)
+            // Skip missing/not loaded batches
             .filter_map(move |i| self.batches.get(&i))
             .nth(bi)?;
         batch
@@ -351,6 +388,7 @@ impl SongList {
             .and_then(move |id| self.indexed_songs.get(id))
     }
 
+    // Return the batch needed to access the song at index i (if it's not loaded yet)
     pub fn needed_batch_for(&self, i: usize) -> Option<Batch> {
         let total = self.total;
         let batch_size = self.batch_size;
@@ -366,6 +404,7 @@ impl SongList {
         }
     }
 
+    // Get the full song batch that contains i
     pub fn song_batch_for(&self, i: usize) -> Option<SongBatch> {
         let total = self.total;
         let batch_size = self.batch_size;
@@ -384,6 +423,7 @@ impl SongList {
         })
     }
 
+    // The last loaded batch
     pub fn last_batch(&self) -> Option<Batch> {
         if self.total_loaded == 0 {
             None

@@ -8,6 +8,8 @@ use std::cell::{Cell, Ref, RefCell, RefMut};
 use super::support::*;
 use crate::app::models::*;
 
+// A struct to perform multiple mutations on a SongListModel
+// Eventually commit() must be called to send an update signal with merged affected ranges
 #[must_use]
 pub struct SongListModelPending<'a> {
     change: Option<ListRangeUpdate>,
@@ -55,6 +57,7 @@ impl<'a> SongListModelPending<'a> {
     }
 }
 
+// A GObject wrapper around the SongList
 glib::wrapper! {
     pub struct SongListModel(ObjectSubclass<imp::SongListModel>) @implements gio::ListModel;
 }
@@ -75,6 +78,7 @@ impl SongListModel {
     }
 
     fn notify_changes(&self, changes: impl IntoIterator<Item = ListRangeUpdate> + 'static) {
+        // Eh, not great but that works
         if cfg!(not(test)) {
             glib::source::idle_add_local_once(clone!(@weak self as s => move || {
                 for ListRangeUpdate(a, b, c) in changes.into_iter() {

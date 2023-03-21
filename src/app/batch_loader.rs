@@ -5,11 +5,13 @@ use crate::api::{SpotifyApiClient, SpotifyApiError};
 use crate::app::models::*;
 use crate::app::AppAction;
 
+// A wrapper around the Spotify API to load batches of songs from various sources (see below)
 #[derive(Clone)]
 pub struct BatchLoader {
     api: Arc<dyn SpotifyApiClient + Send + Sync>,
 }
 
+// The sources mentionned above
 #[derive(Clone, Debug)]
 pub enum SongsSource {
     Playlist(String),
@@ -44,6 +46,7 @@ impl SongsSource {
     }
 }
 
+// How to query for a batch: specify a source, and a batch to get (offset + number of elements to get)
 #[derive(Debug)]
 pub struct BatchQuery {
     pub source: SongsSource,
@@ -51,6 +54,7 @@ pub struct BatchQuery {
 }
 
 impl BatchQuery {
+    // Given a query, compute the next batch to get (if any)
     pub fn next(&self) -> Option<Self> {
         let Self { source, batch } = self;
         Some(Self {
@@ -65,6 +69,7 @@ impl BatchLoader {
         Self { api }
     }
 
+    // Query a batch and create an action when it's been retrieved succesfully
     pub async fn query<ActionCreator>(
         &self,
         query: BatchQuery,
@@ -75,29 +80,18 @@ impl BatchLoader {
     {
         let api = Arc::clone(&self.api);
 
+        let Batch {
+            offset, batch_size, ..
+        } = query.batch;
         let result = match &query.source {
-            SongsSource::Playlist(id) => {
-                let Batch {
-                    offset, batch_size, ..
-                } = query.batch;
-                api.get_playlist_tracks(id, offset, batch_size).await
-            }
-            SongsSource::SavedTracks => {
-                let Batch {
-                    offset, batch_size, ..
-                } = query.batch;
-                api.get_saved_tracks(offset, batch_size).await
-            }
-            SongsSource::Album(id) => {
-                let Batch {
-                    offset, batch_size, ..
-                } = query.batch;
-                api.get_album_tracks(id, offset, batch_size).await
-            }
+            SongsSource::Playlist(id) => api.get_playlist_tracks(id, offset, batch_size).await,
+            SongsSource::SavedTracks => api.get_saved_tracks(offset, batch_size).await,
+            SongsSource::Album(id) => api.get_album_tracks(id, offset, batch_size).await,
         };
 
         match result {
             Ok(batch) => Some(create_action(query.source, batch)),
+            // No token? Why was the batch loader called? Ah, whatever
             Err(SpotifyApiError::NoToken) => None,
             Err(err) => {
                 error!("Spotify API error: {}", err);

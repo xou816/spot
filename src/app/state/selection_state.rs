@@ -19,6 +19,7 @@ impl From<SelectionAction> for AppAction {
 
 #[derive(Clone, Debug)]
 pub enum SelectionEvent {
+    // Mode means selection active or not
     SelectionModeChanged(bool),
     SelectionChanged,
 }
@@ -106,10 +107,12 @@ impl SelectionState {
         self.selected_songs_ids.len()
     }
 
+    // Clears (!) the selection, returns associated memory
     pub fn take_selection(&mut self) -> Vec<SongDescription> {
         std::mem::take(self).selected_songs
     }
 
+    // Just have a look at the selection without changing it
     pub fn peek_selection(&self) -> impl Iterator<Item = &'_ SongDescription> {
         self.selected_songs.iter()
     }
