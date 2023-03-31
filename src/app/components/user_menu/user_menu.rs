@@ -16,7 +16,7 @@ impl UserMenu {
     pub fn new(
         user_button: gtk::MenuButton,
         settings: Settings,
-        about: gtk::AboutDialog,
+        about: libadwaita::AboutWindow,
         model: UserMenuModel,
     ) -> Self {
         let model = Rc::new(model);

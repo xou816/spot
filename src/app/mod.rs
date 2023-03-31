@@ -208,7 +208,7 @@ impl App {
         let settings = Settings::new(parent, settings_model);
 
         let button: gtk::MenuButton = builder.object("user").unwrap();
-        let about: gtk::AboutDialog = builder.object("about").unwrap();
+        let about: libadwaita::AboutWindow = builder.object("about").unwrap();
         let model = UserMenuModel::new(app_model, dispatcher);
         let user_menu = UserMenu::new(button, settings, about, model);
         Box::new(user_menu)
