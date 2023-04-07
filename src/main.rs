@@ -44,7 +44,7 @@ fn main() {
     let sender = dispatch_loop.make_dispatcher();
 
     register_actions(&gtk_app, sender.clone());
-    setup_credits(builder.object::<gtk::AboutDialog>("about").unwrap());
+    setup_credits(builder.object::<libadwaita::AboutWindow>("about").unwrap());
 
     let app = App::new(
         settings,
@@ -112,7 +112,7 @@ fn setup_gtk(settings: &settings::SpotSettings) {
     );
 }
 
-fn setup_credits(about: gtk::AboutDialog) {
+fn setup_credits(about: libadwaita::AboutWindow) {
     let authors: Vec<&str> = include_str!("../AUTHORS")
         .trim_end_matches('\n')
         .split('\n')
@@ -122,9 +122,9 @@ fn setup_credits(about: gtk::AboutDialog) {
         .trim_end_matches('\n')
         .split('\n')
         .collect();
-    about.set_version(Some(config::VERSION));
-    about.set_authors(&authors);
-    about.set_translator_credits(Some(translators));
+    about.set_version(config::VERSION);
+    about.set_developers(&authors);
+    about.set_translator_credits(translators);
     about.set_artists(&artists);
 }
 
