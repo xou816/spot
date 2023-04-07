@@ -50,10 +50,11 @@ template LoginWindow : Adw.Window {
 
             Label {
               /* Translators: Login window title, must mention Premium (a premium account is required). */
-              label: _("Login with your Spotify Account. A Spotify Premium subscription is required to use Spot.");
+              label: _("Log in with your Spotify Account. A Spotify Premium subscription is required to use the app.");
               wrap: true;
               wrap-mode: word;
               halign: center;
+              justify: center;
               styles ["body"]
             }
           }
@@ -63,7 +64,7 @@ template LoginWindow : Adw.Window {
 
               Adw.EntryRow username {
                 /* Translators: Placeholder for the username field */
-                title: _("Username");
+                title: _("Username or Email");
               }
 
               Adw.PasswordEntryRow password {

@@ -332,13 +332,13 @@ msgstr ""
 #. Translators: Login window title, must mention Premium (a premium account is required).
 #: src/app/components/login/login.blp:53
 msgid ""
-"Login with your Spotify Account. A Spotify Premium subscription is required "
-"to use Spot."
+"Log in with your Spotify Account. A Spotify Premium subscription is required "
+"to use the app."
 msgstr ""
 
 #. Translators: Placeholder for the username field
 #: src/app/components/login/login.blp:66
-msgid "Username"
+msgid "Username or Email"
 msgstr ""
 
 #. Translators: Placeholder for the password field
