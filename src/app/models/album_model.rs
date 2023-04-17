@@ -32,7 +32,6 @@ mod imp {
     use super::*;
 
     use std::cell::{Cell, RefCell};
-    use std::convert::TryFrom;
 
     #[derive(Default, Properties)]
     #[properties(wrapper_type = super::AlbumModel)]
