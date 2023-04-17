@@ -126,7 +126,6 @@ mod imp {
     use super::*;
     use gdk::cairo::glib::ParamSpec;
     use std::cell::{Cell, RefCell};
-    use std::convert::TryFrom;
 
     #[derive(Debug, Default, Properties)]
     #[properties(wrapper_type = super::SidebarItem)]

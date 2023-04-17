@@ -14,7 +14,6 @@ mod imp {
     use super::*;
     use glib::{ParamSpec, Properties};
     use std::cell::RefCell;
-    use std::convert::TryFrom;
 
     #[derive(Debug, CompositeTemplate, Properties)]
     #[template(resource = "/dev/alextren/Spot/sidebar/sidebar_row.ui")]

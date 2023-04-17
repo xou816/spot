@@ -7,10 +7,8 @@ const CSS_RO_ENTRY: &str = "playlist__title-entry--ro";
 
 mod imp {
 
-    use std::cell::RefCell;
-    use std::convert::TryFrom;
-
     use glib::{ParamSpec, Properties};
+    use std::cell::RefCell;
 
     use super::*;
 

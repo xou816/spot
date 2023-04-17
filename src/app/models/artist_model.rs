@@ -23,7 +23,6 @@ mod imp {
 
     use super::*;
     use std::cell::RefCell;
-    use std::convert::TryFrom;
 
     #[derive(Default, Properties)]
     #[properties(wrapper_type = super::ArtistModel)]

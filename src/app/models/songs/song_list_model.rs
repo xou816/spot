@@ -184,7 +184,6 @@ impl SongListModel {
 mod imp {
 
     use super::*;
-    use std::convert::TryFrom;
 
     #[derive(Default, Properties)]
     #[properties(wrapper_type = super::SongListModel)]
