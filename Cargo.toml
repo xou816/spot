@@ -10,7 +10,7 @@ package = "gtk4"
 features = ["gnome_43", "blueprint"]
 
 [dependencies.libadwaita]
-version = "^0.3.1"
+version = "^0.4.1"
 features = ["v1_2"]
 
 [dependencies.gdk]
