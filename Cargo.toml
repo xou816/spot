@@ -18,7 +18,7 @@ version = "^0.6.0"
 package = "gdk4"
 
 [dependencies.gio]
-version = "^0.17.4"
+version = "^0.17.9"
 features = ["v2_60"]
 
 [dependencies.glib]
