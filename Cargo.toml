@@ -35,7 +35,7 @@ features = ["rt", "macros", "sync"]
 
 [dependencies.futures]
 package = "futures"
-version = "0.3.18"
+version = "0.3.28"
 
 [dependencies.serde]
 version = "^1.0.136"
