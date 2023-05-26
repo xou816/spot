@@ -5,24 +5,24 @@ edition = "2018"
 license = "MIT"
 
 [dependencies.gtk]
-version = "^0.6.0"
+version = "^0.6.6"
 package = "gtk4"
-features = ["gnome_43", "blueprint"]
+features = ["gnome_44", "blueprint"]
 
 [dependencies.libadwaita]
-version = "^0.3.1"
+version = "^0.4.1"
 features = ["v1_2"]
 
 [dependencies.gdk]
-version = "^0.6.0"
+version = "^0.6.3"
 package = "gdk4"
 
 [dependencies.gio]
-version = "^0.17.4"
+version = "^0.17.9"
 features = ["v2_60"]
 
 [dependencies.glib]
-version = "^0.17.8"
+version = "^0.17.9"
 features = ["v2_60"]
 
 [dependencies.librespot]
@@ -57,19 +57,19 @@ version = "0.7.0"
 features = ["gettext-system"]
 
 [dependencies.secret-service]
-version = "3.0.0"
+version = "3.0.1"
 features = ["rt-async-io-crypto-rust"]
 
 [dependencies]
 gdk-pixbuf = "^0.17.0"
 ref_filter_map = "^1.0.1"
-regex = "^1.5.5"
+regex = "^1.8.3"
 async-std = "^1.12.0"
 form_urlencoded = "^1.0.1"
-zbus = "^3.12"
-zvariant = "^3.11"
-thiserror = "^1.0.30"
+zbus = "^3.13"
+zvariant = "^3.14"
+thiserror = "^1.0.40"
 lazy_static = "^1.4.0"
-log = "0.4.14"
+log = "0.4.17"
 env_logger = "0.10.0"
-percent-encoding = "2.1.0"
+percent-encoding = "2.2.0"
