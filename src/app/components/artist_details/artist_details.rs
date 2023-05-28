@@ -63,8 +63,7 @@ impl ArtistDetailsWidget {
     }
 
     fn set_loaded(&self) {
-        let context = self.style_context();
-        context.add_class("artist__loaded");
+        self.add_css_class("artist__loaded");
     }
 
     fn connect_bottom_edge<F>(&self, f: F)

@@ -168,11 +168,11 @@ impl Login {
     fn show_self(&self) {
         self.window().set_transient_for(Some(&self.parent));
         self.window().set_modal(true);
-        self.window().show();
+        self.window().set_visible(true);
     }
 
     fn hide_and_save_creds(&self, credentials: Credentials) {
-        self.window().hide();
+        self.window().set_visible(false);
         self.model.save_for_autologin(credentials);
     }
 

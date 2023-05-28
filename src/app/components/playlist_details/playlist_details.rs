@@ -111,8 +111,9 @@ impl PlaylistDetailsWidget {
     }
 
     fn set_loaded(&self) {
-        let context = self.imp().scrolling_header.style_context();
-        context.add_class("container--loaded");
+        self.imp()
+            .scrolling_header
+            .add_css_class("container--loaded");
     }
 
     fn set_editing(&self, editing: bool) {

@@ -107,22 +107,21 @@ impl PlaybackWidget {
     pub fn set_song_duration(&self, duration: Option<f64>) {
         let widget = self.imp();
         let class = "seek-bar--active";
-        let style_context = widget.seek_bar.style_context();
         if let Some(duration) = duration {
-            style_context.add_class(class);
+            self.add_css_class(class);
             widget.seek_bar.set_range(0.0, duration);
             widget.seek_bar.set_value(0.0);
             widget.track_position.set_text("0∶00");
             widget
                 .track_duration
                 .set_text(&format!(" / {}", format_duration(duration)));
-            widget.track_position.show();
-            widget.track_duration.show();
+            widget.track_position.set_visible(true);
+            widget.track_duration.set_visible(true);
         } else {
-            style_context.remove_class(class);
+            self.remove_css_class(class);
             widget.seek_bar.set_range(0.0, 0.0);
-            widget.track_position.hide();
-            widget.track_duration.hide();
+            widget.track_position.set_visible(false);
+            widget.track_duration.set_visible(false);
         }
     }
 

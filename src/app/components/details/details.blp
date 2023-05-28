@@ -1,16 +1,16 @@
 using Gtk 4.0;
 using Adw 1;
 
-template AlbumDetailsWidget : Adw.Bin {
+template $AlbumDetailsWidget : Adw.Bin {
   Box {
     orientation: vertical;
     vexpand: true;
     hexpand: true;
 
-    .HeaderBarWidget headerbar {
+    $HeaderBarWidget headerbar {
     }
 
-    .ScrollingHeaderWidget scrolling_header {
+    $ScrollingHeaderWidget scrolling_header {
       [header]
       WindowHandle {
         Adw.Clamp {
@@ -22,10 +22,10 @@ template AlbumDetailsWidget : Adw.Bin {
             homogeneous: false;
             transition-type: crossfade;
 
-            .AlbumHeaderWidget header_widget {
+            $AlbumHeaderWidget header_widget {
             }
 
-            .AlbumHeaderWidget header_mobile {
+            $AlbumHeaderWidget header_mobile {
               orientation: "vertical";
               spacing: "12";
             }

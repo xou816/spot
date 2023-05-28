@@ -76,11 +76,10 @@ mod imp {
                     let is_playing = value
                         .get()
                         .expect("type conformity checked by `Object::set_property`");
-                    let context = self.obj().style_context();
                     if is_playing {
-                        context.add_class(SONG_CLASS);
+                        self.obj().add_css_class(SONG_CLASS);
                     } else {
-                        context.remove_class(SONG_CLASS);
+                        self.obj().remove_css_class(SONG_CLASS);
                     }
                 }
                 "selected" => {
@@ -95,7 +94,7 @@ mod imp {
 
         fn property(&self, _id: usize, pspec: &glib::ParamSpec) -> glib::Value {
             match pspec.name() {
-                "playing" => self.obj().style_context().has_class(SONG_CLASS).to_value(),
+                "playing" => self.obj().has_css_class(SONG_CLASS).to_value(),
                 "selected" => self.song_checkbox.is_active().to_value(),
                 _ => unimplemented!(),
             }
@@ -135,20 +134,16 @@ impl SongWidget {
         if menu.is_some() {
             let widget = self.imp();
             widget.menu_btn.set_menu_model(menu);
-            widget
-                .menu_btn
-                .style_context()
-                .add_class("song__menu--enabled");
+            widget.menu_btn.add_css_class("song__menu--enabled");
         }
     }
 
     fn set_show_cover(&self, show_cover: bool) {
         let song_class = "song--cover";
-        let context = self.style_context();
         if show_cover {
-            context.add_class(song_class);
+            self.add_css_class(song_class);
         } else {
-            context.remove_class(song_class);
+            self.remove_css_class(song_class);
         }
     }
 
