@@ -67,28 +67,28 @@ impl SidebarItem {
             _ => (dest.id(), None, dest.title()),
         };
         glib::Object::builder()
-            .property("id", &id)
+            .property("id", id)
             .property("data", &data.unwrap_or_default())
             .property("title", &title)
-            .property("navigatable", &true)
+            .property("navigatable", true)
             .build()
     }
 
     pub fn playlists_section() -> Self {
         glib::Object::builder()
-            .property("id", &SAVED_PLAYLISTS_SECTION)
+            .property("id", SAVED_PLAYLISTS_SECTION)
             .property("data", &String::new())
             .property("title", &gettext("All Playlists"))
-            .property("navigatable", &false)
+            .property("navigatable", false)
             .build()
     }
 
     pub fn create_playlist_item() -> Self {
         glib::Object::builder()
-            .property("id", &CREATE_PLAYLIST_ITEM)
+            .property("id", CREATE_PLAYLIST_ITEM)
             .property("data", &String::new())
             .property("title", &gettext("New Playlist"))
-            .property("navigatable", &false)
+            .property("navigatable", false)
             .build()
     }
 
