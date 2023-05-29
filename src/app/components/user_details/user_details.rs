@@ -58,8 +58,7 @@ impl UserDetailsWidget {
     }
 
     fn set_user_name(&self, name: &str) {
-        let context = self.style_context();
-        context.add_class("user__loaded");
+        self.add_css_class("user__loaded");
         self.imp().user_name.set_text(name);
     }
 

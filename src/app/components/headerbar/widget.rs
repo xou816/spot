@@ -139,11 +139,11 @@ impl HeaderBarWidget {
             self.imp()
                 .selection_title
                 .set_title(&labels::n_songs_selected_label(0));
-            self.imp().selection_title.show();
-            self.imp().selection_header.show();
+            self.imp().selection_title.set_visible(true);
+            self.imp().selection_header.set_visible(true);
         } else {
-            self.imp().selection_title.hide();
-            self.imp().selection_header.hide();
+            self.imp().selection_title.set_visible(false);
+            self.imp().selection_header.set_visible(false);
         }
     }
 
@@ -154,16 +154,14 @@ impl HeaderBarWidget {
     }
 
     pub fn add_classes(&self, classes: &[&str]) {
-        let context = self.imp().main_header.style_context();
         for &class in classes {
-            context.add_class(class);
+            self.add_css_class(class);
         }
     }
 
     pub fn remove_classes(&self, classes: &[&str]) {
-        let context = self.imp().main_header.style_context();
         for &class in classes {
-            context.remove_class(class);
+            self.remove_css_class(class);
         }
     }
 

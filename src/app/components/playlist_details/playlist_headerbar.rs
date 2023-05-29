@@ -127,23 +127,21 @@ impl PlaylistHeaderBarWidget {
 
     pub fn set_editing(&self, editing: bool) {
         if editing {
-            self.imp().edition_header.show();
+            self.imp().edition_header.set_visible(true);
         } else {
-            self.imp().edition_header.hide();
+            self.imp().edition_header.set_visible(false);
         }
     }
 
     pub fn add_classes(&self, classes: &[&str]) {
-        let context = self.imp().main_header.style_context();
         for &class in classes {
-            context.add_class(class);
+            self.add_css_class(class);
         }
     }
 
     pub fn remove_classes(&self, classes: &[&str]) {
-        let context = self.imp().main_header.style_context();
         for &class in classes {
-            context.remove_class(class);
+            self.remove_css_class(class);
         }
     }
 

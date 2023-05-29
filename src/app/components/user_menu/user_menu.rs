@@ -23,7 +23,7 @@ impl UserMenu {
 
         about.connect_close_request(
             clone!(@weak about => @default-return gtk::Inhibit(false), move |_| {
-                about.hide();
+                about.set_visible(false);
                 gtk::Inhibit(true)
             }),
         );

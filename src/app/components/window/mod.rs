@@ -27,7 +27,7 @@ impl MainWindow {
             clone!(@weak app_model => @default-return gtk::Inhibit(false), move |window| {
                 let state = app_model.get_state();
                 if state.playback.is_playing() {
-                    window.hide();
+                    window.set_visible(false);
                     gtk::Inhibit(true)
                 } else {
                     gtk::Inhibit(false)

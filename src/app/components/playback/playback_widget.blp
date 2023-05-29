@@ -1,7 +1,7 @@
 using Gtk 4.0;
 using Adw 1;
 
-template PlaybackWidget : Box {
+template $PlaybackWidget : Box {
   orientation: vertical;
 
   Scale seek_bar {
@@ -26,7 +26,7 @@ template PlaybackWidget : Box {
       hexpand: true;
       column-homogeneous: true;
 
-      .PlaybackInfoWidget now_playing {
+      $PlaybackInfoWidget now_playing {
         receives-default: "1";
         halign: "start";
         valign: "center";
@@ -39,7 +39,7 @@ template PlaybackWidget : Box {
         }
       }
 
-      .PlaybackControlsWidget controls {
+      $PlaybackControlsWidget controls {
         layout {
           column-span: "1";
           column: "1";
@@ -86,14 +86,14 @@ template PlaybackWidget : Box {
       halign: fill;
       hexpand: true;
 
-      .PlaybackInfoWidget now_playing_mobile {
+      $PlaybackInfoWidget now_playing_mobile {
         receives-default: "1";
         halign: "start";
         valign: "center";
         has-frame: "0";
       }
 
-      .PlaybackControlsWidget controls_mobile {
+      $PlaybackControlsWidget controls_mobile {
         halign: "center";
       }
     }

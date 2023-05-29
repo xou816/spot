@@ -151,7 +151,7 @@ pub fn display_add_css_provider(resource: &'static str) {
         let provider = gtk::CssProvider::new();
         provider.load_from_resource(resource);
 
-        gtk::StyleContext::add_provider_for_display(
+        gtk::style_context_add_provider_for_display(
             &gdk::Display::default().unwrap(),
             &provider,
             gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,

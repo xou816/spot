@@ -107,7 +107,7 @@ impl AlbumHeaderWidget {
         widget.artist_button_label.set_label(artist);
         match year {
             Some(year) => widget.year_label.set_label(&year.to_string()),
-            None => widget.year_label.hide(),
+            None => widget.year_label.set_visible(false),
         }
     }
 

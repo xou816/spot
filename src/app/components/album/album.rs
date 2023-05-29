@@ -68,8 +68,7 @@ impl AlbumWidget {
     }
 
     fn set_loaded(&self) {
-        let context = self.style_context();
-        context.add_class("container--loaded");
+        self.add_css_class("container--loaded");
     }
 
     fn set_image(&self, pixbuf: Option<&gdk_pixbuf::Pixbuf>) {
@@ -110,7 +109,7 @@ impl AlbumWidget {
                 .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
                 .build();
         } else {
-            widget.year_label.hide();
+            widget.year_label.set_visible(false);
         }
     }
 

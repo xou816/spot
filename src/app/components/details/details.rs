@@ -110,8 +110,9 @@ impl AlbumDetailsWidget {
     }
 
     fn set_loaded(&self) {
-        let context = self.imp().scrolling_header.style_context();
-        context.add_class("container--loaded");
+        self.imp()
+            .scrolling_header
+            .add_css_class("container--loaded");
     }
 
     fn connect_liked<F>(&self, f: F)
@@ -207,7 +208,7 @@ impl Details {
                     .and_then(|r| r.downcast::<gtk::Window>().ok())
                     .as_ref(),
             );
-            modal.show();
+            modal.set_visible(true);
         }));
 
         Self {

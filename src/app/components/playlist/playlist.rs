@@ -87,8 +87,7 @@ where
         let selection_model = gtk::NoSelection::new(Some(list_model.clone()));
         let factory = gtk::SignalListItemFactory::new();
 
-        let style_context = listview.style_context();
-        style_context.add_class("playlist");
+        listview.add_css_class("playlist");
         listview.set_show_separators(true);
         listview.set_valign(gtk::Align::Start);
 
@@ -186,21 +185,19 @@ where
 
     fn set_selection_active(listview: &gtk::ListView, active: bool) {
         let class_name = "playlist--selectable";
-        let context = listview.style_context();
         if active {
-            context.add_class(class_name);
+            listview.add_css_class(class_name);
         } else {
-            context.remove_class(class_name);
+            listview.remove_css_class(class_name);
         }
     }
 
     fn set_paused(listview: &gtk::ListView, paused: bool) {
         let class_name = "playlist--paused";
-        let context = listview.style_context();
         if paused {
-            context.add_class(class_name);
+            listview.add_css_class(class_name);
         } else {
-            context.remove_class(class_name);
+            listview.remove_css_class(class_name);
         }
     }
 }

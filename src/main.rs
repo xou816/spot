@@ -40,7 +40,7 @@ fn main() {
     // In debug mode, the app id is different (see meson config) so we fix the resource path (and add a distinctive style)
     // Having a different app id allows running both the stable and development version at the same time
     if cfg!(debug_assertions) {
-        window.style_context().add_class("devel");
+        window.add_css_class("devel");
         gtk_app.set_resource_base_path(Some("/dev/alextren/Spot"));
     }
 
@@ -116,7 +116,7 @@ fn setup_gtk(settings: &settings::SpotSettings) {
     let provider = gtk::CssProvider::new();
     provider.load_from_resource("/dev/alextren/Spot/app.css");
 
-    gtk::StyleContext::add_provider_for_display(
+    gtk::style_context_add_provider_for_display(
         &gdk::Display::default().unwrap(),
         &provider,
         gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,

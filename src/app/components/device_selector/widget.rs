@@ -72,7 +72,7 @@ mod imp {
                 .insert_action_group(ACTIONS, Some(&self.action_group));
             self.obj()
                 .connect_clicked(clone!(@weak popover => move |_| {
-                    popover.show();
+                    popover.set_visible(true);
                     popover.present();
                     popover.grab_focus();
                 }));
