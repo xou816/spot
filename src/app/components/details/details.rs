@@ -9,9 +9,11 @@ use super::DetailsModel;
 
 use crate::app::components::{
     Component, EventListener, HeaderBarComponent, HeaderBarWidget, Playlist, ScrollingHeaderWidget,
+    playlist::PlaylistModel
 };
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
+use crate::app::state::PlaybackEvent;
 use crate::app::{AppEvent, BrowserEvent};
 
 mod imp {
@@ -123,6 +125,13 @@ impl AlbumDetailsWidget {
         self.imp().header_mobile.connect_liked(f);
     }
 
+    fn connect_play<F>(&self, f: F)
+    where
+        F: Fn() + Clone + 'static,
+    {
+        self.imp().header_widget.connect_play(f);
+    }
+
     fn connect_info<F>(&self, f: F)
     where
         F: Fn() + Clone + 'static,
@@ -134,6 +143,10 @@ impl AlbumDetailsWidget {
     fn set_liked(&self, is_liked: bool) {
         self.imp().header_widget.set_liked(is_liked);
         self.imp().header_mobile.set_liked(is_liked);
+    }
+
+    fn set_playing(&self, is_playing: bool) {
+        self.imp().header_widget.set_playing(is_playing);
     }
 
     fn set_album_and_artist_and_year(&self, album: &str, artist: &str, year: Option<u32>) {
@@ -193,6 +206,8 @@ impl Details {
 
         widget.connect_liked(clone!(@weak model => move || model.toggle_save_album()));
 
+        widget.connect_play(clone!(@weak model => move || model.toggle_play_album()));
+
         widget.connect_header();
 
         widget.connect_bottom_edge(clone!(@weak model => move || {
@@ -226,6 +241,14 @@ impl Details {
             self.widget.set_liked(is_liked);
             self.widget.set_liked(is_liked);
         }
+    }
+
+    fn update_playing(&self, is_playing: bool) {
+        if !self.model.playlist_is_playing() {
+            self.widget.set_playing(false);
+            return;
+        }
+        self.widget.set_playing(is_playing);
     }
 
     fn update_details(&mut self) {
@@ -290,12 +313,19 @@ impl EventListener for Details {
                 if id == &self.model.id =>
             {
                 self.update_details();
+                self.update_playing(true);
             }
             AppEvent::BrowserEvent(BrowserEvent::AlbumSaved(id))
             | AppEvent::BrowserEvent(BrowserEvent::AlbumUnsaved(id))
                 if id == &self.model.id =>
             {
                 self.update_liked();
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackPaused) => {
+                self.update_playing(false);
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackResumed) => {
+                self.update_playing(true);
             }
             _ => {}
         }

@@ -92,17 +92,37 @@ template $AlbumHeaderWidget : Box {
     }
   }
 
-  Button like_button {
-    receives-default: true;
-    halign: center;
-    valign: center;
-    tooltip-text: "Add to Library";
+  Box {
+    orientation: horizontal;
 
-    styles [
-      "circular",
-      "like__button",
-    ]
+    spacing: 8;
+
+    Button play_button {
+      receives-default: true;
+      halign: center;
+      valign: center;
+      tooltip-text: "Play";
+      icon-name: "media-playback-start-symbolic";
+
+      styles [
+        "circular",
+        "play__button",
+      ]
+    }
+
+    Button like_button {
+      receives-default: true;
+      halign: center;
+      valign: center;
+      tooltip-text: "Add to Library";
+
+      styles [
+        "circular",
+        "like__button",
+      ]
+    }
   }
+
 
   styles [
     "album__header",

@@ -131,6 +131,27 @@ impl PlaylistModel for PlaylistDetailsModel {
         self.app_model.get_state().playback.current_song_id()
     }
 
+    fn playlist_song_ids(&self) -> Option<Vec<String>> {
+        if let Some(playlist) = self.get_playlist_info() {
+            let playlist_ids = playlist
+                .songs
+                .songs
+                .iter()
+                .map(|song| song.id.clone())
+                .collect::<Vec<_>>();
+            return Some(playlist_ids);
+        }
+        None
+    }
+
+    fn playlist_is_playing(&self) -> bool {
+        let current_song_id = self.app_model.get_state().playback.current_song_id();
+        if current_song_id.is_none() || self.playlist_song_ids().is_none() {
+            return false;
+        }
+        self.playlist_song_ids().unwrap().contains(&current_song_id.unwrap())
+    }
+
     fn play_song_at(&self, pos: usize, id: &str) {
         let source = SongsSource::Playlist(self.id.clone());
         let batch = self.song_list_model().song_batch_for(pos);

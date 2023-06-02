@@ -99,6 +99,27 @@ impl DetailsModel {
         }
     }
 
+    pub fn toggle_play_album(&self) {
+        if let Some(album) = self.get_album_description() {
+            if !self.playlist_is_playing() {
+                if self.state().playback.is_shuffled() {
+                    self.dispatcher
+                        .dispatch(AppAction::PlaybackAction(PlaybackAction::ToggleShuffle));
+                }
+                let id_of_first_song = album.songs.songs[0].id.as_str();
+                self.play_song_at(0, id_of_first_song);
+                return;
+            }
+            if self.state().playback.is_playing() {
+                self.dispatcher
+                    .dispatch(AppAction::PlaybackAction(PlaybackAction::Pause));
+            } else {
+                self.dispatcher
+                    .dispatch(AppAction::PlaybackAction(PlaybackAction::Play));
+            }
+        }
+    }
+
     pub fn load_more(&self) -> Option<()> {
         let last_batch = self.song_list_model().last_batch()?;
         let query = BatchQuery {
@@ -176,6 +197,27 @@ impl PlaylistModel for DetailsModel {
         self.state().playback.current_song_id()
     }
 
+    fn playlist_song_ids(&self) -> Option<Vec<String>> {
+        if let Some(album) = self.get_album_description() {
+            let playlist_ids = album
+                .songs
+                .songs
+                .iter()
+                .map(|song| song.id.clone())
+                .collect::<Vec<_>>();
+            return Some(playlist_ids);
+        }
+        None
+    }
+
+    fn playlist_is_playing(&self) -> bool {
+        let current_song_id = self.state().playback.current_song_id();
+        if current_song_id.is_none() || self.playlist_song_ids().is_none() {
+            return false;
+        }
+        self.playlist_song_ids().unwrap().contains(&current_song_id.unwrap())
+    }
+
     fn play_song_at(&self, pos: usize, id: &str) {
         let source = SongsSource::Album(self.id.clone());
         let batch = self.song_list_model().song_batch_for(pos);
@@ -217,6 +259,38 @@ impl PlaylistModel for DetailsModel {
         menu.append(Some(&*labels::COPY_LINK), Some("song.copy_link"));
         menu.append(Some(&*labels::ADD_TO_QUEUE), Some("song.queue"));
         Some(menu.upcast())
+    }
+
+    fn autoscroll_to_playing(&self) -> bool {
+        true
+    }
+
+    fn is_selection_enabled(&self) -> bool {
+        self.selection()
+            .map(|s| s.is_selection_enabled())
+            .unwrap_or(false)
+    }
+
+    fn song_state(&self, id: &str) -> SongState {
+        let is_playing = self.current_song_id().map(|s| s.eq(id)).unwrap_or(false);
+        let is_selected = self
+            .selection()
+            .map(|s| s.is_song_selected(id))
+            .unwrap_or(false);
+        SongState {
+            is_selected,
+            is_playing,
+        }
+    }
+
+    fn toggle_select(&self, id: &str) {
+        if let Some(selection) = self.selection() {
+            if selection.is_song_selected(id) {
+                self.deselect_song(id)
+            } else {
+                self.select_song(id);
+            }
+        }
     }
 }
 
