@@ -260,38 +260,6 @@ impl PlaylistModel for DetailsModel {
         menu.append(Some(&*labels::ADD_TO_QUEUE), Some("song.queue"));
         Some(menu.upcast())
     }
-
-    fn autoscroll_to_playing(&self) -> bool {
-        true
-    }
-
-    fn is_selection_enabled(&self) -> bool {
-        self.selection()
-            .map(|s| s.is_selection_enabled())
-            .unwrap_or(false)
-    }
-
-    fn song_state(&self, id: &str) -> SongState {
-        let is_playing = self.current_song_id().map(|s| s.eq(id)).unwrap_or(false);
-        let is_selected = self
-            .selection()
-            .map(|s| s.is_song_selected(id))
-            .unwrap_or(false);
-        SongState {
-            is_selected,
-            is_playing,
-        }
-    }
-
-    fn toggle_select(&self, id: &str) {
-        if let Some(selection) = self.selection() {
-            if selection.is_song_selected(id) {
-                self.deselect_song(id)
-            } else {
-                self.select_song(id);
-            }
-        }
-    }
 }
 
 impl SimpleHeaderBarModel for DetailsModel {
