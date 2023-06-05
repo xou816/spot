@@ -215,7 +215,9 @@ impl PlaylistModel for DetailsModel {
         if current_song_id.is_none() || self.playlist_song_ids().is_none() {
             return false;
         }
-        self.playlist_song_ids().unwrap().contains(&current_song_id.unwrap())
+        self.playlist_song_ids()
+            .unwrap()
+            .contains(&current_song_id.unwrap())
     }
 
     fn play_song_at(&self, pos: usize, id: &str) {

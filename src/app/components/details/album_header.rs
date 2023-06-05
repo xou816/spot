@@ -1,8 +1,8 @@
 use crate::app::components::display_add_css_provider;
+use gettextrs::gettext;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{glib, CompositeTemplate};
-use gettextrs::gettext;
 
 mod imp {
 

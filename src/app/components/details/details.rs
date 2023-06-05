@@ -8,8 +8,8 @@ use super::release_details::ReleaseDetailsWindow;
 use super::DetailsModel;
 
 use crate::app::components::{
-    Component, EventListener, HeaderBarComponent, HeaderBarWidget, Playlist, ScrollingHeaderWidget,
-    playlist::PlaylistModel
+    playlist::PlaylistModel, Component, EventListener, HeaderBarComponent, HeaderBarWidget,
+    Playlist, ScrollingHeaderWidget,
 };
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
