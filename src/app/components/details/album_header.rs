@@ -127,10 +127,13 @@ impl AlbumHeaderWidget {
             gettext("Play")
         };
         let tooltip_text = Some(translated_tooltip.as_str());
-        let playback_control = imp::AlbumHeaderWidget::from_obj(self);
 
-        playback_control.play_button.set_icon_name(playback_icon);
-        playback_control.play_button.set_tooltip_text(tooltip_text);
+        self.imp()
+            .play_button
+            .set_icon_name(playback_icon);
+        self.imp()
+            .play_button.
+            set_tooltip_text(tooltip_text);
     }
 
     pub fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {

@@ -197,27 +197,20 @@ impl PlaylistModel for DetailsModel {
         self.state().playback.current_song_id()
     }
 
-    fn playlist_song_ids(&self) -> Option<Vec<String>> {
-        if let Some(album) = self.get_album_description() {
-            let playlist_ids = album
-                .songs
-                .songs
-                .iter()
-                .map(|song| song.id.clone())
-                .collect::<Vec<_>>();
-            return Some(playlist_ids);
-        }
-        None
-    }
-
     fn playlist_is_playing(&self) -> bool {
-        let current_song_id = self.state().playback.current_song_id();
-        if current_song_id.is_none() || self.playlist_song_ids().is_none() {
-            return false;
+        if let Some(source) = self.state().playback.current_source() {
+            if let Some(uri) = source.spotify_uri() {
+                if let Some(album) = self.get_album_description() {
+                    return uri == format!("spotify:album:{}", album.id);
+                } else {
+                    false
+                }
+            } else {
+                false
+            }
+        } else {
+            false
         }
-        self.playlist_song_ids()
-            .unwrap()
-            .contains(&current_song_id.unwrap())
     }
 
     fn play_song_at(&self, pos: usize, id: &str) {
