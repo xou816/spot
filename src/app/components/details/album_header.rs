@@ -12,10 +12,16 @@ mod imp {
     #[template(resource = "/dev/alextren/Spot/components/album_header.ui")]
     pub struct AlbumHeaderWidget {
         #[template_child]
+        pub album_overlay: TemplateChild<gtk::Overlay>,
+
+        #[template_child]
         pub album_label: TemplateChild<gtk::Label>,
 
         #[template_child]
         pub album_art: TemplateChild<gtk::Image>,
+
+        #[template_child]
+        pub button_box: TemplateChild<gtk::Box>,
 
         #[template_child]
         pub like_button: TemplateChild<gtk::Button>,
@@ -147,5 +153,9 @@ impl AlbumHeaderWidget {
         widget.album_label.set_justify(gtk::Justification::Center);
         widget.artist_button.set_halign(gtk::Align::Center);
         widget.year_label.set_halign(gtk::Align::Center);
+        widget.button_box.set_halign(gtk::Align::Center);
+        widget.album_overlay.set_margin_start(0);
+        widget.button_box.set_margin_end(0);
+        widget.album_info.set_margin_start(0);
     }
 }

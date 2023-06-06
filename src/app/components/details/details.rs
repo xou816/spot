@@ -129,7 +129,8 @@ impl AlbumDetailsWidget {
     where
         F: Fn() + Clone + 'static,
     {
-        self.imp().header_widget.connect_play(f);
+        self.imp().header_widget.connect_play(f.clone());
+        self.imp().header_mobile.connect_play(f);
     }
 
     fn connect_info<F>(&self, f: F)
@@ -147,6 +148,7 @@ impl AlbumDetailsWidget {
 
     fn set_playing(&self, is_playing: bool) {
         self.imp().header_widget.set_playing(is_playing);
+        self.imp().header_mobile.set_playing(is_playing);
     }
 
     fn set_album_and_artist_and_year(&self, album: &str, artist: &str, year: Option<u32>) {

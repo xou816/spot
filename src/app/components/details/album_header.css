@@ -10,21 +10,6 @@
   background-image: image(alpha(currentColor, 0.08));
 }
 
-.album__header .like__button {
-  margin-right: 6px;
-}
-
-.album__header .vertical {
-  margin-left: 18px;
-}
-
-.album__header .card {
-  margin-top: 18px;
-  margin-left: 6px;
-  margin-bottom: 6px;
-}
-
-
 clamp.details__clamp {
   background-color: @view_bg_color;
   box-shadow: inset 0px -1px 0px @borders;
