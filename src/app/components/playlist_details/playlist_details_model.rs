@@ -2,8 +2,10 @@ use gio::prelude::*;
 use gio::SimpleActionGroup;
 use std::ops::Deref;
 use std::rc::Rc;
+use std::cell::Ref;
 
 use crate::api::SpotifyApiError;
+use crate::app::AppState;
 use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::*;
 use crate::app::state::SelectionContext;
@@ -25,6 +27,10 @@ impl PlaylistDetailsModel {
         }
     }
 
+    fn state(&self) -> Ref<'_, AppState> {
+        self.app_model.get_state()
+    }
+
     pub fn is_playlist_editable(&self) -> bool {
         let state = self.app_model.get_state();
         state.logged_user.playlists.iter().any(|p| p.id == self.id)
@@ -37,6 +43,27 @@ impl PlaylistDetailsModel {
                 .playlist
                 .as_ref()
         })
+    }
+
+    pub fn toggle_play_playlist(&self) {
+        if let Some(playlist) = self.get_playlist_info() {
+            if !self.playlist_is_playing() {
+                if self.state().playback.is_shuffled() {
+                    self.dispatcher
+                        .dispatch(AppAction::PlaybackAction(PlaybackAction::ToggleShuffle));
+                }
+                let id_of_first_song = playlist.songs.songs[0].id.as_str();
+                self.play_song_at(0, id_of_first_song);
+                return;
+            }
+            if self.state().playback.is_playing() {
+                self.dispatcher
+                    .dispatch(AppAction::PlaybackAction(PlaybackAction::Pause));
+            } else {
+                self.dispatcher
+                    .dispatch(AppAction::PlaybackAction(PlaybackAction::Play));
+            }
+        }
     }
 
     pub fn load_playlist_info(&self) {
@@ -114,8 +141,7 @@ impl PlaylistDetailsModel {
 
 impl PlaylistModel for PlaylistDetailsModel {
     fn song_list_model(&self) -> SongListModel {
-        self.app_model
-            .get_state()
+        self.state()
             .browser
             .playlist_details_state(&self.id)
             .expect("illegal attempt to read playlist_details_state")
@@ -124,34 +150,27 @@ impl PlaylistModel for PlaylistDetailsModel {
     }
 
     fn is_paused(&self) -> bool {
-        !self.app_model.get_state().playback.is_playing()
+        !self.state().playback.is_playing()
     }
 
     fn current_song_id(&self) -> Option<String> {
-        self.app_model.get_state().playback.current_song_id()
-    }
-
-    fn playlist_song_ids(&self) -> Option<Vec<String>> {
-        if let Some(playlist) = self.get_playlist_info() {
-            let playlist_ids = playlist
-                .songs
-                .songs
-                .iter()
-                .map(|song| song.id.clone())
-                .collect::<Vec<_>>();
-            return Some(playlist_ids);
-        }
-        None
+        self.state().playback.current_song_id()
     }
 
     fn playlist_is_playing(&self) -> bool {
-        let current_song_id = self.app_model.get_state().playback.current_song_id();
-        if current_song_id.is_none() || self.playlist_song_ids().is_none() {
-            return false;
+        if let Some(source) = self.state().playback.current_source() {
+            if let Some(uri) = source.spotify_uri() {
+                if let Some(playlist) = self.get_playlist_info() {
+                    return uri == format!("spotify:playlist:{}", playlist.id);
+                } else {
+                    false
+                }
+            } else {
+                false
+            }
+        } else {
+            false
         }
-        self.playlist_song_ids()
-            .unwrap()
-            .contains(&current_song_id.unwrap())
     }
 
     fn play_song_at(&self, pos: usize, id: &str) {

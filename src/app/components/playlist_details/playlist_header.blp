@@ -7,9 +7,12 @@ template $PlaylistHeaderWidget : Box {
   margin-end: 6;
   margin-bottom: 6;
 
-  Box {
+  Box playlist_image_box {
     overflow: hidden;
     halign: center;
+    margin-top: 18;
+    margin-start: 6;
+    margin-bottom: 6;
 
     Image playlist_art {
       width-request: 160;
@@ -27,6 +30,7 @@ template $PlaylistHeaderWidget : Box {
     valign: center;
     orientation: vertical;
     spacing: 6;
+    margin-start: 18;
 
     Entry playlist_label_entry {
       hexpand: false;
@@ -59,6 +63,19 @@ template $PlaylistHeaderWidget : Box {
         "title-4",
       ]
     }
+  }
+  Button play_button {
+    margin-end: 6;
+    receives-default: true;
+    halign: center;
+    valign: center;
+    tooltip-text: "Play";
+    icon-name: "media-playback-start-symbolic";
+
+    styles [
+      "circular",
+      "play__button",
+    ]
   }
 
   styles [

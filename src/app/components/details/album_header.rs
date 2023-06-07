@@ -96,6 +96,7 @@ impl AlbumHeaderWidget {
         self.imp().info_button.connect_clicked(move |_| f());
     }
 
+
     pub fn connect_artist_clicked<F>(&self, f: F)
     where
         F: Fn() + 'static,
