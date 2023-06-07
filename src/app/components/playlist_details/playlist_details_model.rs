@@ -1,5 +1,6 @@
 use gio::prelude::*;
 use gio::SimpleActionGroup;
+use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
@@ -8,6 +9,7 @@ use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::*;
 use crate::app::state::SelectionContext;
 use crate::app::state::{BrowserAction, PlaybackAction, SelectionAction, SelectionState};
+use crate::app::AppState;
 use crate::app::{ActionDispatcher, AppAction, AppModel, BatchQuery, SongsSource};
 
 pub struct PlaylistDetailsModel {
@@ -25,6 +27,10 @@ impl PlaylistDetailsModel {
         }
     }
 
+    pub fn state(&self) -> Ref<'_, AppState> {
+        self.app_model.get_state()
+    }
+
     pub fn is_playlist_editable(&self) -> bool {
         let state = self.app_model.get_state();
         state.logged_user.playlists.iter().any(|p| p.id == self.id)
@@ -37,6 +43,37 @@ impl PlaylistDetailsModel {
                 .playlist
                 .as_ref()
         })
+    }
+
+    pub fn is_playing(&self) -> bool {
+        self.state().playback.is_playing()
+    }
+
+    pub fn playlist_is_playing(&self) -> bool {
+        matches!(
+            self.app_model.get_state().playback.current_source(),
+            Some(SongsSource::Playlist(ref id)) if id == &self.id)
+    }
+
+    pub fn toggle_play_playlist(&self) {
+        if let Some(playlist) = self.get_playlist_info() {
+            if !self.playlist_is_playing() {
+                if self.state().playback.is_shuffled() {
+                    self.dispatcher
+                        .dispatch(AppAction::PlaybackAction(PlaybackAction::ToggleShuffle));
+                }
+                let id_of_first_song = playlist.songs.songs[0].id.as_str();
+                self.play_song_at(0, id_of_first_song);
+                return;
+            }
+            if self.state().playback.is_playing() {
+                self.dispatcher
+                    .dispatch(AppAction::PlaybackAction(PlaybackAction::Pause));
+            } else {
+                self.dispatcher
+                    .dispatch(AppAction::PlaybackAction(PlaybackAction::Play));
+            }
+        }
     }
 
     pub fn load_playlist_info(&self) {
@@ -114,8 +151,7 @@ impl PlaylistDetailsModel {
 
 impl PlaylistModel for PlaylistDetailsModel {
     fn song_list_model(&self) -> SongListModel {
-        self.app_model
-            .get_state()
+        self.state()
             .browser
             .playlist_details_state(&self.id)
             .expect("illegal attempt to read playlist_details_state")
@@ -124,11 +160,11 @@ impl PlaylistModel for PlaylistDetailsModel {
     }
 
     fn is_paused(&self) -> bool {
-        !self.app_model.get_state().playback.is_playing()
+        !self.state().playback.is_playing()
     }
 
     fn current_song_id(&self) -> Option<String> {
-        self.app_model.get_state().playback.current_song_id()
+        self.state().playback.current_song_id()
     }
 
     fn play_song_at(&self, pos: usize, id: &str) {

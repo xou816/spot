@@ -1,4 +1,5 @@
 use crate::app::components::display_add_css_provider;
+use gettextrs::gettext;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{glib, CompositeTemplate};
@@ -11,13 +12,22 @@ mod imp {
     #[template(resource = "/dev/alextren/Spot/components/album_header.ui")]
     pub struct AlbumHeaderWidget {
         #[template_child]
+        pub album_overlay: TemplateChild<gtk::Overlay>,
+
+        #[template_child]
         pub album_label: TemplateChild<gtk::Label>,
 
         #[template_child]
         pub album_art: TemplateChild<gtk::Image>,
 
         #[template_child]
+        pub button_box: TemplateChild<gtk::Box>,
+
+        #[template_child]
         pub like_button: TemplateChild<gtk::Button>,
+
+        #[template_child]
+        pub play_button: TemplateChild<gtk::Button>,
 
         #[template_child]
         pub info_button: TemplateChild<gtk::Button>,
@@ -65,6 +75,13 @@ impl AlbumHeaderWidget {
         glib::Object::new()
     }
 
+    pub fn connect_play<F>(&self, f: F)
+    where
+        F: Fn() + 'static,
+    {
+        self.imp().play_button.connect_clicked(move |_| f());
+    }
+
     pub fn connect_liked<F>(&self, f: F)
     where
         F: Fn() + 'static,
@@ -97,6 +114,24 @@ impl AlbumHeaderWidget {
         });
     }
 
+    pub fn set_playing(&self, is_playing: bool) {
+        let playback_icon = if is_playing {
+            "media-playback-pause-symbolic"
+        } else {
+            "media-playback-start-symbolic"
+        };
+
+        let translated_tooltip = if is_playing {
+            gettext("Pause")
+        } else {
+            gettext("Play")
+        };
+        let tooltip_text = Some(translated_tooltip.as_str());
+
+        self.imp().play_button.set_icon_name(playback_icon);
+        self.imp().play_button.set_tooltip_text(tooltip_text);
+    }
+
     pub fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {
         self.imp().album_art.set_from_pixbuf(Some(art));
     }
@@ -117,5 +152,9 @@ impl AlbumHeaderWidget {
         widget.album_label.set_justify(gtk::Justification::Center);
         widget.artist_button.set_halign(gtk::Align::Center);
         widget.year_label.set_halign(gtk::Align::Center);
+        widget.button_box.set_halign(gtk::Align::Center);
+        widget.album_overlay.set_margin_start(0);
+        widget.button_box.set_margin_end(0);
+        widget.album_info.set_margin_start(0);
     }
 }

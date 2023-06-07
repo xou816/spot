@@ -9,20 +9,6 @@
   background-image: image(alpha(currentColor, 0.08));
 }
 
-.playlist__header .like__button {
-  margin-right: 6px;
-}
-
-.playlist__header .vertical {
-  margin-left: 18px;
-}
-
-.playlist__header .card {
-  margin-top: 18px;
-  margin-left: 6px;
-  margin-bottom: 6px;
-}
-
 clamp.playlist_details__clamp {
   background-color: @view_bg_color;
   box-shadow: inset 0px -1px 0px @borders;

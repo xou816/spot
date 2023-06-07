@@ -7,9 +7,12 @@ template $AlbumHeaderWidget : Box {
   margin-end: 6;
   margin-bottom: 6;
 
-  Overlay {
+  Overlay album_overlay {
     overflow: hidden;
     halign: center;
+    margin-top: 18;
+    margin-bottom: 6;
+    margin-start: 6;
 
     Image album_art {
       width-request: 160;
@@ -44,6 +47,7 @@ template $AlbumHeaderWidget : Box {
     valign: center;
     orientation: vertical;
     spacing: 6;
+    margin-start: 18;
 
     Label album_label {
       xalign: 0;
@@ -92,17 +96,39 @@ template $AlbumHeaderWidget : Box {
     }
   }
 
-  Button like_button {
-    receives-default: true;
-    halign: center;
+  Box button_box {
+    orientation: horizontal;
     valign: center;
-    tooltip-text: "Add to Library";
 
-    styles [
-      "circular",
-      "like__button",
-    ]
+    margin-end: 6;
+    spacing: 8;
+
+    Button play_button {
+      receives-default: true;
+      halign: center;
+      valign: center;
+      tooltip-text: "Play";
+      icon-name: "media-playback-start-symbolic";
+
+      styles [
+        "circular",
+        "play__button",
+      ]
+    }
+
+    Button like_button {
+      receives-default: true;
+      halign: center;
+      valign: center;
+      tooltip-text: "Add to Library";
+
+      styles [
+        "circular",
+        "like__button",
+      ]
+    }
   }
+
 
   styles [
     "album__header",

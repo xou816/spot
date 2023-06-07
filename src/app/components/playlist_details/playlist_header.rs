@@ -1,4 +1,5 @@
 use crate::app::components::display_add_css_provider;
+use gettextrs::gettext;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{glib, CompositeTemplate};
@@ -20,6 +21,9 @@ mod imp {
         pub playlist_label_entry: TemplateChild<gtk::Entry>,
 
         #[template_child]
+        pub playlist_image_box: TemplateChild<gtk::Box>,
+
+        #[template_child]
         pub playlist_art: TemplateChild<gtk::Image>,
 
         #[template_child]
@@ -30,6 +34,9 @@ mod imp {
 
         #[template_child]
         pub author_button_label: TemplateChild<gtk::Label>,
+
+        #[template_child]
+        pub play_button: TemplateChild<gtk::Button>,
 
         #[property(get, set, name = "original-entry-text")]
         pub original_entry_text: RefCell<String>,
@@ -92,6 +99,13 @@ impl PlaylistHeaderWidget {
         });
     }
 
+    pub fn connect_play<F>(&self, f: F)
+    where
+        F: Fn() + 'static,
+    {
+        self.imp().play_button.connect_clicked(move |_| f());
+    }
+
     pub fn reset_playlist_name(&self) {
         self.imp()
             .playlist_label_entry
@@ -116,9 +130,32 @@ impl PlaylistHeaderWidget {
         widget.author_button_label.set_label(owner);
     }
 
+    pub fn set_playing(&self, is_playing: bool) {
+        let playback_icon = if is_playing {
+            "media-playback-pause-symbolic"
+        } else {
+            "media-playback-start-symbolic"
+        };
+
+        let translated_tooltip = if is_playing {
+            gettext("Pause")
+        } else {
+            gettext("Play")
+        };
+        let tooltip_text = Some(translated_tooltip.as_str());
+
+        self.imp().play_button.set_icon_name(playback_icon);
+        self.imp().play_button.set_tooltip_text(tooltip_text);
+    }
+
     pub fn set_centered(&self) {
         let widget = self.imp();
         widget.playlist_info.set_halign(gtk::Align::Center);
+        widget.play_button.set_margin_end(0);
+        widget.playlist_info.set_margin_start(0);
+        widget.playlist_image_box.set_margin_start(0);
+        widget.playlist_label_entry.set_xalign(0.5);
+        widget.author_button.set_halign(gtk::Align::Center);
     }
 
     pub fn set_editing(&self, editing: bool) {

@@ -99,6 +99,37 @@ impl DetailsModel {
         }
     }
 
+    pub fn is_playing(&self) -> bool {
+        self.state().playback.is_playing()
+    }
+
+    pub fn album_is_playing(&self) -> bool {
+        matches!(
+            self.app_model.get_state().playback.current_source(),
+            Some(SongsSource::Album(ref id)) if id == &self.id)
+    }
+
+    pub fn toggle_play_album(&self) {
+        if let Some(album) = self.get_album_description() {
+            if !self.album_is_playing() {
+                if self.state().playback.is_shuffled() {
+                    self.dispatcher
+                        .dispatch(AppAction::PlaybackAction(PlaybackAction::ToggleShuffle));
+                }
+                let id_of_first_song = album.songs.songs[0].id.as_str();
+                self.play_song_at(0, id_of_first_song);
+                return;
+            }
+            if self.state().playback.is_playing() {
+                self.dispatcher
+                    .dispatch(AppAction::PlaybackAction(PlaybackAction::Pause));
+            } else {
+                self.dispatcher
+                    .dispatch(AppAction::PlaybackAction(PlaybackAction::Play));
+            }
+        }
+    }
+
     pub fn load_more(&self) -> Option<()> {
         let last_batch = self.song_list_model().last_batch()?;
         let query = BatchQuery {

@@ -12,7 +12,7 @@ use crate::app::components::{
 };
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
-use crate::app::state::SelectionEvent;
+use crate::app::state::{PlaybackEvent, SelectionEvent};
 use crate::app::{AppEvent, BrowserEvent};
 use libadwaita::subclass::prelude::BinImpl;
 
@@ -132,6 +132,11 @@ impl PlaylistDetailsWidget {
         self.imp().headerbar.set_title(Some(playlist));
     }
 
+    fn set_playing(&self, is_playing: bool) {
+        self.imp().header_widget.set_playing(is_playing);
+        self.imp().header_mobile.set_playing(is_playing);
+    }
+
     fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {
         self.imp().header_widget.set_artwork(art);
         self.imp().header_mobile.set_artwork(art);
@@ -163,6 +168,14 @@ impl PlaylistDetailsWidget {
                 _self.imp().header_mobile.reset_playlist_name();
                 f();
             }));
+    }
+
+    pub fn connect_play<F>(&self, f: F)
+    where
+        F: Fn() + Clone + 'static,
+    {
+        self.imp().header_widget.connect_play(f.clone());
+        self.imp().header_mobile.connect_play(f);
     }
 
     pub fn connect_done<F>(&self, f: F)
@@ -225,6 +238,8 @@ impl PlaylistDetails {
             model.update_playlist_details(n);
         }));
 
+        widget.connect_play(clone!(@weak model => move || model.toggle_play_playlist()));
+
         widget.connect_go_back(clone!(@weak model => move || model.go_back()));
 
         Self {
@@ -260,6 +275,14 @@ impl PlaylistDetails {
         }
     }
 
+    fn update_playing(&self, is_playing: bool) {
+        if !self.model.playlist_is_playing() || !self.model.is_playing() {
+            self.widget.set_playing(false);
+            return;
+        }
+        self.widget.set_playing(is_playing);
+    }
+
     fn set_editing(&self, editable: bool) {
         if !self.model.is_playlist_editable() {
             return;
@@ -284,10 +307,17 @@ impl EventListener for PlaylistDetails {
             AppEvent::BrowserEvent(BrowserEvent::PlaylistDetailsLoaded(id))
                 if id == &self.model.id =>
             {
-                self.update_details()
+                self.update_details();
+                self.update_playing(true);
             }
             AppEvent::SelectionEvent(SelectionEvent::SelectionModeChanged(editing)) => {
                 self.set_editing(*editing);
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackPaused) => {
+                self.update_playing(false);
+            }
+            AppEvent::PlaybackEvent(PlaybackEvent::PlaybackResumed) => {
+                self.update_playing(true);
             }
             _ => {}
         }
