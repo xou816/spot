@@ -543,7 +543,7 @@ impl TryFrom<Album> for SongBatch {
     type Error = ();
 
     fn try_from(mut album: Album) -> Result<Self, Self::Error> {
-        let tracks = std::mem::replace(&mut album.tracks, None).ok_or(())?;
+        let tracks = album.tracks.take().ok_or(())?;
         Ok((tracks, &album).into())
     }
 }
