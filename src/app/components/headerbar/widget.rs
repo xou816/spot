@@ -155,13 +155,13 @@ impl HeaderBarWidget {
 
     pub fn add_classes(&self, classes: &[&str]) {
         for &class in classes {
-            self.add_css_class(class);
+            self.imp().main_header.add_css_class(class);
         }
     }
 
     pub fn remove_classes(&self, classes: &[&str]) {
         for &class in classes {
-            self.remove_css_class(class);
+            self.imp().main_header.remove_css_class(class);
         }
     }
 
