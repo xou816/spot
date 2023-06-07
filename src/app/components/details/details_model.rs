@@ -202,19 +202,9 @@ impl PlaylistModel for DetailsModel {
     }
 
     fn playlist_is_playing(&self) -> bool {
-        if let Some(source) = self.state().playback.current_source() {
-            if let Some(uri) = source.spotify_uri() {
-                if let Some(album) = self.get_album_description() {
-                    uri == format!("spotify:album:{}", album.id)
-                } else {
-                    false
-                }
-            } else {
-                false
-            }
-        } else {
-            false
-        }
+        matches!(
+            self.app_model.get_state().playback.current_source(),
+            Some(SongsSource::Album(ref id)) if id == &self.id)
     }
 
     fn play_song_at(&self, pos: usize, id: &str) {
