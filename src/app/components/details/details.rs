@@ -8,8 +8,7 @@ use super::release_details::ReleaseDetailsWindow;
 use super::DetailsModel;
 
 use crate::app::components::{
-    playlist::PlaylistModel, Component, EventListener, HeaderBarComponent, HeaderBarWidget,
-    Playlist, ScrollingHeaderWidget,
+    Component, EventListener, HeaderBarComponent, HeaderBarWidget, Playlist, ScrollingHeaderWidget,
 };
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
@@ -246,7 +245,7 @@ impl Details {
     }
 
     fn update_playing(&self, is_playing: bool) {
-        if !self.model.playlist_is_playing() || !self.model.is_playing() {
+        if !self.model.album_is_playing() || !self.model.is_playing() {
             self.widget.set_playing(false);
             return;
         }

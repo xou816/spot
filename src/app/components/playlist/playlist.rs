@@ -16,16 +16,6 @@ pub trait PlaylistModel {
 
     fn current_song_id(&self) -> Option<String>;
 
-    // NOTE: `is_playing` is for if there is *any* song being played
-    //       `playlist_is_playing` is for if the specific playlist is being played
-    fn is_playing(&self) -> bool {
-        false
-    }
-
-    fn playlist_is_playing(&self) -> bool {
-        false
-    }
-
     fn play_song_at(&self, pos: usize, id: &str);
 
     fn autoscroll_to_playing(&self) -> bool {

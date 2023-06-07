@@ -99,9 +99,19 @@ impl DetailsModel {
         }
     }
 
+    pub fn is_playing(&self) -> bool {
+        self.state().playback.is_playing()
+    }
+
+    pub fn album_is_playing(&self) -> bool {
+        matches!(
+            self.app_model.get_state().playback.current_source(),
+            Some(SongsSource::Album(ref id)) if id == &self.id)
+    }
+
     pub fn toggle_play_album(&self) {
         if let Some(album) = self.get_album_description() {
-            if !self.playlist_is_playing() {
+            if !self.album_is_playing() {
                 if self.state().playback.is_shuffled() {
                     self.dispatcher
                         .dispatch(AppAction::PlaybackAction(PlaybackAction::ToggleShuffle));
@@ -195,16 +205,6 @@ impl PlaylistModel for DetailsModel {
 
     fn current_song_id(&self) -> Option<String> {
         self.state().playback.current_song_id()
-    }
-
-    fn is_playing(&self) -> bool {
-        self.state().playback.is_playing()
-    }
-
-    fn playlist_is_playing(&self) -> bool {
-        matches!(
-            self.app_model.get_state().playback.current_source(),
-            Some(SongsSource::Album(ref id)) if id == &self.id)
     }
 
     fn play_song_at(&self, pos: usize, id: &str) {

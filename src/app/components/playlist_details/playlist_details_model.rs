@@ -27,7 +27,7 @@ impl PlaylistDetailsModel {
         }
     }
 
-    fn state(&self) -> Ref<'_, AppState> {
+    pub fn state(&self) -> Ref<'_, AppState> {
         self.app_model.get_state()
     }
 
@@ -43,6 +43,16 @@ impl PlaylistDetailsModel {
                 .playlist
                 .as_ref()
         })
+    }
+
+    pub fn is_playing(&self) -> bool {
+        self.state().playback.is_playing()
+    }
+
+    pub fn playlist_is_playing(&self) -> bool {
+        matches!(
+            self.app_model.get_state().playback.current_source(),
+            Some(SongsSource::Playlist(ref id)) if id == &self.id)
     }
 
     pub fn toggle_play_playlist(&self) {
@@ -155,16 +165,6 @@ impl PlaylistModel for PlaylistDetailsModel {
 
     fn current_song_id(&self) -> Option<String> {
         self.state().playback.current_song_id()
-    }
-
-    fn is_playing(&self) -> bool {
-        self.state().playback.is_playing()
-    }
-
-    fn playlist_is_playing(&self) -> bool {
-        matches!(
-            self.app_model.get_state().playback.current_source(),
-            Some(SongsSource::Album(ref id)) if id == &self.id)
     }
 
     fn play_song_at(&self, pos: usize, id: &str) {
