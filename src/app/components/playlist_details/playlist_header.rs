@@ -1,5 +1,5 @@
-use gettextrs::gettext;
 use crate::app::components::display_add_css_provider;
+use gettextrs::gettext;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{glib, CompositeTemplate};
@@ -144,12 +144,8 @@ impl PlaylistHeaderWidget {
         };
         let tooltip_text = Some(translated_tooltip.as_str());
 
-        self.imp()
-            .play_button
-            .set_icon_name(playback_icon);
-        self.imp()
-            .play_button.
-            set_tooltip_text(tooltip_text);
+        self.imp().play_button.set_icon_name(playback_icon);
+        self.imp().play_button.set_tooltip_text(tooltip_text);
     }
 
     pub fn set_centered(&self) {

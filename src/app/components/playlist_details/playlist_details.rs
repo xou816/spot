@@ -12,7 +12,7 @@ use crate::app::components::{
 };
 use crate::app::dispatch::Worker;
 use crate::app::loader::ImageLoader;
-use crate::app::state::{SelectionEvent, PlaybackEvent};
+use crate::app::state::{PlaybackEvent, SelectionEvent};
 use crate::app::{AppEvent, BrowserEvent};
 use libadwaita::subclass::prelude::BinImpl;
 

@@ -96,7 +96,6 @@ impl AlbumHeaderWidget {
         self.imp().info_button.connect_clicked(move |_| f());
     }
 
-
     pub fn connect_artist_clicked<F>(&self, f: F)
     where
         F: Fn() + 'static,
@@ -129,12 +128,8 @@ impl AlbumHeaderWidget {
         };
         let tooltip_text = Some(translated_tooltip.as_str());
 
-        self.imp()
-            .play_button
-            .set_icon_name(playback_icon);
-        self.imp()
-            .play_button.
-            set_tooltip_text(tooltip_text);
+        self.imp().play_button.set_icon_name(playback_icon);
+        self.imp().play_button.set_tooltip_text(tooltip_text);
     }
 
     pub fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {

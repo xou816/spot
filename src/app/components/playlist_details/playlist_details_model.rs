@@ -1,15 +1,15 @@
 use gio::prelude::*;
 use gio::SimpleActionGroup;
+use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
-use std::cell::Ref;
 
 use crate::api::SpotifyApiError;
-use crate::app::AppState;
 use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::*;
 use crate::app::state::SelectionContext;
 use crate::app::state::{BrowserAction, PlaybackAction, SelectionAction, SelectionState};
+use crate::app::AppState;
 use crate::app::{ActionDispatcher, AppAction, AppModel, BatchQuery, SongsSource};
 
 pub struct PlaylistDetailsModel {
