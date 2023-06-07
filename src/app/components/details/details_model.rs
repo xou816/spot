@@ -205,7 +205,7 @@ impl PlaylistModel for DetailsModel {
         if let Some(source) = self.state().playback.current_source() {
             if let Some(uri) = source.spotify_uri() {
                 if let Some(album) = self.get_album_description() {
-                    return uri == format!("spotify:album:{}", album.id);
+                    uri == format!("spotify:album:{}", album.id)
                 } else {
                     false
                 }
