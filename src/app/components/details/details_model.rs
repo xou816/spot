@@ -197,6 +197,10 @@ impl PlaylistModel for DetailsModel {
         self.state().playback.current_song_id()
     }
 
+    fn is_playing(&self) -> bool {
+        self.state().playback.is_playing()
+    }
+
     fn playlist_is_playing(&self) -> bool {
         if let Some(source) = self.state().playback.current_source() {
             if let Some(uri) = source.spotify_uri() {

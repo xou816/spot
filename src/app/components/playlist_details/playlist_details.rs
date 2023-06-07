@@ -276,7 +276,7 @@ impl PlaylistDetails {
     }
 
     fn update_playing(&self, is_playing: bool) {
-        if !self.model.playlist_is_playing() {
+        if !self.model.playlist_is_playing() || !self.model.is_playing() {
             self.widget.set_playing(false);
             return;
         }
