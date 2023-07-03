@@ -102,6 +102,21 @@ msgstr "Издания"
 msgid "Login to Spotify Premium"
 msgstr "Влезте в Spotify Premium"
 
+#. Placeholder for the username field
+#: src/app/components/login/login.blp:76
+msgid "Username"
+msgstr "Потребителско име"
+
+#. Placeholder for the password field
+#: src/app/components/login/login.blp:94
+msgid "Password"
+msgstr "Парола"
+
+#. This error is shown when authentication fails.
+#: src/app/components/login/login.blp:116
+msgid "Authentication failed!"
+msgstr "Удостоверяването е неуспешно!"
+
 #. Log in button label
 #: src/app/components/login/login.blp:131
 msgid "Log in"
@@ -222,6 +237,10 @@ msgstr "Издаден"
 #: src/app/components/details/release_details.blp:63
 msgid "Tracks"
 msgstr "Песни"
+#. This refers to the duration of a release
+#: src/app/components/details/release_details.ui:68
+msgid "Duration"
+msgstr "Продължителност"
 
 #: src/app/components/details/release_details.blp:72
 msgid "Copyright"
@@ -279,15 +298,15 @@ msgstr "Ще бъде приложено само ако аудио бекенд
 msgid "Audio Quality"
 msgstr "Качество на звука"
 
-#: src/app/components/settings/settings.blp:48
+#: src/app/components/settings/settings.blp:46
 msgid "Normal"
 msgstr "Нормално"
 
-#: src/app/components/settings/settings.blp:49
+#: src/app/components/settings/settings.blp:47
 msgid "High"
 msgstr "Високо"
 
-#: src/app/components/settings/settings.blp:50
+#: src/app/components/settings/settings.blp:48
 msgid "Very high"
 msgstr "Много високо"
 
@@ -300,6 +319,13 @@ msgstr "Външен вид"
 #: src/app/components/settings/settings.blp:78
 msgid "Theme"
 msgstr "Тема"
+<<<<<<< HEAD
+=======
+
+#: src/app/components/settings/settings.blp:80
+msgid "Light"
+msgstr "Светло"
+>>>>>>> 3e2f37f (Add files via upload)
 
 #: src/app/components/settings/settings.blp:81
 msgid "Light"
@@ -365,6 +391,7 @@ msgstr "Име"
 #: src/app/components/sidebar/create_playlist.blp:30
 msgid "Create"
 msgstr "Създайте"
+<<<<<<< HEAD
 
 #: src/app/components/device_selector/widget.rs:135
 #: src/app/components/device_selector/device_selector.blp:9
@@ -402,4 +429,6 @@ msgstr ""
 #: src/app/components/device_selector/device_selector.blp:24
 msgid "Refresh devices"
 msgstr ""
+=======
+>>>>>>> 3e2f37f (Add files via upload)
 
