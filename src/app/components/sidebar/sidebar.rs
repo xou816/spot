@@ -112,6 +112,8 @@ pub struct Sidebar {
     listbox: gtk::ListBox,
     list_store: gio::ListStore,
     model: Rc<SidebarModel>,
+    amount_playlists_shown: u32,
+    amount_artists_shown: u32,
 }
 
 impl Sidebar {
@@ -132,7 +134,7 @@ impl Sidebar {
         list_store.append(&SidebarItem::create_playlist_item());
         list_store.append(&SidebarItem::from_destination(
             SidebarDestination::SavedPlaylists,
-        ));        
+        ));
         list_store.append(&SidebarItem::artists_section());
 
         listbox.bind_model(
@@ -169,6 +171,8 @@ impl Sidebar {
             listbox,
             list_store,
             model,
+            amount_artists_shown: 0,
+            amount_playlists_shown: 0,
         }
     }
 
@@ -199,7 +203,7 @@ impl Sidebar {
         row.upcast()
     }
 
-    fn update_playlists_and_followed_artists_in_sidebar(&self) {
+    fn update_playlists_and_followed_artists_in_sidebar(&mut self) {
         let playlists: Vec<SidebarItem> = self
             .model
             .get_playlists()
@@ -214,21 +218,17 @@ impl Sidebar {
             .collect();
         self.list_store.splice(
             NUM_FIXED_ENTRIES,
-            self.list_store.n_items() - NUM_FIXED_ENTRIES,
+            self.amount_playlists_shown,
             playlists.as_slice(),
         );
         self.list_store.splice(
-            self.list_store.n_items(),
-            0,
+            NUM_FIXED_ENTRIES + (playlists.len() as u32) + 1,
+            self.amount_artists_shown,
             artists.as_slice(),
         );
 
-        // TODO fix this mess
-        // Layout:
-        // FIXED ENTRIES (6)
-        // PLAYLISTS
-        // Artists title
-        // ARTISTS
+        self.amount_artists_shown = artists.len() as u32;
+        self.amount_playlists_shown = playlists.len() as u32;
     }
 }
 
