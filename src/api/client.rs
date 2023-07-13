@@ -652,17 +652,15 @@ impl SpotifyClient {
     }
 
     pub(crate) fn get_followed_artists(
-        &self, 
+        &self,
         _offset: usize,
         _limit: usize,
     ) -> SpotifyRequest<'_, (), Artists> {
-        let query = make_query_params()
-            .append_pair("type", "artist")
-            .finish();
-    
+        let query = make_query_params().append_pair("type", "artist").finish();
+
         self.request()
-        .method(Method::GET)
-        .uri("/v1/me/following".to_string(), Some(&query))
+            .method(Method::GET)
+            .uri("/v1/me/following".to_string(), Some(&query))
     }
 }
 

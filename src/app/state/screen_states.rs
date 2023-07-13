@@ -223,7 +223,7 @@ impl Default for HomeState {
             playlists: ListStore::new(),
             saved_tracks: SongListModel::new(50),
             followed_artists: ListStore::new(),
-            next_followed_artists_page: Pagination::new((), 30)
+            next_followed_artists_page: Pagination::new((), 30),
         }
     }
 }
@@ -293,16 +293,20 @@ impl UpdatableState for HomeState {
             }
             BrowserAction::SetFollowedArtistsContent(content) => {
                 if !self.followed_artists.eq(content, |a, b| a.id() == b.id) {
-                    self.followed_artists.replace_all(content.iter().map(|a| a.into()));
-                    self.next_followed_artists_page.reset_count(self.followed_artists.len());
+                    self.followed_artists
+                        .replace_all(content.iter().map(|a| a.into()));
+                    self.next_followed_artists_page
+                        .reset_count(self.followed_artists.len());
                     vec![BrowserEvent::FollowedArtistsUpdated]
                 } else {
                     vec![]
                 }
             }
             BrowserAction::AppendFollowedArtistsContent(content) => {
-                self.next_followed_artists_page.set_loaded_count(content.len());
-                self.followed_artists.extend(content.iter().map(|p| p.into()));
+                self.next_followed_artists_page
+                    .set_loaded_count(content.len());
+                self.followed_artists
+                    .extend(content.iter().map(|p| p.into()));
                 vec![BrowserEvent::FollowedArtistsUpdated]
             }
             BrowserAction::UpdatePlaylistName(PlaylistSummary { id, title }) => {

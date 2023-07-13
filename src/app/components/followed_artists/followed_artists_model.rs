@@ -35,12 +35,21 @@ impl FollowedArtistsModel {
             .call_spotify_and_dispatch(move || async move {
                 api.get_followed_artists(0, batch_size)
                     .await
-                    .map(|artists| BrowserAction::SetFollowedArtistsContent(artists.artists.into_iter().map(|artist| ArtistDescription {
-                        id: artist.id,
-                        name: artist.name,
-                        albums: Vec::new(),
-                        top_tracks: Vec::new(),
-                    }).collect()).into())
+                    .map(|artists| {
+                        BrowserAction::SetFollowedArtistsContent(
+                            artists
+                                .artists
+                                .into_iter()
+                                .map(|artist| ArtistDescription {
+                                    id: artist.id,
+                                    name: artist.name,
+                                    albums: Vec::new(),
+                                    top_tracks: Vec::new(),
+                                })
+                                .collect(),
+                        )
+                        .into()
+                    })
             });
 
         Some(())
@@ -63,12 +72,21 @@ impl FollowedArtistsModel {
             .call_spotify_and_dispatch(move || async move {
                 api.get_followed_artists(offset, batch_size)
                     .await
-                    .map(|artists| BrowserAction::AppendFollowedArtistsContent(artists.artists.into_iter().map(|artist| ArtistDescription {
-                        id: artist.id,
-                        name: artist.name,
-                        albums: Vec::new(),
-                        top_tracks: Vec::new(),
-                    }).collect()).into())
+                    .map(|artists| {
+                        BrowserAction::AppendFollowedArtistsContent(
+                            artists
+                                .artists
+                                .into_iter()
+                                .map(|artist| ArtistDescription {
+                                    id: artist.id,
+                                    name: artist.name,
+                                    albums: Vec::new(),
+                                    top_tracks: Vec::new(),
+                                })
+                                .collect(),
+                        )
+                        .into()
+                    })
             });
 
         Some(())

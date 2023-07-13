@@ -127,7 +127,7 @@ pub trait SpotifyApiClient {
     fn player_state(&self) -> BoxFuture<SpotifyResult<ConnectPlayerState>>;
 
     fn get_followed_artists(
-        &self, 
+        &self,
         offset: usize,
         limit: usize,
     ) -> BoxFuture<SpotifyResult<Artists>>;
@@ -832,20 +832,20 @@ impl SpotifyApiClient for CachedSpotifyClient {
     }
 
     fn get_followed_artists(
-            &self, 
-            offset: usize,
-            limit: usize,
-        ) -> BoxFuture<SpotifyResult<Artists>> {
-            Box::pin(async move {
-                let result = self
-                    .client
-                    .get_followed_artists(offset, limit)
-                    .send()
-                    .await?
-                    .deserialize()
-                    .ok_or(SpotifyApiError::NoContent)?;
-                Ok(result.into())
-            })
+        &self,
+        offset: usize,
+        limit: usize,
+    ) -> BoxFuture<SpotifyResult<Artists>> {
+        Box::pin(async move {
+            let result = self
+                .client
+                .get_followed_artists(offset, limit)
+                .send()
+                .await?
+                .deserialize()
+                .ok_or(SpotifyApiError::NoContent)?;
+            Ok(result.into())
+        })
     }
 }
 

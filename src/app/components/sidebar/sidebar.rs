@@ -2,13 +2,13 @@ use gettextrs::gettext;
 use gtk::prelude::*;
 use std::rc::Rc;
 
-use super::FOLLOWED_ARTISTS_SECTION;
 use super::create_playlist::CreatePlaylistPopover;
+use super::FOLLOWED_ARTISTS_SECTION;
 use super::{
     sidebar_row::SidebarRow, SidebarDestination, SidebarItem, CREATE_PLAYLIST_ITEM,
     SAVED_PLAYLISTS_SECTION,
 };
-use crate::app::models::{AlbumModel, PlaylistSummary, ArtistSummary, ArtistModel};
+use crate::app::models::{AlbumModel, ArtistModel, ArtistSummary, PlaylistSummary};
 use crate::app::state::ScreenName;
 use crate::app::{
     ActionDispatcher, AppAction, AppEvent, AppModel, BrowserAction, BrowserEvent, Component,
@@ -82,7 +82,11 @@ impl SidebarModel {
             .filter(|s| !s.is_empty())
             .unwrap_or_else(|| gettext("Unnamed artist"));
         let id = a.id();
-        SidebarDestination::Artist(ArtistSummary { id, name , photo: None })
+        SidebarDestination::Artist(ArtistSummary {
+            id,
+            name,
+            photo: None,
+        })
     }
 
     fn navigate(&self, dest: SidebarDestination) {
@@ -90,7 +94,7 @@ impl SidebarModel {
             SidebarDestination::Library
             | SidebarDestination::SavedTracks
             | SidebarDestination::NowPlaying
-            | SidebarDestination::SavedPlaylists 
+            | SidebarDestination::SavedPlaylists
             | SidebarDestination::FollowedArtists => {
                 vec![
                     BrowserAction::NavigationPopTo(ScreenName::Home).into(),
@@ -99,8 +103,8 @@ impl SidebarModel {
             }
             SidebarDestination::Playlist(PlaylistSummary { id, .. }) => {
                 vec![AppAction::ViewPlaylist(id)]
-            },
-            SidebarDestination::Artist(ArtistSummary {id, ..}) => {
+            }
+            SidebarDestination::Artist(ArtistSummary { id, .. }) => {
                 vec![AppAction::ViewArtist(id)]
             }
         };
@@ -241,8 +245,10 @@ impl Component for Sidebar {
 impl EventListener for Sidebar {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::BrowserEvent(BrowserEvent::SavedPlaylistsUpdated | BrowserEvent::FollowedArtistsUpdated) => self.update_playlists_and_followed_artists_in_sidebar(),
-            _ => ()
+            AppEvent::BrowserEvent(
+                BrowserEvent::SavedPlaylistsUpdated | BrowserEvent::FollowedArtistsUpdated,
+            ) => self.update_playlists_and_followed_artists_in_sidebar(),
+            _ => (),
         }
     }
 }

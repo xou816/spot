@@ -3,7 +3,7 @@ use glib::Properties;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
-use crate::app::models::{PlaylistSummary, ArtistSummary};
+use crate::app::models::{ArtistSummary, PlaylistSummary};
 
 const LIBRARY: &str = "library";
 const SAVED_TRACKS: &str = "saved_tracks";
@@ -51,7 +51,7 @@ impl SidebarDestination {
             // translators: This is a sidebar entry that marks that the entries below are playlists.
             Self::SavedPlaylists => gettext("Playlists"),
             Self::Playlist(PlaylistSummary { title, .. }) => title.clone(),
-            Self::Artist(ArtistSummary {name, ..} ) => name.clone(),
+            Self::Artist(ArtistSummary { name, .. }) => name.clone(),
             Self::FollowedArtists => gettext("Artists"),
         }
     }
@@ -75,9 +75,7 @@ impl SidebarItem {
             SidebarDestination::Playlist(PlaylistSummary { id, title }) => {
                 (PLAYLIST, Some(id), title)
             }
-            SidebarDestination::Artist(ArtistSummary {id, name, ..}) => {
-                (ARTIST, Some(id), name)
-            }
+            SidebarDestination::Artist(ArtistSummary { id, name, .. }) => (ARTIST, Some(id), name),
             _ => (dest.id(), None, dest.title()),
         };
         glib::Object::builder()
@@ -130,7 +128,11 @@ impl SidebarItem {
                     id: data,
                     title,
                 })),
-                ARTIST => Some(SidebarDestination::Artist(ArtistSummary { id: data, name: title, photo: None })),
+                ARTIST => Some(SidebarDestination::Artist(ArtistSummary {
+                    id: data,
+                    name: title,
+                    photo: None,
+                })),
                 FOLLOWED_ARTISTS => Some(SidebarDestination::FollowedArtists),
                 _ => None,
             }
