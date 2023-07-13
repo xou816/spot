@@ -74,7 +74,7 @@ impl UpdatableState for DetailsState {
             }
             BrowserAction::SaveAlbum(album) if album.id == self.id => {
                 let id = album.id.clone();
-                if let Some(mut album) = self.content.as_mut() {
+                if let Some(album) = self.content.as_mut() {
                     album.description.is_liked = true;
                     vec![BrowserEvent::AlbumSaved(id)]
                 } else {
@@ -82,7 +82,7 @@ impl UpdatableState for DetailsState {
                 }
             }
             BrowserAction::UnsaveAlbum(id) if id == &self.id => {
-                if let Some(mut album) = self.content.as_mut() {
+                if let Some(album) = self.content.as_mut() {
                     album.description.is_liked = false;
                     vec![BrowserEvent::AlbumUnsaved(id.clone())]
                 } else {
@@ -208,6 +208,8 @@ pub struct HomeState {
     pub next_playlists_page: Pagination<()>,
     pub playlists: ListStore<AlbumModel>,
     pub saved_tracks: SongListModel,
+    pub followed_artists: ListStore<ArtistModel>,
+    pub next_followed_artists_page: Pagination<()>,
 }
 
 impl Default for HomeState {
@@ -220,6 +222,8 @@ impl Default for HomeState {
             next_playlists_page: Pagination::new((), 30),
             playlists: ListStore::new(),
             saved_tracks: SongListModel::new(50),
+            followed_artists: ListStore::new(),
+            next_followed_artists_page: Pagination::new((), 30)
         }
     }
 }
@@ -286,6 +290,20 @@ impl UpdatableState for HomeState {
                 self.next_playlists_page.set_loaded_count(content.len());
                 self.playlists.extend(content.iter().map(|p| p.into()));
                 vec![BrowserEvent::SavedPlaylistsUpdated]
+            }
+            BrowserAction::SetFollowedArtistsContent(content) => {
+                if !self.followed_artists.eq(content, |a, b| a.id() == b.id) {
+                    self.followed_artists.replace_all(content.iter().map(|a| a.into()));
+                    self.next_followed_artists_page.reset_count(self.followed_artists.len());
+                    vec![BrowserEvent::FollowedArtistsUpdated]
+                } else {
+                    vec![]
+                }
+            }
+            BrowserAction::AppendFollowedArtistsContent(content) => {
+                self.next_followed_artists_page.set_loaded_count(content.len());
+                self.followed_artists.extend(content.iter().map(|p| p.into()));
+                vec![BrowserEvent::FollowedArtistsUpdated]
             }
             BrowserAction::UpdatePlaylistName(PlaylistSummary { id, title }) => {
                 if let Some(p) = self.playlists.iter().find(|p| &p.uri() == id) {

@@ -1,0 +1,36 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $FollowedArtistsWidget : Box {
+  ScrolledWindow scrolled_window {
+    hexpand: true;
+    vexpand: true;
+    vscrollbar-policy: always;
+    min-content-width: 250;
+
+    Overlay overlay {
+      FlowBox flowbox {
+        margin-start: 8;
+        margin-end: 8;
+        margin-top: 8;
+        margin-bottom: 8;
+        min-children-per-line: 1;
+        selection-mode: none;
+        activate-on-single-click: false;
+      }
+
+      [overlay]
+      Adw.StatusPage status_page {
+        /* Translators: A title that is shown when the user has no followed artists. */
+
+        title: _("You have no followed artists.");
+
+        /* Translators: A description of what happens when the user has followed artists. */
+
+        description: _("Your followed artists will be shown here.");
+        icon-name: "emblem-music-symbolic"; // TODO change
+        visible: true;
+      }
+    }
+  }
+}

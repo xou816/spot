@@ -58,6 +58,9 @@ pub use now_playing::*;
 mod device_selector;
 pub use device_selector::*;
 
+mod followed_artists;
+pub use followed_artists::*;
+
 mod saved_tracks;
 pub use saved_tracks::*;
 

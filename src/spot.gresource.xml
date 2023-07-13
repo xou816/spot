@@ -30,6 +30,8 @@
     <file alias="components/library.ui">app/components/library/library.ui</file>
     <!-- saved_playlists -->
     <file alias="components/saved_playlists.ui">app/components/saved_playlists/saved_playlists.ui</file>
+    <!-- followed artists -->
+    <file alias="components/followed_artists.ui">app/components/followed_artists/followed_artists.ui</file>
     <!-- now playing -->
     <file alias="components/now_playing.ui">app/components/now_playing/now_playing.ui</file>
     <file alias="components/device_selector.ui">app/components/device_selector/device_selector.ui</file>

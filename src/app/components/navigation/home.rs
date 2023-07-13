@@ -15,6 +15,7 @@ impl HomePane {
         let saved_playlists = screen_factory.make_saved_playlists();
         let saved_tracks = screen_factory.make_saved_tracks();
         let now_playing = screen_factory.make_now_playing();
+        let followed_artists = screen_factory.make_followed_artists();
         let sidebar = screen_factory.make_sidebar(listbox);
 
         let stack = gtk::Stack::new();
@@ -41,6 +42,13 @@ impl HomePane {
             &dest.title(),
         );
 
+        let dest = SidebarDestination::FollowedArtists;
+        stack.add_titled(
+            followed_artists.get_root_widget(),
+            Option::from(dest.id()),
+            &dest.title(),
+        );
+
         let dest = SidebarDestination::NowPlaying;
         stack.add_titled(
             now_playing.get_root_widget(),
@@ -56,6 +64,7 @@ impl HomePane {
                 Box::new(saved_playlists),
                 Box::new(saved_tracks),
                 Box::new(now_playing),
+                Box::new(followed_artists),
             ],
         }
     }

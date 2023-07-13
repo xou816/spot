@@ -3,7 +3,7 @@ use glib::Properties;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
-use crate::app::models::PlaylistSummary;
+use crate::app::models::{PlaylistSummary, ArtistSummary};
 
 const LIBRARY: &str = "library";
 const SAVED_TRACKS: &str = "saved_tracks";
@@ -12,6 +12,9 @@ const SAVED_PLAYLISTS: &str = "saved_playlists";
 const PLAYLIST: &str = "playlist";
 pub const SAVED_PLAYLISTS_SECTION: &str = "saved_playlists_section";
 pub const CREATE_PLAYLIST_ITEM: &str = "create_playlist";
+pub const FOLLOWED_ARTISTS_SECTION: &str = "followed_artists_section";
+const ARTIST: &str = "artist";
+const FOLLOWED_ARTISTS: &str = "followed_artists";
 
 #[derive(Debug)]
 pub enum SidebarDestination {
@@ -20,6 +23,8 @@ pub enum SidebarDestination {
     NowPlaying,
     SavedPlaylists,
     Playlist(PlaylistSummary),
+    Artist(ArtistSummary),
+    FollowedArtists,
 }
 
 impl SidebarDestination {
@@ -30,6 +35,8 @@ impl SidebarDestination {
             Self::NowPlaying => NOW_PLAYING,
             Self::SavedPlaylists => SAVED_PLAYLISTS,
             Self::Playlist(_) => PLAYLIST,
+            Self::Artist(_) => ARTIST,
+            Self::FollowedArtists => FOLLOWED_ARTISTS,
         }
     }
 
@@ -44,6 +51,8 @@ impl SidebarDestination {
             // translators: This is a sidebar entry that marks that the entries below are playlists.
             Self::SavedPlaylists => gettext("Playlists"),
             Self::Playlist(PlaylistSummary { title, .. }) => title.clone(),
+            Self::Artist(ArtistSummary {name, ..} ) => name.clone(),
+            Self::FollowedArtists => gettext("Artists"),
         }
     }
 
@@ -54,6 +63,8 @@ impl SidebarDestination {
             Self::NowPlaying => "music-queue-symbolic",
             Self::SavedPlaylists => "view-app-grid-symbolic",
             Self::Playlist(_) => "playlist2-symbolic",
+            Self::Artist(_) => "avatar-default-symbolic",
+            Self::FollowedArtists => "view-app-grid-symbolic",
         }
     }
 }
@@ -63,6 +74,9 @@ impl SidebarItem {
         let (id, data, title) = match dest {
             SidebarDestination::Playlist(PlaylistSummary { id, title }) => {
                 (PLAYLIST, Some(id), title)
+            }
+            SidebarDestination::Artist(ArtistSummary {id, name, ..}) => {
+                (ARTIST, Some(id), name)
             }
             _ => (dest.id(), None, dest.title()),
         };
@@ -92,6 +106,15 @@ impl SidebarItem {
             .build()
     }
 
+    pub fn artists_section() -> Self {
+        glib::Object::builder()
+            .property("id", FOLLOWED_ARTISTS_SECTION)
+            .property("data", &String::new())
+            .property("title", &gettext("Followed Artists"))
+            .property("navigatable", false)
+            .build()
+    }
+
     pub fn destination(&self) -> Option<SidebarDestination> {
         let navigatable = self.property::<bool>("navigatable");
         if navigatable {
@@ -107,6 +130,8 @@ impl SidebarItem {
                     id: data,
                     title,
                 })),
+                ARTIST => Some(SidebarDestination::Artist(ArtistSummary { id: data, name: title, photo: None })),
+                FOLLOWED_ARTISTS => Some(SidebarDestination::FollowedArtists),
                 _ => None,
             }
         } else {

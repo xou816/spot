@@ -292,7 +292,8 @@ playlist-modify-public,\
 playlist-modify-private,\
 user-modify-playback-state,\
 streaming,\
-playlist-modify-public";
+playlist-modify-public,\
+user-follow-read";
 
 const KNOWN_AP_PORTS: [Option<u16>; 4] = [None, Some(80), Some(443), Some(4070)];
 

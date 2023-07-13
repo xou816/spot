@@ -30,6 +30,7 @@ src/app/components/scrolling_header/scrolling_header.blp
 src/app/components/details/album_header.blp
 src/app/components/details/release_details.blp
 src/app/components/details/details.blp
+src/app/components/followed_artists/followed_artists.blp
 src/app/components/now_playing/now_playing.blp
 src/app/components/login/login.blp
 src/app/components/playlist_details/playlist_details.blp

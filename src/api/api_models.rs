@@ -283,6 +283,11 @@ impl WithImages for Artist {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+pub struct Artists {
+    pub artists: Page<Artist>,
+}
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct User {
     pub id: String,
     pub display_name: String,

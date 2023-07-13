@@ -125,6 +125,12 @@ pub trait SpotifyApiClient {
     ) -> BoxFuture<SpotifyResult<()>>;
 
     fn player_state(&self) -> BoxFuture<SpotifyResult<ConnectPlayerState>>;
+
+    fn get_followed_artists(
+        &self, 
+        offset: usize,
+        limit: usize,
+    ) -> BoxFuture<SpotifyResult<Artists>>;
 }
 
 enum SpotCacheKey<'a> {
@@ -823,6 +829,23 @@ impl SpotifyApiClient for CachedSpotifyClient {
                 .player_volume(&device_id, volume)
                 .send_no_response(),
         )
+    }
+
+    fn get_followed_artists(
+            &self, 
+            offset: usize,
+            limit: usize,
+        ) -> BoxFuture<SpotifyResult<Artists>> {
+            Box::pin(async move {
+                let result = self
+                    .client
+                    .get_followed_artists(offset, limit)
+                    .send()
+                    .await?
+                    .deserialize()
+                    .ok_or(SpotifyApiError::NoContent)?;
+                Ok(result.into())
+            })
     }
 }
 

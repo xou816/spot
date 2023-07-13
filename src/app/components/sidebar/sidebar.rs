@@ -2,12 +2,13 @@ use gettextrs::gettext;
 use gtk::prelude::*;
 use std::rc::Rc;
 
+use super::FOLLOWED_ARTISTS_SECTION;
 use super::create_playlist::CreatePlaylistPopover;
 use super::{
     sidebar_row::SidebarRow, SidebarDestination, SidebarItem, CREATE_PLAYLIST_ITEM,
     SAVED_PLAYLISTS_SECTION,
 };
-use crate::app::models::{AlbumModel, PlaylistSummary};
+use crate::app::models::{AlbumModel, PlaylistSummary, ArtistSummary, ArtistModel};
 use crate::app::state::ScreenName;
 use crate::app::{
     ActionDispatcher, AppAction, AppEvent, AppModel, BrowserAction, BrowserEvent, Component,
@@ -16,6 +17,7 @@ use crate::app::{
 
 const NUM_FIXED_ENTRIES: u32 = 6;
 const NUM_PLAYLISTS: usize = 20;
+const NUM_ARTISTS: usize = 20;
 
 pub struct SidebarModel {
     app_model: Rc<AppModel>,
@@ -39,11 +41,11 @@ impl SidebarModel {
             .playlists
             .iter()
             .take(NUM_PLAYLISTS)
-            .map(Self::map_to_destination)
+            .map(Self::map_playlist_to_destination)
             .collect()
     }
 
-    fn map_to_destination(a: AlbumModel) -> SidebarDestination {
+    fn map_playlist_to_destination(a: AlbumModel) -> SidebarDestination {
         let title = Some(a.album())
             .filter(|s| !s.is_empty())
             .unwrap_or_else(|| gettext("Unnamed playlist"));
@@ -62,12 +64,34 @@ impl SidebarModel {
             })
     }
 
+    fn get_followed_artists(&self) -> Vec<SidebarDestination> {
+        self.app_model
+            .get_state()
+            .browser
+            .home_state()
+            .expect("expected HomeState to be available")
+            .followed_artists
+            .iter()
+            .take(NUM_ARTISTS)
+            .map(Self::map_artist_to_destination)
+            .collect()
+    }
+
+    fn map_artist_to_destination(a: ArtistModel) -> SidebarDestination {
+        let name = Some(a.artist())
+            .filter(|s| !s.is_empty())
+            .unwrap_or_else(|| gettext("Unnamed artist"));
+        let id = a.id();
+        SidebarDestination::Artist(ArtistSummary { id, name , photo: None })
+    }
+
     fn navigate(&self, dest: SidebarDestination) {
         let actions = match dest {
             SidebarDestination::Library
             | SidebarDestination::SavedTracks
             | SidebarDestination::NowPlaying
-            | SidebarDestination::SavedPlaylists => {
+            | SidebarDestination::SavedPlaylists 
+            | SidebarDestination::FollowedArtists => {
                 vec![
                     BrowserAction::NavigationPopTo(ScreenName::Home).into(),
                     BrowserAction::SetHomeVisiblePage(dest.id()).into(),
@@ -75,6 +99,9 @@ impl SidebarModel {
             }
             SidebarDestination::Playlist(PlaylistSummary { id, .. }) => {
                 vec![AppAction::ViewPlaylist(id)]
+            },
+            SidebarDestination::Artist(ArtistSummary {id, ..}) => {
+                vec![AppAction::ViewArtist(id)]
             }
         };
         self.dispatcher.dispatch_many(actions);
@@ -105,7 +132,8 @@ impl Sidebar {
         list_store.append(&SidebarItem::create_playlist_item());
         list_store.append(&SidebarItem::from_destination(
             SidebarDestination::SavedPlaylists,
-        ));
+        ));        
+        list_store.append(&SidebarItem::artists_section());
 
         listbox.bind_model(
             Some(&list_store),
@@ -117,6 +145,7 @@ impl Sidebar {
                     match item.id().as_str() {
                         SAVED_PLAYLISTS_SECTION => Self::make_section_label(item),
                         CREATE_PLAYLIST_ITEM => Self::make_create_playlist(item, popover),
+                        FOLLOWED_ARTISTS_SECTION => Self::make_section_label(item),
                         _ => unimplemented!(),
                     }
                 }
@@ -170,10 +199,16 @@ impl Sidebar {
         row.upcast()
     }
 
-    fn update_playlists_in_sidebar(&self) {
+    fn update_playlists_and_followed_artists_in_sidebar(&self) {
         let playlists: Vec<SidebarItem> = self
             .model
             .get_playlists()
+            .into_iter()
+            .map(SidebarItem::from_destination)
+            .collect();
+        let artists: Vec<SidebarItem> = self
+            .model
+            .get_followed_artists()
             .into_iter()
             .map(SidebarItem::from_destination)
             .collect();
@@ -182,6 +217,18 @@ impl Sidebar {
             self.list_store.n_items() - NUM_FIXED_ENTRIES,
             playlists.as_slice(),
         );
+        self.list_store.splice(
+            self.list_store.n_items(),
+            0,
+            artists.as_slice(),
+        );
+
+        // TODO fix this mess
+        // Layout:
+        // FIXED ENTRIES (6)
+        // PLAYLISTS
+        // Artists title
+        // ARTISTS
     }
 }
 
@@ -193,8 +240,9 @@ impl Component for Sidebar {
 
 impl EventListener for Sidebar {
     fn on_event(&mut self, event: &AppEvent) {
-        if let AppEvent::BrowserEvent(BrowserEvent::SavedPlaylistsUpdated) = event {
-            self.update_playlists_in_sidebar();
+        match event {
+            AppEvent::BrowserEvent(BrowserEvent::SavedPlaylistsUpdated | BrowserEvent::FollowedArtistsUpdated) => self.update_playlists_and_followed_artists_in_sidebar(),
+            _ => ()
         }
     }
 }
