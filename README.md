@@ -12,6 +12,8 @@ Join the discussion on [Matrix](https://matrix.to/#/#spot-devel:matrix.org).
 
 <a href='https://flathub.org/apps/details/dev.alextren.Spot'><img width='130' alt='Download on Flathub' src='https://flathub.org/assets/badges/flathub-badge-en.png'/></a>
 
+[![Packaging status](https://repology.org/badge/vertical-allrepos/spot-client.svg)](https://repology.org/project/spot-client/versions)
+
 ## Usage notes
 
 ### Credentials
