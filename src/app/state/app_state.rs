@@ -171,7 +171,7 @@ impl AppState {
                     .next()
                     .and_then(|song| playback.move_down(&song.id))
                     .map(|_| vec![PlaybackEvent::PlaylistChanged.into()])
-                    .unwrap_or_else(Vec::new)
+                    .unwrap_or_default()
             }
             AppAction::MoveUpSelection => {
                 let mut selection = self.selection.peek_selection();
@@ -180,7 +180,7 @@ impl AppState {
                     .next()
                     .and_then(|song| playback.move_up(&song.id))
                     .map(|_| vec![PlaybackEvent::PlaylistChanged.into()])
-                    .unwrap_or_else(Vec::new)
+                    .unwrap_or_default()
             }
             AppAction::SaveSelection => {
                 let tracks = self.selection.take_selection();
