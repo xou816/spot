@@ -114,8 +114,8 @@ impl ConnectPlayer {
         debug!("polling connect device...");
         let player_state = self.api.player_state().await;
         let Ok(state) = player_state else {
-                self.device_lost();
-                return;
+            self.device_lost();
+            return;
         };
         self.apply_remote_state(&state).await;
         if let Ok(mut last_state) = self.last_state.write() {
@@ -133,7 +133,8 @@ impl ConnectPlayer {
             source,
             offset,
             song,
-        } = command else {
+        } = command
+        else {
             panic!("Illegal call");
         };
         let is_diff_song = current_state
