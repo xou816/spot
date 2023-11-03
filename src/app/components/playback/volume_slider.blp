@@ -1,0 +1,11 @@
+template $VolumeButton: ScaleButton {
+    receives-default: true;
+    halign: end;
+    tooltip-text: _("Volume");
+    adjustment: Adjustment {
+      step-increment: 0.01;
+      page-increment: 0.10;
+      upper: 1.0;
+      lower: 0.0;
+    };
+}

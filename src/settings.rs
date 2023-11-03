@@ -70,11 +70,14 @@ impl SpotifyPlayerSettings {
             x => Some(x as u16),
         };
 
+        let volume = settings.double("volume").clamp(0.0, 1.0);
+
         Some(Self {
             bitrate,
             backend,
             gapless,
             ap_port,
+            volume
         })
     }
 }
