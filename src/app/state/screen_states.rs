@@ -74,7 +74,7 @@ impl UpdatableState for DetailsState {
             }
             BrowserAction::SaveAlbum(album) if album.id == self.id => {
                 let id = album.id.clone();
-                if let Some(mut album) = self.content.as_mut() {
+                if let Some(album) = self.content.as_mut() {
                     album.description.is_liked = true;
                     vec![BrowserEvent::AlbumSaved(id)]
                 } else {
@@ -82,7 +82,7 @@ impl UpdatableState for DetailsState {
                 }
             }
             BrowserAction::UnsaveAlbum(id) if id == &self.id => {
-                if let Some(mut album) = self.content.as_mut() {
+                if let Some(album) = self.content.as_mut() {
                     album.description.is_liked = false;
                     vec![BrowserEvent::AlbumUnsaved(id.clone())]
                 } else {
