@@ -66,12 +66,13 @@ pub enum AudioBackend {
     Alsa(String),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct SpotifyPlayerSettings {
     pub bitrate: Bitrate,
     pub backend: AudioBackend,
     pub gapless: bool,
     pub ap_port: Option<u16>,
+    pub volume: f64,
 }
 
 impl Default for SpotifyPlayerSettings {
@@ -81,6 +82,7 @@ impl Default for SpotifyPlayerSettings {
             gapless: true,
             backend: AudioBackend::PulseAudio,
             ap_port: None,
+            volume: 0.6,
         }
     }
 }
@@ -107,9 +109,7 @@ impl SpotifyPlayer {
     async fn handle(&mut self, action: Command) -> Result<(), SpotifyError> {
         match action {
             Command::PlayerSetVolume(volume) => {
-                if let Some(mixer) = self.mixer.as_mut() {
-                    mixer.set_volume((VolumeCtrl::MAX_VOLUME as f64 * volume) as u16);
-                }
+                self.set_volume(volume);
                 Ok(())
             }
             Command::PlayerResume => {
@@ -220,6 +220,13 @@ impl SpotifyPlayer {
         }
     }
 
+    fn set_volume(&mut self, volume: f64) {
+        if let Some(mixer) = self.mixer.as_mut() {
+            mixer.set_volume((VolumeCtrl::MAX_VOLUME as f64 * volume) as u16);
+            self.settings.volume = volume;
+        }
+    }
+
     fn create_player(&mut self, session: Session) -> (Player, PlayerEventChannel) {
         let backend = self.settings.backend.clone();
 
@@ -233,17 +240,14 @@ impl SpotifyPlayer {
         let soft_volume = self
             .mixer
             .get_or_insert_with(|| {
-                let mix = Box::new(SoftMixer::open(MixerConfig {
+                Box::new(SoftMixer::open(MixerConfig {
                     // This value feels reasonable to me. Feel free to change it
                     volume_ctrl: VolumeCtrl::Log(VolumeCtrl::DEFAULT_DB_RANGE / 2.0),
                     ..Default::default()
-                }));
-                // TODO: Should read volume from somewhere instead of hard coding.
-                // Sets volume to 100%
-                mix.set_volume(VolumeCtrl::MAX_VOLUME);
-                mix
+                }))
             })
             .get_soft_volume();
+        self.set_volume(self.settings.volume);
         Player::new(player_config, session, soft_volume, move || match backend {
             AudioBackend::GStreamer(pipeline) => {
                 let backend = audio_backend::find(Some("gstreamer".to_string())).unwrap();

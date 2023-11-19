@@ -97,7 +97,7 @@ impl PlaybackWidget {
         let weak_self = self.downgrade();
         worker.send_local_task(async move {
             let loader = ImageLoader::new();
-            let result = loader.load_remote(&url, "jpg", 48, 48).await;
+            let result = loader.load_remote(&url, "jpg", 64, 64).await;
             if let (Some(ref _self), Some(ref result)) = (weak_self.upgrade(), result) {
                 _self.set_artwork(result);
             }
@@ -134,6 +134,12 @@ impl PlaybackWidget {
     pub fn increment_seek_position(&self) {
         let value = self.imp().seek_bar.value() + 1_000.0;
         self.set_seek_position(value);
+    }
+
+    pub fn set_volume(&self, volume: f64) {
+        let widget = imp::PlaybackWidget::from_instance(self);
+        widget.controls.set_volume(volume);
+        widget.controls_mobile.set_volume(volume);
     }
 
     pub fn connect_now_playing_clicked<F>(&self, f: F)
@@ -238,5 +244,14 @@ impl PlaybackWidget {
         let widget = self.imp();
         widget.controls.connect_repeat(f.clone());
         widget.controls_mobile.connect_repeat(f);
+    }
+
+    pub fn connect_volume_changed<F>(&self, f: F)
+    where
+        F: Fn(f64) + Clone + 'static,
+    {
+        let widget = imp::PlaybackWidget::from_instance(self);
+        widget.controls.connect_volume_changed(f.clone());
+        widget.controls_mobile.connect_volume_changed(f);
     }
 }
