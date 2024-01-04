@@ -1,3 +1,4 @@
+use gettextrs::gettext;
 use gio::prelude::*;
 use gio::SimpleActionGroup;
 use std::cell::Ref;
@@ -62,6 +63,17 @@ impl PlaylistDetailsModel {
                     self.dispatcher
                         .dispatch(AppAction::PlaybackAction(PlaybackAction::ToggleShuffle));
                 }
+                // The playlist has no songs and the user has still decided to click the play button,
+                // lets just do an early return and show an error...
+                if playlist.songs.songs.is_empty() {
+                    error!("Unable to start playback because songs is empty");
+                    self.dispatcher
+                        .dispatch(AppAction::ShowNotification(gettext(
+                            "An error occured. Check logs for details!",
+                        )));
+                    return;
+                }
+
                 let id_of_first_song = playlist.songs.songs[0].id.as_str();
                 self.play_song_at(0, id_of_first_song);
                 return;
@@ -82,10 +94,13 @@ impl PlaylistDetailsModel {
         self.dispatcher
             .call_spotify_and_dispatch(move || async move {
                 let playlist = api.get_playlist(&id).await;
+                let playlist_tracks = api.get_playlist_tracks(&id, 0, 100).await?;
                 match playlist {
-                    Ok(playlist) => {
-                        Ok(BrowserAction::SetPlaylistDetails(Box::new(playlist)).into())
-                    }
+                    Ok(playlist) => Ok(BrowserAction::SetPlaylistDetails(
+                        Box::new(playlist),
+                        Box::new(playlist_tracks),
+                    )
+                    .into()),
                     Err(SpotifyApiError::BadStatus(400, _))
                     | Err(SpotifyApiError::BadStatus(404, _)) => {
                         Ok(BrowserAction::NavigationPop.into())

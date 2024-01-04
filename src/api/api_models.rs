@@ -199,7 +199,7 @@ pub struct PlaylistOwner {
 
 impl WithImages for Playlist {
     fn images(&self) -> &[Image] {
-        &self.images[..]
+        &self.images
     }
 }
 
