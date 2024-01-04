@@ -388,9 +388,11 @@ impl SpotifyClient {
     pub(crate) fn get_playlist(&self, id: &str) -> SpotifyRequest<'_, (), Playlist> {
         let query = make_query_params()
             .append_pair("market", "from_token")
+            // why still grab the tracks field? 
+            // the model still expects the appearance of a tracks field
             .append_pair(
                 "fields",
-                "id,name,images,owner,tracks(total,items(is_local,track(name,id,uri,duration_ms,album,artists(name,id))))",
+                "id,name,images,owner,tracks(total)",
             )
             .finish();
         self.request()

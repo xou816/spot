@@ -82,9 +82,10 @@ impl PlaylistDetailsModel {
         self.dispatcher
             .call_spotify_and_dispatch(move || async move {
                 let playlist = api.get_playlist(&id).await;
+                let playlist_tracks = api.get_playlist_tracks(&id, 0, 100).await?;
                 match playlist {
                     Ok(playlist) => {
-                        Ok(BrowserAction::SetPlaylistDetails(Box::new(playlist)).into())
+                        Ok(BrowserAction::SetPlaylistDetails(Box::new(playlist), Box::new(playlist_tracks)).into())
                     }
                     Err(SpotifyApiError::BadStatus(400, _))
                     | Err(SpotifyApiError::BadStatus(404, _)) => {
@@ -108,7 +109,7 @@ impl PlaylistDetailsModel {
         let loader = self.app_model.get_batch_loader();
 
         self.dispatcher.dispatch_async(Box::pin(async move {
-            loader
+            loader 
                 .query(next_query, |_s, song_batch| {
                     BrowserAction::AppendPlaylistTracks(id, Box::new(song_batch)).into()
                 })

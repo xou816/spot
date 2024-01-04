@@ -119,9 +119,9 @@ impl UpdatableState for PlaylistDetailsState {
 
     fn update_with(&mut self, action: Cow<Self::Action>) -> Vec<Self::Event> {
         match action.as_ref() {
-            BrowserAction::SetPlaylistDetails(playlist) if playlist.id == self.id => {
-                let PlaylistDescription { id, songs, .. } = *playlist.clone();
-                self.songs.add(songs).commit();
+            BrowserAction::SetPlaylistDetails(playlist, song_batch) if playlist.id == self.id => {
+                let PlaylistDescription { id, .. } = *playlist.clone();
+                self.songs.add(*song_batch.clone()).commit();
                 self.playlist = Some(*playlist.clone());
                 vec![BrowserEvent::PlaylistDetailsLoaded(id)]
             }
