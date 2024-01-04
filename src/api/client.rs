@@ -387,9 +387,10 @@ impl SpotifyClient {
 
     pub(crate) fn get_playlist(&self, id: &str) -> SpotifyRequest<'_, (), Playlist> {
         let query = make_query_params()
+            .append_pair("market", "from_token")
             .append_pair(
                 "fields",
-                "id,name,images,owner,tracks(total,items(is_local,track(name,id,uri,duration_ms,artists(name,id),album(name,id,images,artists))))",
+                "id,name,images,owner,tracks(total,items(is_local,track(name,id,uri,duration_ms,album,artists(name,id))))",
             )
             .finish();
         self.request()
@@ -404,6 +405,7 @@ impl SpotifyClient {
         limit: usize,
     ) -> SpotifyRequest<'_, (), Page<PlaylistTrack>> {
         let query = make_query_params()
+            .append_pair("market", "from_token")
             .append_pair("offset", &offset.to_string()[..])
             .append_pair("limit", &limit.to_string()[..])
             .finish();
