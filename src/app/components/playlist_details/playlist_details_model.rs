@@ -68,8 +68,7 @@ impl PlaylistDetailsModel {
                 if playlist.songs.songs.is_empty() {
                     error!("Unable to start playback because songs is empty");
                     self.dispatcher
-                        .dispatch(
-                        AppAction::ShowNotification(gettext(
+                        .dispatch(AppAction::ShowNotification(gettext(
                             "An error occured. Check logs for details!",
                         )));
                     return;
@@ -97,9 +96,11 @@ impl PlaylistDetailsModel {
                 let playlist = api.get_playlist(&id).await;
                 let playlist_tracks = api.get_playlist_tracks(&id, 0, 100).await?;
                 match playlist {
-                    Ok(playlist) => {
-                        Ok(BrowserAction::SetPlaylistDetails(Box::new(playlist), Box::new(playlist_tracks)).into())
-                    }
+                    Ok(playlist) => Ok(BrowserAction::SetPlaylistDetails(
+                        Box::new(playlist),
+                        Box::new(playlist_tracks),
+                    )
+                    .into()),
                     Err(SpotifyApiError::BadStatus(400, _))
                     | Err(SpotifyApiError::BadStatus(404, _)) => {
                         Ok(BrowserAction::NavigationPop.into())
