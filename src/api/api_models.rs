@@ -186,7 +186,7 @@ trait WithImages {
 pub struct Playlist {
     pub id: String,
     pub name: String,
-    pub images: Vec<Image>,
+    pub images: Option<Vec<Image>>,
     pub tracks: Page<PlaylistTrack>,
     pub owner: PlaylistOwner,
 }
@@ -199,7 +199,11 @@ pub struct PlaylistOwner {
 
 impl WithImages for Playlist {
     fn images(&self) -> &[Image] {
-        &self.images[..]
+        if let Some(ref images) = self.images {
+            images
+        } else {
+            &[]
+        }
     }
 }
 
