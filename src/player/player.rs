@@ -369,7 +369,7 @@ async fn player_setup_delegate(
                 delegate.notify_playback_state(position_ms);
             }
             PlayerEvent::TimeToPreloadNextTrack { .. } => {
-                debug!("Requestiong next track to be preloaded...");
+                debug!("Requesting next track to be preloaded...");
                 delegate.preload_next_track();
             }
             _ => {}
