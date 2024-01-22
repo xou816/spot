@@ -61,7 +61,7 @@ version = "3.0.1"
 features = ["rt-async-io-crypto-rust"]
 
 [dependencies]
-gdk-pixbuf = "0.17.0"
+gdk-pixbuf = "0.18.5"
 ref_filter_map = "1.0.1"
 regex = "1.8.3"
 async-std = "1.12.0"
