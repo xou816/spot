@@ -3,6 +3,7 @@
   <id>dev.alextren.Spot</id>
   <url type="homepage">https://github.com/xou816/spot</url>
   <name>Spot</name>
+  <developer_name>Alexandre Trendel</developer_name>
   <summary>Listen to music on Spotify</summary>
   <launchable type="desktop-id">dev.alextren.Spot.desktop</launchable>
   <metadata_license>CC0-1.0</metadata_license>
