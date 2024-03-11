@@ -25,8 +25,8 @@
   <description>
     <p>
       Listen to music on Spotify.
-      <b>Requires a premium account.</b>
     </p>
+    <p>Requires a premium account.</p>
     <p>Current features:</p>
     <ul>
       <li>playback control (play/pause, prev/next, seeking)</li>
@@ -51,53 +51,63 @@
       <image>https://raw.githubusercontent.com/xou816/spot/master/data/appstream/3.png</image>
     </screenshot>
   </screenshots>
-  <release version="0.4.0" date="2023-02-24">
-    <description>
-      <p>
-        It's been a while, hasn't it? I'm back, but please allow everyone some time to work through the issues and pull requests :)
-      </p>
-      <ul>
-        <li>added an option for gapless playback (thanks @supremesnickers!)</li>
-        <li>fixed theme management (thanks @ctsk!)</li>
-        <li>fixed the behaviour of the "previous" button for consistency with other media players (thanks @SomewhereOutInSpace!)</li>
-        <li>the user will now be prompted to unlock the keyring if needed (thanks @rainDiX!)</li>
-        <li>added playlist creation and edition</li>
-        <li>more bug fixes</li>
-      </ul>
-      <p>
-        Thanks to all the contributors who are somehow still around :) If you feel like you've been unjustly forgotten from the AUTHORS or TRANSLATORS file, feel free to open a PR.
-      </p>
-    </description>
-  </release>
-  <release version="0.3.3" date="2022-03-29">
-    <description>
-      <p>
-        What's new:
-      </p>
-      <ul>
-        <li>login dialog now uses a password entry (thanks @Toorero!)</li>
-        <li>fix a startup crash with some locales</li>
-      </ul>
-    </description>
-  </release>
-  <release version="0.3.2" date="2022-03-27">
-    <description>
-      <p>
-        New features:
-      </p>
-      <ul>
-        <li>save tracks to library</li>
-        <li>basic Spotify URI handling (thanks @bbb651!)</li>
-        <li>settings dialog (thanks @sei0o!)</li>
-        <li>brand new icon (thanks @bertob!)</li>
-        <li>bug fixes</li>
-      </ul>
-      <p>
-        Thank you to everyone involved in this release!
-      </p>
-    </description>
-  </release>
   <releases>
+    <release version="0.4.1" date="2024-02-01">
+      <description>
+        <p>
+          Hello, everyone! I'm releasing this tiny version of Spot with just some minor features and fixes.
+        </p>
+        <p>
+          This release includes a major fix for Spotify's API.
+        </p>
+      </description>
+    </release>
+    <release version="0.4.0" date="2023-02-24">
+      <description>
+        <p>
+          It's been a while, hasn't it? I'm back, but please allow everyone some time to work through the issues and pull requests :)
+        </p>
+        <ul>
+          <li>added an option for gapless playback (thanks @supremesnickers!)</li>
+          <li>fixed theme management (thanks @ctsk!)</li>
+          <li>fixed the behaviour of the "previous" button for consistency with other media players (thanks @SomewhereOutInSpace!)</li>
+          <li>the user will now be prompted to unlock the keyring if needed (thanks @rainDiX!)</li>
+          <li>added playlist creation and edition</li>
+          <li>more bug fixes</li>
+        </ul>
+        <p>
+          Thanks to all the contributors who are somehow still around :) If you feel like you've been unjustly forgotten from the AUTHORS or TRANSLATORS file, feel free to open a PR.
+        </p>
+      </description>
+    </release>
+    <release version="0.3.3" date="2022-03-29">
+      <description>
+        <p>
+          What's new:
+        </p>
+        <ul>
+          <li>login dialog now uses a password entry (thanks @Toorero!)</li>
+          <li>fix a startup crash with some locales</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.3.2" date="2022-03-27">
+      <description>
+        <p>
+          New features:
+        </p>
+        <ul>
+          <li>save tracks to library</li>
+          <li>basic Spotify URI handling (thanks @bbb651!)</li>
+          <li>settings dialog (thanks @sei0o!)</li>
+          <li>brand new icon (thanks @bertob!)</li>
+          <li>bug fixes</li>
+        </ul>
+        <p>
+          Thank you to everyone involved in this release!
+        </p>
+      </description>
+    </release>
     <release version="0.3.1" date="2022-01-23">
       <description>
         <p>Bugfix release:</p>
