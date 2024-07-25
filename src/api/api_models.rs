@@ -186,7 +186,7 @@ trait WithImages {
 pub struct Playlist {
     pub id: String,
     pub name: String,
-    pub images: Vec<Image>,
+    pub images: Option<Vec<Image>>,
     pub tracks: Page<PlaylistTrack>,
     pub owner: PlaylistOwner,
 }
@@ -197,9 +197,18 @@ pub struct PlaylistOwner {
     pub display_name: String,
 }
 
+const EMPTY_IMAGE: &'static [Image] = &[Image {
+    url: String::new(),
+    height: Some(640),
+    width: Some(640),
+}];
+
 impl WithImages for Playlist {
     fn images(&self) -> &[Image] {
-        &self.images
+        match &self.images {
+            Some(x) => &x[..],
+            None => &EMPTY_IMAGE[..],
+        }
     }
 }
 
