@@ -173,7 +173,7 @@ trait WithImages {
             .map(|image| (criterion(image), image))
             .collect::<Vec<(T, &Image)>>();
 
-        ords.sort_by(|a, b| (a.0).partial_cmp(&b.0).unwrap());
+        ords.sort_by(|a, b| (a.0).partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
         Some(ords.first()?.1)
     }
 
@@ -186,7 +186,7 @@ trait WithImages {
 pub struct Playlist {
     pub id: String,
     pub name: String,
-    pub images: Vec<Image>,
+    pub images: Option<Vec<Image>>,
     pub tracks: Page<PlaylistTrack>,
     pub owner: PlaylistOwner,
 }
@@ -199,7 +199,7 @@ pub struct PlaylistOwner {
 
 impl WithImages for Playlist {
     fn images(&self) -> &[Image] {
-        &self.images
+    self.images.as_deref().unwrap_or_default()
     }
 }
 
