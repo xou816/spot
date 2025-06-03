@@ -1,5 +1,4 @@
-use gtk::traits::WidgetExt;
-use libadwaita::NavigationDirection;
+use gtk::prelude::WidgetExt;
 use std::rc::Rc;
 
 use crate::app::components::{EventListener, ListenerComponent};
@@ -10,10 +9,9 @@ use super::{factory::ScreenFactory, home::HomePane, NavigationModel};
 
 pub struct Navigation {
     model: Rc<NavigationModel>,
-    leaflet: libadwaita::Leaflet,
+    split_view: libadwaita::NavigationSplitView,
     navigation_stack: gtk::Stack,
     home_listbox: gtk::ListBox,
-    home_list_store: gio::ListStore,
     screen_factory: ScreenFactory,
     children: Vec<Box<dyn ListenerComponent>>,
 }
@@ -21,60 +19,62 @@ pub struct Navigation {
 impl Navigation {
     pub fn new(
         model: NavigationModel,
-        leaflet: libadwaita::Leaflet,
+        split_view: libadwaita::NavigationSplitView,
         navigation_stack: gtk::Stack,
         home_listbox: gtk::ListBox,
-        home_list_store: gio::ListStore,
         screen_factory: ScreenFactory,
     ) -> Self {
         let model = Rc::new(model);
 
-        leaflet.connect_folded_notify(
-            clone!(@weak model => move |leaflet| {
-                let is_main = leaflet.visible_child_name().map(|s| s.as_str() == "main").unwrap_or(false);
-                let folded = leaflet.is_folded();
+        split_view.connect_collapsed_notify(clone!(
+            #[weak]
+            model,
+            move |split_view| {
+                let is_main = split_view.shows_content();
+                let folded = split_view.is_collapsed();
+                if folded {
+                    split_view.add_css_class("collapsed");
+                } else {
+                    split_view.remove_css_class("collapsed");
+                }
                 model.set_nav_hidden(folded && is_main);
-            })
-        );
+            }
+        ));
 
-        leaflet.connect_visible_child_name_notify(
-            clone!(@weak model => move |leaflet| {
-                let is_main = leaflet.visible_child_name().map(|s| s.as_str() == "main").unwrap_or(false);
-                let folded = leaflet.is_folded();
+        split_view.connect_show_content_notify(clone!(
+            #[weak]
+            model,
+            move |split_view| {
+                let is_main = split_view.shows_content();
+                let folded = split_view.is_collapsed();
+                if folded {
+                    split_view.add_css_class("collapsed");
+                } else {
+                    split_view.remove_css_class("collapsed");
+                }
                 model.set_nav_hidden(folded && is_main);
-            })
-        );
+            }
+        ));
 
         Self {
             model,
-            leaflet,
+            split_view,
             navigation_stack,
             home_listbox,
-            home_list_store,
             screen_factory,
             children: vec![],
         }
     }
 
     fn make_home(&self) -> Box<dyn ListenerComponent> {
-        let home = HomePane::new(
+        Box::new(HomePane::new(
             self.home_listbox.clone(),
             &self.screen_factory,
-            self.home_list_store.clone(),
-        );
-
-        home.connect_navigated(
-            clone!(@weak self.model as model, @weak self.leaflet as leaflet => move || {
-                leaflet.navigate(NavigationDirection::Forward);
-                model.go_home();
-            }),
-        );
-
-        Box::new(home)
+        ))
     }
 
     fn show_navigation(&self) {
-        self.leaflet.navigate(NavigationDirection::Back);
+        self.split_view.set_show_content(false);
     }
 
     fn push_screen(&mut self, name: &ScreenName) {
@@ -96,7 +96,7 @@ impl Navigation {
         let widget = component.get_root_widget().clone();
         self.children.push(component);
 
-        self.leaflet.navigate(NavigationDirection::Forward);
+        self.split_view.set_show_content(true);
         self.navigation_stack
             .add_named(&widget, Some(name.identifier().as_ref()));
         self.navigation_stack
@@ -147,6 +147,9 @@ impl EventListener for Navigation {
             }
             AppEvent::BrowserEvent(BrowserEvent::NavigationPoppedTo(name)) => {
                 self.pop_to(name);
+            }
+            AppEvent::BrowserEvent(BrowserEvent::HomeVisiblePageChanged(_)) => {
+                self.split_view.set_show_content(true);
             }
             _ => {}
         };

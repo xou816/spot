@@ -1,9 +1,18 @@
-use std::str::FromStr;
+use std::{
+    hash::{Hash, Hasher},
+    str::FromStr,
+};
 
+use crate::app::SongsSource;
+
+// A batch of whatever
 #[derive(Clone, Copy, Debug)]
 pub struct Batch {
+    // What offset does the batch start at
     pub offset: usize,
+    // How many elements
     pub batch_size: usize,
+    // Total number of elements if we had all batches
     pub total: usize,
 }
 
@@ -31,6 +40,8 @@ impl Batch {
         .filter(|b| b.offset < total)
     }
 }
+
+// "Something"Ref models usually boil down to an ID/url + a display name
 
 #[derive(Clone, Debug)]
 pub struct UserRef {
@@ -106,6 +117,21 @@ pub struct PlaylistDescription {
     pub owner: UserRef,
 }
 
+#[derive(Clone, Copy, Debug)]
+pub enum ConnectDeviceKind {
+    Phone,
+    Computer,
+    Speaker,
+    Other,
+}
+
+#[derive(Clone, Debug)]
+pub struct ConnectDevice {
+    pub id: String,
+    pub label: String,
+    pub kind: ConnectDeviceKind,
+}
+
 #[derive(Clone, Debug)]
 pub struct PlaylistSummary {
     pub id: String,
@@ -134,12 +160,19 @@ impl SongDescription {
     }
 }
 
+impl Hash for SongDescription {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
+}
+
 #[derive(Copy, Clone, Default)]
 pub struct SongState {
     pub is_playing: bool,
     pub is_selected: bool,
 }
 
+// A batch of SONGS
 #[derive(Debug, Clone)]
 pub struct SongBatch {
     pub songs: Vec<SongDescription>,
@@ -156,6 +189,7 @@ impl SongBatch {
 
     pub fn resize(self, batch_size: usize) -> Vec<Self> {
         let SongBatch { mut songs, batch } = self;
+        // Growing a batch is easy...
         if batch_size > batch.batch_size {
             let new_batch = Batch {
                 batch_size,
@@ -165,9 +199,11 @@ impl SongBatch {
                 songs,
                 batch: new_batch,
             }]
+        // Shrinking is not!
+        // We have to split the batch in multiple batches
         } else {
             let n = songs.len();
-            let iter_count = n / batch_size + (if n % batch_size > 0 { 1 } else { 0 });
+            let iter_count = n.div_ceil(batch_size);
             (0..iter_count)
                 .map(|i| {
                     let offset = batch.offset + i * batch_size;
@@ -208,6 +244,37 @@ pub struct UserDescription {
     pub id: String,
     pub name: String,
     pub playlists: Vec<PlaylistDescription>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum RepeatMode {
+    Song,
+    Playlist,
+    None,
+}
+
+#[derive(Clone, Debug)]
+pub struct ConnectPlayerState {
+    pub is_playing: bool,
+    #[allow(dead_code)]
+    pub source: Option<SongsSource>,
+    pub current_song_id: Option<String>,
+    pub progress_ms: u32,
+    pub repeat: RepeatMode,
+    pub shuffle: bool,
+}
+
+impl Default for ConnectPlayerState {
+    fn default() -> Self {
+        Self {
+            is_playing: false,
+            source: None,
+            current_song_id: None,
+            progress_ms: 0,
+            repeat: RepeatMode::None,
+            shuffle: false,
+        }
+    }
 }
 
 #[cfg(test)]

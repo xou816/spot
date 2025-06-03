@@ -2,11 +2,17 @@ use form_urlencoded::Serializer;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::{
+    collections::HashSet,
     convert::{Into, TryFrom, TryInto},
     vec::IntoIter,
 };
 
-use crate::app::models::*;
+use crate::app::{models::*, SongsSource};
+
+#[derive(Serialize)]
+pub struct PlaylistDetails {
+    pub name: String,
+}
 
 #[derive(Serialize)]
 pub struct Uris {
@@ -14,8 +20,31 @@ pub struct Uris {
 }
 
 #[derive(Serialize)]
+pub struct PlayOffset {
+    pub position: u32,
+}
+
+#[derive(Serialize)]
+#[serde(untagged)]
+pub enum PlayRequest {
+    Contextual {
+        context_uri: String,
+        offset: PlayOffset,
+    },
+    Uris {
+        uris: Vec<String>,
+        offset: PlayOffset,
+    },
+}
+
+#[derive(Serialize)]
 pub struct Ids {
     pub ids: Vec<String>,
+}
+
+#[derive(Serialize)]
+pub struct Name<'a> {
+    pub name: &'a str,
 }
 
 pub enum SearchType {
@@ -57,7 +86,7 @@ impl SearchQuery {
             .append_pair("market", "from_token")
             .finish();
 
-        format!("type={}&{}", types, serialized)
+        format!("type={types}&{serialized}")
     }
 }
 
@@ -170,7 +199,7 @@ pub struct PlaylistOwner {
 
 impl WithImages for Playlist {
     fn images(&self) -> &[Image] {
-        &self.images[..]
+        &self.images
     }
 }
 
@@ -245,6 +274,7 @@ pub struct Artist {
 
 impl WithImages for Artist {
     fn images(&self) -> &[Image] {
+        #[allow(clippy::manual_unwrap_or_default)]
         if let Some(ref images) = self.images {
             images
         } else {
@@ -257,6 +287,81 @@ impl WithImages for Artist {
 pub struct User {
     pub id: String,
     pub display_name: String,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct Device {
+    #[serde(alias = "type")]
+    pub type_: String,
+    pub name: String,
+    pub id: String,
+    pub is_active: bool,
+    pub is_restricted: bool,
+    pub volume_percent: u32,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct Devices {
+    pub devices: Vec<Device>,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct PlayerQueue {
+    pub currently_playing: TrackItem,
+    pub queue: Vec<TrackItem>,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct PlayerContext {
+    #[serde(alias = "type")]
+    pub type_: String,
+    pub uri: String,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct PlayerState {
+    pub progress_ms: u32,
+    pub is_playing: bool,
+    pub repeat_state: String,
+    pub shuffle_state: bool,
+    pub item: FailibleTrackItem,
+    pub context: Option<PlayerContext>,
+}
+
+impl From<PlayerState> for ConnectPlayerState {
+    fn from(
+        PlayerState {
+            progress_ms,
+            is_playing,
+            repeat_state,
+            shuffle_state,
+            item,
+            context,
+        }: PlayerState,
+    ) -> Self {
+        let repeat = match &repeat_state[..] {
+            "track" => RepeatMode::Song,
+            "context" => RepeatMode::Playlist,
+            _ => RepeatMode::None,
+        };
+        let source = context.and_then(|PlayerContext { type_, uri }| match type_.as_str() {
+            "album" => {
+                let id = uri.split(':').last().unwrap_or_default();
+                Some(SongsSource::Album(id.to_string()))
+            }
+            _ => None,
+        });
+        let shuffle = shuffle_state;
+        let current_song_id = item.get().map(|i| i.track.id);
+        Self {
+            is_playing,
+            progress_ms,
+            repeat,
+            shuffle,
+            source,
+            current_song_id,
+        }
+    }
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -325,6 +430,30 @@ impl TryFrom<PlaylistTrack> for TrackItem {
 impl From<SavedTrack> for TrackItem {
     fn from(track: SavedTrack) -> Self {
         track.track
+    }
+}
+
+impl From<PlayerQueue> for Vec<SongDescription> {
+    fn from(
+        PlayerQueue {
+            mut queue,
+            currently_playing,
+        }: PlayerQueue,
+    ) -> Self {
+        let mut ids = HashSet::<String>::new();
+        queue.insert(0, currently_playing);
+        let queue: Vec<TrackItem> = queue
+            .into_iter()
+            .take_while(|e| {
+                if ids.contains(&e.track.id) {
+                    false
+                } else {
+                    ids.insert(e.track.id.clone());
+                    true
+                }
+            })
+            .collect();
+        Page::new(queue).into()
     }
 }
 
@@ -415,7 +544,7 @@ impl TryFrom<Album> for SongBatch {
     type Error = ();
 
     fn try_from(mut album: Album) -> Result<Self, Self::Error> {
-        let tracks = std::mem::replace(&mut album.tracks, None).ok_or(())?;
+        let tracks = album.tracks.take().ok_or(())?;
         Ok((tracks, &album).into())
     }
 }
@@ -469,7 +598,7 @@ impl From<AlbumInfo> for AlbumReleaseDetails {
     ) -> Self {
         let copyright_text = copyrights
             .iter()
-            .map(|c| format!("[{}] {}", c.type_, c.text))
+            .map(|Copyright { type_, text }| format!("[{type_}] {text}"))
             .collect::<Vec<String>>()
             .join(",\n ");
 
@@ -505,6 +634,26 @@ impl From<Playlist> for PlaylistDescription {
                 id: owner_id,
                 display_name,
             },
+        }
+    }
+}
+
+impl From<Device> for ConnectDevice {
+    fn from(
+        Device {
+            id, name, type_, ..
+        }: Device,
+    ) -> Self {
+        let kind = match type_.to_lowercase().as_str() {
+            "smartphone" => ConnectDeviceKind::Phone,
+            "computer" => ConnectDeviceKind::Computer,
+            "speaker" => ConnectDeviceKind::Speaker,
+            _ => ConnectDeviceKind::Other,
+        };
+        Self {
+            id,
+            label: name,
+            kind,
         }
     }
 }

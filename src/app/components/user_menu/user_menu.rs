@@ -1,6 +1,7 @@
 use gettextrs::*;
 use gio::{prelude::ActionMapExt, SimpleAction, SimpleActionGroup};
 use gtk::prelude::*;
+use libadwaita::prelude::AdwDialogExt;
 use std::rc::Rc;
 
 use super::UserMenuModel;
@@ -16,41 +17,45 @@ impl UserMenu {
     pub fn new(
         user_button: gtk::MenuButton,
         settings: Settings,
-        about: gtk::AboutDialog,
+        about: libadwaita::AboutDialog,
+        parent: gtk::Window,
         model: UserMenuModel,
     ) -> Self {
         let model = Rc::new(model);
-
-        about.connect_close_request(
-            clone!(@weak about => @default-return gtk::Inhibit(false), move |_| {
-                about.hide();
-                gtk::Inhibit(true)
-            }),
-        );
 
         let action_group = SimpleActionGroup::new();
 
         action_group.add_action(&{
             let logout = SimpleAction::new("logout", None);
-            logout.connect_activate(clone!(@weak model => move |_, _| {
-                model.logout();
-            }));
+            logout.connect_activate(clone!(
+                #[weak]
+                model,
+                move |_, _| {
+                    model.logout();
+                }
+            ));
             logout
         });
 
         action_group.add_action(&{
             let settings_action = SimpleAction::new("settings", None);
-            settings_action.connect_activate(clone!(@weak model => move |_, _| {
+            settings_action.connect_activate(move |_, _| {
                 settings.show_self();
-            }));
+            });
             settings_action
         });
 
         action_group.add_action(&{
             let about_action = SimpleAction::new("about", None);
-            about_action.connect_activate(clone!(@weak about => move |_, _| {
-                about.present();
-            }));
+            about_action.connect_activate(clone!(
+                #[weak]
+                about,
+                #[weak]
+                parent,
+                move |_, _| {
+                    about.present(Some(&parent));
+                }
+            ));
             about_action
         });
 
@@ -82,7 +87,7 @@ impl UserMenu {
 impl EventListener for UserMenu {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::LoginEvent(LoginEvent::LoginCompleted(_)) | AppEvent::Started => {
+            AppEvent::LoginEvent(LoginEvent::LoginCompleted) | AppEvent::Started => {
                 self.update_menu();
                 self.model.fetch_user_playlists();
             }

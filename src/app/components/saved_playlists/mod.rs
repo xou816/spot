@@ -1,3 +1,4 @@
+#[allow(clippy::module_inception)]
 mod saved_playlists;
 mod saved_playlists_model;
 

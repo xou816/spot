@@ -89,6 +89,10 @@ impl PlaylistModel for ArtistDetailsModel {
             .clone()
     }
 
+    fn is_paused(&self) -> bool {
+        !self.app_model.get_state().playback.is_playing()
+    }
+
     fn current_song_id(&self) -> Option<String> {
         self.app_model.get_state().playback.current_song_id()
     }
@@ -171,8 +175,8 @@ impl SimpleHeaderBarModel for ArtistDetailsModel {
         )
     }
 
-    fn selection_context(&self) -> Option<&SelectionContext> {
-        Some(&SelectionContext::Default)
+    fn selection_context(&self) -> Option<SelectionContext> {
+        Some(SelectionContext::Default)
     }
 
     fn select_all(&self) {

@@ -1,6 +1,8 @@
+// Domain models
 mod main;
 pub use main::*;
 
+// UI models (GObject)
 mod songs;
 pub use songs::*;
 
@@ -38,6 +40,12 @@ impl From<&PlaylistDescription> for AlbumModel {
             playlist.art.as_ref(),
             &playlist.id,
         )
+    }
+}
+
+impl From<PlaylistDescription> for PlaylistSummary {
+    fn from(PlaylistDescription { id, title, .. }: PlaylistDescription) -> Self {
+        Self { id, title }
     }
 }
 

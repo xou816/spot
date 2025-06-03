@@ -1,3 +1,4 @@
+#[allow(clippy::module_inception)]
 mod artist_details;
 pub use artist_details::*;
 

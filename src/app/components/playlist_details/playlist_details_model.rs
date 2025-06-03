@@ -1,19 +1,20 @@
+use gettextrs::gettext;
 use gio::prelude::*;
 use gio::SimpleActionGroup;
+use std::cell::Ref;
 use std::ops::Deref;
 use std::rc::Rc;
 
 use crate::api::SpotifyApiError;
-use crate::app::components::SimpleHeaderBarModel;
 use crate::app::components::{labels, PlaylistModel};
 use crate::app::models::*;
 use crate::app::state::SelectionContext;
 use crate::app::state::{BrowserAction, PlaybackAction, SelectionAction, SelectionState};
-use crate::app::{ActionDispatcher, AppAction, AppEvent, AppModel, BatchQuery, SongsSource};
+use crate::app::AppState;
+use crate::app::{ActionDispatcher, AppAction, AppModel, BatchQuery, SongsSource};
 
 pub struct PlaylistDetailsModel {
     pub id: String,
-    _editable_selection_context: SelectionContext,
     app_model: Rc<AppModel>,
     dispatcher: Box<dyn ActionDispatcher>,
 }
@@ -21,14 +22,17 @@ pub struct PlaylistDetailsModel {
 impl PlaylistDetailsModel {
     pub fn new(id: String, app_model: Rc<AppModel>, dispatcher: Box<dyn ActionDispatcher>) -> Self {
         Self {
-            id: id.clone(),
-            _editable_selection_context: SelectionContext::EditablePlaylist(id),
+            id,
             app_model,
             dispatcher,
         }
     }
 
-    fn is_playlist_editable(&self) -> bool {
+    pub fn state(&self) -> Ref<'_, AppState> {
+        self.app_model.get_state()
+    }
+
+    pub fn is_playlist_editable(&self) -> bool {
         let state = self.app_model.get_state();
         state.logged_user.playlists.iter().any(|p| p.id == self.id)
     }
@@ -42,16 +46,61 @@ impl PlaylistDetailsModel {
         })
     }
 
+    pub fn is_playing(&self) -> bool {
+        self.state().playback.is_playing()
+    }
+
+    pub fn playlist_is_playing(&self) -> bool {
+        matches!(
+            self.app_model.get_state().playback.current_source(),
+            Some(SongsSource::Playlist(ref id)) if id == &self.id)
+    }
+
+    pub fn toggle_play_playlist(&self) {
+        if let Some(playlist) = self.get_playlist_info() {
+            if !self.playlist_is_playing() {
+                if self.state().playback.is_shuffled() {
+                    self.dispatcher
+                        .dispatch(AppAction::PlaybackAction(PlaybackAction::ToggleShuffle));
+                }
+                // The playlist has no songs and the user has still decided to click the play button,
+                // lets just do an early return and show an error...
+                if playlist.songs.songs.is_empty() {
+                    error!("Unable to start playback because songs is empty");
+                    self.dispatcher
+                        .dispatch(AppAction::ShowNotification(gettext(
+                            "An error occured. Check logs for details!",
+                        )));
+                    return;
+                }
+
+                let id_of_first_song = playlist.songs.songs[0].id.as_str();
+                self.play_song_at(0, id_of_first_song);
+                return;
+            }
+            if self.state().playback.is_playing() {
+                self.dispatcher
+                    .dispatch(AppAction::PlaybackAction(PlaybackAction::Pause));
+            } else {
+                self.dispatcher
+                    .dispatch(AppAction::PlaybackAction(PlaybackAction::Play));
+            }
+        }
+    }
+
     pub fn load_playlist_info(&self) {
         let api = self.app_model.get_spotify();
         let id = self.id.clone();
         self.dispatcher
             .call_spotify_and_dispatch(move || async move {
                 let playlist = api.get_playlist(&id).await;
+                let playlist_tracks = api.get_playlist_tracks(&id, 0, 100).await?;
                 match playlist {
-                    Ok(playlist) => {
-                        Ok(BrowserAction::SetPlaylistDetails(Box::new(playlist)).into())
-                    }
+                    Ok(playlist) => Ok(BrowserAction::SetPlaylistDetails(
+                        Box::new(playlist),
+                        Box::new(playlist_tracks),
+                    )
+                    .into()),
                     Err(SpotifyApiError::BadStatus(400, _))
                     | Err(SpotifyApiError::BadStatus(404, _)) => {
                         Ok(BrowserAction::NavigationPop.into())
@@ -74,15 +123,27 @@ impl PlaylistDetailsModel {
         let loader = self.app_model.get_batch_loader();
 
         self.dispatcher.dispatch_async(Box::pin(async move {
-            let action = loader
-                .query(next_query, |song_batch| {
+            loader
+                .query(next_query, |_s, song_batch| {
                     BrowserAction::AppendPlaylistTracks(id, Box::new(song_batch)).into()
                 })
-                .await;
-            Some(action)
+                .await
         }));
 
         Some(())
+    }
+
+    pub fn update_playlist_details(&self, title: String) {
+        let api = self.app_model.get_spotify();
+        let id = self.id.clone();
+        self.dispatcher
+            .call_spotify_and_dispatch(move || async move {
+                let playlist = api.update_playlist_details(&id, title.clone()).await;
+                match playlist {
+                    Ok(_) => Ok(AppAction::UpdatePlaylistName(PlaylistSummary { id, title })),
+                    Err(e) => Err(e),
+                }
+            });
     }
 
     pub fn view_owner(&self) {
@@ -92,12 +153,20 @@ impl PlaylistDetailsModel {
                 .dispatch(AppAction::ViewUser(owner.to_owned()));
         }
     }
+
+    pub fn disable_selection(&self) {
+        self.dispatcher.dispatch(AppAction::CancelSelection);
+    }
+
+    pub fn go_back(&self) {
+        self.dispatcher
+            .dispatch(BrowserAction::NavigationPop.into());
+    }
 }
 
 impl PlaylistModel for PlaylistDetailsModel {
     fn song_list_model(&self) -> SongListModel {
-        self.app_model
-            .get_state()
+        self.state()
             .browser
             .playlist_details_state(&self.id)
             .expect("illegal attempt to read playlist_details_state")
@@ -105,8 +174,12 @@ impl PlaylistModel for PlaylistDetailsModel {
             .clone()
     }
 
+    fn is_paused(&self) -> bool {
+        !self.state().playback.is_playing()
+    }
+
     fn current_song_id(&self) -> Option<String> {
-        self.app_model.get_state().playback.current_song_id()
+        self.state().playback.current_song_id()
     }
 
     fn play_song_at(&self, pos: usize, id: &str) {
@@ -169,37 +242,16 @@ impl PlaylistModel for PlaylistDetailsModel {
     }
 
     fn enable_selection(&self) -> bool {
-        self.dispatcher.dispatch(AppAction::EnableSelection(
-            self.selection_context().unwrap().clone(),
-        ));
+        self.dispatcher
+            .dispatch(AppAction::EnableSelection(if self.is_playlist_editable() {
+                SelectionContext::EditablePlaylist(self.id.clone())
+            } else {
+                SelectionContext::Playlist
+            }));
         true
     }
 
     fn selection(&self) -> Option<Box<dyn Deref<Target = SelectionState> + '_>> {
         Some(Box::new(self.app_model.map_state(|s| &s.selection)))
-    }
-}
-
-impl SimpleHeaderBarModel for PlaylistDetailsModel {
-    fn title(&self) -> Option<String> {
-        None
-    }
-
-    fn title_updated(&self, _: &AppEvent) -> bool {
-        false
-    }
-
-    fn selection_context(&self) -> Option<&SelectionContext> {
-        Some(if self.is_playlist_editable() {
-            &self._editable_selection_context
-        } else {
-            &SelectionContext::Playlist
-        })
-    }
-
-    fn select_all(&self) {
-        let songs: Vec<SongDescription> = self.song_list_model().collect();
-        self.dispatcher
-            .dispatch(SelectionAction::Select(songs).into());
     }
 }

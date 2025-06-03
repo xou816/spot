@@ -6,6 +6,7 @@
         "env": {
             "RUST_BACKTRACE": "1",
             "RUST_LOG": "spot=debug",
+            "LANG": "C",
             //"https_proxy": "localhost:8080"
         }
     },
@@ -13,7 +14,7 @@
         {
             "label": "meson",
             "type": "shell",
-            "command": "meson target -Dbuildtype=debug -Doffline=false --reconfigure --prefix=\"$HOME/.local\""
+            "command": "meson setup target -Dbuildtype=debug -Doffline=false --prefix=\"$HOME/.local\""
         },
         {
             "label": "build",

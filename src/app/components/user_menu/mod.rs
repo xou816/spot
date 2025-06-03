@@ -1,3 +1,4 @@
+#[allow(clippy::module_inception)]
 mod user_menu;
 pub use user_menu::*;
 

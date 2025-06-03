@@ -36,7 +36,7 @@ impl SongDescription {
         let track_id = self.id.clone();
         let copy_link = SimpleAction::new(name.unwrap_or("copy_link"), None);
         copy_link.connect_activate(move |_, _| {
-            let link = format!("https://open.spotify.com/track/{}", &track_id);
+            let link = format!("https://open.spotify.com/track/{track_id}");
             let clipboard = gdk::Display::default().unwrap().clipboard();
             clipboard
                 .set_content(Some(&gdk::ContentProvider::for_value(&link.to_value())))

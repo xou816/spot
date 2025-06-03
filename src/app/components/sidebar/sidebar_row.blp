@@ -1,0 +1,17 @@
+using Gtk 4.0;
+
+template $SidebarRow : ListBoxRow {
+  Box {
+    visible: true;
+    spacing: 12;
+
+    Image icon {
+    }
+
+    Label title {
+      width-chars: 20;
+      ellipsize: end;
+      xalign: 0;
+    }
+  }
+}

@@ -1,5 +1,6 @@
 use std::borrow::Cow;
 
+use crate::app::models::{PlaylistDescription, PlaylistSummary};
 use crate::app::state::{
     browser_state::{BrowserAction, BrowserEvent, BrowserState},
     login_state::{LoginAction, LoginEvent, LoginState},
@@ -9,8 +10,13 @@ use crate::app::state::{
     ScreenName, UpdatableState,
 };
 
+// It's a big one...
+// All possible actions!
+// It's probably a VERY poor way to layout such a big enum, just look at the size, I'm so sorry I am not a sytems programmer
+// Could use a few more Boxes maybe?
 #[derive(Clone, Debug)]
 pub enum AppAction {
+    // With sub categories :)
     PlaybackAction(PlaybackAction),
     BrowserAction(BrowserAction),
     SelectionAction(SelectionAction),
@@ -20,7 +26,7 @@ pub enum AppAction {
     Raise,
     ShowNotification(String),
     ViewNowPlaying,
-    // cross-state actions
+    // Cross-state actions
     QueueSelection,
     DequeueSelection,
     MoveUpSelection,
@@ -29,9 +35,13 @@ pub enum AppAction {
     UnsaveSelection,
     EnableSelection(SelectionContext),
     CancelSelection,
+    CreatePlaylist(PlaylistDescription),
+    UpdatePlaylistName(PlaylistSummary),
 }
 
+// Not actual actions, just neat wrappers
 impl AppAction {
+    // An action to open a Spotify URI
     #[allow(non_snake_case)]
     pub fn OpenURI(uri: String) -> Option<Self> {
         debug!("parsing {}", &uri);
@@ -82,8 +92,10 @@ impl AppAction {
     }
 }
 
+// Actions mutate stuff, and we know what changed thanks to these events
 #[derive(Clone, Debug)]
 pub enum AppEvent {
+    // Also subcategorized
     PlaybackEvent(PlaybackEvent),
     BrowserEvent(BrowserEvent),
     SelectionEvent(SelectionEvent),
@@ -91,10 +103,12 @@ pub enum AppEvent {
     Started,
     Raised,
     NotificationShown(String),
+    PlaylistCreatedNotificationShown(String),
     NowPlayingShown,
     SettingsEvent(SettingsEvent),
 }
 
+// The actual state, split five-ways
 pub struct AppState {
     started: bool,
     pub playback: PlaybackState,
@@ -122,9 +136,13 @@ impl AppState {
                 self.started = true;
                 vec![AppEvent::Started]
             }
+            // Couple of actions that don't mutate the state (not intested in keeping track of what they change)
+            // they're here just to have a consistent way of doing things (always an Action)
             AppAction::ShowNotification(c) => vec![AppEvent::NotificationShown(c)],
             AppAction::ViewNowPlaying => vec![AppEvent::NowPlayingShown],
             AppAction::Raise => vec![AppEvent::Raised],
+            // Cross-state actions: multiple "substates" are affected by these actions, that's why they're handled here
+            // Might need some clean-up
             AppAction::QueueSelection => {
                 self.playback.queue(self.selection.take_selection());
                 vec![
@@ -153,7 +171,7 @@ impl AppState {
                     .next()
                     .and_then(|song| playback.move_down(&song.id))
                     .map(|_| vec![PlaybackEvent::PlaylistChanged.into()])
-                    .unwrap_or_else(Vec::new)
+                    .unwrap_or_default()
             }
             AppAction::MoveUpSelection => {
                 let mut selection = self.selection.peek_selection();
@@ -162,7 +180,7 @@ impl AppState {
                     .next()
                     .and_then(|song| playback.move_up(&song.id))
                     .map(|_| vec![PlaybackEvent::PlaylistChanged.into()])
-                    .unwrap_or_else(Vec::new)
+                    .unwrap_or_default()
             }
             AppAction::SaveSelection => {
                 let tracks = self.selection.take_selection();
@@ -201,6 +219,31 @@ impl AppState {
                     vec![]
                 }
             }
+            AppAction::CreatePlaylist(playlist) => {
+                let id = playlist.id.clone();
+                let mut events = forward_action(
+                    LoginAction::PrependUserPlaylist(vec![playlist.clone().into()]),
+                    &mut self.logged_user,
+                );
+                let mut more_events = forward_action(
+                    BrowserAction::PrependPlaylistsContent(vec![playlist]),
+                    &mut self.browser,
+                );
+                events.append(&mut more_events);
+                events.push(AppEvent::PlaylistCreatedNotificationShown(id));
+                events
+            }
+            AppAction::UpdatePlaylistName(s) => {
+                let mut events = forward_action(
+                    LoginAction::UpdateUserPlaylist(s.clone()),
+                    &mut self.logged_user,
+                );
+                let mut more_events =
+                    forward_action(BrowserAction::UpdatePlaylistName(s), &mut self.browser);
+                events.append(&mut more_events);
+                events
+            }
+            // As for all other actions, we forward them to the substates :)
             AppAction::PlaybackAction(a) => forward_action(a, &mut self.playback),
             AppAction::BrowserAction(a) => forward_action(a, &mut self.browser),
             AppAction::SelectionAction(a) => forward_action(a, &mut self.selection),

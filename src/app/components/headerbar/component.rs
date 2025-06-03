@@ -1,6 +1,5 @@
 use std::rc::Rc;
 
-use glib::Cast;
 use gtk::prelude::*;
 
 use crate::app::{
@@ -16,7 +15,7 @@ pub trait HeaderBarModel {
     fn title_updated(&self, event: &AppEvent) -> bool;
     fn go_back(&self);
     fn can_go_back(&self) -> bool;
-    fn selection_context(&self) -> Option<&SelectionContext>;
+    fn selection_context(&self) -> Option<SelectionContext>;
     fn can_select_all(&self) -> bool;
     fn start_selection(&self);
     fn select_all(&self);
@@ -65,8 +64,8 @@ impl HeaderBarModel for DefaultHeaderBarModel {
         self.app_model.get_state().browser.can_pop()
     }
 
-    fn selection_context(&self) -> Option<&SelectionContext> {
-        self.selection_context.as_ref()
+    fn selection_context(&self) -> Option<SelectionContext> {
+        self.selection_context.clone()
     }
 
     fn can_select_all(&self) -> bool {
@@ -94,7 +93,7 @@ impl HeaderBarModel for DefaultHeaderBarModel {
 pub trait SimpleHeaderBarModel {
     fn title(&self) -> Option<String>;
     fn title_updated(&self, event: &AppEvent) -> bool;
-    fn selection_context(&self) -> Option<&SelectionContext>;
+    fn selection_context(&self) -> Option<SelectionContext>;
     fn select_all(&self);
 }
 
@@ -139,7 +138,7 @@ where
         self.app_model.get_state().browser.can_pop()
     }
 
-    fn selection_context(&self) -> Option<&SelectionContext> {
+    fn selection_context(&self) -> Option<SelectionContext> {
         self.wrapped_model.selection_context()
     }
 
@@ -150,7 +149,7 @@ where
     fn start_selection(&self) {
         if let Some(context) = self.wrapped_model.selection_context() {
             self.dispatcher
-                .dispatch(AppAction::EnableSelection(context.clone()));
+                .dispatch(AppAction::EnableSelection(context));
         }
     }
 
@@ -200,10 +199,26 @@ mod common {
     where
         Model: HeaderBarModel + 'static,
     {
-        widget.connect_selection_start(clone!(@weak model => move || model.start_selection()));
-        widget.connect_select_all(clone!(@weak model => move || model.select_all()));
-        widget.connect_selection_cancel(clone!(@weak model => move || model.cancel_selection()));
-        widget.connect_go_back(clone!(@weak model => move || model.go_back()));
+        widget.connect_selection_start(clone!(
+            #[weak]
+            model,
+            move || model.start_selection()
+        ));
+        widget.connect_select_all(clone!(
+            #[weak]
+            model,
+            move || model.select_all()
+        ));
+        widget.connect_selection_cancel(clone!(
+            #[weak]
+            model,
+            move || model.cancel_selection()
+        ));
+        widget.connect_go_back(clone!(
+            #[weak]
+            model,
+            move || model.go_back()
+        ));
 
         widget.set_title(model.title().as_ref().map(|s| &s[..]));
         widget.set_selection_possible(model.selection_context().is_some());
@@ -248,14 +263,9 @@ impl<Model> StandardScreen<Model>
 where
     Model: HeaderBarModel + 'static,
 {
-    pub fn new(
-        wrapped: impl ListenerComponent + 'static,
-        leaflet: &libadwaita::Leaflet,
-        model: Rc<Model>,
-    ) -> Self {
+    pub fn new(wrapped: impl ListenerComponent + 'static, model: Rc<Model>) -> Self {
         let widget = HeaderBarWidget::new();
         common::bind_headerbar(&widget, &model);
-        widget.bind_to_leaflet(leaflet);
 
         let root = gtk::Box::builder()
             .orientation(gtk::Orientation::Vertical)

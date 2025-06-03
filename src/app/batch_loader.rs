@@ -1,15 +1,17 @@
 use gettextrs::gettext;
 use std::sync::Arc;
 
-use crate::api::SpotifyApiClient;
+use crate::api::{SpotifyApiClient, SpotifyApiError};
 use crate::app::models::*;
 use crate::app::AppAction;
 
+// A wrapper around the Spotify API to load batches of songs from various sources (see below)
 #[derive(Clone)]
 pub struct BatchLoader {
     api: Arc<dyn SpotifyApiClient + Send + Sync>,
 }
 
+// The sources mentionned above
 #[derive(Clone, Debug)]
 pub enum SongsSource {
     Playlist(String),
@@ -30,6 +32,21 @@ impl PartialEq for SongsSource {
 
 impl Eq for SongsSource {}
 
+impl SongsSource {
+    pub fn has_spotify_uri(&self) -> bool {
+        matches!(self, Self::Playlist(_) | Self::Album(_))
+    }
+
+    pub fn spotify_uri(&self) -> Option<String> {
+        match self {
+            Self::Playlist(id) => Some(format!("spotify:playlist:{}", id)),
+            Self::Album(id) => Some(format!("spotify:album:{}", id)),
+            _ => None,
+        }
+    }
+}
+
+// How to query for a batch: specify a source, and a batch to get (offset + number of elements to get)
 #[derive(Debug)]
 pub struct BatchQuery {
     pub source: SongsSource,
@@ -37,6 +54,7 @@ pub struct BatchQuery {
 }
 
 impl BatchQuery {
+    // Given a query, compute the next batch to get (if any)
     pub fn next(&self) -> Option<Self> {
         let Self { source, batch } = self;
         Some(Self {
@@ -51,45 +69,36 @@ impl BatchLoader {
         Self { api }
     }
 
+    // Query a batch and create an action when it's been retrieved succesfully
     pub async fn query<ActionCreator>(
         &self,
         query: BatchQuery,
         create_action: ActionCreator,
-    ) -> AppAction
+    ) -> Option<AppAction>
     where
-        ActionCreator: FnOnce(SongBatch) -> AppAction,
+        ActionCreator: FnOnce(SongsSource, SongBatch) -> AppAction,
     {
         let api = Arc::clone(&self.api);
 
-        let result = match query.source {
-            SongsSource::Playlist(id) => {
-                let Batch {
-                    offset, batch_size, ..
-                } = query.batch;
-                api.get_playlist_tracks(&id, offset, batch_size).await
-            }
-            SongsSource::SavedTracks => {
-                let Batch {
-                    offset, batch_size, ..
-                } = query.batch;
-                api.get_saved_tracks(offset, batch_size).await
-            }
-            SongsSource::Album(id) => {
-                let Batch {
-                    offset, batch_size, ..
-                } = query.batch;
-                api.get_album_tracks(&id, offset, batch_size).await
-            }
+        let Batch {
+            offset, batch_size, ..
+        } = query.batch;
+        let result = match &query.source {
+            SongsSource::Playlist(id) => api.get_playlist_tracks(id, offset, batch_size).await,
+            SongsSource::SavedTracks => api.get_saved_tracks(offset, batch_size).await,
+            SongsSource::Album(id) => api.get_album_tracks(id, offset, batch_size).await,
         };
 
         match result {
-            Ok(batch) => create_action(batch),
+            Ok(batch) => Some(create_action(query.source, batch)),
+            // No token? Why was the batch loader called? Ah, whatever
+            Err(SpotifyApiError::NoToken) => None,
             Err(err) => {
                 error!("Spotify API error: {}", err);
-                AppAction::ShowNotification(gettext(
+                Some(AppAction::ShowNotification(gettext(
                     // translators: This notification is the default message for unhandled errors. Logs refer to console output.
                     "An error occurred. Check logs for details!",
-                ))
+                )))
             }
         }
     }

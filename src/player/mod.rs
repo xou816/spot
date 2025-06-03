@@ -2,28 +2,35 @@ use futures::channel::mpsc::{unbounded, UnboundedReceiver, UnboundedSender};
 use librespot::core::spotify_id::SpotifyId;
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::time::SystemTime;
+use std::sync::Arc;
 use tokio::task;
+use url::Url;
 
-use crate::app::credentials::Credentials;
-use crate::app::state::{LoginAction, PlaybackAction, SetLoginSuccessAction};
+use crate::app::state::{LoginAction, PlaybackAction};
 use crate::app::AppAction;
-
+#[allow(clippy::module_inception)]
 mod player;
 pub use player::*;
 
+mod oauth2;
+
+mod token_store;
+pub use token_store::*;
+
 #[derive(Debug, Clone)]
 pub enum Command {
-    PasswordLogin { username: String, password: String },
-    TokenLogin { username: String, token: String },
+    Restore,
+    InitLogin,
+    CompleteLogin,
+    RefreshToken,
     Logout,
-    PlayerLoad(SpotifyId),
+    PlayerLoad { track: SpotifyId, resume: bool },
     PlayerResume,
     PlayerPause,
     PlayerStop,
     PlayerSeek(u32),
     PlayerSetVolume(f64),
-    RefreshToken,
+    PlayerPreload(SpotifyId),
     ReloadSettings,
 }
 
@@ -46,35 +53,17 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
             .unwrap();
     }
 
-    fn password_login_successful(&self, credentials: Credentials) {
+    fn token_login_successful(&self, username: String) {
         self.sender
             .borrow_mut()
-            .unbounded_send(
-                LoginAction::SetLoginSuccess(SetLoginSuccessAction::Password(credentials)).into(),
-            )
+            .unbounded_send(LoginAction::SetLoginSuccess(username).into())
             .unwrap();
     }
 
-    fn token_login_successful(&self, username: String, token: String) {
+    fn refresh_successful(&self) {
         self.sender
             .borrow_mut()
-            .unbounded_send(
-                LoginAction::SetLoginSuccess(SetLoginSuccessAction::Token { username, token })
-                    .into(),
-            )
-            .unwrap();
-    }
-
-    fn refresh_successful(&self, token: String, token_expiry_time: SystemTime) {
-        self.sender
-            .borrow_mut()
-            .unbounded_send(
-                LoginAction::SetRefreshedToken {
-                    token,
-                    token_expiry_time,
-                }
-                .into(),
-            )
+            .unbounded_send(LoginAction::TokenRefreshed.into())
             .unwrap();
     }
 
@@ -83,7 +72,8 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
             .borrow_mut()
             .unbounded_send(match error {
                 SpotifyError::LoginFailed => LoginAction::SetLoginFailure.into(),
-                _ => AppAction::ShowNotification(format!("{}", error)),
+                SpotifyError::LoggedOut => LoginAction::Logout.into(),
+                _ => AppAction::ShowNotification(format!("{error}")),
             })
             .unwrap();
     }
@@ -94,19 +84,35 @@ impl SpotifyPlayerDelegate for AppPlayerDelegate {
             .unbounded_send(PlaybackAction::SyncSeek(position).into())
             .unwrap();
     }
+
+    fn preload_next_track(&self) {
+        self.sender
+            .borrow_mut()
+            .unbounded_send(PlaybackAction::Preload.into())
+            .unwrap();
+    }
+
+    fn login_challenge_started(&self, url: Url) {
+        self.sender
+            .borrow_mut()
+            .unbounded_send(LoginAction::OpenLoginUrl(url).into())
+            .unwrap();
+    }
 }
 
 #[tokio::main]
 async fn player_main(
     player_settings: SpotifyPlayerSettings,
     appaction_sender: UnboundedSender<AppAction>,
+    token_store: Arc<TokenStore>,
+    sender: UnboundedSender<Command>,
     receiver: UnboundedReceiver<Command>,
 ) {
     task::LocalSet::new()
         .run_until(async move {
             task::spawn_local(async move {
                 let delegate = Rc::new(AppPlayerDelegate::new(appaction_sender.clone()));
-                let player = SpotifyPlayer::new(player_settings, delegate);
+                let player = SpotifyPlayer::new(player_settings, delegate, token_store, sender);
                 player.start(receiver).await.unwrap();
             })
             .await
@@ -118,8 +124,18 @@ async fn player_main(
 pub fn start_player_service(
     player_settings: SpotifyPlayerSettings,
     appaction_sender: UnboundedSender<AppAction>,
+    token_store: Arc<TokenStore>,
 ) -> UnboundedSender<Command> {
     let (sender, receiver) = unbounded::<Command>();
-    std::thread::spawn(move || player_main(player_settings, appaction_sender, receiver));
+    let sender_clone = sender.clone();
+    std::thread::spawn(move || {
+        player_main(
+            player_settings,
+            appaction_sender,
+            token_store,
+            sender_clone,
+            receiver,
+        )
+    });
     sender
 }

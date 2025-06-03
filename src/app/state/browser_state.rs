@@ -1,23 +1,26 @@
 use super::{
-    AppEvent, ArtistState, DetailsState, HomeState, PlaylistDetailsState, ScreenName, SearchState,
-    UpdatableState, UserState,
+    AppAction, AppEvent, ArtistState, DetailsState, HomeState, PlaylistDetailsState, ScreenName,
+    SearchState, UpdatableState, UserState,
 };
 use crate::app::models::*;
-use crate::app::state::AppAction;
 use std::borrow::Cow;
 use std::iter::Iterator;
 
+// Actions that affect any "screen" that we push over time
 #[derive(Clone, Debug)]
 pub enum BrowserAction {
     SetNavigationHidden(bool),
+    SetHomeVisiblePage(&'static str),
     SetLibraryContent(Vec<AlbumDescription>),
+    PrependPlaylistsContent(Vec<PlaylistDescription>),
     AppendLibraryContent(Vec<AlbumDescription>),
     SetPlaylistsContent(Vec<PlaylistDescription>),
     AppendPlaylistsContent(Vec<PlaylistDescription>),
     RemoveTracksFromPlaylist(String, Vec<String>),
     SetAlbumDetails(Box<AlbumFullDescription>),
     AppendAlbumTracks(String, Box<SongBatch>),
-    SetPlaylistDetails(Box<PlaylistDescription>),
+    SetPlaylistDetails(Box<PlaylistDescription>, Box<SongBatch>),
+    UpdatePlaylistName(PlaylistSummary),
     AppendPlaylistTracks(String, Box<SongBatch>),
     Search(String),
     SetSearchResults(Box<SearchResults>),
@@ -45,6 +48,7 @@ impl From<BrowserAction> for AppAction {
 #[derive(Eq, PartialEq, Clone, Debug)]
 pub enum BrowserEvent {
     NavigationHidden(bool),
+    HomeVisiblePageChanged(&'static str),
     LibraryUpdated,
     SavedPlaylistsUpdated,
     AlbumDetailsLoaded(String),
@@ -70,8 +74,9 @@ impl From<BrowserEvent> for AppEvent {
     }
 }
 
+// Any screen that can be "pushed"
 pub enum BrowserScreen {
-    Home(Box<HomeState>),
+    Home(Box<HomeState>), // Except this one is special, it's there at the start
     AlbumDetails(Box<DetailsState>),
     Search(Box<SearchState>),
     Artist(Box<ArtistState>),
@@ -97,6 +102,7 @@ impl BrowserScreen {
         }
     }
 
+    // Each screen has a state that can be updated with a BrowserAction
     fn state(&mut self) -> &mut dyn UpdatableState<Action = BrowserAction, Event = BrowserEvent> {
         match self {
             Self::Home(state) => &mut **state,
@@ -136,12 +142,14 @@ enum ScreenState {
     Current,
 }
 
+// The navigation stack where we push screens (something with an equatable name)
 struct NavStack<Screen>(Vec<Screen>);
 
 impl<Screen> NavStack<Screen>
 where
     Screen: NamedScreen,
 {
+    // Its len is guaranteed to be always 1 (see can_pop)
     fn new(initial: Screen) -> Self {
         Self(vec![initial])
     }
@@ -189,6 +197,7 @@ where
     }
 
     fn screen_visibility(&self, name: &Screen::Name) -> ScreenState {
+        // We iterate screens in reverse order
         self.0
             .iter()
             .rev()
@@ -196,6 +205,7 @@ where
             .find_map(|(i, screen)| {
                 let is_screen = screen.name() == name;
                 match (i, is_screen) {
+                    // If we find the screen at pos 0 (last), it's therefore the current screen
                     (0, true) => Some(ScreenState::Current),
                     (_, true) => Some(ScreenState::Present),
                     (_, _) => None,
@@ -279,19 +289,21 @@ impl BrowserState {
         extract_state!(self, BrowserScreen::User(state) if state.id == id => state)
     }
 
-    fn push_if_needed(&mut self, name: ScreenName) -> Vec<BrowserEvent> {
+    // If a screen we want to push is already in the stack
+    // we just pop all the way back to it
+    fn push_if_needed(&mut self, name: &ScreenName) -> Vec<BrowserEvent> {
         let navigation = &mut self.navigation;
-        let screen_visibility = navigation.screen_visibility(&name);
+        let screen_visibility = navigation.screen_visibility(name);
 
         match screen_visibility {
             ScreenState::Current => vec![],
             ScreenState::Present => {
-                navigation.pop_to(&name);
-                vec![BrowserEvent::NavigationPoppedTo(name)]
+                navigation.pop_to(name);
+                vec![BrowserEvent::NavigationPoppedTo(name.clone())]
             }
             ScreenState::NotPresent => {
-                navigation.push(BrowserScreen::from_name(&name));
-                vec![BrowserEvent::NavigationPushed(name)]
+                navigation.push(BrowserScreen::from_name(name));
+                vec![BrowserEvent::NavigationPushed(name.clone())]
             }
         }
     }
@@ -303,28 +315,26 @@ impl UpdatableState for BrowserState {
 
     fn update_with(&mut self, action: Cow<Self::Action>) -> Vec<Self::Event> {
         let can_pop = self.navigation.can_pop();
-        let action = action.into_owned();
+        let action_ref = action.as_ref();
 
-        match action {
+        match action_ref {
             BrowserAction::SetNavigationHidden(navigation_hidden) => {
-                self.navigation_hidden = navigation_hidden;
-                vec![BrowserEvent::NavigationHidden(navigation_hidden)]
+                self.navigation_hidden = *navigation_hidden;
+                vec![BrowserEvent::NavigationHidden(*navigation_hidden)]
             }
+            // The search action will be handled here first before being passed down
+            // to push the search screen if it's not there already
             BrowserAction::Search(_) => {
-                let mut events = self.push_if_needed(ScreenName::Search);
+                let mut events = self.push_if_needed(&ScreenName::Search);
 
-                let mut update_events = self
-                    .navigation
-                    .current_mut()
-                    .state()
-                    .update_with(Cow::Owned(action));
+                let mut update_events = self.navigation.current_mut().state().update_with(action);
                 events.append(&mut update_events);
                 events
             }
             BrowserAction::NavigationPush(name) => self.push_if_needed(name),
             BrowserAction::NavigationPopTo(name) => {
-                self.navigation.pop_to(&name);
-                vec![BrowserEvent::NavigationPoppedTo(name)]
+                self.navigation.pop_to(name);
+                vec![BrowserEvent::NavigationPoppedTo(name.clone())]
             }
             BrowserAction::NavigationPop if can_pop => {
                 self.navigation.pop();
@@ -334,10 +344,11 @@ impl UpdatableState for BrowserState {
                 self.navigation_hidden = false;
                 vec![BrowserEvent::NavigationHidden(false)]
             }
+            // Besides navigation actions, we just forward actions to each dedicated reducer
             _ => self
                 .navigation
                 .iter_mut()
-                .flat_map(|s| s.state().update_with(Cow::Borrowed(&action)))
+                .flat_map(|s| s.state().update_with(Cow::Borrowed(action_ref)))
                 .collect(),
         }
     }

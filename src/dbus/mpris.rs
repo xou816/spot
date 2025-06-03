@@ -10,8 +10,9 @@ use zbus::{dbus_interface, Interface, SignalContext};
 use zvariant::{ObjectPath, Value};
 
 use super::types::*;
-use crate::app::state::RepeatMode;
-use crate::app::{state::PlaybackAction, AppAction};
+use crate::app::models::RepeatMode;
+use crate::app::state::PlaybackAction;
+use crate::app::AppAction;
 
 #[derive(Clone)]
 pub struct SpotMpris {

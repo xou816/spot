@@ -33,7 +33,7 @@ mod imp {
         type ParentType = gtk::Box;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -50,16 +50,22 @@ glib::wrapper! {
     pub struct SavedPlaylistsWidget(ObjectSubclass<imp::SavedPlaylistsWidget>) @extends gtk::Widget, gtk::Box;
 }
 
+impl Default for SavedPlaylistsWidget {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SavedPlaylistsWidget {
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create an instance of SavedPlaylistsWidget")
+        glib::Object::new()
     }
 
     fn connect_bottom_edge<F>(&self, f: F)
     where
         F: Fn() + 'static,
     {
-        imp::SavedPlaylistsWidget::from_instance(self)
+        self.imp()
             .scrolled_window
             .connect_edge_reached(move |_, pos| {
                 if let gtk::PositionType::Bottom = pos {
@@ -72,24 +78,28 @@ impl SavedPlaylistsWidget {
     where
         F: Fn(String) + Clone + 'static,
     {
-        imp::SavedPlaylistsWidget::from_instance(self)
+        self.imp()
             .flowbox
-            .bind_model(Some(store.unsafe_store()), move |item| {
+            .bind_model(Some(store.inner()), move |item| {
                 let album_model = item.downcast_ref::<AlbumModel>().unwrap();
                 let child = gtk::FlowBoxChild::new();
                 let album = AlbumWidget::for_model(album_model, worker.clone());
 
                 let f = on_album_pressed.clone();
-                album.connect_album_pressed(clone!(@weak album_model => move |_| {
-                    f(album_model.uri());
-                }));
+                album.connect_album_pressed(clone!(
+                    #[weak]
+                    album_model,
+                    move || {
+                        f(album_model.uri());
+                    }
+                ));
 
                 child.set_child(Some(&album));
                 child.upcast::<gtk::Widget>()
             });
     }
     pub fn get_status_page(&self) -> &libadwaita::StatusPage {
-        &imp::SavedPlaylistsWidget::from_instance(self).status_page
+        &self.imp().status_page
     }
 }
 
@@ -105,9 +115,13 @@ impl SavedPlaylists {
 
         let widget = SavedPlaylistsWidget::new();
 
-        widget.connect_bottom_edge(clone!(@weak model => move || {
-            model.load_more_playlists();
-        }));
+        widget.connect_bottom_edge(clone!(
+            #[weak]
+            model,
+            move || {
+                model.load_more_playlists();
+            }
+        ));
 
         Self {
             widget,
@@ -119,10 +133,14 @@ impl SavedPlaylists {
     fn bind_flowbox(&self) {
         self.widget.bind_albums(
             self.worker.clone(),
-            &*self.model.get_list_store().unwrap(),
-            clone!(@weak self.model as model => move |id| {
-                model.open_playlist(id);
-            }),
+            &self.model.get_list_store().unwrap(),
+            clone!(
+                #[weak(rename_to = model)]
+                self.model,
+                move |id| {
+                    model.open_playlist(id);
+                }
+            ),
         );
     }
 }
@@ -134,7 +152,7 @@ impl EventListener for SavedPlaylists {
                 let _ = self.model.refresh_saved_playlists();
                 self.bind_flowbox();
             }
-            AppEvent::LoginEvent(LoginEvent::LoginCompleted(_)) => {
+            AppEvent::LoginEvent(LoginEvent::LoginCompleted) => {
                 let _ = self.model.refresh_saved_playlists();
             }
             AppEvent::BrowserEvent(BrowserEvent::SavedPlaylistsUpdated) => {

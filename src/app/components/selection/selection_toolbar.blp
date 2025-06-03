@@ -1,0 +1,87 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $SelectionToolbarWidget : Box {
+  hexpand: true;
+  visible: false;
+
+  Adw.BreakpointBin {
+    width-request: 1;
+    height-request: 1;
+
+    Adw.Breakpoint {
+      condition("max-width:500sp")
+
+      setters {
+        btn1.label: "";
+        btn2.label: "";
+        btn3.label: "";
+      }
+    }
+
+    ActionBar action_bar {
+      hexpand: true;
+      revealed: true;
+      styles [
+        "selection_toolbar",
+      ]
+
+      Box {
+        valign: center;
+
+        styles [
+          "linked",
+        ]
+
+        Button move_up {
+          icon-name: "go-up-symbolic";
+        }
+
+        Button move_down {
+          icon-name: "go-down-symbolic";
+        }
+      }
+
+      [end]
+      Button queue {
+        valign: center;
+        has-frame: false;
+
+        Adw.ButtonContent btn1 {
+          icon-name: "music-queue-symbolic";
+          label: _("Add to queue");
+        }
+      }
+
+      [end]
+      MenuButton add {
+        valign: center;
+        has-frame: false;
+        label: _("Add to playlist...");
+        direction: up;
+      }
+
+      [end]
+      Button remove {
+        valign: center;
+        has-frame: false;
+
+        Adw.ButtonContent btn2 {
+          icon-name: "user-trash-symbolic";
+          label: _("Remove");
+        }
+      }
+
+      [end]
+      Button save {
+        valign: center;
+        has-frame: false;
+
+        Adw.ButtonContent btn3 {
+          icon-name: "star-new-symbolic";
+          label: _("Save to library");
+        }
+      }
+    }
+  }
+}

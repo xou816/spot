@@ -13,7 +13,7 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default, CompositeTemplate)]
-    #[template(resource = "/dev/alextren/Spot/components/album.ui")]
+    #[template(file = "src/app/components/album/album.blp")]
     pub struct AlbumWidget {
         #[template_child]
         pub album_label: TemplateChild<gtk::Label>,
@@ -38,7 +38,7 @@ mod imp {
         type ParentType = libadwaita::Bin;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -55,10 +55,16 @@ glib::wrapper! {
     pub struct AlbumWidget(ObjectSubclass<imp::AlbumWidget>) @extends gtk::Widget, libadwaita::Bin;
 }
 
+impl Default for AlbumWidget {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AlbumWidget {
     pub fn new() -> Self {
         display_add_css_provider(resource!("/components/album.css"));
-        glib::Object::new(&[]).expect("Failed to create an instance of AlbumWidget")
+        glib::Object::new()
     }
 
     pub fn for_model(album_model: &AlbumModel, worker: Worker) -> Self {
@@ -68,28 +74,28 @@ impl AlbumWidget {
     }
 
     fn set_loaded(&self) {
-        let context = self.style_context();
-        context.add_class("container--loaded");
+        self.add_css_class("container--loaded");
     }
 
-    fn set_image(&self, pixbuf: Option<&gdk_pixbuf::Pixbuf>) {
-        imp::AlbumWidget::from_instance(self)
-            .cover_image
-            .set_from_pixbuf(pixbuf);
+    fn set_image(&self, pixbuf: &gdk_pixbuf::Pixbuf) {
+        let texture = gdk::Texture::for_pixbuf(pixbuf);
+        self.imp().cover_image.set_paintable(Some(&texture));
     }
 
     fn bind(&self, album_model: &AlbumModel, worker: Worker) {
-        let widget = imp::AlbumWidget::from_instance(self);
+        let widget = self.imp();
         widget.cover_image.set_overflow(gtk::Overflow::Hidden);
 
-        if let Some(url) = album_model.cover_url() {
+        if let Some(cover_art) = album_model.cover() {
             let _self = self.downgrade();
             worker.send_local_task(async move {
                 if let Some(_self) = _self.upgrade() {
                     let loader = ImageLoader::new();
-                    let result = loader.load_remote(&url, "jpg", 200, 200).await;
-                    _self.set_image(result.as_ref());
-                    _self.set_loaded();
+                    let result = loader.load_remote(&cover_art, "jpg", 200, 200).await;
+                    if let Some(image) = result.as_ref() {
+                        _self.set_image(image);
+                        _self.set_loaded();
+                    }
                 }
             });
         } else {
@@ -106,24 +112,19 @@ impl AlbumWidget {
             .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
             .build();
 
-        match album_model.year() {
-            Some(_) => {
-                album_model
-                    .bind_property("year", &*widget.year_label, "label")
-                    .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
-                    .build();
-            }
-            None => {
-                widget.year_label.hide();
-            }
+        if album_model.year() > 0 {
+            album_model
+                .bind_property("year", &*widget.year_label, "label")
+                .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                .build();
+        } else {
+            widget.year_label.set_visible(false);
         }
     }
 
-    pub fn connect_album_pressed<F: Fn(&Self) + 'static>(&self, f: F) {
-        imp::AlbumWidget::from_instance(self)
-            .cover_btn
-            .connect_clicked(clone!(@weak self as _self => move |_| {
-                f(&_self);
-            }));
+    pub fn connect_album_pressed<F: Fn() + 'static>(&self, f: F) {
+        self.imp().cover_btn.connect_clicked(move |_| {
+            f();
+        });
     }
 }

@@ -8,8 +8,10 @@ use serde_json::from_str;
 use std::convert::Into;
 use std::marker::PhantomData;
 use std::str::FromStr;
-use std::sync::Mutex;
+use std::sync::Arc;
 use thiserror::Error;
+
+use crate::player::TokenStore;
 
 pub use super::api_models::*;
 use super::cache::CacheError;
@@ -51,7 +53,7 @@ where
     fn uri(mut self, path: String, query: Option<&str>) -> Self {
         let path_and_query = match query {
             None => path,
-            Some(query) => format!("{}?{}", path, query),
+            Some(query) => format!("{path}?{query}"),
         };
         let uri = Uri::builder()
             .scheme("https")
@@ -64,11 +66,11 @@ where
     }
 
     fn authenticated(mut self) -> Result<Self, SpotifyApiError> {
-        let token = self.client.token.lock().unwrap();
+        let token = self.client.token_store.get_cached_blocking();
         let token = token.as_ref().ok_or(SpotifyApiError::NoToken)?;
         self.request = self
             .request
-            .header("Authorization", format!("Bearer {}", token));
+            .header("Authorization", format!("Bearer {}", token.access_token));
         Ok(self)
     }
 
@@ -137,7 +139,9 @@ where
 {
     pub(crate) fn deserialize(&'a self) -> Option<T> {
         if let SpotifyResponseKind::Ok(ref content, _) = self.kind {
-            from_str(content).ok()
+            from_str(content)
+                .map_err(|e| error!("Deserialization failed: {}", e))
+                .ok()
         } else {
             None
         }
@@ -152,6 +156,8 @@ pub enum SpotifyApiError {
     NoToken,
     #[error("No content from request")]
     NoContent,
+    #[error("Request rate exceeded")]
+    TooManyRequests,
     #[error("Request failed ({0}): {1}")]
     BadStatus(u16, String),
     #[error(transparent)]
@@ -167,19 +173,19 @@ pub enum SpotifyApiError {
 }
 
 pub(crate) struct SpotifyClient {
-    token: Mutex<Option<String>>,
+    token_store: Arc<TokenStore>,
     client: HttpClient,
 }
 
 impl SpotifyClient {
-    pub(crate) fn new() -> Self {
+    pub(crate) fn new(token_store: Arc<TokenStore>) -> Self {
         let mut builder = HttpClient::builder();
         if cfg!(debug_assertions) {
             builder = builder.ssl_options(isahc::config::SslOption::DANGER_ACCEPT_INVALID_CERTS);
         }
         let client = builder.build().unwrap();
         Self {
-            token: Mutex::new(None),
+            token_store,
             client,
         }
     }
@@ -194,19 +200,7 @@ impl SpotifyClient {
     }
 
     pub(crate) fn has_token(&self) -> bool {
-        self.token.lock().unwrap().is_some()
-    }
-
-    pub(crate) fn update_token(&self, new_token: String) {
-        if let Ok(mut token) = self.token.lock() {
-            *token = Some(new_token)
-        }
-    }
-
-    fn clear_token(&self) {
-        if let Ok(mut token) = self.token.lock() {
-            *token = None
-        }
+        self.token_store.get_cached_blocking().is_some()
     }
 
     fn parse_cache_control(cache_control: &str) -> Option<u64> {
@@ -239,15 +233,14 @@ impl SpotifyClient {
             .and_then(Self::parse_cache_control);
 
         match result.status() {
+            StatusCode::NO_CONTENT => Err(SpotifyApiError::NoContent),
             s if s.is_success() => Ok(SpotifyResponse {
                 kind: SpotifyResponseKind::Ok(result.text().await?, PhantomData),
                 max_age: cache_control.unwrap_or(10),
                 etag,
             }),
-            StatusCode::UNAUTHORIZED => {
-                self.clear_token();
-                Err(SpotifyApiError::InvalidToken)
-            }
+            StatusCode::UNAUTHORIZED => Err(SpotifyApiError::InvalidToken),
+            StatusCode::TOO_MANY_REQUESTS => Err(SpotifyApiError::TooManyRequests),
             StatusCode::NOT_MODIFIED => Ok(SpotifyResponse {
                 kind: SpotifyResponseKind::NotModified,
                 max_age: cache_control.unwrap_or(10),
@@ -269,10 +262,8 @@ impl SpotifyClient {
     {
         let mut result = self.client.send_async(request).await?;
         match result.status() {
-            StatusCode::UNAUTHORIZED => {
-                self.clear_token();
-                Err(SpotifyApiError::InvalidToken)
-            }
+            StatusCode::UNAUTHORIZED => Err(SpotifyApiError::InvalidToken),
+            StatusCode::TOO_MANY_REQUESTS => Err(SpotifyApiError::TooManyRequests),
             StatusCode::NOT_MODIFIED => Ok(()),
             s if s.is_success() => Ok(()),
             s => Err(SpotifyApiError::BadStatus(
@@ -290,7 +281,7 @@ impl SpotifyClient {
     pub(crate) fn get_artist(&self, id: &str) -> SpotifyRequest<'_, (), Artist> {
         self.request()
             .method(Method::GET)
-            .uri(format!("/v1/artists/{}", id), None)
+            .uri(format!("/v1/artists/{id}"), None)
     }
 
     pub(crate) fn get_artist_albums(
@@ -308,7 +299,7 @@ impl SpotifyClient {
 
         self.request()
             .method(Method::GET)
-            .uri(format!("/v1/artists/{}/albums", id), Some(&query))
+            .uri(format!("/v1/artists/{id}/albums"), Some(&query))
     }
 
     pub(crate) fn get_artist_top_tracks(&self, id: &str) -> SpotifyRequest<'_, (), TopTracks> {
@@ -318,7 +309,7 @@ impl SpotifyClient {
 
         self.request()
             .method(Method::GET)
-            .uri(format!("/v1/artists/{}/top-tracks", id), Some(&query))
+            .uri(format!("/v1/artists/{id}/top-tracks"), Some(&query))
     }
 
     pub(crate) fn is_album_saved(&self, id: &str) -> SpotifyRequest<'_, (), Vec<bool>> {
@@ -359,7 +350,7 @@ impl SpotifyClient {
     pub(crate) fn get_album(&self, id: &str) -> SpotifyRequest<'_, (), FullAlbum> {
         self.request()
             .method(Method::GET)
-            .uri(format!("/v1/albums/{}", id), None)
+            .uri(format!("/v1/albums/{id}"), None)
     }
 
     pub(crate) fn get_album_tracks(
@@ -375,19 +366,19 @@ impl SpotifyClient {
 
         self.request()
             .method(Method::GET)
-            .uri(format!("/v1/albums/{}/tracks", id), Some(&query))
+            .uri(format!("/v1/albums/{id}/tracks"), Some(&query))
     }
 
     pub(crate) fn get_playlist(&self, id: &str) -> SpotifyRequest<'_, (), Playlist> {
         let query = make_query_params()
-            .append_pair(
-                "fields",
-                "id,name,images,owner,tracks(total,items(is_local,track(name,id,uri,duration_ms,artists(name,id),album(name,id,images,artists))))",
-            )
+            .append_pair("market", "from_token")
+            // why still grab the tracks field?
+            // the model still expects the appearance of a tracks field
+            .append_pair("fields", "id,name,images,owner,tracks(total)")
             .finish();
         self.request()
             .method(Method::GET)
-            .uri(format!("/v1/playlists/{}", id), Some(&query))
+            .uri(format!("/v1/playlists/{id}"), Some(&query))
     }
 
     pub(crate) fn get_playlist_tracks(
@@ -397,13 +388,14 @@ impl SpotifyClient {
         limit: usize,
     ) -> SpotifyRequest<'_, (), Page<PlaylistTrack>> {
         let query = make_query_params()
+            .append_pair("market", "from_token")
             .append_pair("offset", &offset.to_string()[..])
             .append_pair("limit", &limit.to_string()[..])
             .finish();
 
         self.request()
             .method(Method::GET)
-            .uri(format!("/v1/playlists/{}/tracks", id), Some(&query))
+            .uri(format!("/v1/playlists/{id}/tracks"), Some(&query))
     }
 
     pub(crate) fn add_to_playlist(
@@ -413,8 +405,19 @@ impl SpotifyClient {
     ) -> SpotifyRequest<'_, Vec<u8>, ()> {
         self.request()
             .method(Method::POST)
-            .uri(format!("/v1/playlists/{}/tracks", playlist), None)
+            .uri(format!("/v1/playlists/{playlist}/tracks"), None)
             .json_body(Uris { uris })
+    }
+
+    pub(crate) fn create_new_playlist(
+        &self,
+        name: &str,
+        user_id: &str,
+    ) -> SpotifyRequest<'_, Vec<u8>, Playlist> {
+        self.request()
+            .method(Method::POST)
+            .uri(format!("/v1/users/{user_id}/playlists"), None)
+            .json_body(Name { name })
     }
 
     pub(crate) fn remove_from_playlist(
@@ -424,8 +427,19 @@ impl SpotifyClient {
     ) -> SpotifyRequest<'_, Vec<u8>, ()> {
         self.request()
             .method(Method::DELETE)
-            .uri(format!("/v1/playlists/{}/tracks", playlist), None)
+            .uri(format!("/v1/playlists/{playlist}/tracks"), None)
             .json_body(Uris { uris })
+    }
+
+    pub(crate) fn update_playlist_details(
+        &self,
+        playlist: &str,
+        name: String,
+    ) -> SpotifyRequest<'_, Vec<u8>, ()> {
+        self.request()
+            .method(Method::PUT)
+            .uri(format!("/v1/playlists/{playlist}"), None)
+            .json_body(PlaylistDetails { name })
     }
 
     pub(crate) fn get_saved_albums(
@@ -495,7 +509,7 @@ impl SpotifyClient {
         let id = utf8_percent_encode(id, PATH_ENCODE_SET);
         self.request()
             .method(Method::GET)
-            .uri(format!("/v1/users/{}", id), None)
+            .uri(format!("/v1/users/{id}"), None)
     }
 
     pub(crate) fn get_user_playlists(
@@ -512,7 +526,114 @@ impl SpotifyClient {
 
         self.request()
             .method(Method::GET)
-            .uri(format!("/v1/users/{}/playlists", id), Some(&query))
+            .uri(format!("/v1/users/{id}/playlists"), Some(&query))
+    }
+
+    pub(crate) fn get_player_devices(&self) -> SpotifyRequest<'_, (), Devices> {
+        self.request()
+            .method(Method::GET)
+            .uri("/v1/me/player/devices".to_string(), None)
+    }
+
+    pub(crate) fn get_player_queue(&self) -> SpotifyRequest<'_, (), PlayerQueue> {
+        self.request()
+            .method(Method::GET)
+            .uri("/v1/me/player/queue".to_string(), None)
+    }
+
+    pub(crate) fn player_state(&self) -> SpotifyRequest<'_, (), PlayerState> {
+        self.request()
+            .method(Method::GET)
+            .uri("/v1/me/player".to_string(), None)
+    }
+
+    pub(crate) fn player_resume(&self, device_id: &str) -> SpotifyRequest<'_, (), ()> {
+        let query = make_query_params()
+            .append_pair("device_id", device_id)
+            .finish();
+        self.request()
+            .method(Method::PUT)
+            .uri("/v1/me/player/play".to_string(), Some(&query))
+    }
+
+    pub(crate) fn player_set_playing(
+        &self,
+        device_id: &str,
+        request: PlayRequest,
+    ) -> SpotifyRequest<'_, Vec<u8>, ()> {
+        let query = make_query_params()
+            .append_pair("device_id", device_id)
+            .finish();
+        self.request()
+            .method(Method::PUT)
+            .uri("/v1/me/player/play".to_string(), Some(&query))
+            .json_body(request)
+    }
+
+    pub(crate) fn player_pause(&self, device_id: &str) -> SpotifyRequest<'_, (), ()> {
+        let query = make_query_params()
+            .append_pair("device_id", device_id)
+            .finish();
+        self.request()
+            .method(Method::PUT)
+            .uri("/v1/me/player/pause".to_string(), Some(&query))
+    }
+
+    pub(crate) fn player_next(&self, device_id: &str) -> SpotifyRequest<'_, (), ()> {
+        let query = make_query_params()
+            .append_pair("device_id", device_id)
+            .finish();
+        self.request()
+            .method(Method::PUT)
+            .uri("/v1/me/player/next".to_string(), Some(&query))
+    }
+
+    pub(crate) fn player_seek(&self, device_id: &str, pos: usize) -> SpotifyRequest<'_, (), ()> {
+        let query = make_query_params()
+            .append_pair("device_id", device_id)
+            .append_pair("position_ms", &pos.to_string()[..])
+            .finish();
+
+        self.request()
+            .method(Method::PUT)
+            .uri("/v1/me/player/seek".to_string(), Some(&query))
+    }
+
+    pub(crate) fn player_repeat(&self, device_id: &str, state: &str) -> SpotifyRequest<'_, (), ()> {
+        let query = make_query_params()
+            .append_pair("device_id", device_id)
+            .append_pair("state", state)
+            .finish();
+
+        self.request()
+            .method(Method::PUT)
+            .uri("/v1/me/player/repeat".to_string(), Some(&query))
+    }
+
+    pub(crate) fn player_shuffle(
+        &self,
+        device_id: &str,
+        shuffle: bool,
+    ) -> SpotifyRequest<'_, (), ()> {
+        let query = make_query_params()
+            .append_pair("device_id", device_id)
+            .append_pair("state", if shuffle { "true" } else { "false" })
+            .finish();
+
+        self.request()
+            .method(Method::PUT)
+            .uri("/v1/me/player/shuffle".to_string(), Some(&query))
+    }
+
+    pub(crate) fn player_volume(&self, device_id: &str, volume: u8) -> SpotifyRequest<'_, (), ()> {
+        let query = make_query_params()
+            .append_pair("device_id", device_id)
+            .append_pair("volume_percent", &volume.to_string())
+            .finish();
+
+        self.request()
+            .method(Method::PUT)
+            .uri("/v1/me/player/volume".to_string(), Some(&query))
     }
 }
 
@@ -524,7 +645,7 @@ pub mod tests {
     #[test]
     fn test_username_encoding() {
         let username = "anna.lafuente❤";
-        let client = SpotifyClient::new();
+        let client = SpotifyClient::new(Arc::new(TokenStore::new()));
         let req = client.get_user(username);
         assert_eq!(
             req.request

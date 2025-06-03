@@ -3,6 +3,8 @@ use glib::clone::{Downgrade, Upgrade};
 use std::iter::Iterator;
 use std::marker::PhantomData;
 
+// A wrapper around a GIO ListStore
+// DEPRECATED
 pub struct ListStore<GType> {
     store: gio::ListStore,
     _marker: PhantomData<GType>,
@@ -19,13 +21,18 @@ where
 {
     pub fn new() -> Self {
         Self {
-            store: gio::ListStore::new(GType::static_type()),
+            store: gio::ListStore::new::<GType>(),
             _marker: PhantomData,
         }
     }
 
-    pub fn unsafe_store(&self) -> &gio::ListStore {
+    pub fn inner(&self) -> &gio::ListStore {
         &self.store
+    }
+
+    pub fn prepend(&mut self, elements: impl Iterator<Item = GType>) {
+        let upcast_vec: Vec<glib::Object> = elements.map(|e| e.upcast::<glib::Object>()).collect();
+        self.store.splice(0, 0, &upcast_vec[..]);
     }
 
     pub fn extend(&mut self, elements: impl Iterator<Item = GType>) {
@@ -53,13 +60,16 @@ where
     pub fn iter(&self) -> impl Iterator<Item = GType> + '_ {
         let store = &self.store;
         let count = store.n_items();
-        (0..count).into_iter().map(move |i| self.get(i))
+        (0..count).map(move |i| self.get(i))
     }
 
     pub fn len(&self) -> usize {
         self.store.n_items() as usize
     }
 
+    // Quick and dirty comparison between the list store and a slice of object that can be compared
+    // with the contents of the store using some function F.
+    // Not so great but eh
     pub fn eq<F, O>(&self, other: &[O], comparison: F) -> bool
     where
         F: Fn(&GType, &O) -> bool,

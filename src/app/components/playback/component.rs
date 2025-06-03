@@ -2,8 +2,8 @@ use std::ops::Deref;
 use std::rc::Rc;
 
 use crate::app::components::EventListener;
-use crate::app::models::SongDescription;
-use crate::app::state::{PlaybackAction, PlaybackEvent, RepeatMode, ScreenName, SelectionEvent};
+use crate::app::models::*;
+use crate::app::state::{PlaybackAction, PlaybackEvent, ScreenName, SelectionEvent};
 use crate::app::{
     ActionDispatcher, AppAction, AppEvent, AppModel, AppState, BrowserAction, Worker,
 };
@@ -83,13 +83,41 @@ impl PlaybackControl {
     pub fn new(model: PlaybackModel, widget: PlaybackWidget, worker: Worker) -> Self {
         let model = Rc::new(model);
 
-        widget.connect_play_pause(clone!(@weak model => move || model.toggle_playback() ));
-        widget.connect_next(clone!(@weak model => move || model.play_next_song()));
-        widget.connect_prev(clone!(@weak model => move || model.play_prev_song()));
-        widget.connect_shuffle(clone!(@weak model => move || model.toggle_shuffle()));
-        widget.connect_repeat(clone!(@weak model => move || model.toggle_repeat()));
-        widget.connect_seek(clone!(@weak model => move |position| model.seek_to(position)));
-        widget.connect_now_playing_clicked(clone!(@weak model => move || model.go_home()));
+        widget.connect_play_pause(clone!(
+            #[weak]
+            model,
+            move || model.toggle_playback()
+        ));
+        widget.connect_next(clone!(
+            #[weak]
+            model,
+            move || model.play_next_song()
+        ));
+        widget.connect_prev(clone!(
+            #[weak]
+            model,
+            move || model.play_prev_song()
+        ));
+        widget.connect_shuffle(clone!(
+            #[weak]
+            model,
+            move || model.toggle_shuffle()
+        ));
+        widget.connect_repeat(clone!(
+            #[weak]
+            model,
+            move || model.toggle_repeat()
+        ));
+        widget.connect_seek(clone!(
+            #[weak]
+            model,
+            move |position| model.seek_to(position)
+        ));
+        widget.connect_now_playing_clicked(clone!(
+            #[weak]
+            model,
+            move || model.go_home()
+        ));
 
         Self {
             model,
@@ -139,7 +167,7 @@ impl EventListener for PlaybackControl {
             AppEvent::PlaybackEvent(PlaybackEvent::RepeatModeChanged(mode)) => {
                 self.update_repeat(mode);
             }
-            AppEvent::PlaybackEvent(PlaybackEvent::ShuffleChanged) => {
+            AppEvent::PlaybackEvent(PlaybackEvent::ShuffleChanged(_)) => {
                 self.update_shuffled();
             }
             AppEvent::PlaybackEvent(PlaybackEvent::TrackChanged(_)) => {

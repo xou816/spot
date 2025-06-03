@@ -36,7 +36,7 @@ impl Clock {
             Duration::from_millis(self.interval_ms.into()),
             move || {
                 tick();
-                glib::Continue(true)
+                glib::ControlFlow::Continue
             },
         ));
         if let Some(previous_source) = self.source.replace(new_source) {
@@ -68,7 +68,7 @@ impl Debouncer {
                 if let Some(cell) = source_clone.upgrade() {
                     cell.set(None);
                 }
-                glib::Continue(false)
+                glib::ControlFlow::Break
             });
         if let Some(previous_source) = self.0.replace(Some(new_source)) {
             previous_source.remove();
@@ -119,7 +119,11 @@ where
                     continue_ = f(p);
                 }
             }
-            glib::Continue(continue_)
+            if continue_ {
+                glib::ControlFlow::Continue
+            } else {
+                glib::ControlFlow::Break
+            }
         });
     }
 }
@@ -138,8 +142,8 @@ where
 }
 
 pub fn wrap_flowbox_item<
-    Model: glib::IsA<glib::Object>,
-    Widget: gtk::glib::IsA<gtk::Widget>,
+    Model: IsA<glib::Object>,
+    Widget: IsA<gtk::Widget>,
     F: Fn(&Model) -> Widget,
 >(
     item: &glib::Object,
@@ -158,8 +162,8 @@ pub fn format_duration(duration: f64) -> String {
     let minutes = seconds.div_euclid(60).rem_euclid(60);
     let seconds = seconds.rem_euclid(60);
     if hours > 0 {
-        format!("{}∶{:02}∶{:02}", hours, minutes, seconds)
+        format!("{hours}∶{minutes:02}∶{seconds:02}")
     } else {
-        format!("{}∶{:02}", minutes, seconds)
+        format!("{minutes}∶{seconds:02}")
     }
 }

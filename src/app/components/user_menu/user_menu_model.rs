@@ -1,6 +1,5 @@
 use crate::api::clear_user_cache;
 use crate::app::credentials::Credentials;
-use crate::app::models::{PlaylistDescription, PlaylistSummary};
 use crate::app::state::{LoginAction, PlaybackAction};
 use crate::app::{ActionDispatcher, AppModel};
 use std::ops::Deref;
@@ -27,7 +26,7 @@ impl UserMenuModel {
     pub fn logout(&self) {
         self.dispatcher.dispatch(PlaybackAction::Stop.into());
         self.dispatcher.dispatch_async(Box::pin(async {
-            let _ = Credentials::logout();
+            let _ = Credentials::logout().await;
             let _ = clear_user_cache().await;
             Some(LoginAction::Logout.into())
         }));
@@ -43,10 +42,7 @@ impl UserMenuModel {
                         let summaries = playlists
                             .into_iter()
                             .filter(|p| p.owner.id == current_user)
-                            .map(|PlaylistDescription { id, title, .. }| PlaylistSummary {
-                                id,
-                                title,
-                            })
+                            .map(|p| p.into())
                             .collect();
                         LoginAction::SetUserPlaylists(summaries).into()
                     })

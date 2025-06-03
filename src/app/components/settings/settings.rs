@@ -18,7 +18,7 @@ mod imp {
 
     #[derive(Debug, Default, CompositeTemplate)]
     #[template(resource = "/dev/alextren/Spot/components/settings.ui")]
-    pub struct SettingsWindow {
+    pub struct SettingsDialog {
         #[template_child]
         pub player_bitrate: TemplateChild<libadwaita::ComboRow>,
 
@@ -32,6 +32,9 @@ mod imp {
         pub audio_backend: TemplateChild<libadwaita::ComboRow>,
 
         #[template_child]
+        pub gapless_playback: TemplateChild<libadwaita::ActionRow>,
+
+        #[template_child]
         pub ap_port: TemplateChild<gtk::Entry>,
 
         #[template_child]
@@ -39,13 +42,13 @@ mod imp {
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for SettingsWindow {
+    impl ObjectSubclass for SettingsDialog {
         const NAME: &'static str = "SettingsWindow";
-        type Type = super::SettingsWindow;
-        type ParentType = libadwaita::PreferencesWindow;
+        type Type = super::SettingsDialog;
+        type ParentType = libadwaita::PreferencesDialog;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -53,30 +56,34 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for SettingsWindow {}
-    impl WidgetImpl for SettingsWindow {}
-    impl WindowImpl for SettingsWindow {}
-    impl AdwWindowImpl for SettingsWindow {}
-    impl PreferencesWindowImpl for SettingsWindow {}
+    impl ObjectImpl for SettingsDialog {}
+    impl WidgetImpl for SettingsDialog {}
+    impl AdwDialogImpl for SettingsDialog {}
+    impl PreferencesDialogImpl for SettingsDialog {}
 }
 
 glib::wrapper! {
-    pub struct SettingsWindow(ObjectSubclass<imp::SettingsWindow>) @extends gtk::Widget, gtk::Window, libadwaita::Window, libadwaita::PreferencesWindow;
+    pub struct SettingsDialog(ObjectSubclass<imp::SettingsDialog>) @extends gtk::Widget, libadwaita::Dialog, libadwaita::PreferencesDialog;
 }
 
-impl SettingsWindow {
-    pub fn new() -> Self {
-        let window: Self =
-            glib::Object::new(&[]).expect("Failed to create an instance of SettingsWindow");
+impl Default for SettingsDialog {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
-        window.bind_backend_and_device();
-        window.bind_settings();
-        window.connect_theme_select();
-        window
+impl SettingsDialog {
+    pub fn new() -> Self {
+        let dialog: Self = glib::Object::new();
+
+        dialog.bind_backend_and_device();
+        dialog.bind_settings();
+        dialog.connect_theme_select();
+        dialog
     }
 
     fn bind_backend_and_device(&self) {
-        let widget = imp::SettingsWindow::from_instance(self);
+        let widget = self.imp();
 
         let audio_backend = widget
             .audio_backend
@@ -89,7 +96,7 @@ impl SettingsWindow {
 
         audio_backend
             .bind_property("selected", alsa_device_row, "visible")
-            .transform_to(|_, value| value.get::<u32>().ok().map(|u| (u == 1).to_value()))
+            .transform_to(|_, value: u32| Some(value == 1))
             .build();
 
         if audio_backend.selected() == 0 {
@@ -98,7 +105,7 @@ impl SettingsWindow {
     }
 
     fn bind_settings(&self) {
-        let widget = imp::SettingsWindow::from_instance(self);
+        let widget = self.imp();
         let settings = gio::Settings::new(SETTINGS);
 
         let player_bitrate = widget
@@ -145,6 +152,7 @@ impl SettingsWindow {
                     match s {
                         "pulseaudio" => 0,
                         "alsa" => 1,
+                        "gstreamer" => 2,
                         _ => unreachable!(),
                     }
                     .to_value()
@@ -155,11 +163,24 @@ impl SettingsWindow {
                     match u {
                         0 => "pulseaudio",
                         1 => "alsa",
+                        2 => "gstreamer",
                         _ => unreachable!(),
                     }
                     .to_variant()
                 })
             })
+            .build();
+
+        let gapless_playback = widget
+            .gapless_playback
+            .downcast_ref::<libadwaita::ActionRow>()
+            .unwrap();
+        settings
+            .bind(
+                "gapless-playback",
+                &gapless_playback.activatable_widget().unwrap(),
+                "active",
+            )
             .build();
 
         let ap_port = widget.ap_port.downcast_ref::<gtk::Entry>().unwrap();
@@ -171,28 +192,46 @@ impl SettingsWindow {
 
         let theme = widget.theme.downcast_ref::<libadwaita::ComboRow>().unwrap();
         settings
-            .bind("prefers-dark-theme", theme, "selected")
+            .bind("theme-preference", theme, "selected")
             .mapping(|variant, _| {
-                variant
-                    .get::<bool>()
-                    .map(|prefer_dark| if prefer_dark { 1 } else { 0 }.to_value())
+                variant.str().map(|s| {
+                    match s {
+                        "light" => 0,
+                        "dark" => 1,
+                        "system" => 2,
+                        _ => unreachable!(),
+                    }
+                    .to_value()
+                })
             })
-            .set_mapping(|value, _| value.get::<u32>().ok().map(|u| (u == 1).to_variant()))
+            .set_mapping(|value, _| {
+                value.get::<u32>().ok().map(|u| {
+                    match u {
+                        0 => "light",
+                        1 => "dark",
+                        2 => "system",
+                        _ => unreachable!(),
+                    }
+                    .to_variant()
+                })
+            })
             .build();
     }
 
     fn connect_theme_select(&self) {
-        let widget = imp::SettingsWindow::from_instance(self);
+        let widget = self.imp();
         let theme = widget.theme.downcast_ref::<libadwaita::ComboRow>().unwrap();
         theme.connect_selected_notify(|theme| {
-            let prefers_dark_theme = theme.selected() == 1;
+            debug!("Theme switched! --> value: {}", theme.selected());
             let manager = libadwaita::StyleManager::default();
 
-            manager.set_color_scheme(if prefers_dark_theme {
-                libadwaita::ColorScheme::PreferDark
-            } else {
-                libadwaita::ColorScheme::PreferLight
-            });
+            let pref = match theme.selected() {
+                0 => libadwaita::ColorScheme::ForceLight,
+                1 => libadwaita::ColorScheme::ForceDark,
+                _ => libadwaita::ColorScheme::Default,
+            };
+
+            manager.set_color_scheme(pref);
         });
     }
 
@@ -200,27 +239,23 @@ impl SettingsWindow {
     where
         F: Fn() + 'static,
     {
-        let window = self.upcast_ref::<libadwaita::Window>();
-
-        window.connect_close_request(
-            clone!(@weak self as _self => @default-return gtk::Inhibit(false), move |_| {
-                on_close();
-                gtk::Inhibit(false)
-            }),
-        );
+        let dialog = self.upcast_ref::<libadwaita::Dialog>();
+        dialog.connect_close_attempt(move |_| {
+            on_close();
+        });
     }
 }
 
 pub struct Settings {
     parent: gtk::Window,
-    settings_window: SettingsWindow,
+    settings_dialog: SettingsDialog,
 }
 
 impl Settings {
     pub fn new(parent: gtk::Window, model: SettingsModel) -> Self {
-        let settings_window = SettingsWindow::new();
+        let settings_dialog = SettingsDialog::new();
 
-        settings_window.connect_close(move || {
+        settings_dialog.connect_close(move || {
             let new_settings = SpotSettings::new_from_gsettings().unwrap_or_default();
             if model.settings().player_settings != new_settings.player_settings {
                 model.stop_player();
@@ -230,18 +265,16 @@ impl Settings {
 
         Self {
             parent,
-            settings_window,
+            settings_dialog,
         }
     }
 
-    fn window(&self) -> &libadwaita::Window {
-        self.settings_window.upcast_ref::<libadwaita::Window>()
+    fn dialog(&self) -> &libadwaita::Dialog {
+        self.settings_dialog.upcast_ref::<libadwaita::Dialog>()
     }
 
     pub fn show_self(&self) {
-        self.window().set_transient_for(Some(&self.parent));
-        self.window().set_modal(true);
-        self.window().show();
+        self.dialog().present(Some(&self.parent));
     }
 }
 

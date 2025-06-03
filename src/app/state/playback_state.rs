@@ -1,27 +1,35 @@
 use std::borrow::Cow;
+use std::time::Instant;
 
-use crate::app::models::{SongBatch, SongDescription, SongListModel, SongListModelPending};
+use crate::app::models::*;
 use crate::app::state::{AppAction, AppEvent, UpdatableState};
 use crate::app::{BatchQuery, LazyRandomIndex, SongsSource};
 
 #[derive(Debug)]
 pub struct PlaybackState {
+    available_devices: Vec<ConnectDevice>,
+    current_device: Device,
+    // A mapping of indices for shuffled playback
     index: LazyRandomIndex,
+    // The actual list like thing backing the currently playing tracks
     songs: SongListModel,
-    position: Option<usize>,
+    list_position: Option<usize>,
+    seek_position: PositionMillis,
     source: Option<SongsSource>,
     repeat: RepeatMode,
     is_playing: bool,
     is_shuffled: bool,
 }
 
+// Most mutatings methods shouldn't be pub
+// If they are, they probably are only used by the app state
 impl PlaybackState {
     pub fn songs(&self) -> &SongListModel {
         &self.songs
     }
 
     pub fn is_playing(&self) -> bool {
-        self.is_playing && self.position.is_some()
+        self.is_playing && self.list_position.is_some()
     }
 
     pub fn is_shuffled(&self) -> bool {
@@ -32,6 +40,7 @@ impl PlaybackState {
         self.repeat
     }
 
+    // Whatever batch of songs we would need to grab if we were to play the next track
     pub fn next_query(&self) -> Option<BatchQuery> {
         let next_index = self.next_index()?;
         let next_index = if self.is_shuffled {
@@ -57,21 +66,35 @@ impl PlaybackState {
         Some(song?.into_description())
     }
 
+    pub fn current_source(&self) -> Option<&SongsSource> {
+        self.source.as_ref()
+    }
+
+    pub fn current_song_index(&self) -> Option<usize> {
+        self.list_position
+    }
+
     pub fn current_song_id(&self) -> Option<String> {
-        Some(self.index(self.position?)?.id)
+        Some(self.index(self.list_position?)?.id)
     }
 
     pub fn current_song(&self) -> Option<SongDescription> {
-        self.index(self.position?)
+        self.index(self.list_position?)
+    }
+
+    fn next_id(&self) -> Option<String> {
+        self.next_index()
+            .and_then(|i| Some(self.songs().index(i)?.description().id.clone()))
     }
 
     fn clear(&mut self, source: Option<SongsSource>) -> SongListModelPending {
         self.source = source;
         self.index = Default::default();
-        self.position = None;
+        self.list_position = None;
         self.songs.clear()
     }
 
+    // Replaces (!) the current playlist with the contents of a song batch
     fn set_batch(&mut self, source: Option<SongsSource>, song_batch: SongBatch) -> bool {
         let ok = self.clear(source).and(|s| s.add(song_batch)).commit();
         self.index.resize(self.songs.len());
@@ -84,7 +107,8 @@ impl PlaybackState {
         ok
     }
 
-    pub fn set_queue(&mut self, tracks: Vec<SongDescription>) {
+    // Replaces (!) the current playlist with a bunch of songs (not batched, not expected to grow)
+    fn set_queue(&mut self, tracks: Vec<SongDescription>) {
         self.clear(None).and(|s| s.append(tracks)).commit();
         self.index.grow(self.songs.len());
     }
@@ -98,14 +122,15 @@ impl PlaybackState {
     pub fn dequeue(&mut self, ids: &[String]) {
         let current_id = self.current_song_id();
         self.songs.remove(ids).commit();
-        self.position = current_id.and_then(|id| self.songs.find_index(&id));
+        self.list_position = current_id.and_then(|id| self.songs.find_index(&id));
         self.index.shrink(self.songs.len());
     }
 
+    // Update the current playing track (identified by a position in the list) if we're swapping songs
     fn swap_pos(&mut self, index: usize, other_index: usize) {
         let len = self.songs.len();
-        self.position = self
-            .position
+        self.list_position = self
+            .list_position
             .map(|position| match position {
                 i if i == index => other_index,
                 i if i == other_index => index,
@@ -136,6 +161,7 @@ impl PlaybackState {
         let found_index = self.songs.find_index(id);
 
         if let Some(index) = found_index {
+            // If shufflings songs, we make sure the track we just picked is the first to come up
             if self.is_shuffled {
                 self.index.reset_picking_first(index);
                 self.play_index(0);
@@ -149,24 +175,29 @@ impl PlaybackState {
     }
 
     fn stop(&mut self) {
-        self.position = None;
+        self.list_position = None;
         self.is_playing = false;
+        self.seek_position.set(0, false);
     }
 
     fn play_index(&mut self, index: usize) -> Option<String> {
         self.is_playing = true;
-        self.position.replace(index);
+        self.list_position.replace(index);
+        self.seek_position.set(0, true);
         self.index.next_until(index + 1);
         self.current_song_id()
     }
 
     fn play_next(&mut self) -> Option<String> {
-        self.next_index().and_then(move |i| self.play_index(i))
+        self.next_index().and_then(|i| {
+            self.seek_position.set(0, true);
+            self.play_index(i)
+        })
     }
 
     pub fn next_index(&self) -> Option<usize> {
         let len = self.songs.len();
-        self.position.and_then(|p| match self.repeat {
+        self.list_position.and_then(|p| match self.repeat {
             RepeatMode::Song => Some(p),
             RepeatMode::Playlist if len != 0 => Some((p + 1) % len),
             RepeatMode::None => Some(p + 1).filter(|&i| i < len),
@@ -175,12 +206,23 @@ impl PlaybackState {
     }
 
     fn play_prev(&mut self) -> Option<String> {
-        self.prev_index().and_then(move |i| self.play_index(i))
+        self.prev_index().and_then(|i| {
+            // Only jump to the previous track if we aren't more than 2 seconds (2,000 ms) into the current track.
+            // Otherwise, seek to the start of the current track.
+            // (This replicates the behavior of official Spotify clients.)
+            if self.seek_position.current() <= 2000 {
+                self.seek_position.set(0, true);
+                self.play_index(i)
+            } else {
+                self.seek_position.set(0, true);
+                None
+            }
+        })
     }
 
     pub fn prev_index(&self) -> Option<usize> {
         let len = self.songs.len();
-        self.position.and_then(|p| match self.repeat {
+        self.list_position.and_then(|p| match self.repeat {
             RepeatMode::Song => Some(p),
             RepeatMode::Playlist if len != 0 => Some((if p == 0 { len } else { p }) - 1),
             RepeatMode::None => Some(p).filter(|&i| i > 0).map(|i| i - 1),
@@ -189,27 +231,44 @@ impl PlaybackState {
     }
 
     fn toggle_play(&mut self) -> Option<bool> {
-        if self.position.is_some() {
+        if self.list_position.is_some() {
             self.is_playing = !self.is_playing;
+
+            match self.is_playing {
+                false => self.seek_position.pause(),
+                true => self.seek_position.resume(),
+            };
+
             Some(self.is_playing)
         } else {
             None
         }
     }
 
-    fn toggle_shuffle(&mut self) {
-        self.is_shuffled = !self.is_shuffled;
-        let old = self.position.replace(0).unwrap_or(0);
+    fn set_shuffled(&mut self, shuffled: bool) {
+        self.is_shuffled = shuffled;
+        let old = self.list_position.replace(0).unwrap_or(0);
         self.index.reset_picking_first(old);
+    }
+
+    pub fn available_devices(&self) -> &Vec<ConnectDevice> {
+        &self.available_devices
+    }
+
+    pub fn current_device(&self) -> &Device {
+        &self.current_device
     }
 }
 
 impl Default for PlaybackState {
     fn default() -> Self {
         Self {
+            available_devices: vec![],
+            current_device: Device::Local,
             index: LazyRandomIndex::default(),
             songs: SongListModel::new(50),
-            position: None,
+            list_position: None,
+            seek_position: PositionMillis::new(1.0),
             source: None,
             repeat: RepeatMode::None,
             is_playing: false,
@@ -225,9 +284,11 @@ pub enum PlaybackAction {
     Pause,
     Stop,
     SetRepeatMode(RepeatMode),
+    SetShuffled(bool),
     ToggleRepeat,
     ToggleShuffle,
     Seek(u32),
+    // I can't remember the diff betweek Seek and SyncSeek right now. Probably the source of the action
     SyncSeek(u32),
     Load(String),
     LoadSongs(Vec<SongDescription>),
@@ -235,14 +296,23 @@ pub enum PlaybackAction {
     SetVolume(f64),
     Next,
     Previous,
+    Preload,
     Queue(Vec<SongDescription>),
     Dequeue(String),
+    SwitchDevice(Device),
+    SetAvailableDevices(Vec<ConnectDevice>),
 }
 
 impl From<PlaybackAction> for AppAction {
     fn from(playback_action: PlaybackAction) -> Self {
         Self::PlaybackAction(playback_action)
     }
+}
+
+#[derive(Clone, Debug)]
+pub enum Device {
+    Local,
+    Connect(ConnectDevice),
 }
 
 #[derive(Clone, Debug)]
@@ -254,16 +324,13 @@ pub enum PlaybackEvent {
     SeekSynced(u32),
     VolumeSet(f64),
     TrackChanged(String),
-    ShuffleChanged,
+    SourceChanged,
+    Preload(String),
+    ShuffleChanged(bool),
     PlaylistChanged,
     PlaybackStopped,
-}
-
-#[derive(Clone, Copy, Debug)]
-pub enum RepeatMode {
-    Song,
-    Playlist,
-    None,
+    SwitchedDevice(Device),
+    AvailableDevicesChanged,
 }
 
 impl From<PlaybackEvent> for AppEvent {
@@ -272,14 +339,11 @@ impl From<PlaybackEvent> for AppEvent {
     }
 }
 
-fn make_events(opt_events: Vec<Option<PlaybackEvent>>) -> Vec<PlaybackEvent> {
-    opt_events.into_iter().flatten().collect()
-}
-
 impl UpdatableState for PlaybackState {
     type Action = PlaybackAction;
     type Event = PlaybackEvent;
 
+    // Main "reducer" :)
     fn update_with(&mut self, action: Cow<Self::Action>) -> Vec<Self::Event> {
         match action.into_owned() {
             PlaybackAction::TogglePlay => {
@@ -315,20 +379,24 @@ impl UpdatableState for PlaybackState {
                 };
                 vec![PlaybackEvent::RepeatModeChanged(self.repeat)]
             }
-            PlaybackAction::SetRepeatMode(mode) => {
+            PlaybackAction::SetRepeatMode(mode) if self.repeat != mode => {
                 self.repeat = mode;
                 vec![PlaybackEvent::RepeatModeChanged(self.repeat)]
             }
+            PlaybackAction::SetShuffled(shuffled) if self.is_shuffled != shuffled => {
+                self.set_shuffled(shuffled);
+                vec![PlaybackEvent::ShuffleChanged(shuffled)]
+            }
             PlaybackAction::ToggleShuffle => {
-                self.toggle_shuffle();
-                vec![PlaybackEvent::ShuffleChanged]
+                self.set_shuffled(!self.is_shuffled);
+                vec![PlaybackEvent::ShuffleChanged(self.is_shuffled)]
             }
             PlaybackAction::Next => {
                 if let Some(id) = self.play_next() {
-                    make_events(vec![
-                        Some(PlaybackEvent::TrackChanged(id)),
-                        Some(PlaybackEvent::PlaybackResumed),
-                    ])
+                    vec![
+                        PlaybackEvent::TrackChanged(id),
+                        PlaybackEvent::PlaybackResumed,
+                    ]
                 } else {
                     self.stop();
                     vec![PlaybackEvent::PlaybackStopped]
@@ -340,20 +408,27 @@ impl UpdatableState for PlaybackState {
             }
             PlaybackAction::Previous => {
                 if let Some(id) = self.play_prev() {
-                    make_events(vec![
-                        Some(PlaybackEvent::TrackChanged(id)),
-                        Some(PlaybackEvent::PlaybackResumed),
-                    ])
+                    vec![
+                        PlaybackEvent::TrackChanged(id),
+                        PlaybackEvent::PlaybackResumed,
+                    ]
                 } else {
-                    vec![]
+                    vec![PlaybackEvent::TrackSeeked(0)]
                 }
             }
             PlaybackAction::Load(id) => {
                 if self.play(&id) {
-                    make_events(vec![
-                        Some(PlaybackEvent::TrackChanged(id)),
-                        Some(PlaybackEvent::PlaybackResumed),
-                    ])
+                    vec![
+                        PlaybackEvent::TrackChanged(id),
+                        PlaybackEvent::PlaybackResumed,
+                    ]
+                } else {
+                    vec![]
+                }
+            }
+            PlaybackAction::Preload => {
+                if let Some(id) = self.next_id() {
+                    vec![PlaybackEvent::Preload(id)]
                 } else {
                     vec![]
                 }
@@ -370,12 +445,13 @@ impl UpdatableState for PlaybackState {
             PlaybackAction::LoadPagedSongs(source, batch)
                 if Some(&source) != self.source.as_ref() =>
             {
+                debug!("new source: {:?}", &source);
                 self.set_batch(Some(source), batch);
-                vec![PlaybackEvent::PlaylistChanged]
+                vec![PlaybackEvent::PlaylistChanged, PlaybackEvent::SourceChanged]
             }
             PlaybackAction::LoadSongs(tracks) => {
                 self.set_queue(tracks);
-                vec![PlaybackEvent::PlaylistChanged]
+                vec![PlaybackEvent::PlaylistChanged, PlaybackEvent::SourceChanged]
             }
             PlaybackAction::Queue(tracks) => {
                 self.queue(tracks);
@@ -385,11 +461,71 @@ impl UpdatableState for PlaybackState {
                 self.dequeue(&[id]);
                 vec![PlaybackEvent::PlaylistChanged]
             }
-            PlaybackAction::Seek(pos) => vec![PlaybackEvent::TrackSeeked(pos)],
-            PlaybackAction::SyncSeek(pos) => vec![PlaybackEvent::SeekSynced(pos)],
+            PlaybackAction::Seek(pos) => {
+                self.seek_position.set(pos as u64 * 1000, true);
+                vec![PlaybackEvent::TrackSeeked(pos)]
+            }
+            PlaybackAction::SyncSeek(pos) => {
+                self.seek_position.set(pos as u64 * 1000, true);
+                vec![PlaybackEvent::SeekSynced(pos)]
+            }
             PlaybackAction::SetVolume(volume) => vec![PlaybackEvent::VolumeSet(volume)],
+            PlaybackAction::SetAvailableDevices(list) => {
+                self.available_devices = list;
+                vec![PlaybackEvent::AvailableDevicesChanged]
+            }
+            PlaybackAction::SwitchDevice(new_device) => {
+                self.current_device = new_device.clone();
+                vec![PlaybackEvent::SwitchedDevice(new_device)]
+            }
             _ => vec![],
         }
+    }
+}
+
+// A struct to keep track of the playback position
+// Caller must call pause/play at the right time
+#[derive(Debug)]
+struct PositionMillis {
+    // Last recorded position in the track (in milliseconds)
+    last_known_position: u64,
+    // Last time we resumed playback
+    last_resume_instant: Option<Instant>,
+    // Playback rate (1)
+    rate: f32,
+}
+
+impl PositionMillis {
+    fn new(rate: f32) -> Self {
+        Self {
+            last_known_position: 0,
+            last_resume_instant: None,
+            rate,
+        }
+    }
+
+    // Read the current pos by adding elapsed time since the last time we resumed playback to the last know position
+    fn current(&self) -> u64 {
+        let current_progress = self.last_resume_instant.map(|ri| {
+            let elapsed = ri.elapsed().as_millis() as f32;
+            let real_elapsed = self.rate * elapsed;
+            real_elapsed.ceil() as u64
+        });
+        self.last_known_position + current_progress.unwrap_or(0)
+    }
+
+    fn set(&mut self, position: u64, playing: bool) {
+        self.last_known_position = position;
+        self.last_resume_instant = if playing { Some(Instant::now()) } else { None }
+    }
+
+    fn pause(&mut self) {
+        self.last_known_position = self.current();
+        self.last_resume_instant = None;
+    }
+
+    fn resume(&mut self) {
+        self.last_resume_instant = Some(Instant::now());
     }
 }
 
@@ -417,16 +553,11 @@ mod tests {
 
     impl PlaybackState {
         fn current_position(&self) -> Option<usize> {
-            self.position
+            self.list_position
         }
 
         fn prev_id(&self) -> Option<String> {
             self.prev_index()
-                .and_then(|i| Some(self.songs().index(i)?.description().id.clone()))
-        }
-
-        fn next_id(&self) -> Option<String> {
-            self.next_index()
                 .and_then(|i| Some(self.songs().index(i)?.description().id.clone()))
         }
 
@@ -531,14 +662,14 @@ mod tests {
         state.play("2");
         assert_eq!(state.current_position(), Some(1));
 
-        state.toggle_shuffle();
+        state.set_shuffled(true);
         assert!(state.is_shuffled());
         assert_eq!(state.current_position(), Some(0));
 
         state.play_next();
         assert_eq!(state.current_position(), Some(1));
 
-        state.toggle_shuffle();
+        state.set_shuffled(false);
         assert!(!state.is_shuffled());
 
         let ids = state.song_ids();
@@ -558,12 +689,12 @@ mod tests {
         let mut state = PlaybackState::default();
         state.queue(vec![song("1"), song("2"), song("3")]);
 
-        state.toggle_shuffle();
+        state.set_shuffled(true);
         assert!(state.is_shuffled());
 
         state.queue(vec![song("4")]);
 
-        state.toggle_shuffle();
+        state.set_shuffled(false);
         assert!(!state.is_shuffled());
 
         let ids = state.song_ids();

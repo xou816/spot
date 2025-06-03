@@ -2,10 +2,10 @@ use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 use std::rc::Rc;
+use url::Url;
 
 use crate::app::components::EventListener;
-use crate::app::credentials::Credentials;
-use crate::app::state::{LoginCompletedEvent, LoginEvent};
+use crate::app::state::{LoginEvent, LoginStartedEvent};
 use crate::app::AppEvent;
 
 use super::LoginModel;
@@ -19,16 +19,7 @@ mod imp {
     #[template(resource = "/dev/alextren/Spot/components/login.ui")]
     pub struct LoginWindow {
         #[template_child]
-        pub username: TemplateChild<gtk::Entry>,
-
-        #[template_child]
-        pub password: TemplateChild<gtk::Entry>,
-
-        #[template_child]
-        pub close_button: TemplateChild<gtk::Button>,
-
-        #[template_child]
-        pub login_button: TemplateChild<gtk::Button>,
+        pub login_with_spotify_button: TemplateChild<gtk::Button>,
 
         #[template_child]
         pub auth_error_container: TemplateChild<gtk::Revealer>,
@@ -41,7 +32,7 @@ mod imp {
         type ParentType = libadwaita::Window;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -59,72 +50,40 @@ glib::wrapper! {
     pub struct LoginWindow(ObjectSubclass<imp::LoginWindow>) @extends gtk::Widget, libadwaita::Window;
 }
 
+impl Default for LoginWindow {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl LoginWindow {
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create an instance of LoginWindow")
+        glib::Object::new()
     }
 
     fn connect_close<F>(&self, on_close: F)
     where
         F: Fn() + 'static,
     {
-        let widget = imp::LoginWindow::from_instance(self);
-        widget.close_button.connect_clicked(move |_| {
+        let window = self.upcast_ref::<libadwaita::Window>();
+        window.connect_close_request(move |_| {
             on_close();
+            glib::Propagation::Stop
         });
     }
 
-    fn connect_submit<SubmitFn>(&self, on_submit: SubmitFn)
+    fn connect_login_oauth_spotify<F>(&self, on_login_with_spotify_button: F)
     where
-        SubmitFn: Fn(&str, &str) + Clone + 'static,
+        F: Fn() + 'static,
     {
-        let widget = imp::LoginWindow::from_instance(self);
-
-        let on_submit_clone = on_submit.clone();
-        let controller = gtk::EventControllerKey::new();
-        controller.set_propagation_phase(gtk::PropagationPhase::Capture);
-        controller.connect_key_pressed(
-            clone!(@weak self as _self => @default-return gtk::Inhibit(false), move |_, key, _, _| {
-                if key == gdk::Key::Return {
-                    _self.submit(&on_submit_clone);
-                    gtk::Inhibit(true)
-                } else {
-                    gtk::Inhibit(false)
-                }
-            }),
-        );
-        self.add_controller(&controller);
-
-        widget
-            .login_button
-            .connect_clicked(clone!(@weak self as _self => move |_| {
-                _self.submit(&on_submit);
-            }));
+        self.imp()
+            .login_with_spotify_button
+            .connect_clicked(move |_| on_login_with_spotify_button());
     }
 
     fn show_auth_error(&self, shown: bool) {
-        let widget = imp::LoginWindow::from_instance(self);
+        let widget = self.imp();
         widget.auth_error_container.set_reveal_child(shown);
-    }
-
-    fn submit<SubmitFn>(&self, on_submit: &SubmitFn)
-    where
-        SubmitFn: Fn(&str, &str),
-    {
-        let widget = imp::LoginWindow::from_instance(self);
-
-        self.show_auth_error(false);
-
-        let username_text = widget.username.text();
-        let password_text = widget.password.text();
-
-        if username_text.is_empty() {
-            widget.username.grab_focus();
-        } else if password_text.is_empty() {
-            widget.password.grab_focus();
-        } else {
-            on_submit(username_text.as_str(), password_text.as_str());
-        }
     }
 }
 
@@ -140,15 +99,23 @@ impl Login {
 
         let login_window = LoginWindow::new();
 
-        login_window.connect_close(clone!(@weak parent => move || {
-            if let Some(app) = parent.application().as_ref() {
-                app.quit();
+        login_window.connect_close(clone!(
+            #[weak]
+            parent,
+            move || {
+                if let Some(app) = parent.application().as_ref() {
+                    app.quit();
+                }
             }
-        }));
+        ));
 
-        login_window.connect_submit(clone!(@weak model => move |username, password| {
-            model.login(username.to_string(), password.to_string());
-        }));
+        login_window.connect_login_oauth_spotify(clone!(
+            #[weak]
+            model,
+            move || {
+                model.login_with_spotify();
+            }
+        ));
 
         Self {
             parent,
@@ -161,53 +128,45 @@ impl Login {
         self.login_window.upcast_ref::<libadwaita::Window>()
     }
 
-    fn show_self_if_needed(&self) {
-        if self.model.try_autologin() {
-            self.window().close();
-        } else {
-            self.show_self();
-        }
-    }
-
     fn show_self(&self) {
         self.window().set_transient_for(Some(&self.parent));
         self.window().set_modal(true);
-        self.window().show();
+        self.window().set_visible(true);
     }
 
-    fn hide_and_save_creds(&self, credentials: Credentials) {
-        self.window().hide();
-        self.model.save_for_autologin(credentials);
+    fn hide(&self) {
+        self.window().set_visible(false);
     }
 
     fn reveal_error(&self) {
+        self.show_self();
         self.login_window.show_auth_error(true);
+    }
+
+    fn open_login_url(&self, url: Url) {
+        if open::that(url.as_str()).is_err() {
+            warn!("Could not open login page");
+        }
     }
 }
 
 impl EventListener for Login {
     fn on_event(&mut self, event: &AppEvent) {
         match event {
-            AppEvent::LoginEvent(LoginEvent::LoginCompleted(LoginCompletedEvent::Password(
-                creds,
-            ))) => {
-                self.hide_and_save_creds(creds.clone());
+            AppEvent::LoginEvent(LoginEvent::LoginCompleted) => {
+                self.hide();
             }
             AppEvent::LoginEvent(LoginEvent::LoginFailed) => {
-                self.model.clear_saved_credentials();
                 self.reveal_error();
             }
+            AppEvent::LoginEvent(LoginEvent::LoginStarted(LoginStartedEvent::OpenUrl(url))) => {
+                self.open_login_url(url.clone());
+            }
             AppEvent::Started => {
-                self.show_self_if_needed();
+                self.model.try_autologin();
             }
-            AppEvent::LoginEvent(LoginEvent::LogoutCompleted) => {
+            AppEvent::LoginEvent(LoginEvent::LogoutCompleted | LoginEvent::LoginShown) => {
                 self.show_self();
-            }
-            AppEvent::LoginEvent(LoginEvent::RefreshTokenCompleted {
-                token,
-                token_expiry_time,
-            }) => {
-                self.model.save_token(token.clone(), *token_expiry_time);
             }
             _ => {}
         }

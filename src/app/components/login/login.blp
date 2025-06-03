@@ -1,0 +1,87 @@
+using Gtk 4.0;
+using Adw 1;
+
+
+template $LoginWindow : Adw.Window {
+  default-width: 360;
+  default-height: 100;
+
+  Box {
+    hexpand: true;
+    margin-bottom: 24;
+    orientation: vertical;
+
+    Adw.HeaderBar {
+      [title]
+      Label {}
+
+      styles ["flat"]
+    }
+
+    WindowHandle {
+
+      Adw.Clamp {
+        maximum-size: 360;
+        tightening-threshold: 280;
+
+        Box {
+          hexpand: true;
+          orientation: vertical;
+          margin-start: 16;
+          margin-end: 16;
+          spacing: 24;
+
+          Image {
+            icon-name: "dev.alextren.Spot";
+            pixel-size: 128;
+            margin-bottom: 20;
+          }
+
+          Box{
+            hexpand: true;
+            orientation: vertical;
+            spacing: 4;
+
+            Label {
+              label: _("Welcome to Spot");
+              halign: center;
+              styles ["title-1"]
+            }
+
+            Label {
+              /* Translators: Login window title, must mention Premium (a premium account is required). */
+              label: _("Log in with your Spotify Account. A Spotify Premium subscription is required to use the app.");
+              wrap: true;
+              wrap-mode: word;
+              halign: center;
+              justify: center;
+              styles ["body"]
+            }
+          }
+          
+          Revealer auth_error_container {
+            vexpand: true;
+            transition-type: slide_up;
+
+            Label {
+              /* Translators: This error is shown when authentication fails. */
+              label: _("An error occured when trying to connect.");
+              halign: center;
+              justify: center;
+              wrap: true;
+              wrap-mode: word;
+              styles ["error"]
+            }
+          }
+
+          Button login_with_spotify_button {
+            /* Translators: Log in button label */
+            label: _("Log in with Spotify...");
+            halign: center;
+            styles ["pill", "suggested-action"]
+          }
+        }
+      }
+    }
+  }
+}

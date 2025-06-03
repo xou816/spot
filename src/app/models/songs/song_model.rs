@@ -7,14 +7,15 @@ use std::{cell::Ref, ops::Deref};
 use crate::app::components::utils::format_duration;
 use crate::app::models::*;
 
+// UI model for a song
 glib::wrapper! {
     pub struct SongModel(ObjectSubclass<imp::SongModel>);
 }
 
 impl SongModel {
     pub fn new(song: SongDescription) -> Self {
-        let o: Self = glib::Object::new(&[]).unwrap();
-        imp::SongModel::from_instance(&o).song.replace(Some(song));
+        let o: Self = glib::Object::new();
+        o.imp().song.replace(Some(song));
         o
     }
 
@@ -39,7 +40,7 @@ impl SongModel {
     }
 
     pub fn bind_index(&self, o: &impl ObjectType, property: &str) {
-        imp::SongModel::from_instance(self).push_binding(
+        self.imp().push_binding(
             self.bind_property("index", o, property)
                 .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
                 .build(),
@@ -47,7 +48,7 @@ impl SongModel {
     }
 
     pub fn bind_artist(&self, o: &impl ObjectType, property: &str) {
-        imp::SongModel::from_instance(self).push_binding(
+        self.imp().push_binding(
             self.bind_property("artist", o, property)
                 .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
                 .build(),
@@ -55,7 +56,7 @@ impl SongModel {
     }
 
     pub fn bind_title(&self, o: &impl ObjectType, property: &str) {
-        imp::SongModel::from_instance(self).push_binding(
+        self.imp().push_binding(
             self.bind_property("title", o, property)
                 .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
                 .build(),
@@ -63,7 +64,7 @@ impl SongModel {
     }
 
     pub fn bind_duration(&self, o: &impl ObjectType, property: &str) {
-        imp::SongModel::from_instance(self).push_binding(
+        self.imp().push_binding(
             self.bind_property("duration", o, property)
                 .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
                 .build(),
@@ -71,7 +72,7 @@ impl SongModel {
     }
 
     pub fn bind_playing(&self, o: &impl ObjectType, property: &str) {
-        imp::SongModel::from_instance(self).push_binding(
+        self.imp().push_binding(
             self.bind_property("playing", o, property)
                 .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
                 .build(),
@@ -79,7 +80,7 @@ impl SongModel {
     }
 
     pub fn bind_selected(&self, o: &impl ObjectType, property: &str) {
-        imp::SongModel::from_instance(self).push_binding(
+        self.imp().push_binding(
             self.bind_property("selected", o, property)
                 .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
                 .build(),
@@ -87,17 +88,17 @@ impl SongModel {
     }
 
     pub fn unbind_all(&self) {
-        imp::SongModel::from_instance(self).unbind_all(self);
+        self.imp().unbind_all(self);
     }
 
     pub fn description(&self) -> impl Deref<Target = SongDescription> + '_ {
-        Ref::map(imp::SongModel::from_instance(self).song.borrow(), |s| {
+        Ref::map(self.imp().song.borrow(), |s| {
             s.as_ref().expect("song set at constructor")
         })
     }
 
     pub fn into_description(&self) -> SongDescription {
-        imp::SongModel::from_instance(&self)
+        self.imp()
             .song
             .borrow()
             .as_ref()
@@ -111,6 +112,7 @@ mod imp {
     use super::*;
     use std::cell::{Cell, RefCell};
 
+    // Keep track of signals and bindings targeting this song
     #[derive(Default)]
     struct BindingsInner {
         pub signals: Vec<SignalHandlerId>,
@@ -139,6 +141,7 @@ mod imp {
             bindings.bindings.drain(..).for_each(|b| b.unbind());
         }
     }
+
     #[glib::object_subclass]
     impl ObjectSubclass for SongModel {
         const NAME: &'static str = "SongModel";
@@ -148,64 +151,22 @@ mod imp {
 
     lazy_static! {
         static ref PROPERTIES: [glib::ParamSpec; 8] = [
-            glib::ParamSpecString::new(
-                "id",
-                "Spotify identifier",
-                "",
-                None,
-                glib::ParamFlags::READABLE
-            ),
-            glib::ParamSpecUInt::new(
-                "index",
-                "Track number within an album",
-                "",
-                1,
-                u32::MAX,
-                1,
-                glib::ParamFlags::READABLE,
-            ),
-            glib::ParamSpecString::new(
-                "title",
-                "Title of the track",
-                "",
-                None,
-                glib::ParamFlags::READABLE
-            ),
-            glib::ParamSpecString::new(
-                "artist",
-                "Artists, comma separated",
-                "",
-                None,
-                glib::ParamFlags::READABLE
-            ),
-            glib::ParamSpecString::new(
-                "duration",
-                "Duration (formatted)",
-                "",
-                None,
-                glib::ParamFlags::READABLE,
-            ),
-            glib::ParamSpecString::new(
-                "art",
-                "URL to the cover art",
-                "",
-                None,
-                glib::ParamFlags::READABLE,
-            ),
-            glib::ParamSpecBoolean::new(
-                "playing",
-                "Playing",
-                "",
-                false,
-                glib::ParamFlags::READWRITE
-            ),
-            glib::ParamSpecBoolean::new(
-                "selected",
-                "Selected",
-                "",
-                false,
-                glib::ParamFlags::READWRITE,
-            ),
+            glib::ParamSpecString::builder("id").read_only().build(),
+            glib::ParamSpecUInt::builder("index").read_only().build(),
+            glib::ParamSpecString::builder("title").read_only().build(),
+            glib::ParamSpecString::builder("artist").read_only().build(),
+            glib::ParamSpecString::builder("duration")
+                .read_only()
+                .build(),
+            // URL
+            glib::ParamSpecString::builder("art").read_only().build(),
+            // Can be true when playback is paused; just means this is the current song
+            glib::ParamSpecBoolean::builder("playing")
+                .readwrite()
+                .build(),
+            glib::ParamSpecBoolean::builder("selected")
+                .readwrite()
+                .build(),
         ];
     }
 
@@ -214,13 +175,7 @@ mod imp {
             &*PROPERTIES
         }
 
-        fn set_property(
-            &self,
-            _obj: &Self::Type,
-            _id: usize,
-            value: &glib::Value,
-            pspec: &glib::ParamSpec,
-        ) {
+        fn set_property(&self, _id: usize, value: &glib::Value, pspec: &glib::ParamSpec) {
             match pspec.name() {
                 "playing" => {
                     let is_playing = value
@@ -246,7 +201,7 @@ mod imp {
             }
         }
 
-        fn property(&self, _obj: &Self::Type, _id: usize, pspec: &glib::ParamSpec) -> glib::Value {
+        fn property(&self, _id: usize, pspec: &glib::ParamSpec) -> glib::Value {
             match pspec.name() {
                 "index" => self
                     .song

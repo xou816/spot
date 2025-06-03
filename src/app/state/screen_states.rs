@@ -19,11 +19,11 @@ impl ScreenName {
     pub fn identifier(&self) -> Cow<str> {
         match self {
             Self::Home => Cow::Borrowed("home"),
-            Self::AlbumDetails(s) => Cow::Owned(format!("album_{}", s)),
+            Self::AlbumDetails(s) => Cow::Owned(format!("album_{s}")),
             Self::Search => Cow::Borrowed("search"),
-            Self::Artist(s) => Cow::Owned(format!("artist_{}", s)),
-            Self::PlaylistDetails(s) => Cow::Owned(format!("playlist_{}", s)),
-            Self::User(s) => Cow::Owned(format!("user_{}", s)),
+            Self::Artist(s) => Cow::Owned(format!("artist_{s}")),
+            Self::PlaylistDetails(s) => Cow::Owned(format!("playlist_{s}")),
+            Self::User(s) => Cow::Owned(format!("user_{s}")),
         }
     }
 }
@@ -36,10 +36,12 @@ impl PartialEq for ScreenName {
 
 impl Eq for ScreenName {}
 
+// ALBUM details
 pub struct DetailsState {
     pub id: String,
     pub name: ScreenName,
     pub content: Option<AlbumFullDescription>,
+    // Read the songs from here, not content (won't get more than the initial batch of songs)
     pub songs: SongListModel,
 }
 
@@ -49,7 +51,7 @@ impl DetailsState {
             id: id.clone(),
             name: ScreenName::AlbumDetails(id),
             content: None,
-            songs: SongListModel::new(100),
+            songs: SongListModel::new(50),
         }
     }
 }
@@ -72,7 +74,7 @@ impl UpdatableState for DetailsState {
             }
             BrowserAction::SaveAlbum(album) if album.id == self.id => {
                 let id = album.id.clone();
-                if let Some(mut album) = self.content.as_mut() {
+                if let Some(album) = self.content.as_mut() {
                     album.description.is_liked = true;
                     vec![BrowserEvent::AlbumSaved(id)]
                 } else {
@@ -80,7 +82,7 @@ impl UpdatableState for DetailsState {
                 }
             }
             BrowserAction::UnsaveAlbum(id) if id == &self.id => {
-                if let Some(mut album) = self.content.as_mut() {
+                if let Some(album) = self.content.as_mut() {
                     album.description.is_liked = false;
                     vec![BrowserEvent::AlbumUnsaved(id.clone())]
                 } else {
@@ -96,6 +98,7 @@ pub struct PlaylistDetailsState {
     pub id: String,
     pub name: ScreenName,
     pub playlist: Option<PlaylistDescription>,
+    // Read the songs from here, not content (won't get more than the initial batch of songs)
     pub songs: SongListModel,
 }
 
@@ -116,11 +119,17 @@ impl UpdatableState for PlaylistDetailsState {
 
     fn update_with(&mut self, action: Cow<Self::Action>) -> Vec<Self::Event> {
         match action.as_ref() {
-            BrowserAction::SetPlaylistDetails(playlist) if playlist.id == self.id => {
-                let PlaylistDescription { id, songs, .. } = *playlist.clone();
-                self.songs.add(songs).commit();
+            BrowserAction::SetPlaylistDetails(playlist, song_batch) if playlist.id == self.id => {
+                let PlaylistDescription { id, .. } = *playlist.clone();
+                self.songs.add(*song_batch.clone()).commit();
                 self.playlist = Some(*playlist.clone());
                 vec![BrowserEvent::PlaylistDetailsLoaded(id)]
+            }
+            BrowserAction::UpdatePlaylistName(PlaylistSummary { id, title }) if id == &self.id => {
+                if let Some(p) = self.playlist.as_mut() {
+                    p.title = title.clone();
+                }
+                vec![BrowserEvent::PlaylistDetailsLoaded(self.id.clone())]
             }
             BrowserAction::AppendPlaylistTracks(id, song_batch) if id == &self.id => {
                 self.songs.add(*song_batch.clone()).commit();
@@ -190,8 +199,10 @@ impl UpdatableState for ArtistState {
     }
 }
 
+// The "home" represents screens visible initially (saved albums, saved playlists, saved tracks)
 pub struct HomeState {
     pub name: ScreenName,
+    pub visible_page: &'static str,
     pub next_albums_page: Pagination<()>,
     pub albums: ListStore<AlbumModel>,
     pub next_playlists_page: Pagination<()>,
@@ -203,6 +214,7 @@ impl Default for HomeState {
     fn default() -> Self {
         Self {
             name: ScreenName::Home,
+            visible_page: "library",
             next_albums_page: Pagination::new((), 30),
             albums: ListStore::new(),
             next_playlists_page: Pagination::new((), 30),
@@ -218,6 +230,10 @@ impl UpdatableState for HomeState {
 
     fn update_with(&mut self, action: Cow<Self::Action>) -> Vec<Self::Event> {
         match action.as_ref() {
+            BrowserAction::SetHomeVisiblePage(page) => {
+                self.visible_page = *page;
+                vec![BrowserEvent::HomeVisiblePageChanged(page)]
+            }
             BrowserAction::SetLibraryContent(content) => {
                 if !self.albums.eq(content, |a, b| a.uri() == b.id) {
                     self.albums.replace_all(content.iter().map(|a| a.into()));
@@ -226,6 +242,10 @@ impl UpdatableState for HomeState {
                 } else {
                     vec![]
                 }
+            }
+            BrowserAction::PrependPlaylistsContent(content) => {
+                self.playlists.prepend(content.iter().map(|a| a.into()));
+                vec![BrowserEvent::SavedPlaylistsUpdated]
             }
             BrowserAction::AppendLibraryContent(content) => {
                 self.next_albums_page.set_loaded_count(content.len());
@@ -265,6 +285,12 @@ impl UpdatableState for HomeState {
             BrowserAction::AppendPlaylistsContent(content) => {
                 self.next_playlists_page.set_loaded_count(content.len());
                 self.playlists.extend(content.iter().map(|p| p.into()));
+                vec![BrowserEvent::SavedPlaylistsUpdated]
+            }
+            BrowserAction::UpdatePlaylistName(PlaylistSummary { id, title }) => {
+                if let Some(p) = self.playlists.iter().find(|p| &p.uri() == id) {
+                    p.set_album(title.to_owned());
+                }
                 vec![BrowserEvent::SavedPlaylistsUpdated]
             }
             BrowserAction::AppendSavedTracks(song_batch) => {
@@ -338,6 +364,7 @@ impl UpdatableState for SearchState {
     }
 }
 
+// Screen when we click on the name of a playlist owner
 pub struct UserState {
     pub id: String,
     pub name: ScreenName,

@@ -3,14 +3,15 @@ use std::rc::Rc;
 
 use crate::app::{
     components::EventListener,
-    models::SongDescription,
-    state::{PlaybackEvent, RepeatMode},
+    models::{RepeatMode, SongDescription},
+    state::PlaybackEvent,
     AppEvent, AppModel,
 };
 
 use super::types::{LoopStatus, PlaybackStatus, TrackMetadata};
 
 #[derive(Debug)]
+#[allow(clippy::enum_variant_names)]
 pub enum MprisStateUpdate {
     SetVolume(f64),
     SetCurrentTrack {
@@ -49,7 +50,7 @@ impl AppPlaybackStateListener {
             ..
         } = self.app_model.get_state().playback.current_song()?;
         Some(TrackMetadata {
-            id: format!("/dev/alextren/Spot/Track/{}", id),
+            id: format!("/dev/alextren/Spot/Track/{id}"),
             length: 1000 * duration as u64,
             title,
             album: album.name,
@@ -64,11 +65,6 @@ impl AppPlaybackStateListener {
             state.playback.prev_index().is_some(),
             state.playback.next_index().is_some(),
         )
-    }
-
-    fn is_shuffled(&self) -> bool {
-        let state = self.app_model.get_state();
-        state.playback.is_shuffled()
     }
 
     fn loop_status(&self) -> LoopStatus {
@@ -109,8 +105,8 @@ impl AppPlaybackStateListener {
                     loop_status,
                 })
             }
-            PlaybackEvent::ShuffleChanged => {
-                Some(MprisStateUpdate::SetShuffled(self.is_shuffled()))
+            PlaybackEvent::ShuffleChanged(shuffled) => {
+                Some(MprisStateUpdate::SetShuffled(*shuffled))
             }
             PlaybackEvent::TrackSeeked(pos) | PlaybackEvent::SeekSynced(pos) => {
                 let pos = 1000 * (*pos as u128);

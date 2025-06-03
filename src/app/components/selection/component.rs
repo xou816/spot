@@ -139,11 +139,31 @@ pub struct SelectionToolbar {
 impl SelectionToolbar {
     pub fn new(model: SelectionToolbarModel, widget: SelectionToolbarWidget) -> Self {
         let model = Rc::new(model);
-        widget.connect_move_up(clone!(@weak model => move || model.move_up_selection()));
-        widget.connect_move_down(clone!(@weak model => move || model.move_down_selection()));
-        widget.connect_queue(clone!(@weak model => move || model.queue_selection()));
-        widget.connect_remove(clone!(@weak model => move || model.remove_selection()));
-        widget.connect_save(clone!(@weak model => move || model.save_selection()));
+        widget.connect_move_up(clone!(
+            #[weak]
+            model,
+            move || model.move_up_selection()
+        ));
+        widget.connect_move_down(clone!(
+            #[weak]
+            model,
+            move || model.move_down_selection()
+        ));
+        widget.connect_queue(clone!(
+            #[weak]
+            model,
+            move || model.queue_selection()
+        ));
+        widget.connect_remove(clone!(
+            #[weak]
+            model,
+            move || model.remove_selection()
+        ));
+        widget.connect_save(clone!(
+            #[weak]
+            model,
+            move || model.save_selection()
+        ));
         Self { model, widget }
     }
 
@@ -166,6 +186,13 @@ impl SelectionToolbar {
                 self.widget
                     .set_remove(SelectionToolState::Visible(count > 0));
                 self.widget.set_save(SelectionToolState::Hidden);
+            }
+            SelectionContext::ReadOnlyQueue => {
+                self.widget.set_move(SelectionToolState::Hidden);
+                self.widget.set_queue(SelectionToolState::Hidden);
+                self.widget.set_add(SelectionToolState::Hidden);
+                self.widget.set_remove(SelectionToolState::Hidden);
+                self.widget.set_save(SelectionToolState::Visible(count > 0));
             }
             SelectionContext::Queue => {
                 self.widget
@@ -216,8 +243,12 @@ impl EventListener for SelectionToolbar {
             AppEvent::LoginEvent(LoginEvent::UserPlaylistsLoaded) => {
                 let model = &self.model;
                 self.widget.connect_playlists(
-                    &*model.user_playlists(),
-                    clone!(@weak model => move |s| model.add_to_playlist(s)),
+                    &model.user_playlists(),
+                    clone!(
+                        #[weak]
+                        model,
+                        move |s| model.add_to_playlist(s)
+                    ),
                 );
             }
             _ => {}

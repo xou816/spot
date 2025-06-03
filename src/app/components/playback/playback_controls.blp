@@ -1,0 +1,57 @@
+using Gtk 4.0;
+
+template $PlaybackControlsWidget : Box {
+  halign: center;
+  hexpand: true;
+  spacing: 8;
+  homogeneous: true;
+
+  ToggleButton shuffle {
+    receives-default: true;
+    halign: center;
+    valign: center;
+    has-frame: false;
+    icon-name: "media-playlist-shuffle-symbolic";
+    tooltip-text: _("Shuffle");
+  }
+
+  Button prev {
+    receives-default: true;
+    halign: center;
+    valign: center;
+    has-frame: false;
+    icon-name: "media-skip-backward-symbolic";
+    tooltip-text: _("Previous");
+  }
+
+  Button play_pause {
+    receives-default: true;
+    halign: center;
+    valign: center;
+    icon-name: "media-playback-start-symbolic";
+    tooltip-text: "Play/Pause";
+
+    styles [
+      "circular",
+      "playback-button",
+    ]
+  }
+
+  Button next {
+    receives-default: true;
+    halign: center;
+    valign: center;
+    has-frame: false;
+    icon-name: "media-skip-forward-symbolic";
+    tooltip-text: _("Next");
+  }
+
+  Button repeat {
+    receives-default: true;
+    halign: center;
+    valign: center;
+    has-frame: false;
+    icon-name: "media-playlist-consecutive-symbolic";
+    tooltip-text: _("Repeat");
+  }
+}

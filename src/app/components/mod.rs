@@ -11,7 +11,7 @@ use std::collections::HashSet;
 use std::future::Future;
 
 use crate::api::SpotifyApiError;
-use crate::app::{state::LoginAction, ActionDispatcher, AppAction, AppEvent};
+use crate::app::{ActionDispatcher, AppAction, AppEvent};
 
 mod navigation;
 pub use navigation::*;
@@ -55,6 +55,9 @@ pub use user_details::*;
 mod now_playing;
 pub use now_playing::*;
 
+mod device_selector;
+pub use device_selector::*;
+
 mod saved_tracks;
 pub use saved_tracks::*;
 
@@ -79,15 +82,23 @@ pub use selection::*;
 mod headerbar;
 pub use headerbar::*;
 
+mod scrolling_header;
+pub use scrolling_header::*;
+
 pub mod utils;
 
 pub mod labels;
-pub mod sidebar_listbox;
 
-pub fn expose_widgets() {
+pub mod sidebar;
+
+// without this the builder doesn't seen to know about the custom widgets
+pub fn expose_custom_widgets() {
     playback::expose_widgets();
     selection::expose_widgets();
     headerbar::expose_widgets();
+    device_selector::expose_widgets();
+    playlist_details::expose_widgets();
+    scrolling_header::expose_widgets();
 }
 
 impl dyn ActionDispatcher {
@@ -110,11 +121,7 @@ impl dyn ActionDispatcher {
             match result {
                 Ok(actions) => actions,
                 Err(SpotifyApiError::NoToken) => vec![],
-                Err(SpotifyApiError::InvalidToken) => {
-                    let mut retried = call().await.unwrap_or_else(|_| Vec::new());
-                    retried.push(LoginAction::RefreshToken.into());
-                    retried
-                }
+                Err(SpotifyApiError::InvalidToken) => call().await.unwrap_or_else(|_| Vec::new()),
                 Err(err) => {
                     error!("Spotify API error: {}", err);
                     vec![AppAction::ShowNotification(gettext(
@@ -140,7 +147,7 @@ pub fn display_add_css_provider(resource: &'static str) {
         let provider = gtk::CssProvider::new();
         provider.load_from_resource(resource);
 
-        gtk::StyleContext::add_provider_for_display(
+        gtk::style_context_add_provider_for_display(
             &gdk::Display::default().unwrap(),
             &provider,
             gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,

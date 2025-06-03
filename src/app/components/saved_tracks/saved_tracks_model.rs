@@ -29,12 +29,11 @@ impl SavedTracksModel {
             batch: Batch::first_of_size(50),
         };
         self.dispatcher.dispatch_async(Box::pin(async move {
-            let action = loader
-                .query(query, |song_batch| {
+            loader
+                .query(query, |_s, song_batch| {
                     BrowserAction::SetSavedTracks(Box::new(song_batch)).into()
                 })
-                .await;
-            Some(action)
+                .await
         }));
     }
 
@@ -46,12 +45,11 @@ impl SavedTracksModel {
             batch: last_batch,
         };
         self.dispatcher.dispatch_async(Box::pin(async move {
-            let action = loader
-                .query(query, |song_batch| {
+            loader
+                .query(query, |_s, song_batch| {
                     BrowserAction::AppendSavedTracks(Box::new(song_batch)).into()
                 })
-                .await;
-            Some(action)
+                .await
         }));
         Some(())
     }
@@ -66,6 +64,10 @@ impl PlaylistModel for SavedTracksModel {
             .expect("illegal attempt to read home_state")
             .saved_tracks
             .clone()
+    }
+
+    fn is_paused(&self) -> bool {
+        !self.app_model.get_state().playback.is_playing()
     }
 
     fn current_song_id(&self) -> Option<String> {

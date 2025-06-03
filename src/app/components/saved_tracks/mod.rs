@@ -1,3 +1,4 @@
+#[allow(clippy::module_inception)]
 mod saved_tracks;
 pub use saved_tracks::*;
 
