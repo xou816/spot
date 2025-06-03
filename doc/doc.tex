@@ -83,7 +83,7 @@ Note: futures are used a lot in the code to perform asynchronous operations such
 
 Any element that wishes to update the state or react to changes from the state has to follow that same pattern. For instance, the ``player'' part of Spot receives \texttt{Commands} (mapped from events by a \texttt{PlayerNotifier}) to start playing music, and dispatches actions back the app through a \texttt{SpotifyPlayerDelegate} (see figure \ref{fig:player}). 
 
-These two extra elements add some indirection so that the player is not too strongly coupled to the rest of the app (it does not and should not care about most events, afterall!). Moreover, those commands are handled in a separate thread where the player lives.
+These two extra elements add some indirection so that the player is not too strongly coupled to the rest of the app (it does not and should not care about most events, after all!). Moreover, those commands are handled in a separate thread where the player lives.
 
 \begin{figure}[!ht]
     \centering
