@@ -6,7 +6,7 @@ use std::convert::TryInto;
 
 use futures::channel::mpsc::UnboundedSender;
 use zbus::fdo::{Error, Result};
-use zbus::{dbus_interface, Interface, SignalContext};
+use zbus::{interface, Interface, SignalContext};
 use zvariant::{ObjectPath, Value};
 
 use super::types::*;
@@ -25,7 +25,7 @@ impl SpotMpris {
     }
 }
 
-#[dbus_interface(interface = "org.mpris.MediaPlayer2")]
+#[interface(interface = "org.mpris.MediaPlayer2")]
 impl SpotMpris {
     fn quit(&self) -> Result<()> {
         Err(Error::NotSupported("Not implemented".to_string()))
@@ -37,37 +37,37 @@ impl SpotMpris {
             .map_err(|_| Error::Failed("Could not send action".to_string()))
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     fn can_quit(&self) -> bool {
         false
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     fn can_raise(&self) -> bool {
         true
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     fn has_track_list(&self) -> bool {
         false
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     fn identity(&self) -> &'static str {
         "Spot"
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     fn supported_mime_types(&self) -> Vec<String> {
         vec![]
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     fn supported_uri_schemes(&self) -> Vec<String> {
         vec![]
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     fn desktop_entry(&self) -> &'static str {
         "dev.alextren.Spot"
     }
@@ -127,7 +127,7 @@ impl SpotMprisPlayer {
     }
 }
 
-#[dbus_interface(interface = "org.mpris.MediaPlayer2.Player")]
+#[interface(interface = "org.mpris.MediaPlayer2.Player")]
 impl SpotMprisPlayer {
     pub fn next(&self) -> Result<()> {
         self.sender
@@ -223,45 +223,45 @@ impl SpotMprisPlayer {
         Err(Error::NotSupported("Not implemented".to_string()))
     }
 
-    #[dbus_interface(signal)]
+    #[zbus(signal)]
     pub async fn seeked(ctxt: &SignalContext<'_>, Position: i64) -> zbus::Result<()>;
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     pub fn can_control(&self) -> bool {
         true
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     pub fn can_go_next(&self) -> bool {
         self.state.has_next()
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     pub fn can_go_previous(&self) -> bool {
         self.state.has_prev()
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     pub fn can_pause(&self) -> bool {
         true
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     pub fn can_play(&self) -> bool {
         true
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     pub fn can_seek(&self) -> bool {
         self.state.current_track().is_some()
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     pub fn maximum_rate(&self) -> f64 {
         1.0f64
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     pub fn metadata(&self) -> TrackMetadata {
         self.state
             .current_track()
@@ -276,22 +276,22 @@ impl SpotMprisPlayer {
             })
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     pub fn minimum_rate(&self) -> f64 {
         1.0f64
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     pub fn playback_status(&self) -> PlaybackStatus {
         self.state.status()
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     pub fn loop_status(&self) -> LoopStatus {
         self.state.loop_status()
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     pub fn set_loop_status(&self, value: LoopStatus) -> zbus::Result<()> {
         let mode = match value {
             LoopStatus::None => RepeatMode::None,
@@ -304,25 +304,25 @@ impl SpotMprisPlayer {
         Ok(())
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     pub fn position(&self) -> i64 {
         self.state.position() as i64
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     pub fn rate(&self) -> f64 {
         1.0f64
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     pub fn set_rate(&self, value: f64) {}
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     pub fn shuffle(&self) -> bool {
         self.state.is_shuffled()
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     pub fn set_shuffle(&self, value: bool) -> zbus::Result<()> {
         self.sender
             .unbounded_send(PlaybackAction::ToggleShuffle.into())
@@ -330,12 +330,12 @@ impl SpotMprisPlayer {
         Ok(())
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     pub fn volume(&self) -> f64 {
         self.state.volume()
     }
 
-    #[dbus_interface(property)]
+    #[zbus(property)]
     pub fn set_volume(&self, value: f64) -> zbus::Result<()> {
         // As per spec, if new volume less than 0 round to 0
         // also, we don't support volume higher than 100% at the moment.

@@ -57,7 +57,7 @@ version = "=0.7.0"
 features = ["gettext-system"]
 
 [dependencies.secret-service]
-version = "3.0.1"
+version = "4.0.0"
 features = ["rt-async-io-crypto-rust"]
 
 [dependencies]
@@ -66,8 +66,8 @@ ref_filter_map = "1.0.1"
 regex = "1.8.3"
 async-std = "1.12.0"
 form_urlencoded = "1.0.1"
-zbus = "3.13"
-zvariant = "3.14"
+zbus = "4.4.0"
+zvariant = "4.2.0"
 thiserror = "1.0.40"
 lazy_static = "1.4.0"
 log = "0.4.17"
@@ -76,3 +76,4 @@ percent-encoding = "2.2.0"
 oauth2 = "4.4"
 url = "2.4.1"
 open = "5.3.0"
+libc = "*"
