@@ -1,12 +1,17 @@
+#
+# Sebastian Scherch, 2025.
+#
 msgid ""
 msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: POEditor.com\n"
+"X-Generator: Gtranslator 48.0\n"
 "Project-Id-Version: Spot\n"
 "Language: de\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Last-Translator: Sebastian Scherch\n"
+"PO-Revision-Date: 2025-07-09 09:28+0200\n"
 
 #. translators: This is part of a contextual menu attached to a single track; this entry allows viewing the album containing a specific track.
 #: src/app/components/labels.rs:5
@@ -299,7 +304,7 @@ msgstr "Aussehen"
 #. Title for an item in preferences
 #: src/app/components/settings/settings.blp:78
 msgid "Theme"
-msgstr "Thema"
+msgstr "Design"
 
 #: src/app/components/settings/settings.blp:81
 msgid "Light"
@@ -370,36 +375,35 @@ msgstr "Erstellen"
 #: src/app/components/device_selector/device_selector.blp:9
 #: src/app/components/device_selector/device_selector.blp:37
 msgid "This device"
-msgstr ""
+msgstr "Dieses Gerät"
 
 #: src/connect/player.rs:65
 msgid "Connection to device lost!"
-msgstr ""
+msgstr "Verbindung zum Gerät verloren!"
 
 #: src/app/components/login/login.blp:46
 msgid "Welcome to Spot"
-msgstr ""
+msgstr "Wilkommen bei Spot"
 
 #. Translators: Login window title, must mention Premium (a premium account is required).
 #: src/app/components/login/login.blp:53
 msgid "Log in with your Spotify Account. A Spotify Premium subscription is required to use the app."
-msgstr ""
+msgstr "Einloggen mit Spotify Account. Ein Spotify Premium Abonnement ist notwendig um die Applikation zu nutzen."
 
 #. Translators: This error is shown when authentication fails.
 #: src/app/components/login/login.blp:68
 msgid "An error occured when trying to connect."
-msgstr ""
+msgstr "Beim Verbindungsaufbau ist ein Fehler aufgetreten."
 
 #. Translators: Log in button label
 #: src/app/components/login/login.blp:79
 msgid "Log in with Spotify..."
-msgstr ""
+msgstr "Einloggen mit Spotify..."
 
 #: src/app/components/device_selector/device_selector.blp:15
 msgid "Playing on"
-msgstr ""
+msgstr "Wiedergabe auf"
 
 #: src/app/components/device_selector/device_selector.blp:24
 msgid "Refresh devices"
-msgstr ""
-
+msgstr "Geräte aktualisieren"
