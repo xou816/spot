@@ -31,7 +31,7 @@ See [this comment](https://github.com/xou816/spot/issues/92#issuecomment-8018525
 **Only works with premium accounts!**
 
 - playback control (play/pause, prev/next, seeking, shuffle, repeat (none, all, song))
-- selection mode: easily browse and select mutliple tracks to queue them
+- selection mode: easily browse and select multiple tracks to queue them
 - browse your saved albums and playlists
 - search albums and artists
 - view an artist's releases

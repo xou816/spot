@@ -97,7 +97,7 @@ impl BatchLoader {
                 error!("Spotify API error: {}", err);
                 Some(AppAction::ShowNotification(gettext(
                     // translators: This notification is the default message for unhandled errors. Logs refer to console output.
-                    "An error occured. Check logs for details!",
+                    "An error occurred. Check logs for details!",
                 )))
             }
         }
