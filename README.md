@@ -1,4 +1,12 @@
-# Spot [![spot-snapshots](https://github.com/xou816/spot/actions/workflows/spot-snapshots.yml/badge.svg?branch=master)](https://github.com/xou816/spot/actions/workflows/spot-snapshots.yml)
+> [!WARNING]  
+> This project is no longer being maintained by me at the time!
+> 
+> Please consider using [Diegovsky/riff](https://github.com/Diegovsky/riff) instead.
+> 
+> Thank you!
+
+
+# (unmaintained) Spot [![spot-snapshots](https://github.com/xou816/spot/actions/workflows/spot-snapshots.yml/badge.svg?branch=master)](https://github.com/xou816/spot/actions/workflows/spot-snapshots.yml)
 
 Gtk/Rust native Spotify client for the GNOME desktop. **Only works with premium accounts!**
 
