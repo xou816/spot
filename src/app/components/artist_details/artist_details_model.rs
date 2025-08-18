@@ -127,11 +127,27 @@ impl PlaylistModel for ArtistDetailsModel {
 
         let menu = gio::Menu::new();
         menu.append(Some(&*labels::VIEW_ALBUM), Some("song.view_album"));
-        for artist in song.artists.iter().filter(|a| self.id != a.id) {
-            menu.append(
-                Some(&labels::more_from_label(&artist.name)),
-                Some(&format!("song.view_artist_{}", artist.id)),
-            );
+
+        let artists_iter = song.artists.iter();
+
+        if artists_iter.len() > 1 {
+            let submenu = gio::Menu::new();
+
+            for artist in artists_iter {
+                submenu.append(
+                    Some(&artist.name),
+                    Some(&format!("song.view_artist_{}", artist.id)),
+                );
+            }
+
+            menu.append_submenu(Some("More from"), &submenu);
+        } else {
+            for artist in artists_iter {
+                menu.append(
+                    Some(&labels::more_from_label(&artist.name)),
+                    Some(&format!("song.view_artist_{}", artist.id)),
+                );
+            }
         }
 
         menu.append(Some(&*labels::COPY_LINK), Some("song.copy_link"));
