@@ -129,6 +129,10 @@ impl PlaylistDetailsWidget {
         self.imp().header_widget.set_playing(is_playing);
     }
 
+    fn set_fallback_artwork(&self) {
+        self.imp().header_widget.imp().playlist_art.set_icon_name(Some("audio-x-generic-symbolic"));
+    }
+
     fn set_artwork(&self, art: &gdk_pixbuf::Pixbuf) {
         self.imp().header_widget.set_artwork(art);
     }
@@ -270,7 +274,7 @@ impl PlaylistDetails {
         }
     }
 
-    fn update_details(&self) {
+    fn update_details(&mut self) {
         if let Some(info) = self.model.get_playlist_info() {
             let title = &info.title[..];
             let owner = &info.owner.display_name[..];
@@ -279,17 +283,22 @@ impl PlaylistDetails {
             self.widget.set_info(title, owner);
 
             if let Some(art_url) = art_url.cloned() {
-                let widget = self.widget.downgrade();
+                let widget_clone = self.widget.downgrade();
                 self.worker.send_local_task(async move {
                     let pixbuf = ImageLoader::new()
                         .load_remote(&art_url[..], "jpg", 320, 320)
                         .await;
-                    if let (Some(widget), Some(ref pixbuf)) = (widget.upgrade(), pixbuf) {
-                        widget.set_artwork(pixbuf);
+                    if let Some(widget) = widget_clone.upgrade() {
+                        if let Some(ref pixbuf) = pixbuf {
+                            widget.set_artwork(pixbuf);
+                        } else {
+                            widget.set_fallback_artwork();
+                        }
                         widget.set_loaded();
                     }
                 });
             } else {
+                self.widget.set_fallback_artwork();
                 self.widget.set_loaded();
             }
         }
